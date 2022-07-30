@@ -33,44 +33,44 @@ F_HELP()
 
 F_CP ()
 {
-    set -e
+    #set -e
     # cp到init目录
-    cp -rf ./envs/3rd_jar                             ./
-    cp -f  ./envs/dingding_send_markdown-login.py  ./
-    cp -f  ./envs/dingding_send_markdown.py        ./
-    cp -f  ./envs/dingding_conver_to_markdown_list.py                ./
-    cp -f  ./envs/ossfs-backup.service                ./
-    cp -f  ./envs/ossfs-internal-backup.service       ./
+    cp -rf ./${ENVS_FILE_DIR}/3rd_jar                             ./
+    cp -f  ./${ENVS_FILE_DIR}/dingding_send_markdown-login.py  ./
+    cp -f  ./${ENVS_FILE_DIR}/dingding_send_markdown.py        ./
+    cp -f  ./${ENVS_FILE_DIR}/dingding_conver_to_markdown_list.py                ./
+    cp -f  ./${ENVS_FILE_DIR}/ossfs-backup.service                ./
+    cp -f  ./${ENVS_FILE_DIR}/ossfs-internal-backup.service       ./
     #
-    cp -f  ./envs/install-hosts.yml---${ENV}          ./install-hosts.yml
-    cp -f  ./envs/host-ip.list---${ENV}               ./host-ip.list
-    cp -f  ./envs/bash_aliases---${ENV}               ./bash_aliases
-    cp -f  ./envs/run-env.sh---${ENV}                 ./run-env.sh
-    cp -f  ./envs/mailrc---${ENV}                     ./mailrc
+    cp -f  ./${ENVS_FILE_DIR}/install-hosts.yml---${ENV}          ./install-hosts.yml
+    cp -f  ./${ENVS_FILE_DIR}/host-ip.list---${ENV}               ./host-ip.list
+    cp -f  ./${ENVS_FILE_DIR}/bash_aliases---${ENV}               ./bash_aliases
+    cp -f  ./${ENVS_FILE_DIR}/run-env.sh---${ENV}                 ./run-env.sh
+    cp -f  ./${ENVS_FILE_DIR}/mailrc---${ENV}                     ./mailrc
     # cp到init子目录
-    cp -f  ./envs/soft/jdk-*-linux-x64.tar.gz      ./build-envs/java/
-    cp -f  ./envs/soft/apache-maven-*-bin.tar.gz   ./build-envs/maven/
-    cp -f  ./envs/soft/node-v*-linux-x64.tar.xz    ./build-envs/node/
-    cp -f  ./envs/backup-center-project.list       ./backup-center/backup-center-project.list
-    cp -f  ./envs/pg_db.list                       ./pg/backup/pg_db.list
+    cp -f  ./${ENVS_FILE_DIR}/soft/jdk-*-linux-x64.tar.gz      ./build-envs/java/
+    cp -f  ./${ENVS_FILE_DIR}/soft/apache-maven-*-bin.tar.gz   ./build-envs/maven/
+    cp -f  ./${ENVS_FILE_DIR}/soft/node-v*-linux-x64.tar.xz    ./build-envs/node/
+    cp -f  ./${ENVS_FILE_DIR}/backup-center-project.list       ./backup-center/backup-center-project.list
+    cp -f  ./${ENVS_FILE_DIR}/pg_db.list                       ./pg/backup/pg_db.list
     #
-    cp -f  ./envs/nginx.list---${ENV}              ./nginx-config/
-    cp -f  ./envs/fluent.conf---${ENV}             ./fluentd-srv/conf/fluent.conf
-    cp -f  ./envs/kibana-srv-env---${ENV}          ./kibana-srv/.env
-    cp -f  ./envs/elasticsearch-srv-env---${ENV}   ./elasticsearch-srv/.env
+    cp -f  ./${ENVS_FILE_DIR}/nginx.list---${ENV}              ./nginx-config/
+    cp -f  ./${ENVS_FILE_DIR}/fluent.conf---${ENV}             ./fluentd-srv/conf/fluent.conf
+    cp -f  ./${ENVS_FILE_DIR}/kibana-srv-env---${ENV}          ./kibana-srv/.env
+    cp -f  ./${ENVS_FILE_DIR}/elasticsearch-srv-env---${ENV}   ./elasticsearch-srv/.env
 
     # cp到deploy目录
-    cp -f  ./envs/project.list                           ../deploy/
+    cp -f  ./${ENVS_FILE_DIR}/project.list                           ../deploy/
     #
-    cp -f  ./envs/deploy.env---${ENV}                    ../deploy/deploy.env
-    cp -f  ./envs/nginx.list---${ENV}                    ../deploy/nginx.list
-    cp -f  ./envs/docker-cluster-service.list---${ENV}   ../deploy/docker-cluster-service.list
-    cp -f  ./envs/docker-arg-pub.list---${ENV}           ../deploy/docker-arg-pub.list
-    cp -f  ./envs/container-hosts-pub.list---${ENV}      ../deploy/container-hosts-pub.list
-    cp -f  ./envs/java-options-pub.list---${ENV}         ../deploy/java-options-pub.list
+    cp -f  ./${ENVS_FILE_DIR}/deploy.env---${ENV}                    ../deploy/deploy.env
+    cp -f  ./${ENVS_FILE_DIR}/nginx.list---${ENV}                    ../deploy/nginx.list
+    cp -f  ./${ENVS_FILE_DIR}/docker-cluster-service.list---${ENV}   ../deploy/docker-cluster-service.list
+    cp -f  ./${ENVS_FILE_DIR}/docker-arg-pub.list---${ENV}           ../deploy/docker-arg-pub.list
+    cp -f  ./${ENVS_FILE_DIR}/container-hosts-pub.list---${ENV}      ../deploy/container-hosts-pub.list
+    cp -f  ./${ENVS_FILE_DIR}/java-options-pub.list---${ENV}         ../deploy/java-options-pub.list
 
     # cp到deploy主机，即本机
-    cp -f  ./envs/ansible-hosts---${ENV}             /etc/ansible/hosts
+    cp -f  ./${ENVS_FILE_DIR}/ansible-hosts---${ENV}             /etc/ansible/hosts
 }
 
 
@@ -78,12 +78,12 @@ F_CP ()
 F_RM ()
 {
     # init目录
-    rm -rf ./envs/3rd_jar
-    rm -f  ./envs/dingding_send_markdown-login.py
-    rm -f  ./envs/dingding_send_markdown.py
-    rm -f  ./envs/dingding_conver_to_markdown_list.py 
-    rm -f  ./envs/ossfs-internal-backup.service
-    rm -f  ./envs/ossfs-backup.service
+    rm -rf ./3rd_jar
+    rm -f  ./dingding_send_markdown-login.py
+    rm -f  ./dingding_send_markdown.py
+    rm -f  ./dingding_conver_to_markdown_list.py 
+    rm -f  ./ossfs-internal-backup.service
+    rm -f  ./ossfs-backup.service
     #
     rm -f  ./install-hosts.yml
     rm -f  ./host-ip.list
@@ -159,6 +159,7 @@ do
             ;;
         -f|--from)
             ENVS_FILE_DIR=$2
+            ENVS_FILE_DIR=${ENVS_FILE_DIR%*/}
             if [[ ! -d ${ENVS_FILE_DIR} ]]; then
                 echo -e "\n猪猪侠警告：目录【${ENVS_FILE_DIR}】不存在，请检查\n"
                 exit 1
