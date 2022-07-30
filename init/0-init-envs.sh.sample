@@ -23,9 +23,9 @@ F_HELP()
 {
     echo "
     用法:
-    sh $0 [-h|--help]
-    sh $0 [-r|--rm]            #--- 删除项目环境文件
-    sh $0 <-f|--from {Path-To-envs文件目录}>  [-c|--copy {环境名称}]    #--- 拷贝envs目录中以【---环境名称】结尾的文件到指定路径，比如：【prod|stag|dev|其他任意名称】
+    sh $0  [-h|--help]
+    sh $0  [-r|--rm]            #--- 删除项目环境文件
+    sh $0  [-c|--copy {环境名称}]  <-f|--from {Path-To-envs文件目录}>    #--- 拷贝envs目录中以【---环境名称】结尾的文件到指定路径，比如：【prod|stag|dev|其他任意名称】
     "
 }
 
@@ -129,45 +129,48 @@ fi
 eval set -- "${TEMP}"
 
 
-# go
+# 获取运行参数
 R_MODE=''
-case "$1" in
-    "-h"|"--help")
-        F_HELP
-        exit
-        ;;
-    -r|--rm)
-        if [[ -z ${R_MODE} ]]; then
-            R_MODE=F_RM
-        else
-            echo -e "\n猪猪侠警告：主要参数只能有一个，请查看帮助【$0 --help】\n"
+while true
+do
+    case "$1" in
+        "-h"|"--help")
+            F_HELP
+            exit
+            ;;
+        -r|--rm)
+            if [[ -z ${R_MODE} ]]; then
+                R_MODE=F_RM
+            else
+                echo -e "\n猪猪侠警告：主要参数只能有一个，请查看帮助【$0 --help】\n"
+                exit 1
+            fi
+            shift
+            ;;
+        -c|--copy)
+            if [[ -z ${R_MODE} ]]; then
+                R_MODE=F_CP
+                R_ENV=$2
+            else
+                echo -e "\n猪猪侠警告：主要参数只能有一个，请查看帮助【$0 --help】\n"
+                exit 1
+            fi
+            shift 2
+            ;;
+        -f|--from)
+            ENVS_FILE_DIR=$2
+            if [[ ! -d ${ENVS_FILE_DIR} ]]; then
+                echo -e "\n猪猪侠警告：目录【${ENVS_FILE_DIR}】不存在，请检查\n"
+                exit 1
+            fi
+            shift 2
+            ;;
+        *)
+            echo -e "\n猪猪侠警告：未知参数，请查看帮助【$0 --help】\n"
             exit 1
-        fi
-        shift
-        ;;
-    -c|--copy)
-        if [[ -z ${R_MODE} ]]; then
-            R_MODE=F_CP
-            R_ENV=$2
-        else
-            echo -e "\n猪猪侠警告：主要参数只能有一个，请查看帮助【$0 --help】\n"
-            exit 1
-        fi
-        shift 2
-        ;;
-    -f|--from)
-        ENVS_FILE_DIR=$2
-        if [[ ! -d ${ENVS_FILE_DIR} ]]; then
-            echo -e "\n猪猪侠警告：目录【${ENVS_FILE_DIR}】不存在，请检查\n"
-            exit 1
-        fi
-        shift 2
-        ;;
-    *)
-        echo -e "\n猪猪侠警告：未知参数，请查看帮助【$0 --help】\n"
-        exit 1
-        ;;
-esac
+            ;;
+    esac
+done
 
 
 if [[ ! -d ${ENVS_FILE_DIR}/deploy.env---${R_ENV} ]]; then
