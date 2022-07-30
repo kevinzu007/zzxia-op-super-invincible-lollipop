@@ -165,6 +165,10 @@ do
             fi
             shift 2
             ;;
+        --)
+            shift
+            break
+            ;;
         *)
             echo -e "\n猪猪侠警告：未知参数，请查看帮助【$0 --help】\n"
             exit 1
