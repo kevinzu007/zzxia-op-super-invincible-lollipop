@@ -1,0 +1,7 @@
+# Docker公共运行参数，以#开头的无效，以空格开头无效，可以是变量
+# 目前仅对swarm集群有效
+#--detach  --xx ~/xfile
+--detach
+--restart-condition on-failure
+--with-registry-auth
+

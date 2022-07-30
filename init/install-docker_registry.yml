@@ -1,0 +1,11 @@
+
+- hosts: repo_docker
+  become: yes
+  tasks:
+    - name: cp docker_registry
+      copy: src=./docker_registry/  dest=/srv/docker/docker_registry/   owner=root group=root mode=644 backup=yes
+    - name: 启动 docker_registry
+      shell: cd /srv/docker/docker_registry/ && docker-compose up -d && echo 已启动，请检查是否征程；根据readme修改默认密码
+
+
+

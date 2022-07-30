@@ -1,0 +1,5 @@
+
+ES_MEM_MIN=-Xms4000m
+ES_MEM_MAX=-Xmx4000m
+
+

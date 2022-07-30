@@ -1,0 +1,11 @@
+- hosts: zabbix
+  become: yes
+  tasks:
+    - name: zabbix server sudoer
+      copy: src=./zabbix/server/sudo_zabbix  dest=/etc/sudoers.d/  owner=root group=root mode=0440 backup=no
+    - name: zabbix server alertscripts
+      copy: src=./zabbix/server/alertscripts  dest=/usr/lib/zabbix/  owner=root group=root mode=0755 backup=yes
+    - name: zabbix server externalscripts
+      copy: src=./zabbix/server/externalscripts  dest=/usr/lib/zabbix/  owner=root group=root mode=0755 backup=yes
+
+

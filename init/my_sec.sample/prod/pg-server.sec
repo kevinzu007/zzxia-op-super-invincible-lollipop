@@ -1,0 +1,3 @@
+# 打包用pg用户【】的密码
+export PGPW_FOR_BUILD='mypassword'
+

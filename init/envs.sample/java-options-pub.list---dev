@@ -1,0 +1,3 @@
+# JAVA运行OPTIONS，对所有容器生效，以#开头的无效，以空格开头无效，可以是变量
+#-Dencoding=${CHARSET}  -Dfile=~/xxx/file
+

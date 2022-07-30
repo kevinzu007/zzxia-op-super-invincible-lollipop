@@ -1,0 +1,10 @@
+# ~/.bash_logout
+
+
+if [ ! -f /tmp/my.log ]; then
+    touch /tmp/my.log
+    chmod 0666 /tmp/my.log
+fi
+echo -e "| `date +'%FT%T'` | ${HOSTNAME} | 用户名: ${USER}(sudo:${SUDO_USER}) | 用户登出 |  |" >> /tmp/my.log
+w >> /tmp/my.log
+

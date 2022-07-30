@@ -1,0 +1,12 @@
+[Unit]
+Description=ossfs mount backup dir
+After=network.target ntpd.service
+ 
+[Service]
+Type=forking
+ExecStart=/usr/local/bin/ossfs  gc-backup  /oss/backup  -o allow_other  -o url=http://oss-cn-hongkong-internal.aliyuncs.com
+ExecStop=/usr/bin/fusermount -u /oss/backup
+ 
+[Install]
+WantedBy=multi-user.target
+

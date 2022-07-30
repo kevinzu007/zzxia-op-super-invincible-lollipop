@@ -1,0 +1,29 @@
+- hosts: all
+  become: yes
+  tasks:
+    - name: zabbix repo install
+      shell: rpm -q zabbix-release >/dev/null || rpm -i https://repo.zabbix.com/zabbix/4.0/rhel/7/x86_64/zabbix-release-4.0-1.el7.noarch.rpm
+    - name: zabbix install
+      yum:  name=zabbix-agent state=present disable_gpg_check=yes
+    - name: bc install
+      yum:  name=bc state=present disable_gpg_check=yes
+    - name: zabbix agent config
+      copy: src=./zabbix/agent/zabbix_agentd.conf  dest=/etc/zabbix/zabbix_agentd.conf  owner=root group=root mode=0644 backup=yes
+    - name: zabbix agent scripts
+      copy: src=./zabbix/agent/scripts  dest=/etc/zabbix/  owner=root group=root mode=0755 backup=yes
+    - name: zabbix agent zabbit_agentd.d
+      copy: src=./zabbix/agent/zabbix_agentd.d  dest=/etc/zabbix/  owner=root group=root mode=0644 backup=yes
+    - name: zabbix agent modules
+      copy: src=./zabbix/agent/modules  dest=/etc/zabbix/  owner=root group=root mode=0755 backup=yes
+    - name: zabbix run
+      shell: systemctl enable zabbix-agent;  systemctl restart zabbix-agent
+
+- hosts: nginx
+  become: yes
+  tasks:
+    - name: nginx site for zabbix
+      copy: src=./zabbix/agent/other-nginx/server-status.conf dest=/etc/nginx/conf.d/server-status.conf  owner=root group=root mode=0644 backup=yes
+    - name: nginx reload
+      shell: systemctl reload nginx
+
+

@@ -1,0 +1,5 @@
+# production:
+godaddy_env="https://api.godaddy.com"
+GODADDY_KEY="你的key"
+GODADDY_TOKEN="你的token"
+

@@ -1,0 +1,10 @@
+
+- hosts: gitlab
+  become: yes
+  tasks:
+    - name: cp gitlab-backup.sh
+      copy: src=./gitlab/gitlab-backup.sh  dest=/root/   owner=root  group=root  mode=755 backup=yes
+    - name: crontab - gitlab-backup
+      cron: name=gitlab-backup backup=yes state=present minute=0 hour=2 day=*  month=* weekday=* user=root  job='/root/gitlab-backup.sh  >/tmp/gitlab-backup.sh.log 2>&1'
+
+

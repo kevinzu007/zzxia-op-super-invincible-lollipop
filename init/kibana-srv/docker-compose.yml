@@ -1,0 +1,10 @@
+version: "3"
+services:
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.8.1
+    environment:
+      ELASTICSEARCH_HOSTS: ${ES_SRV}
+    restart: always
+    ports:
+      - "5601:5601"
+

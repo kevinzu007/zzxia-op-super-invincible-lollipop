@@ -1,0 +1,20 @@
+
+# ossfs
+- hosts: pg_m,gitlab
+  become: yes
+  tasks:
+    - name: 下载 - ossfs
+      shell: rpm -qa | grep ossfs >/dev/null 2>&1 || curl -L -o ossfs_centos7.0_x86_64.rpm  http://gosspublic.alicdn.com/ossfs/ossfs_1.80.5_centos7.0_x86_64.rpm?spm=a2c4g.11186623.2.13.65077358JWBWV6&file=ossfs_1.80.5_centos7.0_x86_64.rpm
+    - name: 安装- ossfs
+      shell: rpm -qa | grep ossfs >/dev/null 2>&1 || yum localinstall -y ossfs_centos7.0_x86_64.rpm
+    - name: 新建文件 - passwd-ossfs
+      shell: "[ -e /etc/passwd-ossfs ] || (echo '#bucket_name:accesskey_id:accesskey_secret' > /etc/passwd-ossfs ; chmod 640 /etc/passwd-ossfs)"
+    - name: 拷贝 - ossfs-internal-backup.service
+      copy: src=./ossfs-internal-backup.service  dest=/usr/lib/systemd/system/  owner=root group=root mode=644 backup=yes
+    - name: 拷贝 - ossfs-backup.service
+      copy: src=./ossfs-backup.service  dest=/usr/lib/systemd/system/  owner=root group=root mode=644 backup=yes
+    - name: 新建目录 - /oss/backup
+      shell: mkdir -p /oss/backup
+
+
+

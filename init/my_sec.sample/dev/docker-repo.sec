@@ -1,0 +1,6 @@
+# Docker仓库
+export DOCKER_REPO="docker-repo:5000"
+export DOCKER_REPO_USER="ufipf"
+export DOCKER_REPO_PASSWORD="mypassword"
+export DOCKER_IMAGE_BASE="docker-repo:5000/ufipf"
+

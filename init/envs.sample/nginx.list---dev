@@ -1,0 +1,43 @@
+## nginx网站配置清单
+###
+###  2【项目名：PJ】= [ 自定义名称 ]
+###
+###  3【域名A记录：DOMAIN_A】= [ 自定义名称 ]
+###    不要加域名后缀，部署时根据运行环境自动添加
+###
+###  4【http端口：FRONT_HTTP_PORT】= [ 端口号 ]
+###    运行在http下时的端口号
+###
+###  5【https端口：FRONT_HTTPS_PORT】= [ 端口号 ]
+###    运行在https下时的端口号
+###
+###  6【方式：MODE】= [ realserver|realserver ]
+###    1 realserver      : 作为real server
+###    2 proxyserver     : 作为代理服务器，必须要有【后端协议端口】参数
+###
+###  7【后端协议端口：BACKEND_PROTOCOL_PORT】= [ 协议:端口号 ]
+###    协议 = [ http | https ]
+###
+###  8【附加项：ITEMS】= [auth_basic,autoindex,upload_size=100m,try_files]中的一个或多个，用【,】分隔
+###    1 auth_basic           : 添加验证;
+###    2 autoindex            : 目录浏览;
+###    3 upload_size=100m     : 文件上传大小;
+###    4 try_files            : try_files $uri $uri/ /index.html;
+###
+###  9【域名A记录IP：DOMAIN_IPS】= [ IP地址1,IP地址2,IP地址n ]
+###    域名A记录指向的IP地址，如果有多个，则用【,】分隔
+###
+### 10【优先级：PRIORITY】= [ 数字 ]
+###   数字越小越优先
+###
+###   ***** 以上种种，都可以自己定义，然后调整相关脚本即可 *****
+###
+#| PJ                           | DOMAIN_A            |FRONT_HTTP_PORT|FRONT_HTTPS_PORT| MODE      |BACKEND_PROTOCOL_PORT| ITEMS             |  DOMAIN_IPS     | PRIORITY   |
+#| **项目名**                   | **域名A记录**       | **http端口** | **https端口** | **方式**    | **后端协议端口** | **附加项**           | **域名A记录IP** | **优先级** |
+#| ---------------------------- | ------------------- | ------------ | ------------- | ----------- | ---------------- | -------------------- | --------------- | ---------- |
+| build-log                     | build-log           | 80           | 443           | realserver  |                  | auth_basic,autoindex | 192.168.11.77   | 5          |
+| log                           | log                 | 80           | 443           | proxyserver | http:5601        | auth_basic           | 192.168.11.77   | 5          |
+| gc-platform-node              | bmp-platform-node   | 80           | 443           | proxyserver | http:41300       |                      | 192.168.11.77   | 5          |
+| gc-client-mobile-h5-front     | app-client-h5       | 80           | 443           | realserver  |                  | try_files            | 192.168.11.77   | 5          |
+| gc-client-app-service         | app-client-public   | 80           | 443           | proxyserver | http:23100       | upload_size=50m      | 192.168.11.77   | 5          |
+

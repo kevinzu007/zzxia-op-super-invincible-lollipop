@@ -1,0 +1,11 @@
+
+- hosts: efk_f
+  become: yes
+  tasks:
+    - name: cp fluentd-srv
+      copy: src=./fluentd-srv/  dest=/srv/docker/fluentd-srv/  owner=root group=root mode=644 backup=yes
+    - name: 启动 fluentd-srv
+      shell: cd /srv/docker/fluentd-srv/ && docker-compose up -d
+
+
+

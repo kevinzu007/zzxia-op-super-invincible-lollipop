@@ -1,0 +1,20 @@
+
+
+ansible all -m yum -a "name=nmap state=present"
+ansible all -m yum -a "name=traceroute state=present"
+
+
+ansible all -m copy -a "src=./sudo_zabbix dest=/etc/sudoers.d/sudo_zabbix backup=no owner=root group=root mode=440"
+
+
+
+防火墙之类问题
+[root@v-192-168-11-80-zabbix zabbix]# zabbix_get -s 192.168.11.81 -k "agent.hostname"
+zabbix_get [5817]: Get value error: cannot connect to [[192.168.11.81]:10050]: [113] No route to host
+
+
+zabbix-agent.conf --> Server=错误
+[root@v-192-168-11-81-deploy ~]# zabbix_get -s 127.0.0.1 -k "agent.hostname"
+zabbix_get [3779]: Check access restrictions in Zabbix agent configuration
+
+

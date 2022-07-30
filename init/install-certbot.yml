@@ -1,0 +1,7 @@
+
+- hosts: deploy,nginx_letsencrypt
+  become: yes
+  tasks:
+    - name: certbot install
+      shell: "[ -x /usr/bin/certbot ] || (pip uninstall -y requests ; pip uninstall -y urllib3 ; yum remove -y python-urllib3 ; yum remove -y python-requests ; pip install --quiet chardet ; yum install -y certbot)"
+
