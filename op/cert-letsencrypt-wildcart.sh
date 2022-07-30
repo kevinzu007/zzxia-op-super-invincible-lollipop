@@ -243,9 +243,9 @@ F_GO()
     ansible nginx -m shell -a "nginx -t  \
         && systemctl reload nginx  \
         && echo -e 'Nginx证书更新成功，Nginx reload成功！\n'  \
-        && /usr/local/bin/dingding_markdown.py  '【OK:证书更新:Nginx】'  '证书更新成功，Nginx reload成功！'  \
+        && /usr/local/bin/dingding_conver_to_markdown_list.py  '【OK:证书更新:Nginx】'  '证书更新成功，Nginx reload成功！'  \
         || ( echo -e '证书更新成功，但Nginx reload 失败，请检查！\n'  \
-        ; /usr/local/bin/dingding_markdown.py  '【Err:证书更新:Nginx】'  '证书更新成功，但Nginx reload 失败，请检查！' )"
+        ; /usr/local/bin/dingding_conver_to_markdown_list.py  '【Err:证书更新:Nginx】'  '证书更新成功，但Nginx reload 失败，请检查！' )"
 }
 
 
@@ -338,14 +338,14 @@ do
             case $? in
                 0)
                     echo -e "\n泛域名证书申请成功！\n"
-                    /usr/local/bin/dingding_markdown.py  "【Info:证书申请:*.${THIS_DOMAIN}】"  "泛域名证书申请成功！"
+                    /usr/local/bin/dingding_conver_to_markdown_list.py  "【Info:证书申请:*.${THIS_DOMAIN}】"  "泛域名证书申请成功！"
                     # 拷贝到web服务器
                     #F_GO
                     exit 50
                     ;;
                 1)
                     echo -e "\n泛域名证书申请失败，请检查！\n日志：/tmp/${SH_NAME}.log \n"
-                    /usr/local/bin/dingding_markdown.py  "【Err:证书申请:*.${THIS_DOMAIN}】"  "泛域名证书申请失败，请检查！"  "日志：/tmp/${SH_NAME}.log"
+                    /usr/local/bin/dingding_conver_to_markdown_list.py  "【Err:证书申请:*.${THIS_DOMAIN}】"  "泛域名证书申请失败，请检查！"  "日志：/tmp/${SH_NAME}.log"
                     exit 54
                     ;;
                 9)
@@ -377,7 +377,7 @@ do
             case $? in
                 0)
                     echo -e "\n泛域名证书renew成功！\n"
-                    /usr/local/bin/dingding_markdown.py  "【Info:证书更新:*.${THIS_DOMAIN}】"  "泛域名证书renew成功！"
+                    /usr/local/bin/dingding_conver_to_markdown_list.py  "【Info:证书更新:*.${THIS_DOMAIN}】"  "泛域名证书renew成功！"
                     # 拷贝到web服务器
                     #F_GO
                     exit 50
@@ -388,7 +388,7 @@ do
                     ;;
                 1)
                     echo -e "\n泛域名证书更新失败，请检查！\n日志：/tmp/${SH_NAME}.log \n"
-                    /usr/local/bin/dingding_markdown.py  "【Err:证书更新:*.${THIS_DOMAIN}】"   "证书更新失败，请检查！"  "日志：/tmp/${SH_NAME}.log"
+                    /usr/local/bin/dingding_conver_to_markdown_list.py  "【Err:证书更新:*.${THIS_DOMAIN}】"   "证书更新失败，请检查！"  "日志：/tmp/${SH_NAME}.log"
                     exit 54
                     ;;
                 9)

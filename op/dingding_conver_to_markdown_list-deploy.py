@@ -7,10 +7,10 @@
 #############################################################################
 
 
-# 用法： ./dingding_markdown.py "[Title]"
-#        ./dingding_markdown.py "[Title]" "aaa"
-#        ./dingding_markdown.py "[Title]" "aaa" "bbb"
-#        ./dingding_markdown.py "[Title]" "aaa" "bbb" ... "<list>"
+# 用法： ./dingding_conver_to_markdown_list.py "[Title]"
+#        ./dingding_conver_to_markdown_list.py "[Title]" "aaa"
+#        ./dingding_conver_to_markdown_list.py "[Title]" "aaa" "bbb"
+#        ./dingding_conver_to_markdown_list.py "[Title]" "aaa" "bbb" ... "<list>"
 
 
 
@@ -38,68 +38,32 @@ api_url = ENV_DIST.get('DINGDING_API')
 
 def msg(a):
 
-    #json_text= {"msgtype": "markdown", "markdown": {"title": t1, "text": "### 天龙盖地虎\n" + "@18620021887" + "\n\n" + "- " + t2 + "\n\n" + "- " + t3}, "at": {"atMobiles":  ["18620021887"], "isAtAll": False}}
-
-    #print 'a: ', a
     # 删除数组a[0]的值，这里a[0]是脚本本身的名字：dingding_markdown-array-deploy.py
     del a[0]
-    #print 'a del: ', a
 
     json_text = '{"msgtype": "markdown", "markdown": {"title": '
     j=0
 
     for k in a:
         if j == 0 :
-            #json_text = json_text + '"' + k + '"'
             json_text = json_text + '"' + k + '"'
-            #json_text = json_text + ', "text": "### 天龙盖地虎\\n @1860021887'
-            #json_text = json_text + ', "text": "### ' + k + '\\n'
-            #json_text = json_text + ', "text": "### ' + k
             json_text = json_text + ', "text": "### ' + k + '\\n'
             j=1
             continue
         json_text = json_text + '- ' + k + '\\n'
 
+    #json_text= {'msgtype': 'markdown', 'markdown': {'title': 'aa', 'text': '### 天龙盖地虎\n @1860021887\n\n- bb\n\n- cc'}, 'at': {'atMobiles':  ['1860021887'], 'isAtAll': False}}
     #json_text = json_text + "\\n\\n---\\n\\n*发自: " + HOSTNAME + "*\\n\\n" '"}, "at": {"atMobiles": ["1860021887"], "isAtAll": True}}'
     json_text = json_text + "---\\n" + "*发自: " + HOSTNAME + "*\\n\\n" + "*时间: " + DATETIME + "*\\n\\n" '"}, "at": {"atMobiles": ["1860021887"], "isAtAll": True}}'
-
-    #json_text= {"msgtype": "markdown", "markdown": {"title": "aa", "text": "### 天龙盖地虎\n @1860021887\n\n- bb\n\n- cc"}, "at": {"atMobiles":  ["1860021887"], "isAtAll": False}}
-    #json_text= {'msgtype': 'markdown', 'markdown': {'title': 'aa', 'text': '### 天龙盖地虎\n @1860021887\n\n- bb\n\n- cc'}, 'at': {'atMobiles':  ['1860021887'], 'isAtAll': False}}
-
-
-    #print  json_text
-    #json_text = json_text.replace('\"', '\'')
 
     # http://www.pythoner.com/56.html
     #exec """print "json_text=" , json_text"""
     # https://blog.csdn.net/wangato/article/details/71104173
     json_text= eval(json_text)
-    #print json_text
 
     print requests.post(api_url,json.dumps(json_text),headers=headers).content
 
 if __name__ == '__main__':
-    #print '参数个数: ' , len(sys.argv)  ##参数个数
-    #print '参数数组: ' , sys.argv  ###参数数组
-    #print sys.argv[0] ##脚本名
-    #print sys.argv[1] ## 第一个参数
-
-#    tt1 = sys.argv[1]
-#    tt2 = sys.argv[2]
-#    tt3 = sys.argv[3]
-#    tt3 = ""
-#    #msg(tt1,tt2," ")
-#    #msg(tt1,tt2,"")
-#    #if tt3
-#    msg(tt1,tt2,tt3)
-#
-#
-#    i = 1
-#    for arg in sys.argv :
-#        text[i] = sys.argv[i]
-#        i += 1
-#    msg(text)
-
     msg(sys.argv)
 
 

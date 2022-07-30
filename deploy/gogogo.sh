@@ -63,7 +63,7 @@ fi
 BUILD_SH="${SH_PATH}/build.sh"
 DOCKER_CLUSTER_SERVICE_DEPLOY_SH="${SH_PATH}/docker-cluster-service-deploy.sh"
 FORMAT_TABLE_SH="${SH_PATH}/../op/format_table.sh"
-DINGDING_MARKDOWN_PY="${SH_PATH}/../op/dingding_markdown-deploy.py"
+DINGDING_MARKDOWN_PY="${SH_PATH}/../op/dingding_conver_to_markdown_list-deploy.py"
 
 # echo颜色定义
 export ECHO_CLOSE="\033[0m"

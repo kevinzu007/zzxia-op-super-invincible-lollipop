@@ -62,7 +62,7 @@ MY_EMAIL=${MY_EMAIL:-''}
 # sh
 DOCKER_IMAGE_SEARCH_SH="${SH_PATH}/docker-image-search.sh"
 FORMAT_TABLE_SH="${SH_PATH}/../op/format_table.sh"
-DINGDING_MARKDOWN_PY="${SH_PATH}/../op/dingding_markdown-deploy.py"
+DINGDING_MARKDOWN_PY="${SH_PATH}/../op/dingding_conver_to_markdown_list-deploy.py"
 
 # echo颜色定义
 export ECHO_CLOSE="\033[0m"

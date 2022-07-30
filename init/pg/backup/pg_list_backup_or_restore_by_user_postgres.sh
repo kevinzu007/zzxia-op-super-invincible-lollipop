@@ -39,7 +39,7 @@ SEARCH_NAME=""
 # sh
 PGSQL_CMD_BASE='/usr/local/pgsql/bin'
 PG_DB_LIST="pg_db.list"
-DINGDING_MARKDOWN_PY="/usr/local/bin/dingding_markdown.py"
+DINGDING_MARKDOWN_PY="/usr/local/bin/dingding_conver_to_markdown_list.py"
 
 
 

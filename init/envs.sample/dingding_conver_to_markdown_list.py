@@ -7,10 +7,10 @@
 #############################################################################
 
 
-# 用法： ./dingding_markdown.py "[Title]"
-#        ./dingding_markdown.py "[Title]" "aaa"
-#        ./dingding_markdown.py "[Title]" "aaa" "bbb"
-#        ./dingding_markdown.py "[Title]" "aaa" "bbb" ... "<list>"
+# 用法： ./dingding_conver_to_markdown_list.py "[Title]"
+#        ./dingding_conver_to_markdown_list.py "[Title]" "aaa"
+#        ./dingding_conver_to_markdown_list.py "[Title]" "aaa" "bbb"
+#        ./dingding_conver_to_markdown_list.py "[Title]" "aaa" "bbb" ... "<list>"
 # 请将变量【api_url】修改为你自己的
 
 

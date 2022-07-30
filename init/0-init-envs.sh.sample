@@ -4,6 +4,10 @@
 # Test On: CentOS 7
 
 
+# 此文件请根据你自己环境需要的文件进行增删
+
+
+
 TIME=`date +%Y-%m-%dT%H:%M%S`
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
@@ -27,57 +31,14 @@ F_HELP()
 
 
 
-F_RM ()
-{
-    # init目录
-    rm -rf ./envs/3rd_jar
-    rm -f  ./envs/dingding_by_markdown_file-login.py
-    rm -f  ./envs/dingding_by_markdown_file.py
-    rm -f  ./envs/dingding_markdown.py 
-    rm -f  ./envs/ossfs-internal-backup.service
-    rm -f  ./envs/ossfs-backup.service
-    #
-    rm -f  ./install-hosts.yml
-    rm -f  ./host-ip.list
-    rm -f  ./bash_aliases
-    rm -f  ./run-env.sh
-    rm -f  ./mailrc
-    # init子目录
-    rm -f  ./build-envs/java/jdk-*-linux-x64.tar.gz
-    rm -f  ./build-envs/maven/apache-maven-*-bin.tar.gz
-    rm -f  ./build-envs/node/node-v*-linux-x64.tar.xz
-    rm -f  ./backup-center/backup-center-project.list
-    rm -f  ./pg/backup/pg_db.list
-    #
-    rm -f  ./nginx-config/nginx.list
-    rm -f  ./fluentd-srv/conf/fluent.conf
-    rm -f  ./kibana-srv/.env
-    rm -f  ./elasticsearch-srv/.env
-
-    # deploy目录
-    rm -f  ../deploy/project.list
-    #
-    rm -f  ../deploy/deploy.env
-    rm -f  ../deploy/nginx.list
-    rm -f  ../deploy/docker-cluster-service.list
-    rm -f  ../deploy/docker-arg-pub.list
-    rm -f  ../deploy/container-hosts-pub.list
-    rm -f  ../deploy/java-options-pub.list
-
-    # deploy主机，即本机
-    rm -f  /etc/ansible/hosts
-}
-
-
-
 F_CP ()
 {
     set -e
     # cp到init目录
     cp -rf ./envs/3rd_jar                             ./
-    cp -f  ./envs/dingding_by_markdown_file-login.py  ./
-    cp -f  ./envs/dingding_by_markdown_file.py        ./
-    cp -f  ./envs/dingding_markdown.py                ./
+    cp -f  ./envs/dingding_send_markdown-login.py  ./
+    cp -f  ./envs/dingding_send_markdown.py        ./
+    cp -f  ./envs/dingding_conver_to_markdown_list.py                ./
     cp -f  ./envs/ossfs-backup.service                ./
     cp -f  ./envs/ossfs-internal-backup.service       ./
     #
@@ -110,6 +71,49 @@ F_CP ()
 
     # cp到deploy主机，即本机
     cp -f  ./envs/ansible-hosts---${ENV}             /etc/ansible/hosts
+}
+
+
+
+F_RM ()
+{
+    # init目录
+    rm -rf ./envs/3rd_jar
+    rm -f  ./envs/dingding_send_markdown-login.py
+    rm -f  ./envs/dingding_send_markdown.py
+    rm -f  ./envs/dingding_conver_to_markdown_list.py 
+    rm -f  ./envs/ossfs-internal-backup.service
+    rm -f  ./envs/ossfs-backup.service
+    #
+    rm -f  ./install-hosts.yml
+    rm -f  ./host-ip.list
+    rm -f  ./bash_aliases
+    rm -f  ./run-env.sh
+    rm -f  ./mailrc
+    # init子目录
+    rm -f  ./build-envs/java/jdk-*-linux-x64.tar.gz
+    rm -f  ./build-envs/maven/apache-maven-*-bin.tar.gz
+    rm -f  ./build-envs/node/node-v*-linux-x64.tar.xz
+    rm -f  ./backup-center/backup-center-project.list
+    rm -f  ./pg/backup/pg_db.list
+    #
+    rm -f  ./nginx-config/nginx.list
+    rm -f  ./fluentd-srv/conf/fluent.conf
+    rm -f  ./kibana-srv/.env
+    rm -f  ./elasticsearch-srv/.env
+
+    # deploy目录
+    rm -f  ../deploy/project.list
+    #
+    rm -f  ../deploy/deploy.env
+    rm -f  ../deploy/nginx.list
+    rm -f  ../deploy/docker-cluster-service.list
+    rm -f  ../deploy/docker-arg-pub.list
+    rm -f  ../deploy/container-hosts-pub.list
+    rm -f  ../deploy/java-options-pub.list
+
+    # deploy主机，即本机
+    rm -f  /etc/ansible/hosts
 }
 
 

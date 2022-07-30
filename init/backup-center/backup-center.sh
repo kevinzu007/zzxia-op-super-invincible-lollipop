@@ -61,7 +61,7 @@ do
     # 源目录
     if [ ! -d "${SRC_BASE_PATH}/${PROJECT_NAME}/${YEAR}" ]; then
         echo "项目路径不存在：${SRC_BASE_PATH}/${PROJECT_NAME}/${YEAR}，请检查！继续下一个。"
-        /usr/local/bin/dingding_markdown.py  "【Error:备份中心:${PROJECT_NAME}】"  "项目路径不存在：${SRC_BASE_PATH}/${PROJECT_NAME}/${YEAR}，请检查！继续下一个。"
+        /usr/local/bin/dingding_conver_to_markdown_list.py  "【Error:备份中心:${PROJECT_NAME}】"  "项目路径不存在：${SRC_BASE_PATH}/${PROJECT_NAME}/${YEAR}，请检查！继续下一个。"
         continue
     fi
     # 源文件
@@ -75,7 +75,7 @@ do
     ## 空则跳过
     if [ x${FILE_NAME} = 'x' ]; then
         echo  "没有找到${PROJECT_NAME}今日的备份文件，请检查！继续下一个。"
-        /usr/local/bin/dingding_markdown.py  "【Error:备份中心:${PROJECT_NAME}】"  "没有找到${PROJECT_NAME}今日的备份文件，请检查！继续下一个。"
+        /usr/local/bin/dingding_conver_to_markdown_list.py  "【Error:备份中心:${PROJECT_NAME}】"  "没有找到${PROJECT_NAME}今日的备份文件，请检查！继续下一个。"
         continue
     fi
     # 目标路径
@@ -87,14 +87,14 @@ do
         cp -r ${SRC_BASE_PATH}/${PROJECT_NAME}/${YEAR}/${FILE_NAME}  ${DEST_BASE_PATH}/${PROJECT_NAME}/${ARCHIVE_SUB_DIR}/
         if [ $? != 0 ]; then
             echo  "${PROJECT_NAME}备份失败，请检查！继续下一个。"
-            /usr/local/bin/dingding_markdown.py  "【Error:备份中心:${PROJECT_NAME}】"  "${PROJECT_NAME}备份失败，请检查！继续下一个。"
+            /usr/local/bin/dingding_conver_to_markdown_list.py  "【Error:备份中心:${PROJECT_NAME}】"  "${PROJECT_NAME}备份失败，请检查！继续下一个。"
             continue
         fi
     else
         cp -r ${SRC_BASE_PATH}/${PROJECT_NAME}/${YEAR}/${FILE_NAME}  ${DEST_BASE_PATH}/${PROJECT_NAME}/${YEAR}/
         if [ $? != 0 ]; then
             echo  "${PROJECT_NAME}备份失败，请检查！继续下一个。"
-            /usr/local/bin/dingding_markdown.py  "【Error:备份中心:${PROJECT_NAME}】"  "${PROJECT_NAME}备份失败，请检查！继续下一个。"
+            /usr/local/bin/dingding_conver_to_markdown_list.py  "【Error:备份中心:${PROJECT_NAME}】"  "${PROJECT_NAME}备份失败，请检查！继续下一个。"
             continue
         fi
     fi
@@ -107,13 +107,13 @@ TIME_COST=`F_TimeDiff "${TIME_START}" "${TIME_END}"`
 
 # 每周一发通知
 if [ `date +%w` = 1 ]; then
-    /usr/local/bin/dingding_markdown.py  "【Info:备份中心:SZ】"  "所有备份已完成，请检查是否全部成功！ ${TIME_COST}"
+    /usr/local/bin/dingding_conver_to_markdown_list.py  "【Info:备份中心:SZ】"  "所有备份已完成，请检查是否全部成功！ ${TIME_COST}"
 fi
 
 
 # 每月1号发通知
 if [ `date +%d` = '01' ]; then
-    /usr/local/bin/dingding_markdown.py  "【Info:备份中心:SZ】"  "月度备份归档已完成，请检查是否全部成功！ ${TIME_COST}"
+    /usr/local/bin/dingding_conver_to_markdown_list.py  "【Info:备份中心:SZ】"  "月度备份归档已完成，请检查是否全部成功！ ${TIME_COST}"
 fi
 
 
