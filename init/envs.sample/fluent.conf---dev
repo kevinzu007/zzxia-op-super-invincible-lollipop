@@ -1,0 +1,70 @@
+####
+## Output descriptions:
+##
+
+## built-in TCP input
+## @see http://docs.fluentd.org/articles/in_forward
+<source>
+  @type forward
+</source>
+
+##解析器
+<filter gc-*-service**>
+  @type record_modifier
+  <record>
+    tag ${tag_parts[0]}
+  </record>
+  remove_keys container_id,container_name,logger,message,X-B3-SpanId,X-B3-TraceId,X-Span-Export,X-B3-ParentSpanId
+</filter>
+
+
+##解析logback过来的数据
+<filter gc-*-service.logback>
+  @type parser
+  key_name msg
+  reserve_data true
+  emit_invalid_record_to_error false
+  <parse>
+    @type regexp
+    expression (\d{4}-\d{1,2}-\d{1,2} \d{1,2}:\d{1,2}:\d{1,2}.\d{1,5})\s+(?<level>[^ ]*)\s+\[([^ ,]*),(?<traceid>[^ ,]*),(?<spanid>[^ ]*)]\s+(?<pid>[^ ]*)\s+---\s+\[(?<thread>[^\]]*)\]\s+(?<classname>[^ ]*)
+  </parse>
+</filter>
+
+##解析logback过来的数据
+<filter gc-*-service.logback>
+  @type parser
+  key_name msg
+  reserve_data true
+  emit_invalid_record_to_error false
+  <parse>
+    @type regexp
+    expression (\d{4}-\d{1,2}-\d{1,2} \d{1,2}:\d{1,2}:\d{1,2}.\d{1,5})\s+(?<level>[^ ]*)\s+\[([^ ,]*),(?<traceid>[^ ,]*),(?<spanid>[^ ]*)]\s+(?<pid>[^ ]*)\s+---\s+\[(?<thread>[^\]]*)\]\s+(?<classname>[^ ]*)
+  </parse>
+</filter>
+
+##收集logback的日志发送到es
+<match gc-*-service.logback>
+  type copy
+  <store>
+    type elasticsearch
+    host 192.168.11.84
+    port 9200
+    request_timeout 30s
+    suppress_type_name true
+    reload_connections false
+    reconnect_on_error true
+    reload_on_failure false
+    id_key _hash
+    remove_keys _hash
+    index_name gc
+    type_name gc
+    flush_interval 5s
+    logstash_format true
+    logstash_prefix gc
+    include_timestamp true
+    logstash_dateformat %Y.%m.%d
+  </store>
+</match>
+
+
+

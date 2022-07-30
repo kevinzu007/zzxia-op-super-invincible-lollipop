@@ -1,0 +1,5 @@
+# sonarqube
+SONARQUBE_SERVER="HTTP://192.168.11.16:9000"
+SONARQUBE_USER="myusername"
+SONARQUBE_PASSWORD="mypassword"
+

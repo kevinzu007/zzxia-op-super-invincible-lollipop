@@ -1,0 +1,11 @@
+
+alias pgm='ssh  root@192.168.11.75'
+alias dkm='ssh  root@192.168.11.71'
+alias repo='ssh  root@192.168.11.79'
+alias ngx='ssh  root@192.168.11.77'
+alias zbx='ssh  root@192.168.11.80'
+alias g='ssh  root@192.168.11.9'
+alias rdocker='docker -H tcp://192.168.11.71:2375'
+
+
+

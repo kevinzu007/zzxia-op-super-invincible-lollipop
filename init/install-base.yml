@@ -1,0 +1,19 @@
+
+# base soft
+- hosts: all
+  become: yes
+  tasks:
+  - name: ntp install
+    yum:  name=ntp state=present disable_gpg_check=yes
+  - name: enable ntpd service
+    service:  name=ntpd.service enabled=yes
+  - name: restart ntpd service
+    service:  name=ntpd.service state=restarted
+  - name: yum update and install
+    shell: yum update -y ;  yum install -y rsync bash-completion  bzip2  unzip  python3-pip  iotop jq mailx
+  - name: install pip
+    shell: pip3 install --quiet requests
+  - name: set selinux
+    shell: getenforce | grep -i enforcing >/dev/null 2>&1 && ( sed -i --follow-symlinks 's/SELINUX=enforcing/SELINUX=disabled/g'  /etc/selinux/config ; setenforce 0 ) || echo ''
+
+

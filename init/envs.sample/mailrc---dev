@@ -1,0 +1,59 @@
+##########KEVINZU_START##########
+#
+# 参考：https://blog.csdn.net/yongren_z/article/details/85119088
+# 用户级配置：~/.mailrc
+# 系统级配置：/etc/mail.rc
+#
+# ========================================
+# 163企业邮箱特例：（需要导入163邮箱证书）
+#
+# 如果不导入证书，则必须设置：ssl-verify=ignore，并且发邮件时会出现提示："Error in certificate: Peer's certificate issuer is not recognized."
+# nss-config-dir=/etc/pki/nssdb  在centos7中，这个路径下默认有相关证书信息数据，可以发邮件，如果这个路径定义在其他地方，你必须先完成下面的步骤，否则无法发送邮件
+# 下载证书:
+# echo -n | openssl s_client -connect smtp.163.com:465 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > /tmp/smtp.163.com.crt
+# 导入证书:
+# certutil  -A  -n 'ym.163.com'  -t 'P,P,P'  -d /etc/pki/nssdb/  -i /tmp/smtp.163.com.crt
+#
+# ========================================
+#【默认账户配置】
+
+# 1 基本信息
+set from="sys@zzxia.com(SYS_GCL)"
+set smtp-auth-user=sys@zzxia.com
+set smtp-auth-password=MYpassword
+set smtp-auth=login
+
+# ------------------------------
+
+# 2 SMTP 信息（3选1）
+
+## A SMTP-25
+#set smtp=smtp.ym.163.com
+
+## B SMTP-587 starttls
+#set smtp=smtp://smtp.ym.163.com:587
+#set smtp-use-starttls=yes
+## nss-config-dir证书所在目录
+#set nss-config-dir=/etc/pki/nssdb
+#set ssl-verify=ignore
+
+## C SMTP-465
+set smtp=smtps://smtp.exmail.qq.com:465
+# nss-config-dir证书所在目录
+set nss-config-dir=/etc/pki/nssdb
+set ssl-verify=ignore
+
+# ========================================
+#
+#【非默认账户配置（指定账户名）】
+#
+#account sys_gcl {
+#    set smtp=smtp.ym.163.com
+#    
+#    set from="sys@zzxia.com(SYS_GCL)"
+#    set smtp-auth-user=sys@zzxia.com
+#    set smtp-auth-password=MYpassword
+#    set smtp-auth=login
+#}
+# ========================================
+##########KEVINZU_END##########

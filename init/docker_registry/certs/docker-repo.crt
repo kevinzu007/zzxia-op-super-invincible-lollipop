@@ -1,0 +1,78 @@
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 7 (0x7)
+    Signature Algorithm: sha256WithRSAEncryption
+        Issuer: C=KH, ST=Phnom Penh, L=Phnom Penh, O=Grand China Life Insurance PLC, CN=G.C.Life root ca/emailAddress=admin@gc-life.com
+        Validity
+            Not Before: Sep 18 12:28:11 2018 GMT
+            Not After : Sep 18 12:28:11 2019 GMT
+        Subject: C=CN, ST=GUANGDONG, O=Grand China Life Insurance PLC, OU=IT, CN=docker-repo
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (2048 bit)
+                Modulus:
+                    00:da:52:98:96:c3:cf:e5:d5:f5:56:fb:40:06:24:
+                    a2:cd:ba:ff:e8:17:47:d0:da:30:8f:f3:5d:1e:15:
+                    ed:0f:2e:8b:21:40:03:9a:cd:09:31:d3:91:11:7c:
+                    f2:42:2b:dd:f4:10:85:13:c0:81:f0:40:6d:71:29:
+                    16:52:87:60:f5:5c:62:f5:af:60:c8:b0:54:6c:58:
+                    2e:89:53:f2:03:b6:60:ea:3d:46:d6:de:bb:a1:07:
+                    8a:4a:3b:e9:2b:9d:66:cc:e3:ee:df:ef:f4:a8:6e:
+                    41:b3:57:4d:08:39:e8:1d:d5:f5:2c:a5:98:48:c0:
+                    57:4a:28:1e:9a:a4:04:4d:62:cc:4d:0c:1f:8f:3f:
+                    f2:d8:46:31:53:52:fd:7c:68:8b:0d:a2:91:8a:2e:
+                    5e:69:f7:a3:4a:d2:0e:cf:c0:77:34:60:7b:80:08:
+                    0e:e2:a0:33:55:4f:4e:de:5f:5e:c2:34:a9:09:92:
+                    c0:72:a0:e8:68:8d:2e:3c:12:df:30:5f:42:78:6c:
+                    7b:32:0a:9c:9e:29:87:f3:da:98:77:3e:58:3a:93:
+                    8b:9b:5b:e7:ba:a1:ac:a7:40:00:93:99:cf:ca:53:
+                    db:43:c0:9a:e2:c8:a9:c0:f5:15:ba:43:ec:ec:fa:
+                    f8:95:70:58:c6:3d:87:27:9e:90:5b:2f:38:55:95:
+                    90:e3
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Basic Constraints: 
+                CA:FALSE
+            X509v3 Key Usage: 
+                Digital Signature, Non Repudiation, Key Encipherment
+            X509v3 Subject Alternative Name: 
+                DNS:docker-repo
+    Signature Algorithm: sha256WithRSAEncryption
+         26:49:7e:fd:cd:68:48:eb:9b:c6:32:2d:26:d1:6e:a3:61:6f:
+         1e:72:ec:ad:28:e3:08:23:95:b1:48:79:30:e3:ea:18:61:07:
+         f5:d4:e8:fd:7a:6c:2e:73:63:ef:24:a3:88:c4:92:3a:45:23:
+         8f:bd:a7:fa:0c:8e:03:88:40:62:e2:2a:cd:9d:66:56:7a:8c:
+         c0:53:81:1a:85:02:01:38:b5:d3:83:5c:5c:0c:2c:6e:6f:f6:
+         84:50:57:e6:b9:21:9c:81:aa:cb:4c:83:98:87:ee:a2:d7:ff:
+         d3:eb:db:7e:60:63:94:1f:0d:b6:0c:b2:ff:b1:0f:ea:64:f6:
+         7f:7c:40:93:c0:11:04:24:29:f6:7d:0d:b8:17:51:c8:7f:99:
+         52:76:4a:c7:84:f6:77:1a:e2:89:9f:47:d7:98:bd:d6:21:7d:
+         2d:f1:6f:28:1e:12:52:6e:8f:45:0e:78:4f:f1:5d:29:8a:e6:
+         20:16:f2:fa:17:c8:2e:50:da:8d:5a:2f:27:85:13:5c:9f:f8:
+         74:17:9c:31:b7:82:a6:b4:e8:97:56:c4:35:ec:68:45:7a:0a:
+         37:64:b9:ca:f3:1d:8d:cc:a9:be:61:c0:ab:df:09:69:21:37:
+         2d:62:57:f7:c1:60:62:92:b5:70:90:b9:a6:bb:5f:50:66:a0:
+         80:23:22:73
+-----BEGIN CERTIFICATE-----
+MIIDuDCCAqCgAwIBAgIBBzANBgkqhkiG9w0BAQsFADCBnTELMAkGA1UEBhMCS0gx
+EzARBgNVBAgMClBobm9tIFBlbmgxEzARBgNVBAcMClBobm9tIFBlbmgxJzAlBgNV
+BAoMHkdyYW5kIENoaW5hIExpZmUgSW5zdXJhbmNlIFBMQzEZMBcGA1UEAwwQRy5D
+LkxpZmUgcm9vdCBjYTEgMB4GCSqGSIb3DQEJARYRYWRtaW5AZ2MtbGlmZS5jb20w
+HhcNMTgwOTE4MTIyODExWhcNMTkwOTE4MTIyODExWjBtMQswCQYDVQQGEwJDTjES
+MBAGA1UECAwJR1VBTkdET05HMScwJQYDVQQKDB5HcmFuZCBDaGluYSBMaWZlIElu
+c3VyYW5jZSBQTEMxCzAJBgNVBAsMAklUMRQwEgYDVQQDDAtkb2NrZXItcmVwbzCC
+ASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBANpSmJbDz+XV9Vb7QAYkos26
+/+gXR9DaMI/zXR4V7Q8uiyFAA5rNCTHTkRF88kIr3fQQhRPAgfBAbXEpFlKHYPVc
+YvWvYMiwVGxYLolT8gO2YOo9Rtbeu6EHiko76SudZszj7t/v9KhuQbNXTQg56B3V
+9SylmEjAV0ooHpqkBE1izE0MH48/8thGMVNS/Xxoiw2ikYouXmn3o0rSDs/AdzRg
+e4AIDuKgM1VPTt5fXsI0qQmSwHKg6GiNLjwS3zBfQnhsezIKnJ4ph/PamHc+WDqT
+i5tb57qhrKdAAJOZz8pT20PAmuLIqcD1FbpD7Oz6+JVwWMY9hyeekFsvOFWVkOMC
+AwEAAaMyMDAwCQYDVR0TBAIwADALBgNVHQ8EBAMCBeAwFgYDVR0RBA8wDYILZG9j
+a2VyLXJlcG8wDQYJKoZIhvcNAQELBQADggEBACZJfv3NaEjrm8YyLSbRbqNhbx5y
+7K0o4wgjlbFIeTDj6hhhB/XU6P16bC5zY+8ko4jEkjpFI4+9p/oMjgOIQGLiKs2d
+ZlZ6jMBTgRqFAgE4tdODXFwMLG5v9oRQV+a5IZyBqstMg5iH7qLX/9Pr235gY5Qf
+DbYMsv+xD+pk9n98QJPAEQQkKfZ9DbgXUch/mVJ2SseE9nca4omfR9eYvdYhfS3x
+bygeElJuj0UOeE/xXSmK5iAW8voXyC5Q2o1aLyeFE1yf+HQXnDG3gqa06JdWxDXs
+aEV6CjdkucrzHY3Mqb5hwKvfCWkhNy1iV/fBYGKStXCQuaa7X1BmoIAjInM=
+-----END CERTIFICATE-----

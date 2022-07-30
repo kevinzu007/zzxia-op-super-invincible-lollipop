@@ -1,0 +1,11 @@
+
+- hosts: efk_k
+  become: yes
+  tasks:
+    - name: cp kibana-srv
+      copy: src=./kibana-srv/  dest=/srv/docker/kibana-srv/  owner=root group=root mode=644 backup=yes
+    - name: 启动 kibana-srv
+      shell: cd /srv/docker/kibana-srv/ && docker-compose up -d
+
+
+

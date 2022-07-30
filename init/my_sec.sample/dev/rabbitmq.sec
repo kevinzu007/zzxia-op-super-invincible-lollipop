@@ -1,0 +1,2 @@
+RABBITMQ_USER="jack"
+RABBITMQ_PASSWORD="mypassword"

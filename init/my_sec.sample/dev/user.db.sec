@@ -1,0 +1,2 @@
+#export USER_DB=~/.my_sec/user.db          #--- 有【~】，则不能用【""】
+export USER_DB="${HOME}/.my_sec/user.db"

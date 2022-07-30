@@ -1,0 +1,40 @@
+version: 0.1
+log:
+  accesslog:
+    disabled: false
+  level: info
+  formatter: text
+  fields:
+    service: registry
+storage:
+  delete:
+    enabled: true
+  cache:
+    blobdescriptor: inmemory
+  filesystem:
+    rootdirectory: /var/lib/registry
+#  oss:
+#    accesskeyid: accesskeyid
+#    accesskeysecret: accesskeysecret
+#    region: OSS region name
+#    endpoint: optional endpoints
+#    internal: optional internal endpoint
+#    bucket: OSS bucket
+#    encrypt: optional data encryption setting
+#    secure: optional ssl setting
+#    chunksize: optional size valye
+#    rootdirectory: optional root directory
+
+http:
+  addr: :5000
+  secret: wjoojsf0ap0w3fjoesur8w3jljsoe
+  headers:
+    X-Content-Type-Options: [nosniff]
+health:
+  storagedriver:
+    enabled: true
+    interval: 10s
+    threshold: 3
+
+
+

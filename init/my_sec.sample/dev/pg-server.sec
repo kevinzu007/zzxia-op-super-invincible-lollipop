@@ -1,0 +1,6 @@
+# 打包用pg用户及密码
+export DB_SERVER_ADDR="192.168.11.75"
+export DB_SERVER_PORT="5432"
+export DB_USER_FOR_BUILD="myusername"
+export DB_PASSWORD_FOR_BUILD="mypassword"
+
