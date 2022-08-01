@@ -1945,14 +1945,17 @@ do
                     DOCKER_FULL_CMD="kubectl set image deployments ${SERVICE_NAME} c-${SERVICE_NAME}=${DOCKER_IMAGE_FULL_URL}"
                     ;;
                 compose)
-                    SED_IMAGE='sed -i "s/^    image:.*$/    image: ${DOCKER_IMAGE_FULL_URL}/"  docker-compose.yaml'
+                    SED_IMAGE='sed -i "s%^    image:.*$%    image: ${DOCKER_IMAGE_FULL_URL}%"  docker-compose.yaml'
+                    echo ${SED_IMAGE}  > ${LOG_HOME}/${SERVICE_NAME}-update.sh
                     DOCKER_FULL_CMD="echo  \
+                        ; scp -P ${COMPOSE_SSH_PORT}  ${LOG_HOME}/${SERVICE_NAME}-update.sh  ${COMPOSE_SSH_HOST_OR_WITH_USER}:${DOCKER_COMPOSE_SERVICE_HOME}/  \
                         ; ssh -p ${COMPOSE_SSH_PORT} ${COMPOSE_SSH_HOST_OR_WITH_USER}  \
                             \"cd ${DOCKER_COMPOSE_SERVICE_HOME}  \
-                            &&  ${SED_IMAGE}  \
+                            &&  sh ./${SERVICE_NAME}-update.sh  \
                             &&  docker-compose pull  \
                             &&  docker-compose down  \
-                            &&  docker-compose up -d\"
+                            &&  docker-compose up -d  \
+                            \"
                         "
                     ;;
                 *)
@@ -2009,13 +2012,16 @@ do
                     ;;
                 compose)
                     SED_IMAGE='sed -i "s/^    image:.*$/    image: ${DOCKER_IMAGE_FULL_URL}/"  docker-compose.yaml'
+                    echo ${SED_IMAGE}  > ${LOG_HOME}/${SERVICE_NAME}-update.sh
                     DOCKER_FULL_CMD="echo  \
+                        ; scp -P ${COMPOSE_SSH_PORT}  ${LOG_HOME}/${SERVICE_NAME}-update.sh  ${COMPOSE_SSH_HOST_OR_WITH_USER}:${DOCKER_COMPOSE_SERVICE_HOME}/  \
                         ; ssh -p ${COMPOSE_SSH_PORT} ${COMPOSE_SSH_HOST_OR_WITH_USER}  \
                             \"cd ${DOCKER_COMPOSE_SERVICE_HOME}  \
-                            &&  ${SED_IMAGE}  \
+                            &&  sh ./${SERVICE_NAME}-update.sh  \
                             &&  docker-compose pull  \
                             &&  docker-compose down  \
-                            &&  docker-compose up -d\"
+                            &&  docker-compose up -d  \
+                            \"
                         "
                     ;;
                 *)
