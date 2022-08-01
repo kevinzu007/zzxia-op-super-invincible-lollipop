@@ -28,7 +28,7 @@ ERROR_CODE=''     #--- 程序最终返回值，一般用于【--mode=function】
 #
 TODAY=$(date -d "${TIME}" +%Y%m%d)
 WEB_PROJECT_LIST_FILE="${SH_PATH}/nginx.list"
-WEB_PROJECT_LIST_FILE_TMP="${LOG_HOME}/${SH_NAME}-${WEB_PROJECT_LIST_FILE}.tmp"
+WEB_PROJECT_LIST_FILE_TMP="${LOG_HOME}/${SH_NAME}-nginx.list.tmp"
 #
 WEB_RELEASE_NGINX_OK_LIST_FILE="${LOG_HOME}/${SH_NAME}-web_release_nginx-OK.list"
 WEB_RELEASE_OK_LIST_FILE="${LOG_HOME}/${SH_NAME}-web_release-OK.list"
