@@ -1945,7 +1945,7 @@ do
                     DOCKER_FULL_CMD="kubectl set image deployments ${SERVICE_NAME} c-${SERVICE_NAME}=${DOCKER_IMAGE_FULL_URL}"
                     ;;
                 compose)
-                    SED_IMAGE='sed -i "s/^    image:.*$/    image: ${DOCKER_IMAGE_FULL_URL}"  docker-compose.yaml'
+                    SED_IMAGE='sed -i "s/^    image:.*$/    image: ${DOCKER_IMAGE_FULL_URL}/"  docker-compose.yaml'
                     DOCKER_FULL_CMD="echo  \
                         ; ssh -p ${COMPOSE_SSH_PORT} ${COMPOSE_SSH_HOST_OR_WITH_USER}  \
                             \"cd ${DOCKER_COMPOSE_SERVICE_HOME}  \
@@ -2008,7 +2008,7 @@ do
                     DOCKER_FULL_CMD="kubectl set image deployments ${SERVICE_NAME} c-${SERVICE_NAME}=${DOCKER_IMAGE_FULL_URL}"
                     ;;
                 compose)
-                    SED_IMAGE='sed -i "s/^    image:.*$/    image: ${DOCKER_IMAGE_FULL_URL}"  docker-compose.yaml'
+                    SED_IMAGE='sed -i "s/^    image:.*$/    image: ${DOCKER_IMAGE_FULL_URL}/"  docker-compose.yaml'
                     DOCKER_FULL_CMD="echo  \
                         ; ssh -p ${COMPOSE_SSH_PORT} ${COMPOSE_SSH_HOST_OR_WITH_USER}  \
                             \"cd ${DOCKER_COMPOSE_SERVICE_HOME}  \
