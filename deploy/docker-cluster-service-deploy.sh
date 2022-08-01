@@ -1221,7 +1221,7 @@ do
             echo
             ;;
         k8s)
-            YAML_HOME="${YAML_BASE}/${GRAY_SERVICE_X_NAME}"
+            YAML_HOME="${YAML_BASE}/${SERVICE_NAME}"
             [ -d "${YAML_HOME}" ] || mkdir -p "${YAML_HOME}"
             ;;
         compose)
@@ -1234,6 +1234,19 @@ do
             ;;
     esac
     #
+    # 忽略灰度标志
+    if [[ ${SERVICE_OPERATION} != 'create' ]] && [[ ${GRAY_ENABLE} == 'YES' ]] && [[ ${GRAY_TAG} == 'gray' ]]; then
+        echo "在【${SERVICE_OPERATION}】操作时，【-G|--gray】参数将会被忽略"
+    fi
+    # 服务名
+    if [[ ${SERVICE_OPERATION} == 'create' ]] && [[ ${GRAY_ENABLE} == 'YES' ]] && [[ ${GRAY_TAG} == 'gray' ]] && [[ ${CLUSTER} != 'compose' ]]; then
+        GRAY_SERVICE_X_NAME="${SERVICE_NAME}--${GRAY_VERSION}"
+    else
+        # 服务名
+        GRAY_SERVICE_X_NAME="${SERVICE_NAME}"
+    fi
+    #
+    #
     let NUM=${NUM}+1
     echo ''
     echo -e "${ECHO_NORMAL}# ----------------------------------------------------------${ECHO_CLOSE}"
@@ -1243,17 +1256,6 @@ do
     # operation
     case "${SERVICE_OPERATION}" in
         create|modify)
-            # 忽略灰度标志
-            if [[ ${SERVICE_OPERATION} =~ modify ]] && [[ ${GRAY_ENABLE} == 'YES' ]] && [[ ${GRAY_TAG} == 'gray' ]]; then
-                echo "在【${SERVICE_OPERATION}】操作时，【-G|--gray】参数将会被忽略"
-            fi
-            # 服务名
-            if [[ ${SERVICE_OPERATION} == 'create' ]] && [[ ${GRAY_ENABLE} == 'YES' ]] && [[ ${GRAY_TAG} == 'gray' ]] && [[ ${CLUSTER} != 'compose' ]]; then
-                GRAY_SERVICE_X_NAME="${SERVICE_NAME}--${GRAY_VERSION}"
-            else
-                # 服务名
-                GRAY_SERVICE_X_NAME="${SERVICE_NAME}"
-            fi
             #
             DOCKER_SERVICE_RM="echo"
             # 是否运行中
@@ -1878,10 +1880,6 @@ do
             esac
             ;;
         update)
-            # 忽略灰度标志
-            if [[ ${SERVICE_OPERATION} =~ update ]] && [[ ${GRAY_TAG} == 'gray' ]]; then
-                echo "在【${SERVICE_OPERATION}】操作时，【-G|--gray】参数将会被忽略"
-            fi
             #
             F_ONLINE_SERVICE_SEARCH ${SERVICE_NAME}  ${CLUSTER}  > /dev/null
             if [ $? -ne 0 ]; then
