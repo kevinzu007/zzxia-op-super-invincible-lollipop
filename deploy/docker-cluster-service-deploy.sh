@@ -301,23 +301,69 @@ F_ONLINE_SERVICE_SEARCH()
 
 
 # 搜索镜像精确版本
+# 返回是否找到
 # F_SEARCH_IMAGE_TAG  [服务名]  [镜像版本]
 F_SEARCH_IMAGE_TAG()
 {
     F_SERVICE_NAME=$1
     F_THIS_TAG=$2
-    ${DOCKER_IMAGE_SEARCH_SH}  --tag ${F_THIS_TAG}  --output ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_TAG-result.txt  ${F_SERVICE_NAME}
-    search_r=`cat ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_TAG-result.txt | awk '{print $3}' | sed -n "/^${F_THIS_TAG}\$/p"`
-    F_GET_IT=""
-    for i in "$search_r"
-    do
-        if [ "$i" = "${F_THIS_TAG}" ]; then
-            F_GET_IT="YES"
-            break
-        fi
-    done
-    # 找到否
-    if [ "${F_GET_IT}" = "YES" ]; then
+    #${DOCKER_IMAGE_SEARCH_SH}  --tag ${F_THIS_TAG}  --output ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_TAG-result.txt  ${F_SERVICE_NAME}
+    #search_r=`cat ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_TAG-result.txt | awk '{print $3}' | sed -n "/^${F_THIS_TAG}\$/p"`
+    #F_GET_IT=""
+    ## 这个其实不可能有多行
+    #for i in "$search_r"
+    #do
+    #    if [ "$i" = "${F_THIS_TAG}" ]; then
+    #        F_GET_IT="YES"
+    #        break
+    #    fi
+    #done
+    ## 找到否
+    #if [ "${F_GET_IT}" = "YES" ]; then
+    #    return 0
+    #else
+    #    return 3
+    #fi
+    search_r=$(${DOCKER_IMAGE_SEARCH_SH}  --tag ${F_THIS_TAG}  ${F_SERVICE_NAME}  2>/dev/null)
+    if [[ ${search_r} == ${F_THIS_TAG} ]]; then
+        return 0
+    else
+        return 3
+    fi
+}
+
+
+
+# 搜索镜像模糊版本最新的一个
+# 返回是否找到，并输出镜像版本号
+# F_SEARCH_IMAGE_LIKE_TAG  [服务名]  [%镜像版本%]
+F_SEARCH_IMAGE_LIKE_TAG()
+{
+    F_SERVICE_NAME=$1
+    F_THIS_TAG=$2
+    search_like_r=$(${DOCKER_IMAGE_SEARCH_SH} --tag ${LIKE_THIS_TAG}  --newest 1  ${SERVICE_NAME}  2>/dev/null)
+    # 
+    if [[ ! -z ${search_like_r} ]]; then
+        echo ${search_like_r}
+        return 0
+    else
+        return 3
+    fi
+}
+
+
+
+# 搜索镜像排除模糊版本后最新的一个
+# 返回是否找到，并输出镜像版本号
+# F_SEARCH_IMAGE_NOT_LIKE_TAG  [服务名]  [%镜像版本%]
+F_SEARCH_IMAGE_NOT_LIKE_TAG()
+{
+    F_SERVICE_NAME=$1
+    F_THIS_TAG=$2
+    search_not_like_r=$(${DOCKER_IMAGE_SEARCH_SH}  --exclude ${LIKE_THIS_TAG}  --newest 1  ${SERVICE_NAME}  2>/dev/null)
+    # 
+    if [[ ! -z ${search_not_like_r} ]]; then
+        echo ${search_not_like_r}
         return 0
     else
         return 3
@@ -1903,29 +1949,25 @@ do
                 #
             elif [ ! -z "${LIKE_THIS_TAG}" ]; then
                 # 更新指定LIKE匹配镜像
-                ${DOCKER_IMAGE_SEARCH_SH} --tag ${LIKE_THIS_TAG}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-image-search.${SERVICE_OPERATION}  ${SERVICE_NAME}
-                search_r=`cat ${LOG_HOME}/${SH_NAME}-image-search.${SERVICE_OPERATION} | awk '{print $3}'`
-                if [ "x${search_r}" = "x" ]; then
+                DOCKER_IMAGE_VER_UPDATE=$(F_SEARCH_IMAGE_LIKE_TAG  ${SERVICE_NAME}  ${LIKE_THIS_TAG})
+                #
+                if [[ -z ${DOCKER_IMAGE_VER_UPDATE} ]]; then
                     echo "失败，镜像版本【%${LIKE_THIS_TAG}%】未找到"
                     echo "${SERVICE_NAME} : 失败，镜像版本【%${LIKE_THIS_TAG}%】未找到" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                     ERROR_CODE=54
                     continue
                 fi
                 #
-                DOCKER_IMAGE_VER_UPDATE=`cat ${LOG_HOME}/${SH_NAME}-image-search.${SERVICE_OPERATION} | cut -d ' ' -f 3`
-                #
             else
                 # 更新今日发布的服务镜像
                 TODAY=`date +%Y.%m.%d`
-                ${DOCKER_IMAGE_SEARCH_SH} --tag ${TODAY}  --output ${LOG_HOME}/${SH_NAME}-image-search.today ${SERVICE_NAME}
-                if [ `cat ${LOG_HOME}/${SH_NAME}-image-search.today | wc -l ` -eq 0 ]; then
+                DOCKER_IMAGE_VER_UPDATE=$(F_SEARCH_IMAGE_LIKE_TAG  ${SERVICE_NAME}  ${TODAY})
+                if [[ -z ${DOCKER_IMAGE_VER_UPDATE} ]]; then
                     echo "跳过，今日无更新"
                     echo "${SERVICE_NAME} : 跳过，今日无更新" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                     ERROR_CODE=55
                     continue
                 fi
-                # 有更新
-                DOCKER_IMAGE_VER_UPDATE=`cat ${LOG_HOME}/${SH_NAME}-image-search.today | cut -d ' ' -f 3`
                 #
             fi
             #
@@ -1949,10 +1991,10 @@ do
                         ; scp -P ${COMPOSE_SSH_PORT}  ${LOG_HOME}/${SERVICE_NAME}-update.sh  ${COMPOSE_SSH_HOST_OR_WITH_USER}:${DOCKER_COMPOSE_SERVICE_HOME}/  \
                         ; ssh -p ${COMPOSE_SSH_PORT} ${COMPOSE_SSH_HOST_OR_WITH_USER}  \
                             \"cd ${DOCKER_COMPOSE_SERVICE_HOME}  \
-                            &&  sh ./${SERVICE_NAME}-update.sh  \
-                            &&  docker-compose pull  \
-                            &&  docker-compose down  \
-                            &&  docker-compose up -d  \
+                              &&  sh ./${SERVICE_NAME}-update.sh  \
+                              &&  docker-compose pull  \
+                              &&  docker-compose down  \
+                              &&  docker-compose up -d  \
                             \"
                         "
                     ;;
@@ -1963,10 +2005,6 @@ do
             esac
             ;;
         rollback)
-            # 忽略灰度标志
-            if [[ ${SERVICE_OPERATION} =~ rollback ]] && [[ ${GRAY_TAG} == 'gray' ]]; then
-                echo "在【${SERVICE_OPERATION}】操作时，【-G|--gray】参数将会被忽略"
-            fi
             #
             # 仅回滚今天有更新的服务镜像
             F_ONLINE_SERVICE_SEARCH ${SERVICE_NAME}  ${CLUSTER}  > /dev/null
@@ -1978,24 +2016,23 @@ do
             fi
             #
             TODAY=`date +%Y.%m.%d`
-            ${DOCKER_IMAGE_SEARCH_SH}  --tag ${TODAY}  --output ${LOG_HOME}/${SH_NAME}-image-search.today ${SERVICE_NAME}
-            if [ `cat ${LOG_HOME}/${SH_NAME}-image-search.today | wc -l ` -eq 0 ]; then
+            DOCKER_IMAGE_VER_TODAY=$(F_SEARCH_IMAGE_LIKE_TAG  ${SERVICE_NAME}  ${TODAY})
+            if [[ -z ${DOCKER_IMAGE_VER_TODAY} ]]; then
                 echo "跳过，今日无更新"
                 echo "${SERVICE_NAME} : 跳过，今日无更新" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                 ERROR_CODE=55
                 continue
             else
-                ${DOCKER_IMAGE_SEARCH_SH}  --exclude ${TODAY}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-image-search.${SERVICE_OPERATION} ${SERVICE_NAME}
-                if [ `cat ${LOG_HOME}/${SH_NAME}-image-search.${SERVICE_OPERATION} | wc -l` -eq 0 ]; then
+                DOCKER_IMAGE_VER_ROLLBACK=$(F_SEARCH_IMAGE_NOT_LIKE_TAG  ${SERVICE_NAME}  ${TODAY})
+                if [[ -z ${DOCKER_IMAGE_VER_ROLLBACK} ]]; then
                     echo "跳过，无历史镜像"
                     echo "${SERVICE_NAME} : 跳过，无历史镜像" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                     ERROR_CODE=55
                     continue
-                else
-                    DOCKER_IMAGE_VER_ROLLBACK=`cat ${LOG_HOME}/${SH_NAME}-image-search.${SERVICE_OPERATION} | cut -d ' ' -f 3`
-                    DOCKER_IMAGE_FULL_URL="${DOCKER_REPO}/${DOCKER_REPO_USER}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER_ROLLBACK}"
                 fi
             fi
+            #
+            DOCKER_IMAGE_FULL_URL="${DOCKER_REPO}/${DOCKER_REPO_USER}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER_ROLLBACK}"
             #
             case ${CLUSTER} in
                 swarm)
@@ -2004,21 +2041,22 @@ do
                         --restart-max-attempts 5  \
                         --image ${DOCKER_IMAGE_FULL_URL}  \
                         ${SERVICE_NAME}"
+                    # 待办：这里是不是有多余参数，他可以从公共参数引入
                     ;;
                 k8s)
                     DOCKER_FULL_CMD="kubectl set image deployments ${SERVICE_NAME} c-${SERVICE_NAME}=${DOCKER_IMAGE_FULL_URL}"
                     ;;
                 compose)
-                    SED_IMAGE='sed -i "s/^    image:.*$/    image: ${DOCKER_IMAGE_FULL_URL}/"  docker-compose.yaml'
+                    SED_IMAGE='sed -i "s%^    image:.*$%    image: ${DOCKER_IMAGE_FULL_URL}%"  docker-compose.yaml'
                     echo ${SED_IMAGE}  > ${LOG_HOME}/${SERVICE_NAME}-update.sh
                     DOCKER_FULL_CMD="echo  \
                         ; scp -P ${COMPOSE_SSH_PORT}  ${LOG_HOME}/${SERVICE_NAME}-update.sh  ${COMPOSE_SSH_HOST_OR_WITH_USER}:${DOCKER_COMPOSE_SERVICE_HOME}/  \
                         ; ssh -p ${COMPOSE_SSH_PORT} ${COMPOSE_SSH_HOST_OR_WITH_USER}  \
                             \"cd ${DOCKER_COMPOSE_SERVICE_HOME}  \
-                            &&  sh ./${SERVICE_NAME}-update.sh  \
-                            &&  docker-compose pull  \
-                            &&  docker-compose down  \
-                            &&  docker-compose up -d  \
+                              &&  sh ./${SERVICE_NAME}-update.sh  \
+                              &&  docker-compose pull  \
+                              &&  docker-compose down  \
+                              &&  docker-compose up -d  \
                             \"
                         "
                     ;;
