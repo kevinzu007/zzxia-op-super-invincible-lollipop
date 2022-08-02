@@ -307,25 +307,19 @@ F_SEARCH_IMAGE_TAG()
 {
     F_SERVICE_NAME=$1
     F_THIS_TAG=$2
-    #${DOCKER_IMAGE_SEARCH_SH}  --tag ${F_THIS_TAG}  --output ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_TAG-result.txt  ${F_SERVICE_NAME}
-    #search_r=`cat ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_TAG-result.txt | awk '{print $3}' | sed -n "/^${F_THIS_TAG}\$/p"`
-    #F_GET_IT=""
-    ## 这个其实不可能有多行
-    #for i in "$search_r"
-    #do
-    #    if [ "$i" = "${F_THIS_TAG}" ]; then
-    #        F_GET_IT="YES"
-    #        break
-    #    fi
-    #done
-    ## 找到否
-    #if [ "${F_GET_IT}" = "YES" ]; then
-    #    return 0
-    #else
-    #    return 3
-    #fi
-    search_r=$(${DOCKER_IMAGE_SEARCH_SH}  --tag ${F_THIS_TAG}  ${F_SERVICE_NAME}  2>/dev/null)
-    if [[ ${search_r} == ${F_THIS_TAG} ]]; then
+    ${DOCKER_IMAGE_SEARCH_SH}  --tag ${F_THIS_TAG}  --output ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_TAG-result.txt  ${F_SERVICE_NAME}
+    search_r=$(cat ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_TAG-result.txt | cut -d " " -f 3-)
+    F_GET_IT=""
+    # 这个其实不可能有多行
+    for i in "${search_r}"
+    do
+        if [ "$i" = "${F_THIS_TAG}" ]; then
+            F_GET_IT="YES"
+            break
+        fi
+    done
+    # 找到否
+    if [ "${F_GET_IT}" = "YES" ]; then
         return 0
     else
         return 3
@@ -340,9 +334,10 @@ F_SEARCH_IMAGE_TAG()
 F_SEARCH_IMAGE_LIKE_TAG()
 {
     F_SERVICE_NAME=$1
-    F_THIS_TAG=$2
-    search_like_r=$(${DOCKER_IMAGE_SEARCH_SH} --tag ${LIKE_THIS_TAG}  --newest 1  ${SERVICE_NAME}  2>/dev/null)
-    # 
+    F_LIKE_THIS_TAG=$2
+    ${DOCKER_IMAGE_SEARCH_SH}  --tag ${F_LIKE_THIS_TAG}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_LIKE_TAG-result.txt  ${F_SERVICE_NAME}  2>/dev/null
+    search_like_r=$(cat ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_LIKE_TAG-result.txt | cut -d " " -f 3)
+    #
     if [[ ! -z ${search_like_r} ]]; then
         echo ${search_like_r}
         return 0
@@ -359,8 +354,9 @@ F_SEARCH_IMAGE_LIKE_TAG()
 F_SEARCH_IMAGE_NOT_LIKE_TAG()
 {
     F_SERVICE_NAME=$1
-    F_THIS_TAG=$2
-    search_not_like_r=$(${DOCKER_IMAGE_SEARCH_SH}  --exclude ${LIKE_THIS_TAG}  --newest 1  ${SERVICE_NAME}  2>/dev/null)
+    F_NOT_LIKE_THIS_TAG=$2
+    ${DOCKER_IMAGE_SEARCH_SH}  --exclude ${F_NOT_LIKE_THIS_TAG}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_NOT_LIKE_TAG-result.txt  ${F_SERVICE_NAME}  2>/dev/null
+    search_not_like_r=$(cat ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_NOT_LIKE_TAG-result.txt | cut -d " " -f 3)
     # 
     if [[ ! -z ${search_not_like_r} ]]; then
         echo ${search_not_like_r}
@@ -1258,6 +1254,21 @@ do
         exit 52
     fi
 
+    
+    # 基本
+    # 忽略灰度标志
+    if [[ ${SERVICE_OPERATION} != 'create' ]] && [[ ${GRAY_ENABLE} == 'YES' ]] && [[ ${GRAY_TAG} == 'gray' ]]; then
+        echo "在【${SERVICE_OPERATION}】操作时，【-G|--gray】参数将会被忽略"
+    fi
+    #
+    # 服务名
+    if [[ ${SERVICE_OPERATION} == 'create' ]] && [[ ${GRAY_ENABLE} == 'YES' ]] && [[ ${GRAY_TAG} == 'gray' ]] && [[ ${CLUSTER} != 'compose' ]]; then
+        GRAY_SERVICE_X_NAME="${SERVICE_NAME}--${GRAY_VERSION}"
+    else
+        # 服务名
+        GRAY_SERVICE_X_NAME="${SERVICE_NAME}"
+    fi
+
 
     # RUN
     DOCKER_FULL_CMD=""
@@ -1279,18 +1290,6 @@ do
             exit 52
             ;;
     esac
-    #
-    # 忽略灰度标志
-    if [[ ${SERVICE_OPERATION} != 'create' ]] && [[ ${GRAY_ENABLE} == 'YES' ]] && [[ ${GRAY_TAG} == 'gray' ]]; then
-        echo "在【${SERVICE_OPERATION}】操作时，【-G|--gray】参数将会被忽略"
-    fi
-    # 服务名
-    if [[ ${SERVICE_OPERATION} == 'create' ]] && [[ ${GRAY_ENABLE} == 'YES' ]] && [[ ${GRAY_TAG} == 'gray' ]] && [[ ${CLUSTER} != 'compose' ]]; then
-        GRAY_SERVICE_X_NAME="${SERVICE_NAME}--${GRAY_VERSION}"
-    else
-        # 服务名
-        GRAY_SERVICE_X_NAME="${SERVICE_NAME}"
-    fi
     #
     #
     let NUM=${NUM}+1
