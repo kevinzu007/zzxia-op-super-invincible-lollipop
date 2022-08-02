@@ -999,11 +999,14 @@ fi
 
 
 
-# 创建服务及在线服务清单
-# 生成两个清单文件
+# 创建服务清单、在线服务清单、离线服务清单
+# 即：${SERVICE_LIST_FILE_TMP}
+#     ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
+#     ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}---offline
 #
 > ${SERVICE_LIST_FILE_TMP}
 > ${SERVICE_ONLINE_LIST_FILE_TMP}
+#
 case ${SERVICE_OPERATION} in
     create|modify|update|rollback)
         # 结果仅用于非灰度服务名
@@ -1057,6 +1060,10 @@ case ${SERVICE_OPERATION} in
                 DEPLOY_PLACEMENT=`echo ${LINE} | cut -d \| -f 11`
                 DEPLOY_PLACEMENT=`eval echo ${DEPLOY_PLACEMENT}`
                 #
+                #
+                echo $LINE >> ${SERVICE_LIST_FILE_TMP}
+                #
+                #
                 F_SET_RUN_ENV
                 if [[ $? -ne 0 ]]; then
                     exit 52
@@ -1066,25 +1073,24 @@ case ${SERVICE_OPERATION} in
                 if [[ ${GRAY_TAG} == 'gray' ]]; then
                     F_ONLINE_SERVICE_SEARCH  ${SERVICE_NAME}--.*  ${CLUSTER}  > ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
                     if [[ $? -ne 0 ]]; then
+                        # 没找到，就删除
                         rm -f  ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
+                        #
                         echo "${SERVICE_NAME}--.*"  > ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}---offline
                         #echo -e "\n猪猪侠警告：服务【${SERVICE_NAME}】的灰度服务不在运行中，请检查！\n"
                         #exit 53
-                    else
-                        echo $LINE >> ${SERVICE_LIST_FILE_TMP}
                     fi
                 else
                     F_ONLINE_SERVICE_SEARCH  ${SERVICE_NAME}       ${CLUSTER}  > ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
                     if [[ $? -ne 0 ]]; then
+                        # 没找到，就删除
                         rm -f  ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
+                        #
                         echo "${SERVICE_NAME}"  > ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}---offline
                         #echo -e "\n猪猪侠警告：服务【${SERVICE_NAME}】不在运行中，请检查！\n"
                         #exit 53
-                    else
-                        echo $LINE >> ${SERVICE_LIST_FILE_TMP}
                     fi
                 fi
-                #
             done < ${SERVICE_LIST_FILE}
         else
             # 有参数
@@ -1093,6 +1099,7 @@ case ${SERVICE_OPERATION} in
                 # 拆分包含【--】的参数（服务名--灰度版本号）
                 i_SERVICE_NAME_1=$(echo $i | awk -F '--' '{print $1}')
                 #i_SERVICE_NAME_2=$(echo $i | awk -F '--' '{print $2}')
+                #
                 GET_IT=''
                 while read A_LINE
                 do
@@ -1109,7 +1116,8 @@ case ${SERVICE_OPERATION} in
                     DEPLOY_PLACEMENT=`eval echo ${DEPLOY_PLACEMENT}`
                     #
                     if [[ ${GRAY_TAG} == 'gray' ]] && [[ ! $i =~ -- ]]; then
-                        # 有灰度标志且参数中不包含【--】
+                        # 有【gray】且服务名不包含【--】
+                        #
                         if [[ ${SERVICE_NAME} =~ ^${i_SERVICE_NAME_1}$ ]]; then
                             echo $A_LINE >> ${SERVICE_LIST_FILE_TMP}
                             GET_IT='YES'
@@ -1139,6 +1147,8 @@ case ${SERVICE_OPERATION} in
                             fi
                         fi
                     else
+                        # 有【gray】且服务名包含【--】，或无【gray】
+                        #
                         if [[ ${SERVICE_NAME} =~ ^${i_SERVICE_NAME_1}$ ]]; then
                             echo $A_LINE >> ${SERVICE_LIST_FILE_TMP}
                             GET_IT='YES'
