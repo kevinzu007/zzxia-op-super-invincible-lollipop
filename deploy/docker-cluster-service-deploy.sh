@@ -2436,10 +2436,8 @@ case ${SH_RUN_MODE} in
         echo "造 浪 者：${MY_XINGMING}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         echo "开始时间：${TIME}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         echo "结束时间：${TIME_END}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
-        if [[ ${GRAY_ENABLE} == 'YES' ]] && [[ ${GRAY_TAG} == 'gray' ]]; then
-            echo "灰度标志：${GRAY_TAG}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
-            echo "灰度版本：${RELEASE_VERSION}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
-        fi
+        echo "灰度标志：${GRAY_TAG}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
+        echo "发布版本：${RELEASE_VERSION}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         echo "${SERVICE_OPERATION}清单：" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         # 输出到文件
         echo "--------------------------------------------------" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}

@@ -25,9 +25,10 @@ BUILD_SKIP_TEST=${BUILD_SKIP_TEST:-'NO'}  #--- 跳过测试（YES|NO）
 export TIME=`date +%Y-%m-%dT%H:%M:%S`
 TIME_START=${TIME}
 DATE_TIME=`date -d "${TIME}" +%Y%m%dt%H%M%S`
+#
+RELEASE_VERSION=''
 # 灰度
 GRAY_TAG="normal"
-GRAY_VERSION=`date -d "${TIME}" +%Y%m%d`
 #
 LOG_BASE="${SH_PATH}/tmp/log"
 LOG_HOME="${LOG_BASE}/${DATE_TIME}"
@@ -109,7 +110,7 @@ F_HELP()
     用法:
         $0  [-h|--help]
         $0  [-l|--list]
-        $0  <-c [dockerfile|java|node|自定义]>  <-b {代码分支}>  <-e|--email {邮件地址}>  <-s|--skiptest>  <-f|--force>  <-q|--quiet>  <-G|--gray <-V|--gray-version>>  <{项目1}  {项目2} ... {项目n}> ... {项目名称正则完全匹配}>
+        $0  <-c [dockerfile|java|node|自定义]>  <-b {代码分支}>  <-e|--email {邮件地址}>  <-s|--skiptest>  <-f|--force>  <-q|--quiet>  <-G|--gray <-V|--release-version>>  <{项目1}  {项目2} ... {项目n}> ... {项目名称正则完全匹配}>
     参数说明：
         \$0   : 代表脚本本身
         []   : 代表是必选项
@@ -127,7 +128,7 @@ F_HELP()
         -f|--force     强制重新构建（无论是否有更新）
         -q|--quiet     静默方式，默认非静默方式
         -G|--gray         : 灰度发布，设置标志为：【gray】，默认：【normal】
-        -V|--gray-version : 灰度发布版本号，默认：当天日期（YYYYMMDD）
+        -V|--release-version : 灰度发布版本号，默认：当天日期（YYYYMMDD）
     示例:
         #
         $0  -l             #--- 列出可构建发布的项目清单
@@ -526,41 +527,45 @@ F_DOCKER_CLUSTER_SERVICE_DEPLOY()
             #
             # 子函数的变量可以在父函数中直接使用
             #
-            if [[ ${GRAY_ENABLE} == 'YES' ]] && [[ ${GRAY_TAG} == 'gray' ]]; then
-                # 灰度方式
-                F_GRAY_SERVICE_X_NAME="${F_SERVICE_NAME}--${GRAY_VERSION}"
-                GRAY_OPTION="--gray  --gray-version ${GRAY_VERSION}"
-                #
-                F_ONLINE_SERVICE_SEARCH  ${F_GRAY_SERVICE_X_NAME}  ${CLUSTER}
-                if [ $? -eq 0 ]; then
-                    # 服务运行中
-                    #${DOCKER_CLUSTER_SERVICE_DEPLOY_SH}  --mode function  --update  --fuck  ${F_GRAY_SERVICE_X_NAME}    #--- 灰度发布不支持【update】
-                    #F_DEPLOY_RETURN_CURRENT=$?
-                    F_DEPLOY_RETURN_CURRENT=53
-                    let  F_DEPLOY_RETURN=${F_DEPLOY_RETURN}+${F_DEPLOY_RETURN_CURRENT}-50
-                    let  F_SERVICE_NUM=${F_SERVICE_NUM}+1
+            if [[ -n ${RELEASE_VERSION} ]]; then
+                if [[ ${GRAY_TAG} == 'gray' ]]; then
+                    F_SERVICE_X_NAME="${F_SERVICE_NAME}--V_${RELEASE_VERSION}-G"
+                    GRAY_OPTION="--release-version ${RELEASE_VERSION}  --gray"
+                elif [[ ${GRAY_TAG} == 'normal' ]]; then
+                    F_SERVICE_X_NAME="${F_SERVICE_NAME}--V_${RELEASE_VERSION}"
+                    GRAY_OPTION="--release-version ${RELEASE_VERSION}"
                 else
-                    # 服务不在运行中
-                    ${DOCKER_CLUSTER_SERVICE_DEPLOY_SH}  --mode function  --create  --fuck  ${F_SERVICE_NAME}  ${GRAY_OPTION}
-                    F_DEPLOY_RETURN_CURRENT=$?
-                    let  F_DEPLOY_RETURN=${F_DEPLOY_RETURN}+${F_DEPLOY_RETURN_CURRENT}-50
-                    let  F_SERVICE_NUM=${F_SERVICE_NUM}+1
+                    echo -e "\n猪猪侠警告：这是不可能的\n"
+                    ERROR_CODE=52
+                    return 52
                 fi
             else
-                F_ONLINE_SERVICE_SEARCH  ${F_SERVICE_NAME}  ${CLUSTER}
-                if [ $? -eq 0 ]; then
-                    # 服务运行中
-                    ${DOCKER_CLUSTER_SERVICE_DEPLOY_SH}  --mode function  --update  --fuck  ${F_SERVICE_NAME} 
-                    F_DEPLOY_RETURN_CURRENT=$?
-                    let  F_DEPLOY_RETURN=${F_DEPLOY_RETURN}+${F_DEPLOY_RETURN_CURRENT}-50
-                    let  F_SERVICE_NUM=${F_SERVICE_NUM}+1
+                if [[ ${GRAY_TAG} == 'gray' ]]; then
+                    F_SERVICE_X_NAME="${F_SERVICE_NAME}--G"
+                    GRAY_OPTION="--gray"
+                elif [[ ${GRAY_TAG} == 'normal' ]]; then
+                    F_SERVICE_X_NAME="${F_SERVICE_NAME}"
+                    GRAY_OPTION=""
                 else
-                    # 服务不在运行中
-                    ${DOCKER_CLUSTER_SERVICE_DEPLOY_SH}  --mode function  --create  --fuck  ${F_SERVICE_NAME}
-                    F_DEPLOY_RETURN_CURRENT=$?
-                    let  F_DEPLOY_RETURN=${F_DEPLOY_RETURN}+${F_DEPLOY_RETURN_CURRENT}-50
-                    let  F_SERVICE_NUM=${F_SERVICE_NUM}+1
+                    echo -e "\n猪猪侠警告：这是不可能的\n"
+                    ERROR_CODE=52
+                    return 52
                 fi
+            fi
+            #
+            F_ONLINE_SERVICE_SEARCH  ${F_SERVICE_X_NAME}  ${CLUSTER}
+            if [ $? -eq 0 ]; then
+                # 服务运行中
+                ${DOCKER_CLUSTER_SERVICE_DEPLOY_SH}  --mode function  --update  --fuck  ${F_SERVICE_NAME}  ${GRAY_OPTION}
+                F_DEPLOY_RETURN_CURRENT=$?
+                let  F_DEPLOY_RETURN=${F_DEPLOY_RETURN}+${F_DEPLOY_RETURN_CURRENT}-50
+                let  F_SERVICE_NUM=${F_SERVICE_NUM}+1
+            else
+                # 服务不在运行中
+                ${DOCKER_CLUSTER_SERVICE_DEPLOY_SH}  --mode function  --create  --fuck  ${F_SERVICE_NAME}  ${GRAY_OPTION}
+                F_DEPLOY_RETURN_CURRENT=$?
+                let  F_DEPLOY_RETURN=${F_DEPLOY_RETURN}+${F_DEPLOY_RETURN_CURRENT}-50
+                let  F_SERVICE_NUM=${F_SERVICE_NUM}+1
             fi
         done
         #
@@ -595,7 +600,7 @@ F_DOCKER_CLUSTER_SERVICE_DEPLOY()
 
 
 # 参数检查
-TEMP=`getopt -o hlc:b:e:sfqGV:  -l help,list,category:,branch:,email:,skiptest,force,quiet,gray,gray-version: -- "$@"`
+TEMP=`getopt -o hlc:b:e:sfqGV:  -l help,list,category:,branch:,email:,skiptest,force,quiet,gray,release-version: -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
     exit 51
@@ -654,9 +659,14 @@ do
             GRAY_TAG="gray"
             shift
             ;;
-        -V|--gray-version)
-            GRAY_VERSION=$2
+        -V|--release-version)
+            RELEASE_VERSION=$2
             shift 2
+            if [[ ! V_${RELEASE_VERSION} =~ ^V_[0-9a-z]+([_\.\-]?[0-9a-z]+)*$ ]]; then
+                echo -e "\n猪猪侠警告：发布版本号只能使用字符【0-9a-z._-】，且特殊字符不能出现在版本号的头部或尾部\n"
+                ERROR_CODE=51
+                exit 51
+            fi
             ;;
         --)
             shift
@@ -978,10 +988,8 @@ echo "开始时间：${TIME}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURREN
 echo "结束时间：${TIME_END}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 echo "代码分支：${GIT_BRANCH}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 echo "Docker镜像版本：${DOCKER_IMAGE_VER}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
-if [[ ${GRAY_ENABLE} == 'YES' ]] && [[ ${GRAY_TAG} == 'gray' ]]; then
-    echo "灰度标志：${GRAY_TAG}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
-    echo "灰度版本：${GRAY_VERSION}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
-fi
+echo "灰度标志：${GRAY_TAG}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
+echo "发布版本：${RELEASE_VERSION}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
 echo "构建与发布清单：" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 # 输出到文件
 echo "----------------------------------------------------------------------" >> ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}   #--- 70 (80-70-60)
