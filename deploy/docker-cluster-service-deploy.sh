@@ -27,9 +27,10 @@ cd ${SH_PATH}
 TIME=${TIME:-`date +%Y-%m-%dT%H:%M:%S`}
 TIME_START=${TIME}
 DATE_TIME=`date -d "${TIME}" +%Y%m%dt%H%M%S`
+#
+RELEASE_VERSION=''
 # 灰度
 GRAY_TAG="normal"                                           #--- 【normal】正常部署；【gray】灰度部署
-GRAY_VERSION=`date -d "${TIME}" +%Y%m%d`                    #--- 这个从时间继承
 GRAY_X_PORTS_FILE="${SH_PATH}/db/deploy-gray-x-ports.db"    #--- db目录下的文件不建议删除
 #
 LOG_BASE="${SH_PATH}/tmp/log"
@@ -105,23 +106,21 @@ F_HELP()
         $0 [-h|--help]
         $0 [-l|--list]                    #--- 列出配置文件中的服务清单
         $0 [-L|--list-run swarm|k8s]      #--- 列出指定集群中运行的所有服务，不支持持【docker-compose】
-        # 创建
-        $0 <-M|--mode [normal|function]>  [-c|--create]  <<-t|--tag {模糊镜像tag版本}> | <-T|--TAG {精确镜像tag版本}>>  <-n|--number {副本数}>  <-G|--gray <-V|--gray-version {灰度版本号}>>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>
-        # 修改
-        $0 <-M|--mode [normal|function]>  [-m|--modify]  <<-t|--tag {模糊镜像tag版本}> | <-T|--TAG {精确镜像tag版本}>>  <-n|--number {副本数}>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>
+        # 创建、修改
+        $0 <-M|--mode [normal|function]>  [-c|--create|-m|--modify]  <<-t|--tag {模糊镜像tag版本}> | <-T|--TAG {精确镜像tag版本}>>  <-n|--number {副本数}>  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>
         # 更新
-        $0 <-M|--mode [normal|function]>  [-u|--update]  <<-t|--tag {模糊镜像tag版本}> | <-T|--TAG {精确镜像tag版本}>>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>
+        $0 <-M|--mode [normal|function]>  [-u|--update]  <<-t|--tag {模糊镜像tag版本}> | <-T|--TAG {精确镜像tag版本}>>  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>
         # 回滚
-        $0 <-M|--mode [normal|function]>  [--b|rollback]  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>
+        $0 <-M|--mode [normal|function]>  [--b|rollback]   <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>
         #
         # 扩缩容
-        $0 <-M|--mode [normal|function]>  [-S|--scale]  [-n|--number {副本数}]  <-G|--gray>  <{服务名或灰度服务名1} {服务名或灰度服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>
+        $0 <-M|--mode [normal|function]>  [-S|--scale]  [-n|--number {副本数}]  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名或灰度服务名1} {服务名或灰度服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>
         # 删除
-        $0 <-M|--mode [normal|function]>  [-r|--rm]  <-G|--gray>  <{服务名或灰度服务名1} {服务名或灰度服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>
+        $0 <-M|--mode [normal|function]>  [-r|--rm]  <-V|--release-version {版本号}>  <-G|--gray>  <-a|--all-release>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>
         # 状态
-        $0 [-s|--status]  <-G|--gray>  <{服务名或灰度服务名1} {服务名或灰度服务名2} ...>  <-F|--fuck>
+        $0 [-s|--status]  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>
         # 详情
-        $0 [-d|--detail]  <-G|--gray>  <{服务名或灰度服务名1} {服务名或灰度服务名2} ...>  <-F|--fuck>
+        $0 [-d|--detail]  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>
     参数说明：
         \$0   : 代表脚本本身
         []   : 代表是必选项
@@ -145,8 +144,9 @@ F_HELP()
         -t|--tag       ：模糊镜像tag版本
         -T|--TAG       ：精确镜像tag版本
         -n|--number    ：Pod副本数
-        -G|--gray         : 灰度发布，设置标志为：gray，默认：normal
-        -V|--gray-version : 灰度发布版本号，版本号中不能使用【.】，默认：当天日期（YYYYMMDD）
+        -G|--gray      : 灰度发布，设置标志为：gray，默认：normal
+        -V|--release-version : 发布版本号
+        -a|--all-release     : 模糊匹配所有已发布的版本号
         -M|--mode      ：指定构建方式，二选一【normal|function】，默认为normal方式。此参数用于被外部调用
     示例：
         # 服务清单
@@ -238,7 +238,7 @@ F_TimeDiff ()
 
 
 
-# 查找已部署的service，返回是否找到及清单
+# 精确查找已部署的service，返回是否找到及清单
 # 用法：F_ONLINE_SERVICE_SEARCH  [服务名]  [集群类型]
 F_ONLINE_SERVICE_SEARCH()
 {
@@ -279,6 +279,68 @@ F_ONLINE_SERVICE_SEARCH()
             for S_LINE in $(docker ps -a  --format "{{.Names}}")
             do
                 if [[ ${S_LINE} =~ ^${F_SEARCH_NAME} ]]; then
+                    echo  ${S_LINE}
+                    GET_IT='YES'
+                fi
+            done
+            #
+            if [[ ${GET_IT} == 'YES' ]]; then
+                # 找到
+                return 0
+            else
+                return 3
+            fi
+            ;;
+        *)
+            echo -e "\n猪猪侠警告：未定义集群类型！\n"
+            return 52
+            ;;
+    esac
+}
+
+
+
+# 模糊查找已部署的service，返回是否找到及清单
+# 用法：F_ONLINE_SERVICE_SEARCH_LIKE  [服务名]  [集群类型]
+F_ONLINE_SERVICE_SEARCH_LIKE()
+{
+    F_SEARCH_NAME=$1
+    F_CLUSTER=$2
+    case "${F_CLUSTER}" in 
+        swarm)
+            GET_IT=''
+            #docker service ls  --format "{{.Name}}"  --filter name=${F_SEARCH_NAME} | while read S_LINE
+            for S_LINE in $(docker service ls  --format "{{.Name}}")
+            do
+                if [[ ${S_LINE} =~ ${F_SEARCH_NAME} ]]; then
+                    echo  ${S_LINE}
+                    GET_IT='YES'
+                fi
+            done
+            #
+            if [[ ${GET_IT} == 'YES' ]]; then
+                # 找到
+                return 0
+            else
+                return 3
+            fi
+            ;;
+        k8s)
+            # 待办：
+            kubectl get deployments ${F_SEARCH_NAME}
+            if [ $? = 0 ]; then
+                # 找到
+                return 0
+            else
+                return 3
+            fi
+            ;;
+        compose)
+            GET_IT=''
+            #docker ps -a  --format "{{.Names}}"  --filter name=${F_SEARCH_NAME} | while read S_LINE
+            for S_LINE in $(docker ps -a  --format "{{.Names}}")
+            do
+                if [[ ${S_LINE} =~ ${F_SEARCH_NAME} ]]; then
                     echo  ${S_LINE}
                     GET_IT='YES'
                 fi
@@ -429,7 +491,7 @@ F_ENVS_FROM_FILE ()
                 CONTAINER_ENVS_OK="${CONTAINER_ENVS_OK}  --env ${F_CONTAINER_ENVS_FILE_SET_n}=${F_CONTAINER_ENVS_FILE_SET_v}"
                 ;;
             k8s)
-                sed -i "/        env:/a\        - name: ${F_CONTAINER_ENVS_FILE_SET_n}\n          value: ${F_CONTAINER_ENVS_FILE_SET_v}"  ${YAML_HOME}/${GRAY_SERVICE_X_NAME}.yaml
+                sed -i "/        env:/a\        - name: ${F_CONTAINER_ENVS_FILE_SET_n}\n          value: ${F_CONTAINER_ENVS_FILE_SET_v}"  ${YAML_HOME}/${SERVICE_X_NAME}.yaml
                 ;;
             compose)
                 sed -i "/^    environment:/a\      ${F_CONTAINER_ENVS_FILE_SET_n}: ${F_CONTAINER_ENVS_FILE_SET_v}"  ${YAML_HOME}/docker-compose.yaml
@@ -452,7 +514,7 @@ F_K8S_MODEL_YAML()
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ${GRAY_SERVICE_X_NAME}
+  name: ${SERVICE_X_NAME}
   namespace: ${K8S_NAMESAPCE:-'default'}
   annotations:
   #  deployment.kubernetes.io/revision: "1"
@@ -461,7 +523,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      project: ${GRAY_SERVICE_X_NAME}
+      project: ${SERVICE_X_NAME}
   progressDeadlineSeconds: 300
   replicas: ${POD_REPLICAS}
   revisionHistoryLimit: 10
@@ -473,11 +535,11 @@ spec:
   template:
     metadata:
       labels:
-        project: ${GRAY_SERVICE_X_NAME}
+        project: ${SERVICE_X_NAME}
     spec:
       hostAliases:
       containers:
-      - name: c-${GRAY_SERVICE_X_NAME}
+      - name: c-${SERVICE_X_NAME}
         image: ${DOCKER_REPO}/${DOCKER_REPO_USER}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER}
         imagePullPolicy: IfNotPresent
         args:
@@ -494,15 +556,15 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: ${GRAY_SERVICE_X_NAME}
+  name: ${SERVICE_X_NAME}
   namespace: default
   annotations:
   labels:
-    project: ${GRAY_SERVICE_X_NAME}
+    project: ${SERVICE_X_NAME}
 spec:
   type: NodePort
   selector:
-    project: ${GRAY_SERVICE_X_NAME}
+    project: ${SERVICE_X_NAME}
   ports:
     "
 }
@@ -745,18 +807,18 @@ F_FUCK()
         echo "${DOCKER_FULL_CMD}" | bash
         SH_ERROR_CODE=$?
         case ${SERVICE_OPERATION} in
-            create|modify|update|rollback)
+            create|modify|update|rollback|scale)
                 if [[ ${SH_ERROR_CODE} -eq 0 ]]; then
                     ERROR_CODE=50
                     echo "成功"
-                    echo "${GRAY_SERVICE_X_NAME} : 成功" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                    echo "${SERVICE_X_NAME} : 成功" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                 else
                     ERROR_CODE=54
                     echo "失败"
-                    echo "${GRAY_SERVICE_X_NAME} : 失败" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                    echo "${SERVICE_X_NAME} : 失败" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                 fi
                 ;;
-            scale|rm|status|detail)
+            rm|status|detail)
                 if [[ ${SH_ERROR_CODE} -eq 0 ]]; then
                     ERROR_CODE=50
                     echo "成功"
@@ -791,7 +853,7 @@ F_FUCK()
 
 
 # 参数检查
-TEMP=`getopt -o hlL:FcmubSrsdt:T:n:GV:M:  -l help,list,list-run:,fuck,create,modify,update,rollback,scale,rm,status,detail,tag:,TAG:,number:,gray,gray-version:,mode: -- "$@"`
+TEMP=`getopt -o hlL:FcmubSrsdt:T:n:GV:aM:  -l help,list,list-run:,fuck,create,modify,update,rollback,scale,rm,status,detail,tag:,TAG:,number:,gray,release-version:,all-release,mode: -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
     exit 51
@@ -934,9 +996,13 @@ do
             GRAY_TAG="gray"
             shift
             ;;
-        -V|--gray-version)
-            GRAY_VERSION=$2
+        -V|--release-version)
+            RELEASE_VERSION=$2
             shift 2
+            ;;
+        -a|--all-release)
+            ALL_RELEASE='YES'
+            shift
             ;;
         -M|--mode)
             SH_RUN_MODE=$2
@@ -999,200 +1065,40 @@ fi
 
 
 
-# 创建服务清单、在线服务清单、离线服务清单
+# 创建服务清单
 # 即：${SERVICE_LIST_FILE_TMP}
-#     ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
-#     ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}---offline
 #
 > ${SERVICE_LIST_FILE_TMP}
-> ${SERVICE_ONLINE_LIST_FILE_TMP}
 #
-case ${SERVICE_OPERATION} in
-    create|modify|update|rollback)
-        # 结果仅用于非灰度服务名
+if [ $# -eq 0 ]; then
+    # 无参数
+    cp ${SERVICE_LIST_FILE}  ${SERVICE_LIST_FILE_TMP}
+else
+    # 有参数
+    for i in $@
+    do
         #
-        if [ $# -eq 0 ]; then
-            # 无参数
-            cp ${SERVICE_LIST_FILE}  ${SERVICE_LIST_FILE_TMP}
-        else
-            # 有参数
-            for i in $@
-            do
-                #
-                GET_IT=''
-                while read LINE
-                do
-                    # 跳过以#开头的行或空行
-                    [[ "$LINE" =~ ^# ]] || [[ "$LINE" =~ ^[\ ]*$ ]] && continue
-                    #
-                    SERVICE_NAME=`echo $LINE | awk -F '|' '{print $2}'`
-                    SERVICE_NAME=`echo ${SERVICE_NAME}`
-                    if [[ ${SERVICE_NAME} =~ ^$i$ ]]; then
-                        echo $LINE >> ${SERVICE_LIST_FILE_TMP}
-                        GET_IT='YES'
-                    fi
-                done < ${SERVICE_LIST_FILE}
-                #
-                if [[ ${GET_IT} != 'YES' ]]; then
-                    echo -e "\n猪猪侠警告：服务【$i】正则不匹配服务列表【${SERVICE_LIST_FILE}】中的任何服务名，请检查！\n"
-                    exit 51
-                fi
-            done
-        fi
-        ;;
-    scale|rm|status|detail)
-        # 结果用于灰度及非灰度服务名
-        #
-        if [ $# -eq 0 ]; then
-            # 无参数
-            #cp ${SERVICE_LIST_FILE}  ${SERVICE_LIST_FILE_TMP}
-            while read LINE
-            do
-                # 跳过以#开头的行或空行
-                [[ "$LINE" =~ ^# ]] || [[ "$LINE" =~ ^[\ ]*$ ]] && continue
-                #
-                SERVICE_NAME=`echo $LINE | awk -F '|' '{print $2}'`
-                SERVICE_NAME=`echo ${SERVICE_NAME}`
-                #
-                CLUSTER=`echo ${LINE} | cut -d \| -f 10`
-                CLUSTER=`eval echo ${CLUSTER}`
-                #
-                DEPLOY_PLACEMENT=`echo ${LINE} | cut -d \| -f 11`
-                DEPLOY_PLACEMENT=`eval echo ${DEPLOY_PLACEMENT}`
-                #
-                #
+        GET_IT=''
+        while read LINE
+        do
+            # 跳过以#开头的行或空行
+            [[ "$LINE" =~ ^# ]] || [[ "$LINE" =~ ^[\ ]*$ ]] && continue
+            #
+            SERVICE_NAME=`echo $LINE | awk -F '|' '{print $2}'`
+            SERVICE_NAME=`echo ${SERVICE_NAME}`
+            if [[ ${SERVICE_NAME} =~ ^$i$ ]]; then
                 echo $LINE >> ${SERVICE_LIST_FILE_TMP}
-                #
-                #
-                F_SET_RUN_ENV
-                if [[ $? -ne 0 ]]; then
-                    exit 52
-                fi
-                #
-                # 运行中的服务
-                if [[ ${GRAY_TAG} == 'gray' ]]; then
-                    F_ONLINE_SERVICE_SEARCH  ${SERVICE_NAME}--.*  ${CLUSTER}  > ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
-                    if [[ $? -ne 0 ]]; then
-                        # 没找到，就删除
-                        rm -f  ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
-                        #
-                        echo "${SERVICE_NAME}--.*"  > ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}---offline
-                        #echo -e "\n猪猪侠警告：服务【${SERVICE_NAME}】的灰度服务不在运行中，请检查！\n"
-                        #exit 53
-                    fi
-                else
-                    F_ONLINE_SERVICE_SEARCH  ${SERVICE_NAME}       ${CLUSTER}  > ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
-                    if [[ $? -ne 0 ]]; then
-                        # 没找到，就删除
-                        rm -f  ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
-                        #
-                        echo "${SERVICE_NAME}"  > ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}---offline
-                        #echo -e "\n猪猪侠警告：服务【${SERVICE_NAME}】不在运行中，请检查！\n"
-                        #exit 53
-                    fi
-                fi
-            done < ${SERVICE_LIST_FILE}
-        else
-            # 有参数
-            for i in $@
-            do
-                # 拆分包含【--】的参数（服务名--灰度版本号）
-                i_SERVICE_NAME_1=$(echo $i | awk -F '--' '{print $1}')
-                #i_SERVICE_NAME_2=$(echo $i | awk -F '--' '{print $2}')
-                #
-                GET_IT=''
-                while read A_LINE
-                do
-                    # 跳过以#开头的行或空行
-                    [[ "$A_LINE" =~ ^# ]] || [[ "$A_LINE" =~ ^[\ ]*$ ]] && continue
-                    #
-                    SERVICE_NAME=`echo $A_LINE | awk -F '|' '{print $2}'`
-                    SERVICE_NAME=`echo ${SERVICE_NAME}`
-                    #
-                    CLUSTER=`echo ${A_LINE} | cut -d \| -f 10`
-                    CLUSTER=`eval echo ${CLUSTER}`
-                    #
-                    DEPLOY_PLACEMENT=`echo ${A_LINE} | cut -d \| -f 11`
-                    DEPLOY_PLACEMENT=`eval echo ${DEPLOY_PLACEMENT}`
-                    #
-                    if [[ ${GRAY_TAG} == 'gray' ]] && [[ ! $i =~ -- ]]; then
-                        # 有【gray】且服务名不包含【--】
-                        #
-                        if [[ ${SERVICE_NAME} =~ ^${i_SERVICE_NAME_1}$ ]]; then
-                            echo $A_LINE >> ${SERVICE_LIST_FILE_TMP}
-                            GET_IT='YES'
-                            GET_IT_B=''
-                            #
-                            # 设置环境
-                            F_SET_RUN_ENV
-                            if [[ $? -ne 0 ]]; then
-                                exit 52
-                            fi
-                            #
-                            # 运行中的服务
-                            for B_LINE in $(F_ONLINE_SERVICE_SEARCH  ${i}--.*  ${CLUSTER})
-                            do
-                                # 这里可能没有匹配
-                                if [[ ${B_LINE} =~ ^${i}--.*$ ]] && [[ ${B_LINE} =~ ^${SERVICE_NAME} ]]; then
-                                    echo ${B_LINE} >> ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
-                                    GET_IT_B='YES'
-                                fi
-                            done
-                            #
-                            if [[ ${GET_IT_B} != 'YES' ]]; then
-                                #echo "${i}--.*"  > ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}---offline
-                                echo "${SERVICE_ONLINE}--.*"  > ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}---offline
-                                #echo -e "\n猪猪侠警告：服务【${i}】正则不匹配运行中的灰度服务名，请检查！\n"
-                                #exit 53
-                            fi
-                        fi
-                    else
-                        # 有【gray】且服务名包含【--】，或无【gray】
-                        #
-                        if [[ ${SERVICE_NAME} =~ ^${i_SERVICE_NAME_1}$ ]]; then
-                            echo $A_LINE >> ${SERVICE_LIST_FILE_TMP}
-                            GET_IT='YES'
-                            GET_IT_B=''
-                            #
-                            # 设置环境
-                            F_SET_RUN_ENV
-                            if [[ $? -ne 0 ]]; then
-                                exit 52
-                            fi
-                            #
-                            # 运行中的服务
-                            for B_LINE in $(F_ONLINE_SERVICE_SEARCH  $i  ${CLUSTER})
-                            do
-                                # 这里可能没有匹配
-                                if [[ ${B_LINE} =~ ^$i$ ]] && [[ ${B_LINE} =~ ^${SERVICE_NAME} ]]; then
-                                    echo ${B_LINE} >> ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
-                                    GET_IT_B='YES'
-                                fi
-                            done
-                            #
-                            if [[ ${GET_IT_B} != 'YES' ]]; then
-                                #echo "${i}"  > ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}---offline
-                                echo "${SERVICE_NAME}"  > ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}---offline
-                                #echo -e "\n猪猪侠警告：【${i}】正则不匹配运行中的服务名，请检查！\n"
-                                #exit 53
-                            fi
-                        fi
-                    fi
-                    #
-                done < ${SERVICE_LIST_FILE}
-                #
-                if [[ "$GET_IT" != 'YES' ]]; then
-                    echo -e "\n猪猪侠警告：服务【$i】正则不匹配服务列表【${SERVICE_LIST_FILE}】中的任何服务名，请检查！\n"
-                    exit 51
-                fi
-            done
+                GET_IT='YES'
+            fi
+        done < ${SERVICE_LIST_FILE}
+        #
+        if [[ ${GET_IT} != 'YES' ]]; then
+            echo -e "\n猪猪侠警告：服务【$i】正则不匹配服务列表【${SERVICE_LIST_FILE}】中的任何服务名，请检查！\n"
+            exit 51
         fi
-        ;;
-    *)
-        echo -e "\n猪猪侠警告：未知参数，请查看帮助【$0 --help】\n"
-        return 51
-        ;;
-esac
+    done
+    
+fi
 #
 # 删除无关行
 #sed  -i  -E  -e '/^\s*$/d'  -e '/^#.*$/d'  -e 's/[ \t]*//g'  ${SERVICE_LIST_FILE_TMP}
@@ -1216,11 +1122,10 @@ fi
 
 
 
-# list
+# 干
 > ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
 NUM=0
 #
-# 干
 while read LINE
 do
     # 跳过以#开头的行或空行
@@ -1265,21 +1170,6 @@ do
     fi
 
     
-    # 基本
-    # 忽略灰度标志
-    if [[ ${SERVICE_OPERATION} != 'create' ]] && [[ ${GRAY_ENABLE} == 'YES' ]] && [[ ${GRAY_TAG} == 'gray' ]]; then
-        echo "在【${SERVICE_OPERATION}】操作时，【-G|--gray】参数将会被忽略"
-    fi
-    #
-    # 服务名
-    if [[ ${SERVICE_OPERATION} == 'create' ]] && [[ ${GRAY_ENABLE} == 'YES' ]] && [[ ${GRAY_TAG} == 'gray' ]] && [[ ${CLUSTER} != 'compose' ]]; then
-        GRAY_SERVICE_X_NAME="${SERVICE_NAME}--${GRAY_VERSION}"
-    else
-        # 服务名
-        GRAY_SERVICE_X_NAME="${SERVICE_NAME}"
-    fi
-
-
     # RUN
     DOCKER_FULL_CMD=""
     # 目录
@@ -1313,22 +1203,58 @@ do
         create|modify)
             #
             DOCKER_SERVICE_RM="echo"
+            #
+            if [[ -n ${RELEASE_VERSION} ]] && [[ ${CLUSTER} != 'compose' ]]; then
+                # 注释掉此块，可以启用正则表达式
+                if [[ ! V_${RELEASE_VERSION} =~ ^V_[0-9a-z]+([_\.\-]?[0-9a-z]+)*$ ]]; then
+                    echo -e "\n猪猪侠警告：在【${SERVICE_OPERATION}】操作时，发布版本号不能使用正则表达式，只能使用字符【0-9a-z._-】，且特殊字符不能出现在版本号的头部或尾部\n"
+                    ERROR_CODE=51
+                    exit 51
+                else
+                    # 替换【.】为【_】，服务名中不能有【.】
+                    RELEASE_VERSION=${RELEASE_VERSION//./_}
+                fi
+                #
+                if [[ ${GRAY_TAG} == 'gray' ]]; then
+                    SERVICE_X_NAME="${SERVICE_NAME}--V_${RELEASE_VERSION}-G"
+                elif [[ ${GRAY_TAG} == 'normal' ]];then
+                    SERVICE_X_NAME="${SERVICE_NAME}--V_${RELEASE_VERSION}"
+                else
+                    echo -e "\n猪猪侠警告：这是不可能的\n"
+                    ERROR_CODE=52
+                    exit 52
+                fi
+            elif [[ -z ${RELEASE_VERSION} ]] && [[ ${CLUSTER} != 'compose' ]]; then
+                if [[ ${GRAY_TAG} == 'gray' ]]; then
+                    SERVICE_X_NAME="${SERVICE_NAME}--G"
+                elif [[ ${GRAY_TAG} == 'normal' ]];then
+                    SERVICE_X_NAME="${SERVICE_NAME}"
+                else
+                    echo -e "\n猪猪侠警告：这是不可能的\n"
+                    ERROR_CODE=52
+                    exit 52
+                fi
+            else
+                SERVICE_X_NAME="${SERVICE_NAME}"
+            fi
+            #
             # 是否运行中
-            F_ONLINE_SERVICE_SEARCH ${GRAY_SERVICE_X_NAME}  ${CLUSTER}  > /dev/null
-            SERVICE_RUN_STATUS=$?
-            if [[ ${SERVICE_RUN_STATUS} -eq 0 ]]; then
-                # 找到
+            F_ONLINE_SERVICE_SEARCH  ${SERVICE_X_NAME}  ${CLUSTER} > /dev/null
+            [[ $? -eq 0 ]] && SERVICE_RUN_STATUS='YES' || SERVICE_RUN_STATUS='NO'
+            #
+            if [[ ${SERVICE_RUN_STATUS} == YES ]]; then
+                # 运行中
                 case "${SERVICE_OPERATION}" in
                     create)
                         echo "跳过，服务已在运行中"
-                        echo "${GRAY_SERVICE_X_NAME} : 跳过，服务已在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                        echo "${SERVICE_X_NAME} : 跳过，服务已在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                         ERROR_CODE=53
                         continue
                         ;;
                     modify)
                         case "${CLUSTER}" in
                             swarm)
-                                DOCKER_SERVICE_RM="docker service rm ${GRAY_SERVICE_X_NAME}"
+                                DOCKER_SERVICE_RM="docker service rm ${SERVICE_X_NAME}"
                                 ;;
                             k8s)
                                 DOCKER_SERVICE_RM="echo"
@@ -1352,7 +1278,7 @@ do
                     echo
                     ;;
                 k8s)
-                    F_K8S_MODEL_YAML > ${YAML_HOME}/${GRAY_SERVICE_X_NAME}.yaml
+                    F_K8S_MODEL_YAML > ${YAML_HOME}/${SERVICE_X_NAME}.yaml
                     ;;
                 compose)
                     F_DOCKER_COMPOSE_MODEL_YAML > ${YAML_HOME}/docker-compose.yaml
@@ -1442,7 +1368,7 @@ do
                                 CONTAINER_HOSTS_PUB_OK="${CONTAINER_HOSTS_PUB_OK}  --host ${HOST_NAME}:${HOST_IP}"
                                 ;;
                             k8s)
-                                sed -i "/^      hostAliases:/a\      - ip: ${HOST_IP}\n        hostnames:\n        - ${HOST_NAME}"  ${YAML_HOME}/${GRAY_SERVICE_X_NAME}.yaml
+                                sed -i "/^      hostAliases:/a\      - ip: ${HOST_IP}\n        hostnames:\n        - ${HOST_NAME}"  ${YAML_HOME}/${SERVICE_X_NAME}.yaml
                                 ;;
                             compose)
                                 sed -i "/^    extra_hosts:/a\      - \"${HOST_NAME}:${HOST_IP}\""  ${YAML_HOME}/docker-compose.yaml
@@ -1500,7 +1426,7 @@ do
                     echo ""
                     ;;
                 k8s)
-                    sed -i "s%^        image:.*$%        image: ${DOCKER_IMAGE_FULL_URL}%"  "${YAML_HOME}/${GRAY_SERVICE_X_NAME}.yaml"
+                    sed -i "s%^        image:.*$%        image: ${DOCKER_IMAGE_FULL_URL}%"  "${YAML_HOME}/${SERVICE_X_NAME}.yaml"
                     ;;
                 compose)
                     sed -i "s%^    image:.*$%    image: ${DOCKER_IMAGE_FULL_URL}%"  "${YAML_HOME}/docker-compose.yaml"
@@ -1519,7 +1445,7 @@ do
                     echo ""
                     ;;
                 k8s)
-                    sed -i "s/^  replicas:.*$/  replicas: ${POD_REPLICAS}/"  "${YAML_HOME}/${GRAY_SERVICE_X_NAME}.yaml"
+                    sed -i "s/^  replicas:.*$/  replicas: ${POD_REPLICAS}/"  "${YAML_HOME}/${SERVICE_X_NAME}.yaml"
                     ;;
                 compose)
                     echo "compose之【POD_REPLICAS】暂时不弄"
@@ -1594,8 +1520,8 @@ do
                         CONTAINER_PORTS_OK=`echo ${CONTAINER_PORTS_OK} ${CONTAINER_PORTS_SET}`
                         ;;
                     k8s)
-                        sed -i "/^        ports:/a\        - name: tcp-${CONTAINER_PORTS_SET_outside}\n          containerPort: ${CONTAINER_PORTS_SET_outside}\n          protocol: TCP"  ${YAML_HOME}/${GRAY_SERVICE_X_NAME}.yaml
-                        sed -i "/^  ports:/a\  - name: svc-${CONTAINER_PORTS_SET_outside}\n    port: ${CONTAINER_PORTS_SET_outside}\n    protocol: TCP\n    targetPort: tcp-${CONTAINER_PORTS_SET_outside}\n    nodePort: ${CONTAINER_PORTS_SET_inside}"  ${YAML_HOME}/${GRAY_SERVICE_X_NAME}.yaml
+                        sed -i "/^        ports:/a\        - name: tcp-${CONTAINER_PORTS_SET_outside}\n          containerPort: ${CONTAINER_PORTS_SET_outside}\n          protocol: TCP"  ${YAML_HOME}/${SERVICE_X_NAME}.yaml
+                        sed -i "/^  ports:/a\  - name: svc-${CONTAINER_PORTS_SET_outside}\n    port: ${CONTAINER_PORTS_SET_outside}\n    protocol: TCP\n    targetPort: tcp-${CONTAINER_PORTS_SET_outside}\n    nodePort: ${CONTAINER_PORTS_SET_inside}"  ${YAML_HOME}/${SERVICE_X_NAME}.yaml
                         ;;
                     compose)
                         sed -i "/^    ports:/a\      - ${CONTAINER_PORTS_SET_outside}:${CONTAINER_PORTS_SET_inside}"  ${YAML_HOME}/docker-compose.yaml
@@ -1689,7 +1615,7 @@ do
                         JAVA_OPTIONS_OK="--env JAVA_OPTIONS=\"${JAVA_OPTIONS_OK_V}\""
                         ;;
                     k8s)
-                        sed -i "/        env:/a\        - name: JAVA_OPTIONS\n          value: ${JAVA_OPTIONS_OK_V}"  ${YAML_HOME}/${GRAY_SERVICE_X_NAME}.yaml
+                        sed -i "/        env:/a\        - name: JAVA_OPTIONS\n          value: ${JAVA_OPTIONS_OK_V}"  ${YAML_HOME}/${SERVICE_X_NAME}.yaml
                         ;;
                     compose)
                         sed -i "/^    environment:/a\      JAVA_OPTIONS: ${JAVA_OPTIONS_OK_V}"  ${YAML_HOME}/docker-compose.yaml
@@ -1705,11 +1631,7 @@ do
             # 7 组装ENV
             #
             # - 灰度ENV
-            if [[ ${GRAY_ENABLE} == 'YES' ]] && [[ ${GRAY_TAG} == 'gray' ]]; then
-                CONTAINER_ENVS_GRAY_OK="  --env GRAY_TAG=${GRAY_TAG}  --env GRAY_VERSION=${GRAY_VERSION}  --env GRAY_SERVICE_X_NAME=${GRAY_SERVICE_X_NAME}  --env GRAY_X_PORT=${GRAY_X_PORT}"
-            else
-                CONTAINER_ENVS_GRAY_OK=""
-            fi
+            CONTAINER_ENVS_GRAY_OK="  --env GRAY_TAG=${GRAY_TAG}  --env GRAY_VERSION=${RELEASE_VERSION}  --env RELEASE_VERSION=${RELEASE_VERSION}  --env SERVICE_X_NAME=${SERVICE_X_NAME}  --env GRAY_X_PORT=${GRAY_X_PORT}"
             #
             # - 从公共文件
             CONTAINER_ENVS_PUB_OK=""
@@ -1807,7 +1729,7 @@ do
                                         CONTAINER_CMDS_OK="${CONTAINER_CMDS_FILE_SET}; ${CONTAINER_CMDS_OK}"
                                         ;;
                                     k8s)
-                                        sed -i "/^        args:/a\        - ${CONTAINER_CMDS_FILE_SET}"  "${YAML_HOME}/${GRAY_SERVICE_X_NAME}.yaml"
+                                        sed -i "/^        args:/a\        - ${CONTAINER_CMDS_FILE_SET}"  "${YAML_HOME}/${SERVICE_X_NAME}.yaml"
                                         ;;
                                     compose)
                                         sed -i "s/#command:/command:/"  "${YAML_HOME}/docker-compose.yaml"
@@ -1834,7 +1756,7 @@ do
                             CONTAINER_CMDS_OK="${CONTAINER_CMDS_SET}; ${CONTAINER_CMDS_OK}"
                             ;;
                         k8s)
-                            sed -i "/        args:/a\        - ${CONTAINER_CMDS_SET}"  "${YAML_HOME}/${GRAY_SERVICE_X_NAME}.yaml"
+                            sed -i "/        args:/a\        - ${CONTAINER_CMDS_SET}"  "${YAML_HOME}/${SERVICE_X_NAME}.yaml"
                             ;;
                         compose)
                             sed -i "s/#command:/command:/"  "${YAML_HOME}/docker-compose.yaml"
@@ -1871,7 +1793,7 @@ do
                         do
                             DEPLOY_PLACEMENT_LABEL_K=$(echo ${LABEL} | awk -F '=' '{print $1}')
                             DEPLOY_PLACEMENT_LABEL_V=$(echo ${LABEL} | awk -F '=' '{print $2}')
-                            sed -i "/      nodeSelector:/a\        ${DEPLOY_PLACEMENT_LABEL_K}: ${DEPLOY_PLACEMENT_LABEL_V}"  "${YAML_HOME}/${GRAY_SERVICE_X_NAME}.yaml"
+                            sed -i "/      nodeSelector:/a\        ${DEPLOY_PLACEMENT_LABEL_K}: ${DEPLOY_PLACEMENT_LABEL_V}"  "${YAML_HOME}/${SERVICE_X_NAME}.yaml"
                         done
                         ;;
                     compose)
@@ -1897,7 +1819,7 @@ do
             case ${CLUSTER} in
                 swarm)
                     DOCKER_FULL_CMD="${DOCKER_SERVICE_RM}  &&  docker service create  \
-                        --name ${GRAY_SERVICE_X_NAME}  \
+                        --name ${SERVICE_X_NAME}  \
                         --replicas ${POD_REPLICAS}  \
                         ${DOCKER_ARG_PUB_OK}  \
                         ${DOCKER_LOG_PUB_OK}  \
@@ -1912,7 +1834,7 @@ do
                         ${CONTAINER_CMDS_OK}"
                     ;;
                 k8s)
-                    DOCKER_FULL_CMD="kubectl apply -f ${YAML_HOME}/${GRAY_SERVICE_X_NAME}.yaml"
+                    DOCKER_FULL_CMD="kubectl apply -f ${YAML_HOME}/${SERVICE_X_NAME}.yaml"
                     ;;
                 compose)
                     DOCKER_FULL_CMD="echo  \
@@ -1936,10 +1858,47 @@ do
             ;;
         update)
             #
-            F_ONLINE_SERVICE_SEARCH ${SERVICE_NAME}  ${CLUSTER}  > /dev/null
-            if [ $? -ne 0 ]; then
+            if [[ -n ${RELEASE_VERSION} ]] && [[ ${CLUSTER} != 'compose' ]]; then
+                # 注释掉此块，可以启用正则表达式
+                if [[ ! V_${RELEASE_VERSION} =~ ^V_[0-9a-z]+([_\.\-]?[0-9a-z]+)*$ ]]; then
+                    echo -e "\n猪猪侠警告：在【${SERVICE_OPERATION}】操作时，发布版本号不能使用正则表达式，只能使用字符【0-9a-z._-】，且特殊字符不能出现在版本号的头部或尾部\n"
+                    ERROR_CODE=51
+                    exit 51
+                else
+                    # 替换【.】为【_】，服务名中不能有【.】
+                    RELEASE_VERSION=${RELEASE_VERSION//./_}
+                fi
+                #
+                if [[ ${GRAY_TAG} == 'gray' ]]; then
+                    SERVICE_X_NAME="${SERVICE_NAME}--V_${RELEASE_VERSION}-G"
+                elif [[ ${GRAY_TAG} == 'normal' ]];then
+                    SERVICE_X_NAME="${SERVICE_NAME}--V_${RELEASE_VERSION}"
+                else
+                    echo -e "\n猪猪侠警告：这是不可能的\n"
+                    ERROR_CODE=52
+                    exit 52
+                fi
+            elif [[ -z ${RELEASE_VERSION} ]] && [[ ${CLUSTER} != 'compose' ]]; then
+                if [[ ${GRAY_TAG} == 'gray' ]]; then
+                    SERVICE_X_NAME="${SERVICE_NAME}--G"
+                elif [[ ${GRAY_TAG} == 'normal' ]];then
+                    SERVICE_X_NAME="${SERVICE_NAME}"
+                else
+                    echo -e "\n猪猪侠警告：这是不可能的\n"
+                    ERROR_CODE=52
+                    exit 52
+                fi
+            else
+                SERVICE_X_NAME="${SERVICE_NAME}"
+            fi
+            #
+            # 是否运行中
+            F_ONLINE_SERVICE_SEARCH  ${SERVICE_X_NAME}  ${CLUSTER} > ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
+            [[ $? -eq 0 ]] && SERVICE_RUN_STATUS='YES' || SERVICE_RUN_STATUS='NO'
+            #
+            if [[ ${SERVICE_RUN_STATUS} == 'NO' ]]; then
                 echo "跳过，服务不在运行中"
-                echo "${SERVICE_NAME} : 跳过，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                echo "${SERVICE_X_NAME} : 跳过，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                 ERROR_CODE=53
                 continue
             fi
@@ -1949,7 +1908,7 @@ do
                 F_SEARCH_IMAGE_TAG  ${SERVICE_NAME}  ${THIS_TAG}
                 if [ $? -ne 0 ]; then
                     echo "失败，镜像版本【${THIS_TAG}】未找到"
-                    echo "${SERVICE_NAME} : 失败，镜像版本【${THIS_TAG}】未找到" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                    echo "${SERVICE_X_NAME} : 失败，镜像版本【${THIS_TAG}】未找到" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                     ERROR_CODE=54
                     continue
                 fi
@@ -1962,7 +1921,7 @@ do
                 #
                 if [[ -z ${DOCKER_IMAGE_VER_UPDATE} ]]; then
                     echo "失败，镜像版本【%${LIKE_THIS_TAG}%】未找到"
-                    echo "${SERVICE_NAME} : 失败，镜像版本【%${LIKE_THIS_TAG}%】未找到" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                    echo "${SERVICE_X_NAME} : 失败，镜像版本【%${LIKE_THIS_TAG}%】未找到" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                     ERROR_CODE=54
                     continue
                 fi
@@ -1973,7 +1932,7 @@ do
                 DOCKER_IMAGE_VER_UPDATE=$(F_SEARCH_IMAGE_LIKE_TAG  ${SERVICE_NAME}  ${TODAY})
                 if [[ -z ${DOCKER_IMAGE_VER_UPDATE} ]]; then
                     echo "跳过，今日无更新"
-                    echo "${SERVICE_NAME} : 跳过，今日无更新" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                    echo "${SERVICE_X_NAME} : 跳过，今日无更新" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                     ERROR_CODE=55
                     continue
                 fi
@@ -1988,19 +1947,19 @@ do
                         --with-registry-auth  \
                         --restart-max-attempts 5  \
                         --image ${DOCKER_IMAGE_FULL_URL}  \
-                        ${SERVICE_NAME}"
+                        ${SERVICE_X_NAME}"
                     ;;
                 k8s)
-                    DOCKER_FULL_CMD="kubectl set image deployments ${SERVICE_NAME} c-${SERVICE_NAME}=${DOCKER_IMAGE_FULL_URL}"
+                    DOCKER_FULL_CMD="kubectl set image deployments ${SERVICE_X_NAME} c-${SERVICE_NAME}=${DOCKER_IMAGE_FULL_URL}"
                     ;;
                 compose)
                     SED_IMAGE='sed -i "s%^    image:.*$%    image: ${DOCKER_IMAGE_FULL_URL}%"  docker-compose.yaml'
-                    echo ${SED_IMAGE}  > ${LOG_HOME}/${SERVICE_NAME}-update.sh
+                    echo ${SED_IMAGE}  > ${LOG_HOME}/${SERVICE_X_NAME}-update.sh
                     DOCKER_FULL_CMD="echo  \
-                        ; scp -P ${COMPOSE_SSH_PORT}  ${LOG_HOME}/${SERVICE_NAME}-update.sh  ${COMPOSE_SSH_HOST_OR_WITH_USER}:${DOCKER_COMPOSE_SERVICE_HOME}/  \
+                        ; scp -P ${COMPOSE_SSH_PORT}  ${LOG_HOME}/${SERVICE_X_NAME}-update.sh  ${COMPOSE_SSH_HOST_OR_WITH_USER}:${DOCKER_COMPOSE_SERVICE_HOME}/  \
                         ; ssh -p ${COMPOSE_SSH_PORT} ${COMPOSE_SSH_HOST_OR_WITH_USER}  \
                             \"cd ${DOCKER_COMPOSE_SERVICE_HOME}  \
-                              &&  sh ./${SERVICE_NAME}-update.sh  \
+                              &&  sh ./${SERVICE_X_NAME}-update.sh  \
                               &&  docker-compose pull  \
                               &&  docker-compose down  \
                               &&  docker-compose up -d  \
@@ -2016,10 +1975,48 @@ do
         rollback)
             #
             # 仅回滚今天有更新的服务镜像
-            F_ONLINE_SERVICE_SEARCH ${SERVICE_NAME}  ${CLUSTER}  > /dev/null
-            if [ $? -ne 0 ]; then
+            #
+            if [[ -n ${RELEASE_VERSION} ]] && [[ ${CLUSTER} != 'compose' ]]; then
+                # 注释掉此块，可以启用正则表达式
+                if [[ ! V_${RELEASE_VERSION} =~ ^V_[0-9a-z]+([_\.\-]?[0-9a-z]+)*$ ]]; then
+                    echo -e "\n猪猪侠警告：在【${SERVICE_OPERATION}】操作时，发布版本号不能使用正则表达式，只能使用字符【0-9a-z._-】，且特殊字符不能出现在版本号的头部或尾部\n"
+                    ERROR_CODE=51
+                    exit 51
+                else
+                    # 替换【.】为【_】，服务名中不能有【.】
+                    RELEASE_VERSION=${RELEASE_VERSION//./_}
+                fi
+                #
+                if [[ ${GRAY_TAG} == 'gray' ]]; then
+                    SERVICE_X_NAME="${SERVICE_NAME}--V_${RELEASE_VERSION}-G"
+                elif [[ ${GRAY_TAG} == 'normal' ]];then
+                    SERVICE_X_NAME="${SERVICE_NAME}--V_${RELEASE_VERSION}"
+                else
+                    echo -e "\n猪猪侠警告：这是不可能的\n"
+                    ERROR_CODE=52
+                    exit 52
+                fi
+            elif [[ -z ${RELEASE_VERSION} ]] && [[ ${CLUSTER} != 'compose' ]]; then
+                if [[ ${GRAY_TAG} == 'gray' ]]; then
+                    SERVICE_X_NAME="${SERVICE_NAME}--G"
+                elif [[ ${GRAY_TAG} == 'normal' ]];then
+                    SERVICE_X_NAME="${SERVICE_NAME}"
+                else
+                    echo -e "\n猪猪侠警告：这是不可能的\n"
+                    ERROR_CODE=52
+                    exit 52
+                fi
+            else
+                SERVICE_X_NAME="${SERVICE_NAME}"
+            fi
+            #
+            # 是否运行中
+            F_ONLINE_SERVICE_SEARCH  ${SERVICE_X_NAME}  ${CLUSTER} > ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
+            [[ $? -eq 0 ]] && SERVICE_RUN_STATUS='YES' || SERVICE_RUN_STATUS='NO'
+            #
+            if [[ ${SERVICE_RUN_STATUS} == 'NO' ]]; then
                 echo "跳过，服务不在运行中"
-                echo "${SERVICE_NAME} : 跳过，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                echo "${SERVICE_X_NAME} : 跳过，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                 ERROR_CODE=53
                 continue
             fi
@@ -2028,14 +2025,14 @@ do
             DOCKER_IMAGE_VER_TODAY=$(F_SEARCH_IMAGE_LIKE_TAG  ${SERVICE_NAME}  ${TODAY})
             if [[ -z ${DOCKER_IMAGE_VER_TODAY} ]]; then
                 echo "跳过，今日无更新"
-                echo "${SERVICE_NAME} : 跳过，今日无更新" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                echo "${SERVICE_X_NAME} : 跳过，今日无更新" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                 ERROR_CODE=55
                 continue
             else
                 DOCKER_IMAGE_VER_ROLLBACK=$(F_SEARCH_IMAGE_NOT_LIKE_TAG  ${SERVICE_NAME}  ${TODAY})
                 if [[ -z ${DOCKER_IMAGE_VER_ROLLBACK} ]]; then
                     echo "跳过，无历史镜像"
-                    echo "${SERVICE_NAME} : 跳过，无历史镜像" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                    echo "${SERVICE_X_NAME} : 跳过，无历史镜像" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                     ERROR_CODE=55
                     continue
                 fi
@@ -2049,20 +2046,20 @@ do
                         --with-registry-auth  \
                         --restart-max-attempts 5  \
                         --image ${DOCKER_IMAGE_FULL_URL}  \
-                        ${SERVICE_NAME}"
+                        ${SERVICE_X_NAME}"
                     # 待办：这里是不是有多余参数，他可以从公共参数引入
                     ;;
                 k8s)
-                    DOCKER_FULL_CMD="kubectl set image deployments ${SERVICE_NAME} c-${SERVICE_NAME}=${DOCKER_IMAGE_FULL_URL}"
+                    DOCKER_FULL_CMD="kubectl set image deployments ${SERVICE_X_NAME} c-${SERVICE_NAME}=${DOCKER_IMAGE_FULL_URL}"
                     ;;
                 compose)
                     SED_IMAGE='sed -i "s%^    image:.*$%    image: ${DOCKER_IMAGE_FULL_URL}%"  docker-compose.yaml'
-                    echo ${SED_IMAGE}  > ${LOG_HOME}/${SERVICE_NAME}-update.sh
+                    echo ${SED_IMAGE}  > ${LOG_HOME}/${SERVICE_X_NAME}-update.sh
                     DOCKER_FULL_CMD="echo  \
-                        ; scp -P ${COMPOSE_SSH_PORT}  ${LOG_HOME}/${SERVICE_NAME}-update.sh  ${COMPOSE_SSH_HOST_OR_WITH_USER}:${DOCKER_COMPOSE_SERVICE_HOME}/  \
+                        ; scp -P ${COMPOSE_SSH_PORT}  ${LOG_HOME}/${SERVICE_X_NAME}-update.sh  ${COMPOSE_SSH_HOST_OR_WITH_USER}:${DOCKER_COMPOSE_SERVICE_HOME}/  \
                         ; ssh -p ${COMPOSE_SSH_PORT} ${COMPOSE_SSH_HOST_OR_WITH_USER}  \
                             \"cd ${DOCKER_COMPOSE_SERVICE_HOME}  \
-                              &&  sh ./${SERVICE_NAME}-update.sh  \
+                              &&  sh ./${SERVICE_X_NAME}-update.sh  \
                               &&  docker-compose pull  \
                               &&  docker-compose down  \
                               &&  docker-compose up -d  \
@@ -2076,58 +2073,129 @@ do
             esac
             ;;
         scale)
-            # 服务名参数支持灰度及非灰度，即包含或不包含【--】
+            #
+            if [[ -n ${RELEASE_VERSION} ]] && [[ ${CLUSTER} != 'compose' ]]; then
+                # 注释掉此块，可以启用正则表达式
+                if [[ ! V_${RELEASE_VERSION} =~ ^V_[0-9a-z]+([_\.\-]?[0-9a-z]+)*$ ]]; then
+                    echo -e "\n猪猪侠警告：在【${SERVICE_OPERATION}】操作时，发布版本号不能使用正则表达式，只能使用字符【0-9a-z._-】，且特殊字符不能出现在版本号的头部或尾部\n"
+                    ERROR_CODE=51
+                    exit 51
+                else
+                    # 替换【.】为【_】，服务名中不能有【.】
+                    RELEASE_VERSION=${RELEASE_VERSION//./_}
+                fi
+                #
+                if [[ ${GRAY_TAG} == 'gray' ]]; then
+                    SERVICE_X_NAME="${SERVICE_NAME}--V_${RELEASE_VERSION}-G"
+                elif [[ ${GRAY_TAG} == 'normal' ]];then
+                    SERVICE_X_NAME="${SERVICE_NAME}--V_${RELEASE_VERSION}"
+                else
+                    echo -e "\n猪猪侠警告：这是不可能的\n"
+                    ERROR_CODE=52
+                    exit 52
+                fi
+            elif [[ -z ${RELEASE_VERSION} ]] && [[ ${CLUSTER} != 'compose' ]]; then
+                if [[ ${GRAY_TAG} == 'gray' ]]; then
+                    SERVICE_X_NAME="${SERVICE_NAME}--G"
+                elif [[ ${GRAY_TAG} == 'normal' ]];then
+                    SERVICE_X_NAME="${SERVICE_NAME}"
+                else
+                    echo -e "\n猪猪侠警告：这是不可能的\n"
+                    ERROR_CODE=52
+                    exit 52
+                fi
+            else
+                SERVICE_X_NAME="${SERVICE_NAME}"
+            fi
+            #
+            # 是否运行中
+            F_ONLINE_SERVICE_SEARCH  ${SERVICE_X_NAME}  ${CLUSTER} > ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
+            [[ $? -eq 0 ]] && SERVICE_RUN_STATUS='YES' || SERVICE_RUN_STATUS='NO'
+            #
+            if [[ ${SERVICE_RUN_STATUS} == 'NO' ]]; then
+                echo "跳过，服务不在运行中"
+                echo "${SERVICE_X_NAME} : 跳过，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                ERROR_CODE=53
+                continue
+            fi
             #
             if [ -z "${POD_REPLICAS_NEW}" ]; then
                 echo -e "\n猪猪侠警告：参数【-n|--number】使用错误！\n"
                 echo "跳过，配置文件错误"
-                echo "${SERVICE_NAME} : 跳过，配置文件错误" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                echo "${SERVICE_X_NAME} : 跳过，配置文件错误" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                 ERROR_CODE=52
-                continue
-            fi
-            #
-            if [[ ! -f ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME} ]] && [[ -f ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}---offline ]]; then
-                #echo "跳过，服务不在运行中"
-                echo "跳过，服务不在运行中，匹配参数：$(head -n 1 ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}---offline)"
-                #echo "${SERVICE_NAME} : 跳过，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
-                echo "$(head -n 1 ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}---offline) : 跳过，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
-                ERROR_CODE=53
                 continue
             fi
             #
             DOCKER_FULL_CMD="echo "
             #
-            while read GET_LINE
-            do
-                #
-                case ${CLUSTER} in 
-                    swarm)
-                        DOCKER_FULL_CMD="${DOCKER_FULL_CMD} ; docker service update  \
-                            --with-registry-auth  \
-                            --replicas ${POD_REPLICAS_NEW}  \
-                            ${GET_LINE}"
-                        ;;
-                    k8s)
-                        DOCKER_FULL_CMD="${DOCKER_FULL_CMD} ;  kubectl scale deployments ${GET_LINE} --replicas=${POD_REPLICAS_NEW}"
-                        ;;
-                    compose)
-                        DOCKER_FULL_CMD="echo 'compose之【scale】暂时无此功能'"
-                        ;;
-                    *)
-                        echo -e "\n猪猪侠警告：未定义的集群类型\n" 
-                        exit 52
-                        ;;
-                esac
-            done < ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
+            case ${CLUSTER} in 
+                swarm)
+                    DOCKER_FULL_CMD="${DOCKER_FULL_CMD} ; docker service update  \
+                        --with-registry-auth  \
+                        --replicas ${POD_REPLICAS_NEW}  \
+                        ${SERVICE_X_NAME}"
+                    ;;
+                k8s)
+                    DOCKER_FULL_CMD="${DOCKER_FULL_CMD} ;  kubectl scale deployments ${SERVICE_X_NAME} --replicas=${POD_REPLICAS_NEW}"
+                    ;;
+                compose)
+                    DOCKER_FULL_CMD="echo 'compose之【scale】暂时无此功能'"
+                    ;;
+                *)
+                    echo -e "\n猪猪侠警告：未定义的集群类型\n" 
+                    exit 52
+                    ;;
+            esac
             ;;
         rm)
-            # 服务名参数支持灰度及非灰度，即包含或不包含【--】
             #
-            if [[ ! -f ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME} ]] && [[ -f ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}---offline ]]; then
-                #echo "跳过，服务不在运行中"
-                echo "跳过，服务不在运行中，匹配参数：$(head -n 1 ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}---offline)"
-                #echo "${SERVICE_NAME} : 跳过，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
-                echo "$(head -n 1 ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}---offline) : 跳过，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+            if [[ -n ${RELEASE_VERSION} ]] && [[ ${CLUSTER} != 'compose' ]]; then
+                # 注释掉此块，可以启用正则表达式
+                #if [[ ! V_${RELEASE_VERSION} =~ ^V_[0-9a-z]+([_\.\-]?[0-9a-z]+)*$ ]]; then
+                #    echo -e "\n猪猪侠警告：在【${SERVICE_OPERATION}】操作时，发布版本号不能使用正则表达式，只能使用字符【0-9a-z._-】，且特殊字符不能出现在版本号的头部或尾部\n"
+                #    ERROR_CODE=51
+                #    exit 51
+                #else
+                #    # 替换【.】为【_】，服务名中不能有【.】
+                #    RELEASE_VERSION=${RELEASE_VERSION//./_}
+                #fi
+                #
+                if [[ ${GRAY_TAG} == 'gray' ]]; then
+                    SERVICE_X_NAME="${SERVICE_NAME}--V_${RELEASE_VERSION}-G"
+                elif [[ ${GRAY_TAG} == 'normal' ]];then
+                    SERVICE_X_NAME="${SERVICE_NAME}--V_${RELEASE_VERSION}"
+                else
+                    echo -e "\n猪猪侠警告：这是不可能的\n"
+                    ERROR_CODE=52
+                    exit 52
+                fi
+            elif [[ -z ${RELEASE_VERSION} ]] && [[ ${CLUSTER} != 'compose' ]]; then
+                if [[ ${GRAY_TAG} == 'gray' ]]; then
+                    SERVICE_X_NAME="${SERVICE_NAME}--G"
+                elif [[ ${GRAY_TAG} == 'normal' ]];then
+                    SERVICE_X_NAME="${SERVICE_NAME}"
+                else
+                    echo -e "\n猪猪侠警告：这是不可能的\n"
+                    ERROR_CODE=52
+                    exit 52
+                fi
+            else
+                SERVICE_X_NAME="${SERVICE_NAME}"
+            fi
+            #
+            # 是否运行中
+            if [[ ${ALL_RELEASE} == 'YES' ]]; then
+                F_ONLINE_SERVICE_SEARCH_LIKE  ${SERVICE_X_NAME}  ${CLUSTER} > ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
+                [[ $? -eq 0 ]] && SERVICE_RUN_STATUS='YES' || SERVICE_RUN_STATUS='NO'
+            else
+                F_ONLINE_SERVICE_SEARCH       ${SERVICE_X_NAME}  ${CLUSTER} > ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
+                [[ $? -eq 0 ]] && SERVICE_RUN_STATUS='YES' || SERVICE_RUN_STATUS='NO'
+            fi
+            #
+            if [[ ${SERVICE_RUN_STATUS} == 'NO' ]]; then
+                echo "跳过，服务不在运行中"
+                echo "${SERVICE_X_NAME} : 跳过，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                 ERROR_CODE=53
                 continue
             fi
@@ -2160,13 +2228,53 @@ do
             # 待办：服务删除时，gray端口删除暂未处理
             ;;
         status)
-            # 服务名参数支持灰度及非灰度，即包含或不包含【--】
             #
-            if [[ ! -f ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME} ]] && [[ -f ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}---offline ]]; then
-                #echo "跳过，服务不在运行中"
-                echo "跳过，服务不在运行中，匹配参数：$(head -n 1 ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}---offline)"
-                #echo "${SERVICE_NAME} : 跳过，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
-                echo "$(head -n 1 ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}---offline) : 跳过，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+            if [[ -n ${RELEASE_VERSION} ]] && [[ ${CLUSTER} != 'compose' ]]; then
+                # 注释掉此块，可以启用正则表达式
+                #if [[ ! V_${RELEASE_VERSION} =~ ^V_[0-9a-z]+([_\.\-]?[0-9a-z]+)*$ ]]; then
+                #    echo -e "\n猪猪侠警告：在【${SERVICE_OPERATION}】操作时，发布版本号不能使用正则表达式，只能使用字符【0-9a-z._-】，且特殊字符不能出现在版本号的头部或尾部\n"
+                #    ERROR_CODE=51
+                #    exit 51
+                #else
+                #    # 替换【.】为【_】，服务名中不能有【.】
+                #    RELEASE_VERSION=${RELEASE_VERSION//./_}
+                #fi
+                #
+                if [[ ${GRAY_TAG} == 'gray' ]]; then
+                    SERVICE_X_NAME="${SERVICE_NAME}--V_${RELEASE_VERSION}-G"
+                elif [[ ${GRAY_TAG} == 'normal' ]];then
+                    SERVICE_X_NAME="${SERVICE_NAME}--V_${RELEASE_VERSION}"
+                else
+                    echo -e "\n猪猪侠警告：这是不可能的\n"
+                    ERROR_CODE=52
+                    exit 52
+                fi
+            elif [[ -z ${RELEASE_VERSION} ]] && [[ ${CLUSTER} != 'compose' ]]; then
+                if [[ ${GRAY_TAG} == 'gray' ]]; then
+                    SERVICE_X_NAME="${SERVICE_NAME}--G"
+                elif [[ ${GRAY_TAG} == 'normal' ]];then
+                    SERVICE_X_NAME="${SERVICE_NAME}"
+                else
+                    echo -e "\n猪猪侠警告：这是不可能的\n"
+                    ERROR_CODE=52
+                    exit 52
+                fi
+            else
+                SERVICE_X_NAME="${SERVICE_NAME}"
+            fi
+            #
+            # 是否运行中
+            if [[ ${ALL_RELEASE} == 'YES' ]]; then
+                F_ONLINE_SERVICE_SEARCH_LIKE  ${SERVICE_X_NAME}  ${CLUSTER} > ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
+                [[ $? -eq 0 ]] && SERVICE_RUN_STATUS='YES' || SERVICE_RUN_STATUS='NO'
+            else
+                F_ONLINE_SERVICE_SEARCH       ${SERVICE_X_NAME}  ${CLUSTER} > ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
+                [[ $? -eq 0 ]] && SERVICE_RUN_STATUS='YES' || SERVICE_RUN_STATUS='NO'
+            fi
+            #
+            if [[ ${SERVICE_RUN_STATUS} == 'NO' ]]; then
+                echo "跳过，服务不在运行中"
+                echo "${SERVICE_X_NAME} : 跳过，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                 ERROR_CODE=53
                 continue
             fi
@@ -2198,13 +2306,53 @@ do
             done < ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
             ;;
         detail)
-            # 服务名参数支持灰度及非灰度，即包含或不包含【--】
             #
-            if [[ ! -f ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME} ]] && [[ -f ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}---offline ]]; then
-                #echo "跳过，服务不在运行中"
-                echo "跳过，服务不在运行中，匹配参数：$(head -n 1 ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}---offline)"
-                #echo "${SERVICE_NAME} : 跳过，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
-                echo "$(head -n 1 ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}---offline) : 跳过，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+            if [[ -n ${RELEASE_VERSION} ]] && [[ ${CLUSTER} != 'compose' ]]; then
+                # 注释掉此块，可以启用正则表达式
+                #if [[ ! V_${RELEASE_VERSION} =~ ^V_[0-9a-z]+([_\.\-]?[0-9a-z]+)*$ ]]; then
+                #    echo -e "\n猪猪侠警告：在【${SERVICE_OPERATION}】操作时，发布版本号不能使用正则表达式，只能使用字符【0-9a-z._-】，且特殊字符不能出现在版本号的头部或尾部\n"
+                #    ERROR_CODE=51
+                #    exit 51
+                #else
+                #    # 替换【.】为【_】，服务名中不能有【.】
+                #    RELEASE_VERSION=${RELEASE_VERSION//./_}
+                #fi
+                #
+                if [[ ${GRAY_TAG} == 'gray' ]]; then
+                    SERVICE_X_NAME="${SERVICE_NAME}--V_${RELEASE_VERSION}-G"
+                elif [[ ${GRAY_TAG} == 'normal' ]];then
+                    SERVICE_X_NAME="${SERVICE_NAME}--V_${RELEASE_VERSION}"
+                else
+                    echo -e "\n猪猪侠警告：这是不可能的\n"
+                    ERROR_CODE=52
+                    exit 52
+                fi
+            elif [[ -z ${RELEASE_VERSION} ]] && [[ ${CLUSTER} != 'compose' ]]; then
+                if [[ ${GRAY_TAG} == 'gray' ]]; then
+                    SERVICE_X_NAME="${SERVICE_NAME}--G"
+                elif [[ ${GRAY_TAG} == 'normal' ]];then
+                    SERVICE_X_NAME="${SERVICE_NAME}"
+                else
+                    echo -e "\n猪猪侠警告：这是不可能的\n"
+                    ERROR_CODE=52
+                    exit 52
+                fi
+            else
+                SERVICE_X_NAME="${SERVICE_NAME}"
+            fi
+            #
+            # 是否运行中
+            if [[ ${ALL_RELEASE} == 'YES' ]]; then
+                F_ONLINE_SERVICE_SEARCH_LIKE  ${SERVICE_X_NAME}  ${CLUSTER} > ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
+                [[ $? -eq 0 ]] && SERVICE_RUN_STATUS='YES' || SERVICE_RUN_STATUS='NO'
+            else
+                F_ONLINE_SERVICE_SEARCH       ${SERVICE_X_NAME}  ${CLUSTER} > ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
+                [[ $? -eq 0 ]] && SERVICE_RUN_STATUS='YES' || SERVICE_RUN_STATUS='NO'
+            fi
+            #
+            if [[ ${SERVICE_RUN_STATUS} == 'NO' ]]; then
+                echo "跳过，服务不在运行中"
+                echo "${SERVICE_X_NAME} : 跳过，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                 ERROR_CODE=53
                 continue
             fi
@@ -2290,7 +2438,7 @@ case ${SH_RUN_MODE} in
         echo "结束时间：${TIME_END}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         if [[ ${GRAY_ENABLE} == 'YES' ]] && [[ ${GRAY_TAG} == 'gray' ]]; then
             echo "灰度标志：${GRAY_TAG}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
-            echo "灰度版本：${GRAY_VERSION}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
+            echo "灰度版本：${RELEASE_VERSION}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         fi
         echo "${SERVICE_OPERATION}清单：" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         # 输出到文件
