@@ -110,7 +110,7 @@ F_HELP()
     用法:
         $0  [-h|--help]
         $0  [-l|--list]
-        $0  <-c [dockerfile|java|node|自定义]>  <-b {代码分支}>  <-e|--email {邮件地址}>  <-s|--skiptest>  <-f|--force>  <-q|--quiet>  <-G|--gray <-V|--release-version>>  <{项目1}  {项目2} ... {项目n}> ... {项目名称正则完全匹配}>
+        $0  <-c [dockerfile|java|node|自定义]>  <-b {代码分支}>  <-e|--email {邮件地址}>  <-s|--skiptest>  <-f|--force>  <-q|--quiet>  <-V|--release-version>  <-G|--gray>  <{项目1}  {项目2} ... {项目n}> ... {项目名称正则匹配}>
     参数说明：
         \$0   : 代表脚本本身
         []   : 代表是必选项
@@ -127,8 +127,8 @@ F_HELP()
         -s|--skiptest  跳过测试，默认来自deploy.env
         -f|--force     强制重新构建（无论是否有更新）
         -q|--quiet     静默方式，默认非静默方式
-        -G|--gray         : 灰度发布，设置标志为：【gray】，默认：【normal】
-        -V|--release-version : 灰度发布版本号，默认：当天日期（YYYYMMDD）
+        -G|--gray            : 灰度发布，设置标志为：【gray】，默认：【normal】
+        -V|--release-version : 发布版本号
     示例:
         #
         $0  -l             #--- 列出可构建发布的项目清单
@@ -150,10 +150,12 @@ F_HELP()
         $0  -f  项目1  项目2                    #--- 强制重新构建发布【项目1、项目2】，用默认分支，不管【项目1、项目2】有没有更新
         # 静默
         $0  -q  项目1 项目2                     #--- 构建发布【项目1、项目2】，用静默方式
+        # 构建发布带版本号
+        $0  -V 2.2  项目1 项目2                 #--- 构建【项目1、项目2】，发布版本号为【2.2】
         # 构建完成后以灰度方式发布
-        $0  -G               项目1 项目2        #--- 构建【项目1、项目2】，并灰度发布，发布灰度版本号位默认
-        $0  -G  -V 20220606  项目1 项目2        #--- 构建【项目1、项目2】，并灰度发布，发布灰度版本号为【20220606】
-        # 项目名称用正则完全匹配
+        $0  -G          项目1 项目2             #--- 构建【项目1、项目2】，并灰度发布
+        $0  -G  -V 2.2  项目1 项目2             #--- 构建【项目1、项目2】，并灰度发布，发布版本号为【2.2】
+        # 项目名称用正则匹配
         $0   .*xxx.*       #--- 构建发布项目名称正则部分匹配【.*xxx.*】的项目（包含xxx的），用默认分支
         $0   [.]*xxx       #--- 构建发布项目名称正则部分匹配【[.]*xxx】的项目（包含xxx的），用默认分支
         $0   xxx-          #--- 构建发布项目名称正则部分匹配【xxx-】的项目（包含xxx-的），用默认分支
@@ -208,7 +210,7 @@ F_FIND_PROJECT ()
         while read LINE; do
             F_C=`echo ${LINE} | awk -F '|' '{print $2}'`
             F_C=`echo ${F_C}`
-            if [[ "x${F_C}" == "x${F_THIS_LANGUAGE_CATEGORY}" ]]; then
+            if [[ ${F_C} =~ ${F_THIS_LANGUAGE_CATEGORY} ]]; then
                 echo "${LINE}"
                 F_GET_IT="YES"
             fi
@@ -221,7 +223,7 @@ F_FIND_PROJECT ()
             F_C=`echo ${F_C}`
             F_P=`echo ${LINE} | awk -F '|' '{print $3}'`
             F_P=`echo ${F_P}`
-            if [[ ${F_C} == ${F_THIS_LANGUAGE_CATEGORY} ]]  &&  [[ ${F_P} =~ ^${F_THIS_PROJECT}$ ]]; then
+            if [[ ${F_C} =~ ${F_THIS_LANGUAGE_CATEGORY} ]]  &&  [[ ${F_P} =~ ${F_THIS_PROJECT} ]]; then
                 echo "${LINE}"
                 # 仅匹配一次
                 #F_GET_IT="Y"
@@ -347,7 +349,7 @@ F_USER_SEARCH()
 
 
 
-# 查找已部署的service，返回是否找到及清单
+# 精确查找已部署的service，返回是否找到及清单
 # 用法：F_ONLINE_SERVICE_SEARCH  [服务名]  [集群类型]
 F_ONLINE_SERVICE_SEARCH()
 {
@@ -530,10 +532,10 @@ F_DOCKER_CLUSTER_SERVICE_DEPLOY()
             if [[ -n ${RELEASE_VERSION} ]]; then
                 if [[ ${GRAY_TAG} == 'gray' ]]; then
                     F_SERVICE_X_NAME="${F_SERVICE_NAME}--V_${RELEASE_VERSION}-G"
-                    GRAY_OPTION="--release-version ${RELEASE_VERSION}  --gray"
+                    DEPLOY_OPTION="--release-version ${RELEASE_VERSION}  --gray"
                 elif [[ ${GRAY_TAG} == 'normal' ]]; then
                     F_SERVICE_X_NAME="${F_SERVICE_NAME}--V_${RELEASE_VERSION}"
-                    GRAY_OPTION="--release-version ${RELEASE_VERSION}"
+                    DEPLOY_OPTION="--release-version ${RELEASE_VERSION}"
                 else
                     echo -e "\n猪猪侠警告：这是不可能的\n"
                     ERROR_CODE=52
@@ -556,13 +558,13 @@ F_DOCKER_CLUSTER_SERVICE_DEPLOY()
             F_ONLINE_SERVICE_SEARCH  ${F_SERVICE_X_NAME}  ${CLUSTER}
             if [ $? -eq 0 ]; then
                 # 服务运行中
-                ${DOCKER_CLUSTER_SERVICE_DEPLOY_SH}  --mode function  --update  --fuck  ${F_SERVICE_NAME}  ${GRAY_OPTION}
+                ${DOCKER_CLUSTER_SERVICE_DEPLOY_SH}  --mode function  --update  --fuck  ${F_SERVICE_NAME}  ${DEPLOY_OPTION}
                 F_DEPLOY_RETURN_CURRENT=$?
                 let  F_DEPLOY_RETURN=${F_DEPLOY_RETURN}+${F_DEPLOY_RETURN_CURRENT}-50
                 let  F_SERVICE_NUM=${F_SERVICE_NUM}+1
             else
                 # 服务不在运行中
-                ${DOCKER_CLUSTER_SERVICE_DEPLOY_SH}  --mode function  --create  --fuck  ${F_SERVICE_NAME}  ${GRAY_OPTION}
+                ${DOCKER_CLUSTER_SERVICE_DEPLOY_SH}  --mode function  --create  --fuck  ${F_SERVICE_NAME}  ${DEPLOY_OPTION}
                 F_DEPLOY_RETURN_CURRENT=$?
                 let  F_DEPLOY_RETURN=${F_DEPLOY_RETURN}+${F_DEPLOY_RETURN_CURRENT}-50
                 let  F_SERVICE_NUM=${F_SERVICE_NUM}+1
@@ -722,7 +724,7 @@ if [[ -z ${THIS_LANGUAGE_CATEGORY} ]]; then
                 #
                 PROJECT_NAME=`echo $LINE | awk -F '|' '{print $3}'`
                 PROJECT_NAME=`echo ${PROJECT_NAME}`
-                if [[ ${PROJECT_NAME} =~ ^$i$ ]]; then
+                if [[ ${PROJECT_NAME} =~ $i ]]; then
                     echo $LINE >> ${GOGOGO_PROJECT_LIST_FILE_TMP}
                     # 仅匹配一次
                     #GET_IT='Y'
