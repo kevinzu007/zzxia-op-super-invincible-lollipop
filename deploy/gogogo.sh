@@ -412,26 +412,41 @@ F_ONLINE_SERVICE_SEARCH()
 
 
 # 根据【DEPLOY_PLACEMENT】设置运行环境
-# 用法：F_SET_RUN_ENV
+# 用法：
 F_SET_RUN_ENV()
 {
     case ${CLUSTER} in
         swarm)
             if [[ ! -z ${DEPLOY_PLACEMENT} ]]; then
-                # 假设只有一个Label
-                if [[ ${DEPLOY_PLACEMENT} =~ ^L ]]; then
-                    DEPLOY_PLACEMENT_LABEL=${L}
-                else
-                    echo -e "\n猪猪侠警告：配置文件错误，请检查【DEPLOY_PLACEMENT】\n"
-                    return 52
-                fi
+                DEPLOY_PLACEMENT=${DEPLOY_PLACEMENT// /}               #--- 删除字符串中所有的空格
+                DEPLOY_PLACEMENT_ARG_NUM=$(echo ${DEPLOY_PLACEMENT} | grep -o , | wc -l)
+                DEPLOY_PLACEMENT_LABELS=''
+                for ((i=DEPLOY_PLACEMENT_ARG_NUM; i>=0; i--))
+                do
+                    if [ "x${DEPLOY_PLACEMENT}" = 'x' ]; then
+                        break
+                    fi
+                    FIELD=$((i+1))
+                    DEPLOY_PLACEMENT_SET=`echo ${DEPLOY_PLACEMENT} | cut -d , -f ${FIELD}`
+                    # 
+                    if [[ ${DEPLOY_PLACEMENT_SET} =~ ^NET ]]; then
+                        NETWORK_SWARM=$(echo ${DEPLOY_PLACEMENT_SET} | awk -F ':' '{print $2}')
+                    elif [[ ${DEPLOY_PLACEMENT_SET} =~ ^L ]]; then
+                        DEPLOY_PLACEMENT_LABELS="$(echo ${DEPLOY_PLACEMENT_SET} | awk -F ':' '{print $2}') ${DEPLOY_PLACEMENT_LABELS}"
+                    else
+                        echo -e "\n猪猪侠警告：配置文件错误，请检查【DEPLOY_PLACEMENT】\n"
+                        return 52
+                    fi
+                done
             fi
             #
             export DOCKER_HOST=${SWARM_DOCKER_HOST}
             ;;
         k8s)
             if [[ ! -z ${DEPLOY_PLACEMENT} ]]; then
+                DEPLOY_PLACEMENT=${DEPLOY_PLACEMENT// /}               #--- 删除字符串中所有的空格
                 DEPLOY_PLACEMENT_ARG_NUM=$(echo ${DEPLOY_PLACEMENT} | grep -o , | wc -l)
+                DEPLOY_PLACEMENT_LABELS=''
                 for ((i=DEPLOY_PLACEMENT_ARG_NUM; i>=0; i--))
                 do
                     if [ "x${DEPLOY_PLACEMENT}" = 'x' ]; then
@@ -440,10 +455,10 @@ F_SET_RUN_ENV()
                     FIELD=$((i+1))
                     DEPLOY_PLACEMENT_SET=`echo ${DEPLOY_PLACEMENT} | cut -d , -f ${FIELD}`
                     # 假设只有一个Label
-                    if [[ ${DEPLOY_PLACEMENT_SET} =~ ^N ]]; then
-                        K8S_NAMESAPCE=${N}
+                    if [[ ${DEPLOY_PLACEMENT_SET} =~ ^NS ]]; then
+                        K8S_NAMESAPCE=$(echo ${DEPLOY_PLACEMENT_SET} | awk -F ':' '{print $2}')
                     elif [[ ${DEPLOY_PLACEMENT_SET} =~ ^L ]]; then
-                        DEPLOY_PLACEMENT_LABEL=${L}
+                        DEPLOY_PLACEMENT_LABELS="$(echo ${DEPLOY_PLACEMENT_SET} | awk -F ':' '{print $2}') ${DEPLOY_PLACEMENT_LABELS}"
                     else
                         echo -e "\n猪猪侠警告：配置文件错误，请检查【DEPLOY_PLACEMENT】\n"
                         return 52
@@ -457,7 +472,7 @@ F_SET_RUN_ENV()
             if [[ ! -z ${DEPLOY_PLACEMENT} ]]; then
                 if [[ ${DEPLOY_PLACEMENT} =~ ^SSH ]]; then
                     # awk会自动去掉【""】引号
-                    COMPOSE_SSH_HOST_OR_WITH_USER=$(echo ${DEPLOY_PLACEMENT} | awk '{print $1}' | awk -F '=' '{print $2}')
+                    COMPOSE_SSH_HOST_OR_WITH_USER=$(echo ${DEPLOY_PLACEMENT} | awk '{print $1}' | awk -F ':' '{print $2}')
                     COMPOSE_SSH_PORT=$(echo ${DEPLOY_PLACEMENT} | awk '{print $3}')
                     if [[ -z ${COMPOSE_SSH_PORT} ]]; then
                         COMPOSE_SSH_PORT=22
