@@ -20,8 +20,8 @@ cd ${SH_PATH}
 #NETWORK_COMPOSE=
 #SWARM_DOCKER_HOST=
 #K8S_NAMESAPCE=
-#GRAY_RANDOM_PORT_MIN=
-#GRAY_RANDOM_PORT_MAX=
+#DEBUG_RANDOM_PORT_MIN=
+#DEBUG_RANDOM_PORT_MAX=
 
 # 本地env
 TIME=${TIME:-`date +%Y-%m-%dT%H:%M:%S`}
@@ -30,8 +30,8 @@ DATE_TIME=`date -d "${TIME}" +%Y%m%dt%H%M%S`
 #
 RELEASE_VERSION=''
 # 灰度
-GRAY_TAG="normal"                                           #--- 【normal】正常部署；【gray】灰度部署
-GRAY_X_PORTS_FILE="${SH_PATH}/db/deploy-gray-x-ports.db"    #--- db目录下的文件不建议删除
+GRAY_TAG="normal"                                             #--- 【normal】正常部署；【gray】灰度部署
+DEBUG_X_PORTS_FILE="${SH_PATH}/db/deploy-debug-x-ports.db"    #--- db目录下的文件不建议删除
 #
 LOG_BASE="${SH_PATH}/tmp/log"
 LOG_HOME="${LOG_BASE}/${DATE_TIME}"
@@ -751,24 +751,24 @@ F_SEARCH_ONLINE_SERVICE_PUBLISH_PORTS()
 
 
 # 删除已删除服务的publish端口
-# 用法：F_GRAY_X_PORTS_RM  端口1 端口2 ... 端口n
-F_GRAY_X_PORTS_RM()
+# 用法：F_DEBUG_X_PORTS_RM  端口1 端口2 ... 端口n
+F_DEBUG_X_PORTS_RM()
 {
     #
     for n in $@
     do
-        sed -i -E "/^${n}$/d"  ${GRAY_X_PORTS_FILE}
+        sed -i -E "/^${n}$/d"  ${DEBUG_X_PORTS_FILE}
     done
 }
 
 
 
-# 非重复随机灰度端口生成器
-# 用法： F_GEN_GRAY_RANDOM_PORT
-F_GEN_GRAY_RANDOM_PORT()
+# 随机端口生成器
+# 用法： F_GEN_RANDOM_PORT
+F_GEN_RANDOM_PORT()
 {
-    F_PORT_MIN=${GRAY_RANDOM_PORT_MIN}
-    F_PORT_MAX=${GRAY_RANDOM_PORT_MAX}
+    F_PORT_MIN=${DEBUG_RANDOM_PORT_MIN}
+    F_PORT_MAX=${DEBUG_RANDOM_PORT_MAX}
     while true
     do
         F_RANDOM_PORT=$(expr $(date +%N) % $[${F_PORT_MAX} - ${F_PORT_MIN} + 1] + ${F_PORT_MIN})
@@ -776,11 +776,11 @@ F_GEN_GRAY_RANDOM_PORT()
         if [[ $(grep -q ${F_RANDOM_PORT} ${SERVICE_LIST_FILE}; echo $?) -eq 0 ]]; then
             continue
         else
-            if [[ ! -f ${GRAY_X_PORTS_FILE} ]]; then
-                touch  ${GRAY_X_PORTS_FILE}
+            if [[ ! -f ${DEBUG_X_PORTS_FILE} ]]; then
+                touch  ${DEBUG_X_PORTS_FILE}
             fi
             #
-            if [[ $(grep -q ${F_RANDOM_PORT} ${GRAY_X_PORTS_FILE}; echo $?) -eq 0 ]]; then
+            if [[ $(grep -q ${F_RANDOM_PORT} ${DEBUG_X_PORTS_FILE}; echo $?) -eq 0 ]]; then
                 continue
             fi
         fi
@@ -788,7 +788,7 @@ F_GEN_GRAY_RANDOM_PORT()
         break
     done
     #
-    echo ${F_RANDOM_PORT} | tee -a  ${GRAY_X_PORTS_FILE}
+    echo ${F_RANDOM_PORT} | tee -a  ${DEBUG_X_PORTS_FILE}
     return 0
 }
 
@@ -818,6 +818,8 @@ F_FUCK()
                     ERROR_CODE=50
                     echo "成功"
                     echo "${SERVICE_X_NAME} : 成功" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                    # 删除端口
+                    F_DEBUG_X_PORTS_RM  $(echo ${PORTS_RM})
                 else
                     ERROR_CODE=54
                     echo "失败"
@@ -832,7 +834,7 @@ F_FUCK()
                     do
                         echo "${R_LINE} : 成功" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                         # 删除端口
-                        F_GRAY_X_PORTS_RM  $(echo ${PORTS_RM})
+                        F_DEBUG_X_PORTS_RM  $(echo ${PORTS_RM})
                     done < ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
                 else
                     ERROR_CODE=54
@@ -1465,6 +1467,8 @@ do
 
             # 5 组装port
             CONTAINER_PORTS_OK=''
+            DEBUG_X_PORT=''
+            DEBUG_X_PORTS=''
             #
             CONTAINER_PORTS_NUM=`echo ${CONTAINER_PORTS} | grep -o , | wc -l`
             for ((i=CONTAINER_PORTS_NUM; i>=0; i--))
@@ -1486,57 +1490,66 @@ do
                     echo -e "\n猪猪侠警告：配置文件错误，请检查【CONTAINER_PORTS】。inside端口不能为空\n"
                     exit 52
                 fi
-                # 灰度
-                GRAY_X_PORT=''
-                if [[ ${GRAY_ENABLE} == 'YES' ]]; then
-                    # 外部端口
+                #
+                # dev环境开放Debug端口
+                if [[ ${RUN_ENV} == 'dev' ]]; then
                     case ${GRAY_TAG} in
                         gray)
-                            if [[ ${RUN_ENV} == 'dev' ]]; then
-                                # 改用随机端口
-                                # 这个是为开发人员另外开放的外部端口，便于开发调试
-                                CONTAINER_PORTS_SET_outside=$(F_GEN_GRAY_RANDOM_PORT)
-                            fi
+                            # 改用随机端口
+                            # 这个是为开发人员另外开放的外部端口，便于开发调试
+                            CONTAINER_PORTS_SET_outside=$(F_GEN_RANDOM_PORT)
+                            echo -e "\n【${RUN_ENV}】环境，调试端口映射为：【外：${CONTAINER_PORTS_SET_outside}】-->【内：${CONTAINER_PORTS_SET_inside}】\n"
                             ;;
                         normal)
-                            if [[ ${RUN_ENV} == 'dev' ]]; then
-                                if [[ -z ${CONTAINER_PORTS_SET_outside} ]]; then
-                                    # dev环境，如果外部端口为空，则默认将内部端口等值发布出来，便于开发调试
-                                    CONTAINER_PORTS_SET_outside=${CONTAINER_PORTS_SET_inside}
-                                fi
+                            if [[ -n ${RELEASE_VERSION} ]]; then
+                                # 有版本号
+                                # 改用随机端口
+                                # 这个是为开发人员另外开放的外部端口，便于开发调试
+                                CONTAINER_PORTS_SET_outside=$(F_GEN_RANDOM_PORT)
+                                echo -e "\n【${RUN_ENV}】环境，调试端口映射为：【外：${CONTAINER_PORTS_SET_outside}】-->【内：${CONTAINER_PORTS_SET_inside}】\n"
                             else
+                                # 无版本号
                                 if [[ -z ${CONTAINER_PORTS_SET_outside} ]]; then
-                                    continue
+                                    # 无外部端口，则默认将内部端口等值发布出来，便于开发调试
+                                    CONTAINER_PORTS_SET_outside=${CONTAINER_PORTS_SET_inside}
+                                    echo -e "\n【${RUN_ENV}】环境，调试端口映射为：【外：${CONTAINER_PORTS_SET_outside}】-->【内：${CONTAINER_PORTS_SET_inside}】\n"
+                                else
+                                    # 保持配置文件指定的端口
+                                    echo
                                 fi
                             fi
+                            #
                             ;;
                         *)
-                            echo -e "\n猪猪侠警告：未定义的灰度标志【GRAY_TAG】\n"
+                            echo -e "\n猪猪侠警告：未定义的灰度标志【${GRAY_TAG}】\n"
                             exit 52
                             ;;
                     esac
-                    # 【# 7 组装ENV】中，灰度端口设计只支持一个，故：如果配置文件中有多个端口，这里只会将最后一个GRAY_X_PORT变量值传给容器，绝大多数情况也只需要一个
-                    GRAY_X_PORT=${CONTAINER_PORTS_SET_outside}
+                    # 保存端口以备用
+                    DEBUG_X_PORT=${CONTAINER_PORTS_SET_outside}
+                    DEBUG_X_PORTS="${DEBUG_X_PORTS} ${DEBUG_X_PORT}"
                 fi
                 #
-                CONTAINER_PORTS_SET=`echo --publish ${CONTAINER_PORTS_SET_outside}:${CONTAINER_PORTS_SET_inside}`
-                #
-                case "${CLUSTER}" in
-                    swarm)
-                        CONTAINER_PORTS_OK=`echo ${CONTAINER_PORTS_OK} ${CONTAINER_PORTS_SET}`
-                        ;;
-                    k8s)
-                        sed -i "/^        ports:/a\        - name: tcp-${CONTAINER_PORTS_SET_outside}\n          containerPort: ${CONTAINER_PORTS_SET_outside}\n          protocol: TCP"  ${YAML_HOME}/${SERVICE_X_NAME}.yaml
-                        sed -i "/^  ports:/a\  - name: svc-${CONTAINER_PORTS_SET_outside}\n    port: ${CONTAINER_PORTS_SET_outside}\n    protocol: TCP\n    targetPort: tcp-${CONTAINER_PORTS_SET_outside}\n    nodePort: ${CONTAINER_PORTS_SET_inside}"  ${YAML_HOME}/${SERVICE_X_NAME}.yaml
-                        ;;
-                    compose)
-                        sed -i "/^    ports:/a\      - ${CONTAINER_PORTS_SET_outside}:${CONTAINER_PORTS_SET_inside}"  ${YAML_HOME}/docker-compose.yaml
-                        ;;
-                    *)
-                        echo -e "\n猪猪侠警告：未定义的集群类型\n"
-                        exit 52
-                        ;;
-                esac
+                # 组装
+                if [[ -n ${CONTAINER_PORTS_SET_outside} ]]; then
+                    case "${CLUSTER}" in
+                        swarm)
+                            CONTAINER_PORTS_SET="--publish ${CONTAINER_PORTS_SET_outside}:${CONTAINER_PORTS_SET_inside}"
+                            CONTAINER_PORTS_OK="${CONTAINER_PORTS_OK} ${CONTAINER_PORTS_SET}"
+                            ;;
+                        k8s)
+                            sed -i "/^        ports:/a\        - name: tcp-${CONTAINER_PORTS_SET_outside}\n          containerPort: ${CONTAINER_PORTS_SET_outside}\n          protocol: TCP"  ${YAML_HOME}/${SERVICE_X_NAME}.yaml
+                            sed -i "/^  ports:/a\  - name: svc-${CONTAINER_PORTS_SET_outside}\n    port: ${CONTAINER_PORTS_SET_outside}\n    protocol: TCP\n    targetPort: tcp-${CONTAINER_PORTS_SET_outside}\n    nodePort: ${CONTAINER_PORTS_SET_inside}"  ${YAML_HOME}/${SERVICE_X_NAME}.yaml
+                            ;;
+                        compose)
+                            sed -i "/^    ports:/a\      - ${CONTAINER_PORTS_SET_outside}:${CONTAINER_PORTS_SET_inside}"  ${YAML_HOME}/docker-compose.yaml
+                            ;;
+                        *)
+                            echo -e "\n猪猪侠警告：未定义的集群类型\n"
+                            exit 52
+                            ;;
+                    esac
+                fi
             done
 
 
@@ -1637,7 +1650,7 @@ do
             # 7 组装ENV
             #
             # - 灰度用ENV
-            CONTAINER_ENVS_GRAY_OK="  --env GRAY_TAG=${GRAY_TAG}  --env RELEASE_VERSION=${RELEASE_VERSION}  --env SERVICE_X_NAME=${SERVICE_X_NAME}  --env GRAY_X_PORT=${GRAY_X_PORT}"
+            CONTAINER_ENVS_GRAY_OK="  --env GRAY_TAG=${GRAY_TAG}  --env RELEASE_VERSION=${RELEASE_VERSION}  --env SERVICE_X_NAME=${SERVICE_X_NAME}  --env DEBUG_X_PORTS=${DEBUG_X_PORTS}  --env DEBUG_X_PORT=${DEBUG_X_PORT}"
             #
             # - 从公共文件
             CONTAINER_ENVS_PUB_OK=""
