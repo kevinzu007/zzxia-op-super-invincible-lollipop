@@ -37,7 +37,7 @@ LOG_HOME="${LOG_BASE}/${DATE_TIME}"
 WEBSITE_BASE='/srv/www'
 # 方式
 SH_RUN_MODE="normal"
-BUILD_QUIET='NO'
+BUILD_QUIET='YES'
 BUILD_FORCE='NO'
 # 来自父shell
 BUILD_OK_LIST_FILE_function=${BUILD_OK_LIST_FILE_function:-"${LOG_HOME}/${SH_NAME}-build-OK.list.function"}
@@ -112,7 +112,7 @@ F_HELP()
     用法:
         $0  [-h|--help]
         $0  [-l|--list]
-        $0  <-M|--mode [normal|function]>  <-c|--category [dockerfile|java|node|自定义]>  <-b|--branch {代码分支}>  <-e|--email {邮件地址}>  <-s|--skiptest>  <-f|--force>  <-q|--quiet>  <{项目1}  {项目2} ... {项目n} ... {项目名称正则表达式完全匹配}>
+        $0  <-M|--mode [normal|function]>  <-c|--category [dockerfile|java|node|自定义]>  <-b|--branch {代码分支}>  <-e|--email {邮件地址}>  <-s|--skiptest>  <-f|--force>  <-v|--verbose>  <{项目1}  {项目2} ... {项目n} ... {项目名称正则表达式完全匹配}>
     参数说明：
         \$0   : 代表脚本本身
         []   : 代表是必选项
@@ -129,10 +129,10 @@ F_HELP()
         -e|--email     发送日志到指定邮件地址，如果与【-U|--user-name】同时存在，则将会被替代
         -s|--skiptest  跳过测试，默认来自deploy.env
         -f|--force     强制重新构建（无论是否有更新）
-        -q|--quiet     静默方式
+        -v|--verbose   显示更多过程信息
     示例:
         #
-        $0  -l     #--- 列出可构建的项目清单
+        $0  -l         #--- 列出可构建的项目清单
         #
         $0                              #--- 构建所有项目，用默认分支
         $0  -b 分支a                    #--- 构建所有项目，用分支a
@@ -155,9 +155,9 @@ F_HELP()
         $0  -b 分支a  -s  项目1  项目2        #--- 构建项目：【项目1、项目2】，用【分支a】，跳过测试
         # 强制重新构建
         $0  -f  项目1  项目2                  #--- 构建【项目1、项目2】，用默认分支，无论有没有更新都进行强制构建
-        # 静默
-        $0  -q  --email xm@xxx.com                #--- 构建所有项目，用默认分支，用静默方式并将错误日志发送到邮箱【xm@xxx.com】
-        $0  -q  --email xm@xxx.com  项目1  项目2  #--- 构建项目：【项目1、项目2】，用默认分支，用静默方式并将错误日志发送到邮箱【xm@xxx.com】
+        # 显示更多信息
+        $0  -v  --email xm@xxx.com                #--- 构建所有项目，用默认分支，显示更多过程信息并将错误日志发送到邮箱【xm@xxx.com】
+        $0  -v  --email xm@xxx.com  项目1  项目2  #--- 构建项目：【项目1、项目2】，用默认分支，显示更多详细信息并将错误日志发送到邮箱【xm@xxx.com】
         # 外调用★
         $0  -M function  项目1                #--- 构建项目：【项目1】，用默认分支
         $0  -M function  -b 分支a  项目1      #--- 构建项目：【项目1】，用分支【分支a】
@@ -826,7 +826,7 @@ F_USER_SEARCH()
 
 
 # 参数检查
-TEMP=`getopt -o hlM:c:b:e:sfq  -l help,list,mode:,category:,branch:,email:,skiptest,force,quiet -- "$@"`
+TEMP=`getopt -o hlM:c:b:e:sfv  -l help,list,mode:,category:,branch:,email:,skiptest,force,verbose -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
     exit 51
@@ -894,8 +894,8 @@ do
             BUILD_FORCE='YES'
             shift
             ;;
-        -q|--quiet)
-            BUILD_QUIET='YES'
+        -v|--verbose)
+            BUILD_QUIET='NO'
             shift
             ;;
         --)

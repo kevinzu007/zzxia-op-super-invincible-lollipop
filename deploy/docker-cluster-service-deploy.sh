@@ -144,7 +144,7 @@ F_HELP()
         -t|--tag       ：模糊镜像tag版本
         -T|--TAG       ：精确镜像tag版本
         -n|--number    ：Pod副本数
-        -G|--gray      : 灰度发布，设置标志为：gray，默认：normal
+        -G|--gray      : 设置灰度标志为：gray，默认：normal
         -V|--release-version : 发布版本号
         -a|--all-release     : 模糊匹配所有已发布的版本号
         -M|--mode      ：指定构建方式，二选一【normal|function】，默认为normal方式。此参数用于被外部调用

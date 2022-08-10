@@ -41,7 +41,7 @@ export WEB_RELEASE_OK_LIST_FILE_function="${LOG_HOME}/${SH_NAME}-export-web_rele
 export MY_EMAIL=''
 export MY_XINGMING=''
 # 独有
-BUILD_QUIET='NO'
+BUILD_QUIET='YES'
 BUILD_FORCE='NO'
 GOGOGO_PROJECT_LIST_FILE="${SH_PATH}/project.list"
 GOGOGO_PROJECT_LIST_FILE_TMP="${LOG_HOME}/${SH_NAME}-project.list.tmp"
@@ -110,7 +110,7 @@ F_HELP()
     用法:
         $0  [-h|--help]
         $0  [-l|--list]
-        $0  <-c [dockerfile|java|node|自定义]>  <-b {代码分支}>  <-e|--email {邮件地址}>  <-s|--skiptest>  <-f|--force>  <-q|--quiet>  <-V|--release-version>  <-G|--gray>  <{项目1}  {项目2} ... {项目n}> ... {项目名称正则匹配}>
+        $0  <-c [dockerfile|java|node|自定义]>  <-b {代码分支}>  <-e|--email {邮件地址}>  <-s|--skiptest>  <-f|--force>  <-v|--verbose>  <-V|--release-version>  <-G|--gray>  <{项目1}  {项目2} ... {项目n}> ... {项目名称正则匹配}>
     参数说明：
         \$0   : 代表脚本本身
         []   : 代表是必选项
@@ -126,8 +126,8 @@ F_HELP()
         -e|--email     发送日志到指定邮件地址，如果与【-U|--user-name】同时存在，则将会被替代
         -s|--skiptest  跳过测试，默认来自deploy.env
         -f|--force     强制重新构建（无论是否有更新）
-        -q|--quiet     静默方式，默认非静默方式
-        -G|--gray            : 灰度发布，设置标志为：【gray】，默认：【normal】
+        -v|--verbose   显示更多过程信息
+        -G|--gray            : 设置灰度标志为：【gray】，默认：【normal】
         -V|--release-version : 发布版本号
     示例:
         #
@@ -148,8 +148,8 @@ F_HELP()
         $0  -s  项目1 项目2                     #--- 构建发布【项目1、项目2】，跳过测试
         # 强制重新构建
         $0  -f  项目1  项目2                    #--- 强制重新构建发布【项目1、项目2】，用默认分支，不管【项目1、项目2】有没有更新
-        # 静默
-        $0  -q  项目1 项目2                     #--- 构建发布【项目1、项目2】，用静默方式
+        # 显示更多信息
+        $0  -v  项目1 项目2                     #--- 构建发布【项目1、项目2】，显示更多信息
         # 构建发布带版本号
         $0  -V 2.2  项目1 项目2                 #--- 构建【项目1、项目2】，发布版本号为【2.2】
         # 构建完成后以灰度方式发布
@@ -617,7 +617,7 @@ F_DOCKER_CLUSTER_SERVICE_DEPLOY()
 
 
 # 参数检查
-TEMP=`getopt -o hlc:b:e:sfqGV:  -l help,list,category:,branch:,email:,skiptest,force,quiet,gray,release-version: -- "$@"`
+TEMP=`getopt -o hlc:b:e:sfvGV:  -l help,list,category:,branch:,email:,skiptest,force,verbose,gray,release-version: -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
     exit 51
@@ -668,8 +668,8 @@ do
             BUILD_FORCE='YES'
             shift
             ;;
-        -q|--quiet)
-            BUILD_QUIET='YES'
+        -v|--verbose)
+            BUILD_QUIET='NO'
             shift
             ;;
         -G|--gray)
@@ -912,7 +912,7 @@ do
         done
     else
         # 非静默
-        ${BUILD_SH}  --mode function  --category ${LANGUAGE_CATEGORY}  --branch ${GIT_BRANCH}  ${PJ}  ${BUILD_SKIP_TEST_OPT}  ${BUILD_FORCE_OPT}
+        ${BUILD_SH}  --mode function  --category ${LANGUAGE_CATEGORY}  --branch ${GIT_BRANCH}  ${PJ}  ${BUILD_SKIP_TEST_OPT}  ${BUILD_FORCE_OPT}  --verbose
         BUILD_RETURN=$?
         #echo "ok ${BUILD_RETURN}" > "${GOGOGO_PROJECT_BUILD_RESULT}.${PJ}"
     fi
