@@ -7,7 +7,7 @@
 
 
 # sh
-DINGDING_BY_MARKDOWN_FILE_PY="/usr/local/bin/dingding_by_markdown_file.py"
+DINGDING_BY_MARKDOWN_FILE_PY="/usr/local/bin/dingding_send_markdown.py"
 
 
 

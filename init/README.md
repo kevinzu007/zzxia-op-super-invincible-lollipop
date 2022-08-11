@@ -5,7 +5,7 @@
 
 相对基本安装如下：
 ```text
-0-init-envs.sh*
+0-init-envs.sh*       #--- 基于0-init-envs.sh.sample创建自己专有的
 1-sshkey-copy.sh
 install-build-envs.sh
 install-base.yml

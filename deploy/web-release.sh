@@ -28,7 +28,7 @@ ERROR_CODE=''     #--- 程序最终返回值，一般用于【--mode=function】
 #
 TODAY=$(date -d "${TIME}" +%Y%m%d)
 WEB_PROJECT_LIST_FILE="${SH_PATH}/nginx.list"
-WEB_PROJECT_LIST_FILE_TMP="${LOG_HOME}/${SH_NAME}-${WEB_PROJECT_LIST_FILE}.tmp"
+WEB_PROJECT_LIST_FILE_TMP="${LOG_HOME}/${SH_NAME}-nginx.list.tmp"
 #
 WEB_RELEASE_NGINX_OK_LIST_FILE="${LOG_HOME}/${SH_NAME}-web_release_nginx-OK.list"
 WEB_RELEASE_OK_LIST_FILE="${LOG_HOME}/${SH_NAME}-web_release-OK.list"
@@ -43,7 +43,7 @@ MY_XINGMING=${MY_XINGMING:-''}
 MY_EMAIL=${MY_EMAIL:-''}
 # sh
 FORMAT_TABLE_SH="${SH_PATH}/../op/format_table.sh"
-DINGDING_MARKDOWN_PY="${SH_PATH}/../op/dingding_markdown-deploy.py"
+DINGDING_MARKDOWN_PY="${SH_PATH}/../op/dingding_conver_to_markdown_list-deploy.py"
 
 # echo颜色定义
 export ECHO_CLOSE="\033[0m"

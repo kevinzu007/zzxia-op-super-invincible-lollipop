@@ -7,9 +7,9 @@
 #############################################################################
 
 
-# 用法： ./dingding_by_markdown_file.py  --title='sssss'  --message="`cat mmm.txt`"
-#        ./dingding_by_markdown_file.py  --title 'sssss'  --message "$( echo -e "### 用户：${USER} \n### 时间：${TIME} \n\n" )"
-#        ./dingding_by_markdown_file.py  --title 'sssss'  --message "$( echo -e "### 用户：${USER} \n### 时间：`date` \n\n" )"
+# 用法： ./dingding_send_markdown.py  --title='sssss'  --message="`cat mmm.txt`"
+#        ./dingding_send_markdown.py  --title 'sssss'  --message "$( echo -e "### 用户：${USER} \n### 时间：${TIME} \n\n" )"
+#        ./dingding_send_markdown.py  --title 'sssss'  --message "$( echo -e "### 用户：${USER} \n### 时间：`date` \n\n" )"
 # 请将变量【dingding_api_url】修改为你自己的
 
 
@@ -67,6 +67,6 @@ try:
   sendData = json.dumps(send_message,indent=1)
   requests.post(url=dingding_api_url,headers=send_header,data=sendData)
 except:
-  traceback.print_exc(file=open('/tmp/dingding_by_markdown_file.py.log','w+'))
+  traceback.print_exc(file=open('/tmp/dingding_send_markdown.py.log','w+'))
 
 

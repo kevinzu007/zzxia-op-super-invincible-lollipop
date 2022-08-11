@@ -9,7 +9,7 @@
 # 用途：用户登录时发送消息通知
 # 注意：脚本拷贝到/etc/profile.d/下
 # 依赖：/etc/profile.d/run-env.sh
-#       /usr/local/bin/dingding_by_markdown_file-login.py
+#       /usr/local/bin/dingding_send_markdown-login.py
 
 
 
@@ -30,7 +30,7 @@ fi
 # 钉钉
 F_SEND_DINGDING()
 {
-    /usr/local/bin/dingding_by_markdown_file-login.py  \
+    /usr/local/bin/dingding_send_markdown-login.py  \
         --title "【Alert:SSH登录:${RUN_ENV}】"  \
         --message "$( echo -e "### `echo ${USER} \(sudo:${SUDO_USER}\) ` \n### `echo ${IP}` \n### `echo ${AREA}` \n\n---\n\n` w | sed '1,2d' `" )"
 }
@@ -84,7 +84,7 @@ F_OTHER_IP()
 # 必须软件jq
 if [ "`which jq >/dev/null 2>&1 ; echo $?`" != "0" ]; then
     echo -e "| `date +'%FT%T'` | ${HOSTNAME} | 用户名: ${USER}(sudo:${SUDO_USER}) | echo $0 | echo '请安装软件jq' |" >> ${LOG_FILE}
-    /usr/local/bin/dingding_by_markdown_file-login.py  \
+    /usr/local/bin/dingding_send_markdown-login.py  \
         --title "【Error:用户登录:${RUN_ENV}】"  \
         --message "$( echo -e "### 请安装软件jq" )"
 fi

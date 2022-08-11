@@ -27,7 +27,7 @@ TIME=`date +%Y-%m-%dT%H:%M:%S`
 TIME_START=${TIME}
 
 # sh
-DINGDING_MARKDOWN_PY="/usr/local/bin/dingding_markdown.py"
+DINGDING_MARKDOWN_PY="/usr/local/bin/dingding_conver_to_markdown_list.py"
 PGSQL_CMD_BASE='/usr/local/pgsql/bin'
 
 

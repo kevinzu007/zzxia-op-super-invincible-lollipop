@@ -25,9 +25,10 @@ BUILD_SKIP_TEST=${BUILD_SKIP_TEST:-'NO'}  #--- 跳过测试（YES|NO）
 export TIME=`date +%Y-%m-%dT%H:%M:%S`
 TIME_START=${TIME}
 DATE_TIME=`date -d "${TIME}" +%Y%m%dt%H%M%S`
+#
+RELEASE_VERSION=''
 # 灰度
 GRAY_TAG="normal"
-GRAY_VERSION=`date -d "${TIME}" +%Y%m%d`
 #
 LOG_BASE="${SH_PATH}/tmp/log"
 LOG_HOME="${LOG_BASE}/${DATE_TIME}"
@@ -40,10 +41,10 @@ export WEB_RELEASE_OK_LIST_FILE_function="${LOG_HOME}/${SH_NAME}-export-web_rele
 export MY_EMAIL=''
 export MY_XINGMING=''
 # 独有
-BUILD_QUIET='NO'
+BUILD_QUIET='YES'
 BUILD_FORCE='NO'
 GOGOGO_PROJECT_LIST_FILE="${SH_PATH}/project.list"
-GOGOGO_PROJECT_LIST_FILE_TMP="${LOG_HOME}/${SH_NAME}-${GOGOGO_PROJECT_LIST_FILE}.tmp"
+GOGOGO_PROJECT_LIST_FILE_TMP="${LOG_HOME}/${SH_NAME}-project.list.tmp"
 GOGOGO_SERVICE_LIST_FILE="${SH_PATH}/docker-cluster-service.list"
 GOGOGO_RELEASE_WEB_OK_LIST_FILE="${LOG_HOME}/${SH_NAME}-web_release-OK.list"
 GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE="${LOG_HOME}/${SH_NAME}-build_and_release-OK.list"
@@ -63,7 +64,7 @@ fi
 BUILD_SH="${SH_PATH}/build.sh"
 DOCKER_CLUSTER_SERVICE_DEPLOY_SH="${SH_PATH}/docker-cluster-service-deploy.sh"
 FORMAT_TABLE_SH="${SH_PATH}/../op/format_table.sh"
-DINGDING_MARKDOWN_PY="${SH_PATH}/../op/dingding_markdown-deploy.py"
+DINGDING_MARKDOWN_PY="${SH_PATH}/../op/dingding_conver_to_markdown_list-deploy.py"
 
 # echo颜色定义
 export ECHO_CLOSE="\033[0m"
@@ -109,7 +110,7 @@ F_HELP()
     用法:
         $0  [-h|--help]
         $0  [-l|--list]
-        $0  <-c [dockerfile|java|node|自定义]>  <-b {代码分支}>  <-e|--email {邮件地址}>  <-s|--skiptest>  <-f|--force>  <-q|--quiet>  <-G|--gray <-V|--gray-version>>  <{项目1}  {项目2} ... {项目n}> ... {项目名称正则完全匹配}>
+        $0  <-c [dockerfile|java|node|自定义]>  <-b {代码分支}>  <-e|--email {邮件地址}>  <-s|--skiptest>  <-f|--force>  <-v|--verbose>  <-V|--release-version>  <-G|--gray>  <{项目1}  {项目2} ... {项目n}> ... {项目名称正则匹配}>
     参数说明：
         \$0   : 代表脚本本身
         []   : 代表是必选项
@@ -125,9 +126,9 @@ F_HELP()
         -e|--email     发送日志到指定邮件地址，如果与【-U|--user-name】同时存在，则将会被替代
         -s|--skiptest  跳过测试，默认来自deploy.env
         -f|--force     强制重新构建（无论是否有更新）
-        -q|--quiet     静默方式，默认非静默方式
-        -G|--gray         : 灰度发布，设置标志为：【gray】，默认：【normal】
-        -V|--gray-version : 灰度发布版本号，默认：当天日期（YYYYMMDD）
+        -v|--verbose   显示更多过程信息
+        -G|--gray            : 设置灰度标志为：【gray】，默认：【normal】
+        -V|--release-version : 发布版本号
     示例:
         #
         $0  -l             #--- 列出可构建发布的项目清单
@@ -147,19 +148,22 @@ F_HELP()
         $0  -s  项目1 项目2                     #--- 构建发布【项目1、项目2】，跳过测试
         # 强制重新构建
         $0  -f  项目1  项目2                    #--- 强制重新构建发布【项目1、项目2】，用默认分支，不管【项目1、项目2】有没有更新
-        # 静默
-        $0  -q  项目1 项目2                     #--- 构建发布【项目1、项目2】，用静默方式
+        # 显示更多信息
+        $0  -v  项目1 项目2                     #--- 构建发布【项目1、项目2】，显示更多信息
+        # 构建发布带版本号
+        $0  -V 2.2  项目1 项目2                 #--- 构建【项目1、项目2】，发布版本号为【2.2】
         # 构建完成后以灰度方式发布
-        $0  -G               项目1 项目2        #--- 构建【项目1、项目2】，并灰度发布，发布灰度版本号位默认
-        $0  -G  -V 20220606  项目1 项目2        #--- 构建【项目1、项目2】，并灰度发布，发布灰度版本号为【20220606】
-        # 项目名称用正则完全匹配
-        $0   .*xxx.*       #--- 构建发布项目名称正则部分匹配【.*xxx.*】的项目（包含xxx的），用默认分支
-        $0   [.]*xxx       #--- 构建发布项目名称正则部分匹配【[.]*xxx】的项目（包含xxx的），用默认分支
-        $0   xxx-          #--- 构建发布项目名称正则部分匹配【xxx-】的项目（包含xxx-的），用默认分支
-        $0   ^[xy]         #--- 构建发布项目名称正则部分匹配【^[xy]】的项目（以x或y开头的），用默认分支
-        $0   ^sss          #--- 构建发布项目名称正则部分匹配【^sss】的目（以sss开头的），用默认分支
-        $0   eee$          #--- 构建发布项目名称正则部分匹配【eee$】的目（以eee结尾的），用默认分支
-        $0   ^sss.*eee$    #--- 构建发布项目名称正则完全匹配【^sss.*eee$】的项目（以以sss开头，并且以eee结尾的），用默认分支
+        $0  -G          项目1 项目2             #--- 构建【项目1、项目2】，并灰度发布
+        $0  -G  -V 2.2  项目1 项目2             #--- 构建【项目1、项目2】，并灰度发布，发布版本号为【2.2】
+        # 项目名称用正则匹配
+        $0   .*xxx.*       #--- 构建发布项目名称正则匹配【.*xxx.*】的项目（包含xxx的），用默认分支
+        $0   [.]*xxx       #--- 构建发布项目名称正则匹配【[.]*xxx】的项目（包含xxx的），用默认分支
+        $0   xxx-          #--- 构建发布项目名称正则匹配【xxx-】的项目（包含xxx-的），用默认分支
+        $0   ^[xy]         #--- 构建发布项目名称正则匹配【^[xy]】的项目（以x或y开头的），用默认分支
+        $0   ^sss          #--- 构建发布项目名称正则匹配【^sss】的目（以sss开头的），用默认分支
+        $0   eee$          #--- 构建发布项目名称正则匹配【eee$】的目（以eee结尾的），用默认分支
+        $0   ^sss.*eee$    #--- 构建发布项目名称正则匹配【^sss.*eee$】的项目（以以sss开头，并且以eee结尾的），用默认分支
+        $0  -c ja  ^sss.*eee$    #--- 构建发布项目类别正则匹配【ja】，且项目名称正则匹配【^sss.*eee$】的项目（以以sss开头，并且以eee结尾的），用默认分支
     "
 }
 
@@ -207,7 +211,7 @@ F_FIND_PROJECT ()
         while read LINE; do
             F_C=`echo ${LINE} | awk -F '|' '{print $2}'`
             F_C=`echo ${F_C}`
-            if [[ "x${F_C}" == "x${F_THIS_LANGUAGE_CATEGORY}" ]]; then
+            if [[ ${F_C} =~ ${F_THIS_LANGUAGE_CATEGORY} ]]; then
                 echo "${LINE}"
                 F_GET_IT="YES"
             fi
@@ -220,7 +224,7 @@ F_FIND_PROJECT ()
             F_C=`echo ${F_C}`
             F_P=`echo ${LINE} | awk -F '|' '{print $3}'`
             F_P=`echo ${F_P}`
-            if [[ ${F_C} == ${F_THIS_LANGUAGE_CATEGORY} ]]  &&  [[ ${F_P} =~ ^${F_THIS_PROJECT}$ ]]; then
+            if [[ ${F_C} =~ ${F_THIS_LANGUAGE_CATEGORY} ]]  &&  [[ ${F_P} =~ ${F_THIS_PROJECT} ]]; then
                 echo "${LINE}"
                 # 仅匹配一次
                 #F_GET_IT="Y"
@@ -346,7 +350,7 @@ F_USER_SEARCH()
 
 
 
-# 查找已部署的service，返回是否找到及清单
+# 精确查找已部署的service，返回是否找到及清单
 # 用法：F_ONLINE_SERVICE_SEARCH  [服务名]  [集群类型]
 F_ONLINE_SERVICE_SEARCH()
 {
@@ -409,26 +413,41 @@ F_ONLINE_SERVICE_SEARCH()
 
 
 # 根据【DEPLOY_PLACEMENT】设置运行环境
-# 用法：F_SET_RUN_ENV
+# 用法：
 F_SET_RUN_ENV()
 {
     case ${CLUSTER} in
         swarm)
             if [[ ! -z ${DEPLOY_PLACEMENT} ]]; then
-                # 假设只有一个Label
-                if [[ ${DEPLOY_PLACEMENT} =~ ^L ]]; then
-                    DEPLOY_PLACEMENT_LABEL=${L}
-                else
-                    echo -e "\n猪猪侠警告：配置文件错误，请检查【DEPLOY_PLACEMENT】\n"
-                    return 52
-                fi
+                DEPLOY_PLACEMENT=${DEPLOY_PLACEMENT// /}               #--- 删除字符串中所有的空格
+                DEPLOY_PLACEMENT_ARG_NUM=$(echo ${DEPLOY_PLACEMENT} | grep -o , | wc -l)
+                DEPLOY_PLACEMENT_LABELS=''
+                for ((i=DEPLOY_PLACEMENT_ARG_NUM; i>=0; i--))
+                do
+                    if [ "x${DEPLOY_PLACEMENT}" = 'x' ]; then
+                        break
+                    fi
+                    FIELD=$((i+1))
+                    DEPLOY_PLACEMENT_SET=`echo ${DEPLOY_PLACEMENT} | cut -d , -f ${FIELD}`
+                    # 
+                    if [[ ${DEPLOY_PLACEMENT_SET} =~ ^NET ]]; then
+                        NETWORK_SWARM=$(echo ${DEPLOY_PLACEMENT_SET} | awk -F ':' '{print $2}')
+                    elif [[ ${DEPLOY_PLACEMENT_SET} =~ ^L ]]; then
+                        DEPLOY_PLACEMENT_LABELS="$(echo ${DEPLOY_PLACEMENT_SET} | awk -F ':' '{print $2}') ${DEPLOY_PLACEMENT_LABELS}"
+                    else
+                        echo -e "\n猪猪侠警告：配置文件错误，请检查【DEPLOY_PLACEMENT】\n"
+                        return 52
+                    fi
+                done
             fi
             #
             export DOCKER_HOST=${SWARM_DOCKER_HOST}
             ;;
         k8s)
             if [[ ! -z ${DEPLOY_PLACEMENT} ]]; then
+                DEPLOY_PLACEMENT=${DEPLOY_PLACEMENT// /}               #--- 删除字符串中所有的空格
                 DEPLOY_PLACEMENT_ARG_NUM=$(echo ${DEPLOY_PLACEMENT} | grep -o , | wc -l)
+                DEPLOY_PLACEMENT_LABELS=''
                 for ((i=DEPLOY_PLACEMENT_ARG_NUM; i>=0; i--))
                 do
                     if [ "x${DEPLOY_PLACEMENT}" = 'x' ]; then
@@ -437,10 +456,10 @@ F_SET_RUN_ENV()
                     FIELD=$((i+1))
                     DEPLOY_PLACEMENT_SET=`echo ${DEPLOY_PLACEMENT} | cut -d , -f ${FIELD}`
                     # 假设只有一个Label
-                    if [[ ${DEPLOY_PLACEMENT_SET} =~ ^N ]]; then
-                        K8S_NAMESAPCE=${N}
+                    if [[ ${DEPLOY_PLACEMENT_SET} =~ ^NS ]]; then
+                        K8S_NAMESAPCE=$(echo ${DEPLOY_PLACEMENT_SET} | awk -F ':' '{print $2}')
                     elif [[ ${DEPLOY_PLACEMENT_SET} =~ ^L ]]; then
-                        DEPLOY_PLACEMENT_LABEL=${L}
+                        DEPLOY_PLACEMENT_LABELS="$(echo ${DEPLOY_PLACEMENT_SET} | awk -F ':' '{print $2}') ${DEPLOY_PLACEMENT_LABELS}"
                     else
                         echo -e "\n猪猪侠警告：配置文件错误，请检查【DEPLOY_PLACEMENT】\n"
                         return 52
@@ -454,7 +473,7 @@ F_SET_RUN_ENV()
             if [[ ! -z ${DEPLOY_PLACEMENT} ]]; then
                 if [[ ${DEPLOY_PLACEMENT} =~ ^SSH ]]; then
                     # awk会自动去掉【""】引号
-                    COMPOSE_SSH_HOST_OR_WITH_USER=$(echo ${DEPLOY_PLACEMENT} | awk '{print $1}' | awk -F '=' '{print $2}')
+                    COMPOSE_SSH_HOST_OR_WITH_USER=$(echo ${DEPLOY_PLACEMENT} | awk '{print $1}' | awk -F ':' '{print $2}')
                     COMPOSE_SSH_PORT=$(echo ${DEPLOY_PLACEMENT} | awk '{print $3}')
                     if [[ -z ${COMPOSE_SSH_PORT} ]]; then
                         COMPOSE_SSH_PORT=22
@@ -526,41 +545,45 @@ F_DOCKER_CLUSTER_SERVICE_DEPLOY()
             #
             # 子函数的变量可以在父函数中直接使用
             #
-            if [[ ${GRAY_ENABLE} == 'YES' ]] && [[ ${GRAY_TAG} == 'gray' ]]; then
-                # 灰度方式
-                F_GRAY_SERVICE_X_NAME="${F_SERVICE_NAME}--${GRAY_VERSION}"
-                GRAY_OPTION="--gray  --gray-version ${GRAY_VERSION}"
-                #
-                F_ONLINE_SERVICE_SEARCH  ${F_GRAY_SERVICE_X_NAME}  ${CLUSTER}
-                if [ $? -eq 0 ]; then
-                    # 服务运行中
-                    #${DOCKER_CLUSTER_SERVICE_DEPLOY_SH}  --mode function  --update  --fuck  ${F_GRAY_SERVICE_X_NAME}    #--- 灰度发布不支持【update】
-                    #F_DEPLOY_RETURN_CURRENT=$?
-                    F_DEPLOY_RETURN_CURRENT=53
-                    let  F_DEPLOY_RETURN=${F_DEPLOY_RETURN}+${F_DEPLOY_RETURN_CURRENT}-50
-                    let  F_SERVICE_NUM=${F_SERVICE_NUM}+1
+            if [[ -n ${RELEASE_VERSION} ]]; then
+                if [[ ${GRAY_TAG} == 'gray' ]]; then
+                    F_SERVICE_X_NAME="${F_SERVICE_NAME}--V_${RELEASE_VERSION}-G"
+                    DEPLOY_OPTION="--release-version ${RELEASE_VERSION}  --gray"
+                elif [[ ${GRAY_TAG} == 'normal' ]]; then
+                    F_SERVICE_X_NAME="${F_SERVICE_NAME}--V_${RELEASE_VERSION}"
+                    DEPLOY_OPTION="--release-version ${RELEASE_VERSION}"
                 else
-                    # 服务不在运行中
-                    ${DOCKER_CLUSTER_SERVICE_DEPLOY_SH}  --mode function  --create  --fuck  ${F_SERVICE_NAME}  ${GRAY_OPTION}
-                    F_DEPLOY_RETURN_CURRENT=$?
-                    let  F_DEPLOY_RETURN=${F_DEPLOY_RETURN}+${F_DEPLOY_RETURN_CURRENT}-50
-                    let  F_SERVICE_NUM=${F_SERVICE_NUM}+1
+                    echo -e "\n猪猪侠警告：这是不可能的\n"
+                    ERROR_CODE=52
+                    return 52
                 fi
             else
-                F_ONLINE_SERVICE_SEARCH  ${F_SERVICE_NAME}  ${CLUSTER}
-                if [ $? -eq 0 ]; then
-                    # 服务运行中
-                    ${DOCKER_CLUSTER_SERVICE_DEPLOY_SH}  --mode function  --update  --fuck  ${F_SERVICE_NAME} 
-                    F_DEPLOY_RETURN_CURRENT=$?
-                    let  F_DEPLOY_RETURN=${F_DEPLOY_RETURN}+${F_DEPLOY_RETURN_CURRENT}-50
-                    let  F_SERVICE_NUM=${F_SERVICE_NUM}+1
+                if [[ ${GRAY_TAG} == 'gray' ]]; then
+                    F_SERVICE_X_NAME="${F_SERVICE_NAME}--G"
+                    GRAY_OPTION="--gray"
+                elif [[ ${GRAY_TAG} == 'normal' ]]; then
+                    F_SERVICE_X_NAME="${F_SERVICE_NAME}"
+                    GRAY_OPTION=""
                 else
-                    # 服务不在运行中
-                    ${DOCKER_CLUSTER_SERVICE_DEPLOY_SH}  --mode function  --create  --fuck  ${F_SERVICE_NAME}
-                    F_DEPLOY_RETURN_CURRENT=$?
-                    let  F_DEPLOY_RETURN=${F_DEPLOY_RETURN}+${F_DEPLOY_RETURN_CURRENT}-50
-                    let  F_SERVICE_NUM=${F_SERVICE_NUM}+1
+                    echo -e "\n猪猪侠警告：这是不可能的\n"
+                    ERROR_CODE=52
+                    return 52
                 fi
+            fi
+            #
+            F_ONLINE_SERVICE_SEARCH  ${F_SERVICE_X_NAME}  ${CLUSTER}
+            if [ $? -eq 0 ]; then
+                # 服务运行中
+                ${DOCKER_CLUSTER_SERVICE_DEPLOY_SH}  --mode function  --update  --fuck  ${F_SERVICE_NAME}  ${DEPLOY_OPTION}
+                F_DEPLOY_RETURN_CURRENT=$?
+                let  F_DEPLOY_RETURN=${F_DEPLOY_RETURN}+${F_DEPLOY_RETURN_CURRENT}-50
+                let  F_SERVICE_NUM=${F_SERVICE_NUM}+1
+            else
+                # 服务不在运行中
+                ${DOCKER_CLUSTER_SERVICE_DEPLOY_SH}  --mode function  --create  --fuck  ${F_SERVICE_NAME}  ${DEPLOY_OPTION}
+                F_DEPLOY_RETURN_CURRENT=$?
+                let  F_DEPLOY_RETURN=${F_DEPLOY_RETURN}+${F_DEPLOY_RETURN_CURRENT}-50
+                let  F_SERVICE_NUM=${F_SERVICE_NUM}+1
             fi
         done
         #
@@ -572,19 +595,19 @@ F_DOCKER_CLUSTER_SERVICE_DEPLOY()
         # 一个image对应的service数量
         N=${F_SERVICE_NUM}
         if [[ $N -eq 1 ]]; then
-            echo "${PJ} : ${BUILD_RESULT} : 发布${F_DOCKER_CLUSTER_SERVICE_DEPLOY_RESULT}" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
-            echo "构建：${BUILD_RESULT} - 发布: 发布${F_DOCKER_CLUSTER_SERVICE_DEPLOY_RESULT}"
+            echo "${PJ} : ${BUILD_RESULT} : 发布${F_DOCKER_CLUSTER_SERVICE_DEPLOY_RESULT} : ${BUILD_TIME}s" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
+            echo "构建：${BUILD_RESULT} - 发布: 发布${F_DOCKER_CLUSTER_SERVICE_DEPLOY_RESULT} - 耗时 : ${BUILD_TIME}s"
         else
             # 【*N】代表成功发布的服务数量
-            echo "${PJ} : ${BUILD_RESULT} : 发布${F_DOCKER_CLUSTER_SERVICE_DEPLOY_RESULT}*$N" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
-            echo "构建：${BUILD_RESULT} - 发布: 发布${F_DOCKER_CLUSTER_SERVICE_DEPLOY_RESULT}*$N"
+            echo "${PJ} : ${BUILD_RESULT} : 发布${F_DOCKER_CLUSTER_SERVICE_DEPLOY_RESULT}*$N : ${BUILD_TIME}s" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
+            echo "构建：${BUILD_RESULT} - 发布: 发布${F_DOCKER_CLUSTER_SERVICE_DEPLOY_RESULT}*$N - 耗时 : ${BUILD_TIME}s"
         fi
         # 把减掉的50加回去，但是其实如果一个镜像对应多个服务，这个值已经不代表指定含义了，目前这个返回值也没实际用途，只是标准化处理
         let F_DEPLOY_RETURN=${F_DEPLOY_RETURN}+50
         return ${F_DEPLOY_RETURN}
     elif [[ ${A_RETURN} -eq 5 ]]; then
-        echo "${PJ} : ${BUILD_RESULT} : 无需发布*" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
-        echo "构建：${BUILD_RESULT} - 发布: 无需发布"
+        echo "${PJ} : ${BUILD_RESULT} : 无需发布* : ${BUILD_TIME}s" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
+        echo "构建：${BUILD_RESULT} - 发布: 无需发布 - 耗时 : ${BUILD_TIME}s"
         return 56
     else
         echo -e "\n猪猪侠警告：这是程序Bug【不可能】\n"
@@ -595,7 +618,7 @@ F_DOCKER_CLUSTER_SERVICE_DEPLOY()
 
 
 # 参数检查
-TEMP=`getopt -o hlc:b:e:sfqGV:  -l help,list,category:,branch:,email:,skiptest,force,quiet,gray,gray-version: -- "$@"`
+TEMP=`getopt -o hlc:b:e:sfvGV:  -l help,list,category:,branch:,email:,skiptest,force,verbose,gray,release-version: -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
     exit 51
@@ -646,17 +669,22 @@ do
             BUILD_FORCE='YES'
             shift
             ;;
-        -q|--quiet)
-            BUILD_QUIET='YES'
+        -v|--verbose)
+            BUILD_QUIET='NO'
             shift
             ;;
         -G|--gray)
             GRAY_TAG="gray"
             shift
             ;;
-        -V|--gray-version)
-            GRAY_VERSION=$2
+        -V|--release-version)
+            RELEASE_VERSION=$2
             shift 2
+            if [[ ! V_${RELEASE_VERSION} =~ ^V_[0-9a-z]+([_\.\-]?[0-9a-z]+)*$ ]]; then
+                echo -e "\n猪猪侠警告：发布版本号只能使用字符【0-9a-z._-】，且特殊字符不能出现在版本号的头部或尾部\n"
+                ERROR_CODE=51
+                exit 51
+            fi
             ;;
         --)
             shift
@@ -712,7 +740,7 @@ if [[ -z ${THIS_LANGUAGE_CATEGORY} ]]; then
                 #
                 PROJECT_NAME=`echo $LINE | awk -F '|' '{print $3}'`
                 PROJECT_NAME=`echo ${PROJECT_NAME}`
-                if [[ ${PROJECT_NAME} =~ ^$i$ ]]; then
+                if [[ ${PROJECT_NAME} =~ $i ]]; then
                     echo $LINE >> ${GOGOGO_PROJECT_LIST_FILE_TMP}
                     # 仅匹配一次
                     #GET_IT='Y'
@@ -885,17 +913,10 @@ do
         done
     else
         # 非静默
-        ${BUILD_SH}  --mode function  --category ${LANGUAGE_CATEGORY}  --branch ${GIT_BRANCH}  ${PJ}  ${BUILD_SKIP_TEST_OPT}  ${BUILD_FORCE_OPT}
+        ${BUILD_SH}  --mode function  --category ${LANGUAGE_CATEGORY}  --branch ${GIT_BRANCH}  ${PJ}  ${BUILD_SKIP_TEST_OPT}  ${BUILD_FORCE_OPT}  --verbose
         BUILD_RETURN=$?
         #echo "ok ${BUILD_RETURN}" > "${GOGOGO_PROJECT_BUILD_RESULT}.${PJ}"
     fi
-    #
-    ## 无需判断 ${BUILD_SH} 返回结果，结果保存在文件里
-    #PIPE_RETURN=`awk '{printf $2}' ${GOGOGO_PROJECT_BUILD_RESULT}.${PJ}`
-    #if [[ ${PIPE_RETURN} -ne 0 ]]; then
-    #    echo "${PJ} : 非预期错误 : 跳过" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
-    #    echo "构建：非预期错误 - 发布: 跳过"
-    #fi
     #
     BUILD_TIME_1=`date +%s`
     let BUILD_TIME=${BUILD_TIME_1}-${BUILD_TIME_0}
@@ -917,8 +938,8 @@ do
             case "${GOGOGO_RELEASE_METHOD}" in
                 NONE)
                     # 无需发布
-                    echo "${PJ} : ${BUILD_RESULT} : 无需发布" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
-                    echo "构建：${BUILD_RESULT} - 发布: 无需发布"
+                    echo "${PJ} : ${BUILD_RESULT} : 无需发布 : ${BUILD_TIME}s" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
+                    echo "构建：${BUILD_RESULT} - 发布: 无需发布 - 耗时: ${BUILD_TIME}s"
                     ;;
                 docker_cluster)
                     # 根据镜像名搜索服务名，然后发布
@@ -931,9 +952,9 @@ do
                     #
                     if [[ $? -eq 0 ]]; then
                         RELEASE_RESULT=$(cat ${GOGOGO_RELEASE_WEB_OK_LIST_FILE} | sed -n '2p' | awk '{printf $2}')
-                        echo "${PJ} : ${BUILD_RESULT} : ${RELEASE_RESULT}" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
+                        echo "${PJ} : ${BUILD_RESULT} : ${RELEASE_RESULT} : ${BUILD_TIME}s" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
                     else
-                        echo "${PJ} : ${BUILD_RESULT} : 发布失败" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
+                        echo "${PJ} : ${BUILD_RESULT} : 发布失败 : ${BUILD_TIME}s" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
                     fi
                     ;;
                 *)
@@ -944,8 +965,8 @@ do
             ;;
         '其他用户正在构建中'|'Git Clone 失败'|'Git Checkout 失败'|'Git Pull 失败'|'Git 分支无更新'|'Build 失败'|'无需 Build')
             #echo "失败"
-            echo "${PJ} : ${BUILD_RESULT} : 跳过" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
-            echo "构建：${BUILD_RESULT} - 发布: 跳过"
+            echo "${PJ} : ${BUILD_RESULT} : 跳过 : ${BUILD_TIME}s" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
+            echo "构建：${BUILD_RESULT} - 发布: 跳过 - 耗时 : ${BUILD_TIME}s"
             ;;
         *)
             echo -e "\n猪猪侠警告：这是程序Bug，返回结果为空或超出范围！\n"
@@ -978,20 +999,19 @@ echo "开始时间：${TIME}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURREN
 echo "结束时间：${TIME_END}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 echo "代码分支：${GIT_BRANCH}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 echo "Docker镜像版本：${DOCKER_IMAGE_VER}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
-if [[ ${GRAY_ENABLE} == 'YES' ]] && [[ ${GRAY_TAG} == 'gray' ]]; then
-    echo "灰度标志：${GRAY_TAG}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
-    echo "灰度版本：${GRAY_VERSION}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
-fi
+echo "灰度标志：${GRAY_TAG}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
+echo "发布版本：${RELEASE_VERSION}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 echo "构建与发布清单：" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 # 输出到文件
 echo "----------------------------------------------------------------------" >> ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}   #--- 70 (80-70-60)
 cat  ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}            >> ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 echo "----------------------------------------------------------------------" >> ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 # 输出屏幕
-${FORMAT_TABLE_SH}  --delimeter ':'  --title '**项目名称**:**构建**:**发布**'  --file ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
+${FORMAT_TABLE_SH}  --delimeter ':'  --title '**项目名称**:**构建**:**发布**:**耗时**'  --file ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
 #
 F_TimeDiff  "${TIME_START}" "${TIME_END}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
-echo "日志下载地址：${LOG_DOWNLOAD_SERVER}/file/${DATE_TIME}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
+echo "日志Web地址：${LOG_DOWNLOAD_SERVER}/file/${DATE_TIME}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
+echo "日志Local地址：${LOG_HOME}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 #
 echo "${MESSAGE_END}" >> ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 echo -e "${ECHO_REPORT}${MESSAGE_END}${ECHO_CLOSE}"

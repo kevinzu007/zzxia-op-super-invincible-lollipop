@@ -35,11 +35,11 @@ BUILD_FORCE='NO'
 # 独有
 N_proc=2    #--- 并行构建数量
 PARA_PROJECT_LIST_FILE="${SH_PATH}/project.list"
-PARA_PROJECT_LIST_FILE_TMP="${LOG_HOME}/${SH_NAME}-${PARA_PROJECT_LIST_FILE}.tmp"
+PARA_PROJECT_LIST_FILE_TMP="${LOG_HOME}/${SH_NAME}-project.list.tmp"
 PARA_BUILD_OK_LIST_FILE="${LOG_HOME}/${SH_NAME}-build-OK.list"
 PARA_BUILD_HISTORY_CURRENT_FILE="${LOG_HOME}/${SH_NAME}-history.current"
 # 子脚本参数
-BASE_PROJECT_LIST_FILE_TMP="${LOG_HOME}/${PARA_PROJECT_LIST_FILE}-export.tmp"
+BASE_PROJECT_LIST_FILE_TMP="${LOG_HOME}/${SH_NAME}-export-project.list.tmp"
 export PROJECT_LIST_FILE_TMP=
 BASE_BUILD_OK_LIST_FILE="${LOG_HOME}/${SH_NAME}-export-build-OK.list"
 export BUILD_OK_LIST_FILE=
@@ -60,7 +60,7 @@ fi
 BUILD_SH="${SH_PATH}/build.sh"
 DRAW_TABLE_SH="${SH_PATH}/../op/draw_table.sh"
 FORMAT_TABLE_SH="${SH_PATH}/../op/format_table.sh"
-DINGDING_MARKDOWN_PY="${SH_PATH}/../op/dingding_markdown-deploy.py"
+DINGDING_MARKDOWN_PY="${SH_PATH}/../op/dingding_conver_to_markdown_list-deploy.py"
 
 # echo颜色定义
 export ECHO_CLOSE="\033[0m"
@@ -532,7 +532,8 @@ echo "----------------------------------------------------------------------" >>
 ${FORMAT_TABLE_SH}  --delimeter ':'  --title '**项目名称**:**构建**'  --file ${PARA_BUILD_OK_LIST_FILE}
 #
 F_TimeDiff  "${TIME_START}" "${TIME_END}" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
-echo "日志下载地址：${LOG_DOWNLOAD_SERVER}/file/${DATE_TIME}" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
+echo "日志Web地址：${LOG_DOWNLOAD_SERVER}/file/${DATE_TIME}" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
+echo "日志Local地址：${LOG_HOME}" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
 #
 echo "${MESSAGE_END}" >> ${PARA_BUILD_HISTORY_CURRENT_FILE}
 echo -e "${ECHO_REPORT}${MESSAGE_END}${ECHO_CLOSE}"
