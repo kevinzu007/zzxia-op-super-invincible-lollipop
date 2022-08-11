@@ -298,7 +298,7 @@ GIT_CODE()
 {
     # clone 或 pull
     if [ ! -d "./${PJ}" ]; then
-        echo "Git Clone ......"
+        #echo "Git Clone ......"
         #timeout 300 git clone  git@${GIT_SERVER}:${GIT_GROUP}/${PJ}.git   2>&1  | tee ${GIT_LOG_file}
         #git clone  git@${GIT_SERVER}:${GIT_GROUP}/${PJ}.git   2>&1  | tee ${GIT_LOG_file}
         git clone  "git@${GIT_SERVER}:${GIT_GROUP}/${PJ}.git"   > "${GIT_LOG_file}"  2>&1
