@@ -595,19 +595,19 @@ F_DOCKER_CLUSTER_SERVICE_DEPLOY()
         # 一个image对应的service数量
         N=${F_SERVICE_NUM}
         if [[ $N -eq 1 ]]; then
-            echo "${PJ} : ${BUILD_RESULT} : 发布${F_DOCKER_CLUSTER_SERVICE_DEPLOY_RESULT}" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
-            echo "构建：${BUILD_RESULT} - 发布: 发布${F_DOCKER_CLUSTER_SERVICE_DEPLOY_RESULT}"
+            echo "${PJ} : ${BUILD_RESULT} : 发布${F_DOCKER_CLUSTER_SERVICE_DEPLOY_RESULT} : ${BUILD_TIME}s" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
+            echo "构建：${BUILD_RESULT} - 发布: 发布${F_DOCKER_CLUSTER_SERVICE_DEPLOY_RESULT} - 耗时 : ${BUILD_TIME}s"
         else
             # 【*N】代表成功发布的服务数量
-            echo "${PJ} : ${BUILD_RESULT} : 发布${F_DOCKER_CLUSTER_SERVICE_DEPLOY_RESULT}*$N" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
-            echo "构建：${BUILD_RESULT} - 发布: 发布${F_DOCKER_CLUSTER_SERVICE_DEPLOY_RESULT}*$N"
+            echo "${PJ} : ${BUILD_RESULT} : 发布${F_DOCKER_CLUSTER_SERVICE_DEPLOY_RESULT}*$N : ${BUILD_TIME}s" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
+            echo "构建：${BUILD_RESULT} - 发布: 发布${F_DOCKER_CLUSTER_SERVICE_DEPLOY_RESULT}*$N - 耗时 : ${BUILD_TIME}s"
         fi
         # 把减掉的50加回去，但是其实如果一个镜像对应多个服务，这个值已经不代表指定含义了，目前这个返回值也没实际用途，只是标准化处理
         let F_DEPLOY_RETURN=${F_DEPLOY_RETURN}+50
         return ${F_DEPLOY_RETURN}
     elif [[ ${A_RETURN} -eq 5 ]]; then
-        echo "${PJ} : ${BUILD_RESULT} : 无需发布*" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
-        echo "构建：${BUILD_RESULT} - 发布: 无需发布"
+        echo "${PJ} : ${BUILD_RESULT} : 无需发布* : ${BUILD_TIME}s" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
+        echo "构建：${BUILD_RESULT} - 发布: 无需发布 - 耗时 : ${BUILD_TIME}s"
         return 56
     else
         echo -e "\n猪猪侠警告：这是程序Bug【不可能】\n"
@@ -918,13 +918,6 @@ do
         #echo "ok ${BUILD_RETURN}" > "${GOGOGO_PROJECT_BUILD_RESULT}.${PJ}"
     fi
     #
-    ## 无需判断 ${BUILD_SH} 返回结果，结果保存在文件里
-    #PIPE_RETURN=`awk '{printf $2}' ${GOGOGO_PROJECT_BUILD_RESULT}.${PJ}`
-    #if [[ ${PIPE_RETURN} -ne 0 ]]; then
-    #    echo "${PJ} : 非预期错误 : 跳过" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
-    #    echo "构建：非预期错误 - 发布: 跳过"
-    #fi
-    #
     BUILD_TIME_1=`date +%s`
     let BUILD_TIME=${BUILD_TIME_1}-${BUILD_TIME_0}
     #
@@ -945,8 +938,8 @@ do
             case "${GOGOGO_RELEASE_METHOD}" in
                 NONE)
                     # 无需发布
-                    echo "${PJ} : ${BUILD_RESULT} : 无需发布" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
-                    echo "构建：${BUILD_RESULT} - 发布: 无需发布"
+                    echo "${PJ} : ${BUILD_RESULT} : 无需发布 : ${BUILD_TIME}s" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
+                    echo "构建：${BUILD_RESULT} - 发布: 无需发布 - 耗时: ${BUILD_TIME}s"
                     ;;
                 docker_cluster)
                     # 根据镜像名搜索服务名，然后发布
@@ -959,9 +952,9 @@ do
                     #
                     if [[ $? -eq 0 ]]; then
                         RELEASE_RESULT=$(cat ${GOGOGO_RELEASE_WEB_OK_LIST_FILE} | sed -n '2p' | awk '{printf $2}')
-                        echo "${PJ} : ${BUILD_RESULT} : ${RELEASE_RESULT}" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
+                        echo "${PJ} : ${BUILD_RESULT} : ${RELEASE_RESULT} : ${BUILD_TIME}s" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
                     else
-                        echo "${PJ} : ${BUILD_RESULT} : 发布失败" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
+                        echo "${PJ} : ${BUILD_RESULT} : 发布失败 : ${BUILD_TIME}s" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
                     fi
                     ;;
                 *)
@@ -972,8 +965,8 @@ do
             ;;
         '其他用户正在构建中'|'Git Clone 失败'|'Git Checkout 失败'|'Git Pull 失败'|'Git 分支无更新'|'Build 失败'|'无需 Build')
             #echo "失败"
-            echo "${PJ} : ${BUILD_RESULT} : 跳过" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
-            echo "构建：${BUILD_RESULT} - 发布: 跳过"
+            echo "${PJ} : ${BUILD_RESULT} : 跳过 : ${BUILD_TIME}s" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
+            echo "构建：${BUILD_RESULT} - 发布: 跳过 - 耗时 : ${BUILD_TIME}s"
             ;;
         *)
             echo -e "\n猪猪侠警告：这是程序Bug，返回结果为空或超出范围！\n"
@@ -1014,7 +1007,7 @@ echo "----------------------------------------------------------------------" >>
 cat  ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}            >> ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 echo "----------------------------------------------------------------------" >> ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 # 输出屏幕
-${FORMAT_TABLE_SH}  --delimeter ':'  --title '**项目名称**:**构建**:**发布**'  --file ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
+${FORMAT_TABLE_SH}  --delimeter ':'  --title '**项目名称**:**构建**:**发布**:**耗时**'  --file ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
 #
 F_TimeDiff  "${TIME_START}" "${TIME_END}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 echo "日志Web地址：${LOG_DOWNLOAD_SERVER}/file/${DATE_TIME}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}

@@ -308,7 +308,7 @@ GIT_CODE()
         else
             ansible nginx_real -m copy -a "src=${GIT_LOG_file} dest=${WEBSITE_BASE}/${BUILD_LOG_PJ_NAME}/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
             echo "Git Clone 失败，请检查仓库权限！"
-            echo "${PJ} : Git Clone 失败" >> "${BUILD_OK_LIST_FILE}"
+            echo "${PJ} : Git Clone 失败 : x" >> "${BUILD_OK_LIST_FILE}"
             ERR_SHOW
             return 54
         fi
@@ -319,7 +319,7 @@ GIT_CODE()
         else
             echo "Git Checkout 失败，分支未找到！"
             echo "${PJ}" >>  "${PROJECT_LIST_RETRY_FILE}"
-            echo "${PJ} : Git Checkout 失败" >> "${BUILD_OK_LIST_FILE}"
+            echo "${PJ} : Git Checkout 失败 : x" >> "${BUILD_OK_LIST_FILE}"
             ERR_SHOW
             return 54
         fi
@@ -337,7 +337,7 @@ GIT_CODE()
         if [ $? -ne 0 ]; then
             echo "Git Pull 失败，请检查日志文件：${GIT_LOG_file}"
             ansible nginx_real -m copy -a "src=${GIT_LOG_file} dest=${WEBSITE_BASE}/${BUILD_LOG_PJ_NAME}/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
-            echo "${PJ} : Git Pull 失败" >> "${BUILD_OK_LIST_FILE}"
+            echo "${PJ} : Git Pull 失败 : x" >> "${BUILD_OK_LIST_FILE}"
             ERR_SHOW
             return 54
         else
@@ -380,7 +380,7 @@ GIT_CODE()
                     GIT_GREP_CN=$?
                     if [[ "${GIT_GREP_EN}" -ne 0 && "${GIT_GREP_CN}" -ne 0 && "${LAST_BUILD_BRANCH}" == "${GIT_BRANCH}" ]]; then
                         echo "Git 分支【${GIT_BRANCH}】无更新！"
-                        echo "${PJ} : Git 分支无更新" >> "${BUILD_OK_LIST_FILE}"
+                        echo "${PJ} : Git 分支无更新 : x" >> "${BUILD_OK_LIST_FILE}"
                         return 55
                     fi
                 else
@@ -405,7 +405,7 @@ GIT_CODE()
                         if [ `cat ${LOG_HOME}/${SH_NAME}-git_checkout.log | grep -q 'git pull' ; echo $?` -ne 0 ]; then
                             # 无更新
                             echo "Git 分支【${GIT_BRANCH}】无更新！"
-                            echo "${PJ} : Git 分支无更新" >> "${BUILD_OK_LIST_FILE}"
+                            echo "${PJ} : Git 分支无更新 : x" >> "${BUILD_OK_LIST_FILE}"
                             return 55
                         fi
                     fi
@@ -418,7 +418,7 @@ GIT_CODE()
                 # 不存在远程分支
                 echo "Git Checkout 失败，分支未找到！"
                 echo "${PJ}" >>  "${PROJECT_LIST_RETRY_FILE}"
-                echo "${PJ} : Git Checkout 失败" >> "${BUILD_OK_LIST_FILE}"
+                echo "${PJ} : Git Checkout 失败 : x" >> "${BUILD_OK_LIST_FILE}"
                 ERR_SHOW
                 return 54
             fi
@@ -452,7 +452,7 @@ DOCKER_BUILD()
                 echo -e "${ECHO_ERROR}Build 失败！请检查日志文件：${BUILD_LOG_file}  ${ECHO_CLOSE}"
                 echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"
                 echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
-                echo "${PJ} : Build 失败" >> ${BUILD_OK_LIST_FILE}
+                echo "${PJ} : Build 失败 : x" >> ${BUILD_OK_LIST_FILE}
                 ERR_SHOW
                 # mail
                 if [[ ! -z "${MY_EMAIL}" ]]; then
@@ -467,7 +467,7 @@ DOCKER_BUILD()
                             echo -e "\n猪猪侠警告：输出方式为【docker_image_push】时，镜像名不能为空！\n"
                             echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"
                             echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
-                            echo "${PJ} : Build 失败" >> ${BUILD_OK_LIST_FILE}
+                            echo "${PJ} : Build 失败 : x" >> ${BUILD_OK_LIST_FILE}
                             ERR_SHOW
                             return 52
                         fi
@@ -477,7 +477,7 @@ DOCKER_BUILD()
                             echo -e "\n猪猪侠警告：项目镜像PUSH失败！\n"
                             echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"
                             echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
-                            echo "${PJ} : Build 失败" >> ${BUILD_OK_LIST_FILE}
+                            echo "${PJ} : Build 失败 : x" >> ${BUILD_OK_LIST_FILE}
                             ERR_SHOW
                             return 54
                         fi
@@ -493,7 +493,7 @@ DOCKER_BUILD()
                 esac
                 # echo
                 echo 'Build 成功！'
-                echo "${PJ} : Build 成功" >> ${BUILD_OK_LIST_FILE}
+                #echo "${PJ} : Build 成功 : x" >> ${BUILD_OK_LIST_FILE}
                 return 50
             fi
             ;;
@@ -540,7 +540,7 @@ JAVA_BUILD()
                 echo -e "${ECHO_ERROR}Build 失败！请检查日志文件：${BUILD_LOG_file}  ${ECHO_CLOSE}"
                 echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"
                 echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
-                echo "${PJ} : Build 失败" >> ${BUILD_OK_LIST_FILE}
+                echo "${PJ} : Build 失败 : x" >> ${BUILD_OK_LIST_FILE}
                 ERR_SHOW
                 # mail
                 if [[ ! -z "${MY_EMAIL}" ]]; then
@@ -555,7 +555,7 @@ JAVA_BUILD()
                             echo -e "\n猪猪侠警告：输出方式为【docker_image_push】时，镜像名不能为空！\n"
                             echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"
                             echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
-                            echo "${PJ} : Build 失败" >> ${BUILD_OK_LIST_FILE}
+                            echo "${PJ} : Build 失败 : x" >> ${BUILD_OK_LIST_FILE}
                             ERR_SHOW
                             return 52
                         fi
@@ -565,7 +565,7 @@ JAVA_BUILD()
                             echo -e "\n猪猪侠警告：项目镜像PUSH失败！\n"
                             echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"
                             echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
-                            echo "${PJ} : Build 失败" >> ${BUILD_OK_LIST_FILE}
+                            echo "${PJ} : Build 失败 : x" >> ${BUILD_OK_LIST_FILE}
                             ERR_SHOW
                             return 54
                         fi
@@ -592,7 +592,7 @@ JAVA_BUILD()
                 esac
                 # echo
                 echo 'Build 成功！'
-                echo "${PJ} : Build 成功" >> ${BUILD_OK_LIST_FILE}
+                #echo "${PJ} : Build 成功 : x" >> ${BUILD_OK_LIST_FILE}
                 return 50
             fi
             ;;
@@ -669,7 +669,7 @@ NODE_BUILD()
         echo -e "${ECHO_ERROR}Build 失败！请检查日志文件：${BUILD_LOG_file}  ${ECHO_CLOSE}"
         echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"
         echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
-        echo "${PJ} : Build 失败" >> ${BUILD_OK_LIST_FILE}
+        echo "${PJ} : Build 失败 : x" >> ${BUILD_OK_LIST_FILE}
         ERR_SHOW
         # mail
         if [[ ! -z "${MY_EMAIL}" ]]; then
@@ -694,7 +694,7 @@ NODE_BUILD()
                     echo -e "\n猪猪侠警告：输出方式为【docker_image_push】时，镜像名不能为空！\n"
                     echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"
                     echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
-                    echo "${PJ} : Build 失败" >> ${BUILD_OK_LIST_FILE}
+                    echo "${PJ} : Build 失败 : x" >> ${BUILD_OK_LIST_FILE}
                     ERR_SHOW
                     return 52
                 fi
@@ -705,7 +705,7 @@ NODE_BUILD()
                     echo "Docker image build 失败！"
                     echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"
                     echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
-                    echo "${PJ} : Build 失败" >> ${BUILD_OK_LIST_FILE}
+                    echo "${PJ} : Build 失败 : x" >> ${BUILD_OK_LIST_FILE}
                     ERR_SHOW
                     return 54
                 fi
@@ -715,14 +715,14 @@ NODE_BUILD()
                     echo -e "\n猪猪侠警告：项目镜像PUSH失败！\n"
                     echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"
                     echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
-                    echo "${PJ} : Build 失败" >> ${BUILD_OK_LIST_FILE}
+                    echo "${PJ} : Build 失败 : x" >> ${BUILD_OK_LIST_FILE}
                     ERR_SHOW
                     return 54
                 fi
                 #
                 # echo
                 echo 'Build and Push 成功！'
-                echo "${PJ} : Build 成功" >> ${BUILD_OK_LIST_FILE}
+                #echo "${PJ} : Build 成功 : x" >> ${BUILD_OK_LIST_FILE}
                 F_NODE_MODULES_BACKUP
                 return 50
                 ;;
@@ -735,7 +735,7 @@ NODE_BUILD()
                 ansible nginx_real -m synchronize -a "src=${CP_FROM_DIR}/  dest=${CP_TO_DIR}/  rsync_opts=--perms=yes,--times=yes"
                 # echo
                 echo 'Build and Deploy 成功！'
-                echo "${PJ} : Build 成功" >> ${BUILD_OK_LIST_FILE}
+                #echo "${PJ} : Build 成功 : x" >> ${BUILD_OK_LIST_FILE}
                 F_NODE_MODULES_BACKUP
                 return 50
                 ;;
@@ -743,7 +743,7 @@ NODE_BUILD()
                 # 啥也不需要做
                 # 我这里用作公共项目共别人链接node_modules用
                 echo 'Build 成功！'
-                echo "${PJ} : Build 成功" >> ${BUILD_OK_LIST_FILE}
+                #echo "${PJ} : Build 成功 : x" >> ${BUILD_OK_LIST_FILE}
                 #F_NODE_MODULES_BACKUP
                 return 50
                 ;;
@@ -1097,7 +1097,7 @@ do
         BUILD_TIME=0
         F_BUILD_TIME_UPDATE  ${PJ}  ${BUILD_TIME}
         #
-        echo "${PJ} : 无需 Build" >> ${BUILD_OK_LIST_FILE}
+        echo "${PJ} : 无需 Build : x" >> ${BUILD_OK_LIST_FILE}
         echo  "构建方法【${BUILD_METHOD}】无需构建！"
         #
         ERROR_CODE=56
@@ -1114,7 +1114,7 @@ do
     # 检查是否正在构建
     ps -ef | grep "${PJ}" | grep -v "$0" | grep -v '.sh' | grep -v grep > /dev/null 2>&1
     if [ $? -eq 0 ]; then
-        echo "${PJ} : 其他用户正在构建中" >> ${BUILD_OK_LIST_FILE}
+        echo "${PJ} : 其他用户正在构建中 : x" >> ${BUILD_OK_LIST_FILE}
         echo -e "${ECHO_ERROR}其他用户正在构建中${ECHO_CLOSE}"
         ${DINGDING_MARKDOWN_PY}  "*** Error:Build:${RUN_ENV} ***" "【${PJ}】其他用户正在构建中" > /dev/null
         [ "x${ERROR_EXIT}" = 'xYES' ] && break
@@ -1147,7 +1147,7 @@ do
                 product)
                     # 这个类别是成品，无需构建，他的【构建方法=NONE】，所以程序不会运行到这里来的
                     #echo "类别【${LANGUAGE_CATEGORY}】的项目无需构建"  > /dev/null 2>&1
-                    #NOT_NEED_RETURN=9
+                    NOT_NEED_RETURN=50
                     ;;
                 dockerfile)
                     DOCKER_BUILD  > /dev/null 2>&1
@@ -1164,9 +1164,8 @@ do
                     exit 52
                     ;;
             esac
-            #ERROR_CODE=${NOT_NEED_RETURN:-$?}
-            #NOT_NEED_RETURN=''
-            ERROR_CODE=$?
+            ERROR_CODE=${NOT_NEED_RETURN:-$?}
+            NOT_NEED_RETURN=''
             echo "ok ${ERROR_CODE}" > "${PROJECT_BUILD_RESULT}.${PJ}"
             echo >&6    # 归还令牌
         } &
@@ -1201,7 +1200,7 @@ do
             product)
                 # 这个类别是成品，无需构建，他的【构建方法=NONE】，所以程序不会运行到这里来的
                 #echo "类别【${LANGUAGE_CATEGORY}】的项目无需构建"  > /dev/null 2>&1
-                #NOT_NEED_RETURN=9
+                NOT_NEED_RETURN=50
                 ;;
             dockerfile)
                 DOCKER_BUILD
@@ -1218,26 +1217,21 @@ do
                 exit 52
                 ;;
         esac
-        #ERROR_CODE=${NOT_NEED_RETURN:-$?}
-        #NOT_NEED_RETURN=''
-        ERROR_CODE=$?
+        ERROR_CODE=${NOT_NEED_RETURN:-$?}
+        NOT_NEED_RETURN=''
         #echo "ok ${ERROR_CODE}" > "${PROJECT_BUILD_RESULT}.${PJ}"
-    fi
-    #
-    #PIPE_RETURN=`awk '{printf $2}' ${PROJECT_BUILD_RESULT}.${PJ}`
-    #if [ "${PIPE_RETURN}" != '0' ]; then
-    #    [ "x${ERROR_EXIT}" = 'xYES' ] && break
-    #    continue
-    #fi
-    # 注意：这里的ERROR_CODE是自定义输出:50代表成功
-    if [ "${ERROR_CODE}" != '50' ]; then
-        [ "x${ERROR_EXIT}" = 'xYES' ] && break
-        continue
     fi
     #
     BUILD_TIME_1=`date +%s`
     let BUILD_TIME=${BUILD_TIME_1}-${BUILD_TIME_0}
-    F_BUILD_TIME_UPDATE  ${PJ}  ${BUILD_TIME}
+    #
+    # 注意：这里的ERROR_CODE是自定义输出:50代表成功
+    if [[ ${ERROR_CODE} -eq 50 ]]; then
+        F_BUILD_TIME_UPDATE  ${PJ}  ${BUILD_TIME}
+        echo "${PJ} : Build 成功 : ${BUILD_TIME}s" >> ${BUILD_OK_LIST_FILE}
+    else
+        [ "x${ERROR_EXIT}" = 'xYES' ] && break
+    fi
     #
 done < ${PROJECT_LIST_FILE_TMP}
 #
@@ -1272,7 +1266,7 @@ case ${SH_RUN_MODE} in
         cat  ${BUILD_OK_LIST_FILE}                        >> ${BUILD_HISTORY_CURRENT_FILE}
         echo "--------------------------------------------------" >> ${BUILD_HISTORY_CURRENT_FILE}
         # 输出屏幕
-        ${FORMAT_TABLE_SH}  --delimeter ':'  --title '**项目名称**:**构建**'  --file ${BUILD_OK_LIST_FILE}
+        ${FORMAT_TABLE_SH}  --delimeter ':'  --title '**项目名称**:**构建**:**耗时**'  --file ${BUILD_OK_LIST_FILE}
         #
         F_TimeDiff  "${TIME_START}" "${TIME_END}" | tee -a ${BUILD_HISTORY_CURRENT_FILE}
         echo "日志Web地址：${LOG_DOWNLOAD_SERVER}/file/${DATE_TIME}" | tee -a ${BUILD_HISTORY_CURRENT_FILE}
