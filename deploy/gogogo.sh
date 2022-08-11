@@ -441,7 +441,7 @@ F_SET_RUN_ENV()
                 done
             fi
             #
-            export DOCKER_HOST=${SWARM_DOCKER_HOST}
+            export DOCKER_HOST=${SWARM_DOCKER_HOST}     #--- 用完需要置空
             ;;
         k8s)
             if [[ ! -z ${DEPLOY_PLACEMENT} ]]; then
@@ -488,7 +488,7 @@ F_SET_RUN_ENV()
                 return 52
             fi
             #
-            export DOCKER_HOST=${COMPOSE_DOCKER_HOST}
+            export DOCKER_HOST=${COMPOSE_DOCKER_HOST}     #--- 用完需要置空
             # test
             if [[ $(docker image ls >/dev/null 2>&1; echo $?) != 0 ]]; then
                 echo -e "\n猪猪侠警告：连接测试异常，请检查【DEPLOY_PLACEMENT】或目标主机，Docker daemon无法正常连接\n"
@@ -613,6 +613,7 @@ F_DOCKER_CLUSTER_SERVICE_DEPLOY()
         echo -e "\n猪猪侠警告：这是程序Bug【不可能】\n"
         return 59
     fi
+    #export DOCKER_HOST=''     #--- 用完置空，已经在函数调用处处理了
 }
 
 
@@ -945,6 +946,7 @@ do
                     # 根据镜像名搜索服务名，然后发布
                     F_DOCKER_CLUSTER_SERVICE_DEPLOY  ${DOCKER_IMAGE_NAME}
                     # 结果在函数里处理
+                    export DOCKER_HOST=''
                     ;;
                 web_release)
                     > ${GOGOGO_RELEASE_WEB_OK_LIST_FILE}
