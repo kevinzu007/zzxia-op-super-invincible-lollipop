@@ -1275,7 +1275,8 @@ case ${SH_RUN_MODE} in
         ${FORMAT_TABLE_SH}  --delimeter ':'  --title '**项目名称**:**构建**'  --file ${BUILD_OK_LIST_FILE}
         #
         F_TimeDiff  "${TIME_START}" "${TIME_END}" | tee -a ${BUILD_HISTORY_CURRENT_FILE}
-        echo "日志下载地址：${LOG_DOWNLOAD_SERVER}/file/${DATE_TIME}" | tee -a ${BUILD_HISTORY_CURRENT_FILE}
+        echo "日志Web地址：${LOG_DOWNLOAD_SERVER}/file/${DATE_TIME}" | tee -a ${BUILD_HISTORY_CURRENT_FILE}
+        echo "日志Local地址：${LOG_HOME}" | tee -a ${BUILD_HISTORY_CURRENT_FILE}
         echo "${MESSAGE_END}" >> ${BUILD_HISTORY_CURRENT_FILE}
         echo -e "${ECHO_REPORT}${MESSAGE_END}${ECHO_CLOSE}"
         # 保存历史
