@@ -303,10 +303,10 @@ GIT_CODE()
         #git clone  git@${GIT_SERVER}:${GIT_GROUP}/${PJ}.git   2>&1  | tee ${GIT_LOG_file}
         git clone  "git@${GIT_SERVER}:${GIT_GROUP}/${PJ}.git"   > "${GIT_LOG_file}"  2>&1
         if [ $? -eq 0 ]; then
-            ansible nginx_real -m copy -a "src=${GIT_LOG_file} dest=${WEBSITE_BASE}/${BUILD_LOG_PJ_NAME}/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
+            ansible nginx_real -m copy -a "src=${GIT_LOG_file} dest=${WEBSITE_BASE}/${BUILD_LOG_PJ_NAME}/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"  > "${GIT_LOG_file}"  2>&1
             cd  "${PJ}"
         else
-            ansible nginx_real -m copy -a "src=${GIT_LOG_file} dest=${WEBSITE_BASE}/${BUILD_LOG_PJ_NAME}/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
+            ansible nginx_real -m copy -a "src=${GIT_LOG_file} dest=${WEBSITE_BASE}/${BUILD_LOG_PJ_NAME}/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"  > "${GIT_LOG_file}"  2>&1
             echo "Git Clone 失败，请检查仓库权限！"
             echo "${PJ} : Git Clone 失败 : x" >> "${BUILD_OK_LIST_FILE}"
             ERR_SHOW
@@ -1219,8 +1219,11 @@ do
         esac
         ERROR_CODE=${NOT_NEED_RETURN:-$?}
         NOT_NEED_RETURN=''
-        #echo "ok ${ERROR_CODE}" > "${PROJECT_BUILD_RESULT}.${PJ}"
+        echo "ok ${ERROR_CODE}" > "${PROJECT_BUILD_RESULT}.${PJ}"     #--- pipe中的变量无法传出，所以这里也保持与上面pipe一样
     fi
+    #
+    PIPE_RETURN=`awk '{printf $2}' ${PROJECT_BUILD_RESULT}.${PJ}`
+    ERROR_CODE=${PIPE_RETURN}
     #
     BUILD_TIME_1=`date +%s`
     let BUILD_TIME=${BUILD_TIME_1}-${BUILD_TIME_0}
