@@ -946,7 +946,7 @@ do
                     # 根据镜像名搜索服务名，然后发布
                     F_DOCKER_CLUSTER_SERVICE_DEPLOY  ${DOCKER_IMAGE_NAME}
                     # 结果在函数里处理
-                    export DOCKER_HOST=''
+                    unset DOCKER_HOST
                     ;;
                 web_release)
                     > ${GOGOGO_RELEASE_WEB_OK_LIST_FILE}
