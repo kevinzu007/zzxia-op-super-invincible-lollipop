@@ -379,7 +379,7 @@ F_SEARCH_IMAGE_TAG()
     search_r=$(cat ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_TAG-result.txt | cut -d " " -f 3-)
     F_GET_IT=""
     # 这个其实不可能有多行
-    for i in "${search_r}"
+    for i in ${search_r}
     do
         if [ "$i" = "${F_THIS_TAG}" ]; then
             F_GET_IT="YES"
