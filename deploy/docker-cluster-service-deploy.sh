@@ -1651,7 +1651,7 @@ do
             # 7 组装ENV
             #
             # - 灰度用ENV
-            CONTAINER_ENVS_GRAY_OK="  --env GRAY_TAG=${GRAY_TAG}  --env RELEASE_VERSION=${RELEASE_VERSION}  --env SERVICE_X_NAME=${SERVICE_X_NAME}  --env DEBUG_X_PORTS=${DEBUG_X_PORTS}  --env DEBUG_X_PORT=${DEBUG_X_PORT}"
+            CONTAINER_ENVS_GRAY_OK="  --env GRAY_TAG=${GRAY_TAG}  --env RELEASE_VERSION=${RELEASE_VERSION}  --env SERVICE_X_NAME=${SERVICE_X_NAME}  --env DEBUG_X_PORTS=${DEBUG_X_PORTS}"
             #
             # - 从公共文件
             CONTAINER_ENVS_PUB_OK=""
