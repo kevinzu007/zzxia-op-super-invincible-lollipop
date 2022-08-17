@@ -9,12 +9,12 @@
 ### 1.1 特点
 
 - 项目构建：可以指定构建方法、输出方法、一键发布方式等（使用自带python钩子程序或其他钩子程序自动化构建发布也很方便）
-- 发布环境：支持多种docker容器编排：swarm、k8s、docker-compose；支持目录式发布：nginx
+- 发布环境：支持多种docker容器编排：swarm、k8s、docker-compose（主流工具只支持k8s）；支持目录式发布：nginx等
 - 项目发布：可以指定发布相关的所有参数与变量，这个参数变量可以是全局的，也可以是某一项目专有的，这里包括但不限于服务运行参数、变量、端口、副本数、Java运行参数变量，容器变量、容器启动命令参数
 等。只需要修改项目发布清单就可以搞定所有项目，方便快捷（不同于一般系统那种每个项目都是一个独立配置文件，难以批量修改，与主流helm工具大相径庭）
 - 多环境统一配置，极大降低环境差异造成的参数差异隐患
-- 结果输出界面美观清晰，有表格及颜色区分，也包含耗时及进度条
-- markdown格式消息通知
+- 所有微服务在同一个表格中完成配置，非常方便对比差异与增加，和主流helm使用了完全相反的实现理念
+- 结果输出界面美观清晰，有表格及颜色区分，也包含耗时、进度条与邮箱手机消息通知
 - 标准化错误输出，通过错误消息及代码，可以轻松知道问题所在
 - shell语言，模块化编码，使得每个人可以轻松的增加自己的专属功能
 
@@ -68,26 +68,83 @@ Python
 ## 3 安装教程
 
 
+### 服务器准备
+
+一般配置：
+| 服务器类别 | 数量 | 说明         | 例如       |
+| deploy     | 1    | 用于构建与发布 |          |
+| docker集群 | 1~n  | 根据自己需要 | swarm      |
+| nginx      | 0~n  | 根据自己需要 |            |
+| db         | 0~n  | 根据自己需要 | postgresql |
+| docker仓库 | 0~1  | 根据自己需要 | docker registry |
+| maven仓库  | 0~1  | 根据自己需要 | nexus      |
+| 代码仓库   | 0~1  | 根据自己需要 | 私有gitalb |
+
+系统必须：
+运行在Linux系统之上，基本环境安装部分是基于CentOS，如果你用的是Ubuntu，可是自行修改，或手动安装
+
+
+### 功能与依赖
+
+
 ### 3.1 克隆
 
 克隆项目到deploy主机上
+
 
 ### 3.2 创建自己的专属环境配置文件
 
 基于【项目home路径/init/envs.sample】示例创建自己的环境变量文件，一般方法是`cp -r  项目home路径/init/envs.sample  项目home路径/init/envs-myname`，然后修改`home路径/init/envs-myname`中的配置文件，配置文件的修改请参考【init/envs.sample/README.md】
 
-打开终端，运行【项目home路径/init/0-init-envs.sh -c  -f ./envs-myname】，完成环境的基本设置，此时你可能需要重新启动【deploy】主机以使环境变量生效
+打开终端，进入目录【项目home路径/init】，运行【./0-init-envs.sh -c  -f ./envs-myname】
 
 
-为了减少异常发生，你可能需要关掉一些麻烦：
+
+### 3.3 免密登录
+
+以下皆在目录【项目home路径/init】下完成
+
+- ssh登录跳过RSA key"yes/no"验证，会话保持
 ```bash
-# 关闭防火墙
-# 略
-# 关闭selinux
-# 略
-# ssh登录跳过RSA key"yes/no"验证
-#StrictHostKeyChecking no
+# 在/etc/ssh/ssh_config中修改
+    StrictHostKeyChecking no
+    ServerAliveInterval 60
 ```
+
+- 生成sshkey用于免密登录
+略
+
+- ssh免密登录设置
+```bash
+./1-sshkey-copy.sh  [用户]  [密码]  host-ip.list
+```
+
+
+### 3.4 为了减少异常发生，你可能需要关掉一些麻烦：
+
+关闭防火墙，略
+关闭selinux，略
+
+
+### 3.5 base安装设置
+
+以下皆在目录【项目home路径/init】下完成
+
+```bash
+ansible-playbook  install-hosts.yml
+ansible-playbook  install-base.yml
+ansible-playbook  install-config-base.yml
+# reboot 重新装载变量RUN_ENV
+ansible all --become -m shell -a "reboot"
+```
+
+
+### 3.6 创建自己的密码相关配置文件
+
+基于【项目home路径/init/my_sec.sample】示例创建自己的密码相关配置文件，一般方法是`cp -r  项目home路径/init/my_sec.sample  项目home路径/init/my_sec`，然后修改`home路径/init/my_sec`中的配置>文件，配置文件的修改请参考【init/envs.sample/README.md】
+
+
+
 
 ## 4 使用说明
 请使用-h|--help参数运行sh脚本即可看到使用帮助
