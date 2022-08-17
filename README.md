@@ -85,6 +85,59 @@ Python
 
 
 ### 功能与依赖
+### 功能与依赖
+
+- 构建工具（build.sh；build-parallel.sh；gogogo.sh）
+
+| 序号 | 类别       | 构建方法            | 输出方法           | 必要软件环境                                |
+| :--: | ---------- | ------------------- | ------------------ | ------------------------------------------- |
+|  1   | product    | NONE                | NONE               |                                             |
+|  2   |            |                     | docker_image_push  | docker；docker仓库                          |
+|  3   | Dockerfile | docker_bulid        | NONE               | docker                                      |
+|  4   |            |                     | docker_image_push  | docker；docker仓库                          |
+|  5   | Java       | mvn_package或gradle | NONE               | java_jdk；maven或gradle                     |
+|  6   |            |                     | deploy_war         | java_jdk；maven或gradle                     |
+|  7   |            |                     | deploy_jar_to_repo | java_jdk；maven或gradle；maven仓库          |
+|  8   |            |                     | docker_image_push  | java_jdk；maven或gradle；docker；docker仓库 |
+|  9   | Node       | npm_install         | NONE               | node；npm                                   |
+|  10  |            |                     | docker_image_push  | node；npm；docker；docker仓库               |
+|  11  |            | npm_build           | direct_deploy      | node；npm                                   |
+|  12  |            |                     | docker_image_push  | node；npm；docker；docker仓库               |
+
+- 发布工具（docker-cluster-service-deploy.sh；web-release.sh；gogogo.sh）
+
+| 序号 | 类别           | 部署类型             | 必要软件环境           |
+| :--: | -------------- | -------------------- | ---------------------- |
+|  1   | docker_cluster | swarm                | docker；swarm          |
+|  2   |                | k8s                  | docker；k8s            |
+|  3   |                | docker-compose       | docker；docker-compose |
+|  4   | web_release    | nginx或其他web服务器 | nginx或其他web服务器   |
+
+- 其他工具
+
+| 序号 | 脚本                                          | 用途                              | 必要软件环境                             |
+| :--: | --------------------------------------------- | --------------------------------- | ---------------------------------------- |
+|  1   | deploy/docker-image-search.sh                 | 从私有docker仓库搜索docker镜像    | docker；docker仓库                       |
+|  2   | deploy/docker-tag-push.sh                     | 推送docker镜像到私有docker仓库    | docker；docker仓库                       |
+|  3   | op/aliyun-dns.sh                              | 用阿里云dns做解析的域名修改工具   | 阿里云CLI                                |
+|  4   | op/godaddy-dns.sh                             | 用Godaddy dns做解析的域名修改工具 | curl                                     |
+|  5   | op/cert-letsencrypt-wildcart.sh               | 在Let'sencrypt上申请泛域名证书    | certbot                                  |
+|  6   | op/send_mail.sh                               | 发送邮件                          | mailx                                    |
+|  7   | op/dingding_conver_to_markdown_list-deploy.py | 发送钉钉消息                      | python                                   |
+|  8   | op/format_table.sh                            | 格式化表格                        | awk                                      |
+|  9   | op/draw_table.sh                              | 严格格式化表格                    | awk                                      |
+|  10  | init/1-sshkey-copy.sh                         | 免密登录                          | sshpass                                  |
+|  11  | init/send_login_alert_msg.sh                  | 发送用户登录警报消息              | python                                   |
+|  12  | init/send_mail_attach_my_log.sh               | 发送自定义日志到邮箱              | mailx                                    |
+|  13  | init/nginx-config/nginx-cert-letsencrypt-a.sh | 在Let'sencrypt上申请A域名证书     | certbot；nginx                           |
+|  14  | init/nginx-config/nginx-root.sh               | 创建nginx web站点目录             |                                          |
+|  15  | init/nginx-config/nginx-conf.sh               | 创建nginx配置文件                 | nginx                                    |
+|  16  | init/nginx-config/nginx-dns.sh                | 创建nginx站点域名A记录            | op/aliyun-dns.sh；<br> op/godaddy-dns.sh |
+|  17  | init/nginx-config/web-release-on-nginx.sh     | 上线或回滚nginx站点               | nginx                                    |
+|  18  | init/pg/backup/pg_backup_or_restore.sh        | pg数据库备份                      | pg                                       |
+|  19  | init/pg/backup/pg_list_backup_or_restore.sh   | pg数据库备份指定清单              | pg                                       |
+|  20  | 其他                                          | 略                                |                                          |
+
 
 
 ### 3.1 克隆
