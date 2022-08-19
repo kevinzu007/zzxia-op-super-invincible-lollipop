@@ -85,7 +85,6 @@ Python
 
 
 ### 功能与依赖
-### 功能与依赖
 
 - 构建工具（build.sh；build-parallel.sh；gogogo.sh）
 

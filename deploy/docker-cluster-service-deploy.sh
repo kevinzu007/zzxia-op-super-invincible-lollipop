@@ -794,6 +794,23 @@ F_GEN_RANDOM_PORT()
 
 
 
+# 端口冲突检查
+# 用法：F_PROJECT_LIST_PORT_CONFLICT  [{端口号}]
+# 返回 0，代表冲突
+F_PROJECT_LIST_PORT_CONFLICT()
+{
+    F_C_PORT=$1
+    F_C_NUM=$(grep  ":${F_C_PORT}"  ${SERVICE_LIST_FILE}  |  wc -l)
+    if [[ ${F_C_NUM} -gt 1 ]]; then
+        # 冲突
+        return 0
+    else
+        return 1
+    fi
+}
+
+
+
 # DOCKER_FULL_CMD执行
 # 用法：F_FUCK
 F_FUCK()
@@ -1495,12 +1512,14 @@ do
                 if [[ ${RUN_ENV} == 'dev' ]]; then
                     case ${GRAY_TAG} in
                         gray)
+                            # 灰度
                             # 改用随机端口
                             # 这个是为开发人员另外开放的外部端口，便于开发调试
                             CONTAINER_PORTS_SET_outside=$(F_GEN_RANDOM_PORT)
                             echo -e "\n【${RUN_ENV}】环境，调试端口映射为：【外：${CONTAINER_PORTS_SET_outside}】-->【内：${CONTAINER_PORTS_SET_inside}】\n"
                             ;;
                         normal)
+                            # 非灰度
                             if [[ -n ${RELEASE_VERSION} ]]; then
                                 # 有版本号
                                 # 改用随机端口
@@ -1510,12 +1529,25 @@ do
                             else
                                 # 无版本号
                                 if [[ -z ${CONTAINER_PORTS_SET_outside} ]]; then
-                                    # 无外部端口，则默认将内部端口等值发布出来，便于开发调试
-                                    CONTAINER_PORTS_SET_outside=${CONTAINER_PORTS_SET_inside}
+                                    # 无外部端口
+                                    # 如果不重复，则默认将内部端口等值发布出来
+                                    # 如果重复，则改用随机端口
+                                    # 这个是为开发人员另外开放的外部端口，便于开发调试
+                                    #
+                                    F_PROJECT_LIST_PORT_CONFLICT  ${CONTAINER_PORTS_SET_inside}
+                                    if [[ $? -eq 0 ]]; then
+                                        # 端口冲突
+                                        # 改用随机端口
+                                        CONTAINER_PORTS_SET_outside=$(F_GEN_RANDOM_PORT)
+                                    else
+                                        CONTAINER_PORTS_SET_outside=${CONTAINER_PORTS_SET_inside}
+                                    fi
+                                    #
                                     echo -e "\n【${RUN_ENV}】环境，调试端口映射为：【外：${CONTAINER_PORTS_SET_outside}】-->【内：${CONTAINER_PORTS_SET_inside}】\n"
                                 else
+                                    # 有外部端口
                                     # 保持配置文件指定的端口
-                                    echo
+                                    echo -e "\n【${RUN_ENV}】环境，调试端口映射为：【外：${CONTAINER_PORTS_SET_outside}】-->【内：${CONTAINER_PORTS_SET_inside}】\n"
                                 fi
                             fi
                             #
