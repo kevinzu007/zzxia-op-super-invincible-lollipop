@@ -1559,9 +1559,10 @@ do
                     esac
                     # 保存端口以备用
                     DEBUG_X_PORT=${CONTAINER_PORTS_SET_outside}
-                    DEBUG_X_PORTS="${DEBUG_X_PORTS} ${DEBUG_X_PORT}"
+                    DEBUG_X_PORTS="${DEBUG_X_PORTS},${DEBUG_X_PORT}"
                     DEBUG_X_PORTS=$(echo ${DEBUG_X_PORTS})
-                    DEBUG_X_PORTS="\"$(echo ${DEBUG_X_PORTS})\""
+                    DEBUG_X_PORTS=${DEBUG_X_PORTS#,}
+                    DEBUG_X_PORTS=${DEBUG_X_PORTS%,}
                 fi
                 #
                 # 组装
