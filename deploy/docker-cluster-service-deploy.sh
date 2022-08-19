@@ -494,7 +494,7 @@ F_ENVS_FROM_FILE ()
         # 输出
         case "${F_CLUSTER}" in
             swarm)
-                CONTAINER_ENVS_OK="${CONTAINER_ENVS_OK}  --env ${F_CONTAINER_ENVS_FILE_SET_n}=${F_CONTAINER_ENVS_FILE_SET_v}"
+                CONTAINER_ENVS_OK="${CONTAINER_ENVS_OK}  --env ${F_CONTAINER_ENVS_FILE_SET_n}=\"${F_CONTAINER_ENVS_FILE_SET_v}\""
                 ;;
             k8s)
                 sed -i "/        env:/a\        - name: ${F_CONTAINER_ENVS_FILE_SET_n}\n          value: ${F_CONTAINER_ENVS_FILE_SET_v}"  ${YAML_HOME}/${SERVICE_X_NAME}.yaml
@@ -1560,7 +1560,7 @@ do
                     # 保存端口以备用
                     DEBUG_X_PORT=${CONTAINER_PORTS_SET_outside}
                     DEBUG_X_PORTS="${DEBUG_X_PORTS} ${DEBUG_X_PORT}"
-                    DEBUG_X_PORTS=$(echo ${DEBUG_X_PORTS})
+                    DEBUG_X_PORTS="\"$(echo ${DEBUG_X_PORTS})\""
                 fi
                 #
                 # 组装
@@ -1740,7 +1740,7 @@ do
                     fi
                 else
                     # 直接组装
-                    CONTAINER_ENVS_OK="${CONTAINER_ENVS_OK}  --env ${CONTAINER_ENVS_SET_n}=${CONTAINER_ENVS_SET_v}"
+                    CONTAINER_ENVS_OK="${CONTAINER_ENVS_OK}  --env ${CONTAINER_ENVS_SET_n}=\"{CONTAINER_ENVS_SET_v}\""
                 fi
             done
             #
