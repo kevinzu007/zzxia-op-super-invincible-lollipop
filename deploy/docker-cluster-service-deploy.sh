@@ -543,6 +543,7 @@ spec:
       labels:
         project: ${SERVICE_X_NAME}
     spec:
+      hostname:
       hostAliases:
       containers:
       - name: c-${SERVICE_X_NAME}
@@ -585,8 +586,9 @@ version: '3'
 services:
   ${SERVICE_NAME}:
     image: 
-    restart: always
     container_name: ${SERVICE_NAME}.${DATE_TIME}
+    hostname: ${SERVICE_NAME}
+    restart: always
     #entrypoint: ["/path/entrypoint.sh"]
     #command: 
     # 必须有
@@ -1136,7 +1138,7 @@ do
 done
 cp  ${SERVICE_LIST_FILE_TMP}.sort  ${SERVICE_LIST_FILE_TMP}
 # 加表头
-sed -i  '1i#| **服务名** | **DOCKER镜像名** | **POD副本数** | **容器PORTS** | **JAVA选项** | **容器ENVS** | **容器CMDS** | **优先级** | **集群** | **部署位置** |'  ${SERVICE_LIST_FILE_TMP}
+sed -i  '1i#| **服务名** | **DOCKER镜像名** | **POD副本数** | **容器PORTS** | **JAVA选项** | **容器ENVS** | **容器CMDS** | **优先级** | **集群** | **部署位置** | **主机名** |'  ${SERVICE_LIST_FILE_TMP}
 # 屏显
 if [[ ${SH_RUN_MODE} == 'normal' ]]; then
     echo -e "${ECHO_NORMAL}========================= 开始发布 =========================${ECHO_CLOSE}"  #--- 60 (60-50-40)
@@ -1187,6 +1189,9 @@ do
     #
     DEPLOY_PLACEMENT=`echo ${LINE} | cut -d \| -f 11`
     DEPLOY_PLACEMENT=`eval echo ${DEPLOY_PLACEMENT}`
+    #
+    HOSTNAME=`echo ${LINE} | cut -d \| -f 12`
+    HOSTNAME=`eval echo ${HOSTNAME}`
     #
     # 运行环境
     F_SET_RUN_ENV
@@ -1832,6 +1837,31 @@ do
             # 11 部署位置
             # 前面已经处理一部分
             #
+            # 12 容器主机名
+            if [[ -n ${HOSTNAME} ]]; then
+                # 正则校验
+                #if [[ ! ${HOSTNAME} =~ ^(?=.{1,255}$)[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?(?:\.[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?)*\.?$ ]]; then
+                if [[ ! ${HOSTNAME} =~ ^[0-9a-z]([0-9a-z\-]{0,61}[0-9a-z])?(\.[0-9a-z](0-9a-z\-]{0,61}[0-9a-z])?)*$ ]]; then
+                    echo -e "\n猪猪侠警告：主机名【${HOSTNAME}】不符合规范\n"
+                    exit 52
+                fi
+                # 直接组装
+                case ${CLUSTER} in
+                    swarm)
+                        HOSTNAME_OK="--hostname ${HOSTNAME}"
+                        ;;
+                    k8s)
+                        sed -i "s/      hostname:.*/      hostname: ${HOSTNAME}/"  "${YAML_HOME}/${SERVICE_X_NAME}.yaml"
+                        ;;
+                    compose)
+                        sed -i "s/    hostname:.*/    hostname: ${HOSTNAME}/"  "${YAML_HOME}/docker-compose.yaml"
+                        ;;
+                    *)
+                        echo -e "\n猪猪侠警告：未定义的集群类型\n"
+                        exit 52
+                esac
+            fi
+            #
             DEPLOY_PLACEMENT_LABELS_OK=''
             #
             if [[ ! -z ${DEPLOY_PLACEMENT_LABELS} ]]; then
@@ -1884,6 +1914,7 @@ do
                         ${CONTAINER_ENVS_PUB_OK}  \
                         ${CONTAINER_ENVS_OK}  \
                         ${DEPLOY_PLACEMENT_LABELS_OK}  \
+                        ${HOSTNAME_OK}  \
                         ${DOCKER_IMAGE_FULL_URL}  \
                         ${CONTAINER_CMDS_OK}"
                     ;;
