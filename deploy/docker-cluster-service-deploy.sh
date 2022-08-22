@@ -28,6 +28,7 @@ TIME=${TIME:-`date +%Y-%m-%dT%H:%M:%S`}
 TIME_START=${TIME}
 DATE_TIME=`date -d "${TIME}" +%Y%m%dt%H%M%S`
 #
+DEBUG='NO'
 RELEASE_VERSION=''
 # 灰度
 GRAY_TAG="normal"                                             #--- 【normal】正常部署；【gray】灰度部署
@@ -107,7 +108,7 @@ F_HELP()
         $0 [-l|--list]                    #--- 列出配置文件中的服务清单
         $0 [-L|--list-run swarm|k8s]      #--- 列出指定集群中运行的所有服务，不支持持【docker-compose】
         # 创建、修改
-        $0 <-M|--mode [normal|function]>  [-c|--create|-m|--modify]  <<-t|--tag {模糊镜像tag版本}> | <-T|--TAG {精确镜像tag版本}>>  <-n|--number {副本数}>  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>
+        $0 <-M|--mode [normal|function]>  [-c|--create|-m|--modify]  <-D|--debug>  <<-t|--tag {模糊镜像tag版本}> | <-T|--TAG {精确镜像tag版本}>>  <-n|--number {副本数}>  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>
         # 更新
         $0 <-M|--mode [normal|function]>  [-u|--update]  <<-t|--tag {模糊镜像tag版本}> | <-T|--TAG {精确镜像tag版本}>>  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>
         # 回滚
@@ -141,6 +142,7 @@ F_HELP()
         -r|--rm        ：删除服务
         -s|--status    : 获取服务运行状态
         -d|--detail    : 获取服务详细信息
+        -D|--debug     : 开启开发者Debug模式，目前用于开放所有容器服务端口
         -t|--tag       ：模糊镜像tag版本
         -T|--TAG       ：精确镜像tag版本
         -n|--number    ：Pod副本数
@@ -161,6 +163,7 @@ F_HELP()
         # 创建
         $0 -c  -F                                    #--- 根据服务清单创建所有服务
         $0 -c  服务1 服务2  -F                       #--- 创建【服务1】、【服务2】服务
+        $0 -c  -D  服务1 服务2  -F                   #--- 创建【服务1】、【服务2】服务，并开启开发者Debug模式
         $0 -c  -T 2020.12.11  服务1 服务2  -F        #--- 创建【服务1】、【服务2】服务，且使用的镜像版本为【2020.12.11】
         $0 -c  -t 2020.12     服务1 服务2  -F        #--- 创建【服务1】、【服务2】服务，且使用的镜像版本包含【2020.12】的最新镜像
         $0 -c  -n 2  服务1 服务2  -F                 #--- 创建【服务1】、【服务2】服务，且副本数为【2】
@@ -880,7 +883,7 @@ F_FUCK()
 
 
 # 参数检查
-TEMP=`getopt -o hlL:FcmubSrsdt:T:n:GV:aM:  -l help,list,list-run:,fuck,create,modify,update,rollback,scale,rm,status,detail,tag:,TAG:,number:,gray,release-version:,all-release,mode: -- "$@"`
+TEMP=`getopt -o hlL:FcmubSrsdDt:T:n:GV:aM:  -l help,list,list-run:,fuck,create,modify,update,rollback,scale,rm,status,detail,debug,tag:,TAG:,number:,gray,release-version:,all-release,mode: -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
     exit 51
@@ -1000,6 +1003,10 @@ do
                 echo -e "\n猪猪侠警告：主要参数太多^_^\n"
                 exit 51
             fi
+            shift
+            ;;
+        -D|--debug)
+            DEBUG='YES'
             shift
             ;;
         -t|--tag)
@@ -1514,7 +1521,7 @@ do
                 fi
                 #
                 # dev环境开放Debug端口
-                if [[ ${RUN_ENV} == 'dev' ]]; then
+                if [[ ${RUN_ENV} == 'dev' ]] || [[ ${DEBUG} == 'YES' ]]; then
                     case ${GRAY_TAG} in
                         gray)
                             # 灰度
