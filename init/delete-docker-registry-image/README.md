@@ -3,22 +3,6 @@
 > https://github.com/burnettk/delete-docker-registry-image.git
 
 
-## 修改docker registry数据目录：
-方法一（推荐）：设置shell环境变量
-    export REGISTRY_DATA_DIR="/srv/docker/docker_registry/data/docker/registry/v2"
-方法二：修改delete_docker_registry_image.py中registry_data_dir行：
-    registry_data_dir = "/srv/docker/docker_registry/data/docker/registry/v2"
-
-
-## 运行错误解决
-**错误**：urllib3 (1.22) or chardet (2.2.1) doesnot match a supported version! RequestsDependencyWarning)
-**原因**：python库中urllib3 (1.22) or chardet (2.2.1) 的版本不兼容
-```
-pip uninstall urllib3
-pip uninstall chardet
-pip install requests
-```
-
 ## 主程序./clean_old_versions.py运行参数
 这里仅列表，具体用法请看py文件
 ```text
@@ -41,7 +25,7 @@ pip install requests
 
 ## run
 ```
-# 设置变量
+# 设置docker registry数据目录变量
 export REGISTRY_DATA_DIR="/srv/docker/docker_registry/data/docker/registry/v2"
 
 # 执行删除blob
@@ -63,7 +47,7 @@ export REGISTRY_DATA_DIR="/srv/docker/docker_registry/data/docker/registry/v2"
   --password 123456  \
   --no_check_certificate ;
 
-# 清理索引吧
+# 清理index吧
 # dockerregistry_docker_registry_1 ：改为自己的容器名
 docker exec -ti dockerregistry_docker_registry_1   registry garbage-collect /etc/docker/registry/config.yml
 ```
@@ -76,6 +60,13 @@ crontab -l
 ```
 
 
-
+## 运行错误解决
+**错误**：urllib3 (1.22) or chardet (2.2.1) doesnot match a supported version! RequestsDependencyWarning)
+**原因**：python库中urllib3 (1.22) or chardet (2.2.1) 的版本不兼容
+```
+pip uninstall urllib3
+pip uninstall chardet
+pip install requests
+```
 
 
