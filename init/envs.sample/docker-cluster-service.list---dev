@@ -67,6 +67,7 @@
 ###
 ### 12【主机名：HOSTNAME】= [ 自定义 ]
 ###    须符合主机名称规范
+###    注：swarm集群下修改hostname后，在其他容器内无法解析ip，而集群自己生成的hostname是可以解析ip的（就是可以ping通对方主机名）
 ###
 ###   ***** 以上种种，都可以自己定义，然后调整相关脚本即可 *****
 ###
@@ -82,7 +83,7 @@
 | gc-client-service  | gc-client-service             | 1 | :23000      | -Xms512m -Xmx512m   |                  |                  | 20         | k8s      |                  |              |
 | gc-client-app-service | gc-client-app-service      | 1 | :23100      | -Xms512m -Xmx512m   |                  |                  | 20         | compose  | SSH:192.168.11.77|              |
 | gc-travel-service  | gc-travel-service             | 1 | :20201      | -Xms512m -Xmx512m   |                  |                  | 20         | k8s      |                  |              |
-| nacos-service-1    | nacos-server                  | 1 |8848:8848,9848:9848,9555:9555|     | ENVS_FROM_FILE=../init/my_envs/nacos.env| | 20   | swarm    |                  |nacos-server-1|
-| nacos-service-2    | nacos-server                  | 1 |:8848,:9848,:9555|                 | ENVS_FROM_FILE=../init/my_envs/nacos.env| | 20   | swarm    |                  |nacos-server-2|
-| nacos-service-3    | nacos-server                  | 1 |:8848,:9848,:9555|                 | ENVS_FROM_FILE=../init/my_envs/nacos.env| | 20   | swarm    |                  |nacos-server-3|
+| nacos-server-1     | nacos-server                  | 1 |8848:8848,9848:9848,9555:9555|     | ENVS_FROM_FILE=../init/my_envs/nacos.env| | 20   | swarm    |                  |nacos-server-1|
+| nacos-server-2     | nacos-server                  | 1 |:8848,:9848,:9555|                 | ENVS_FROM_FILE=../init/my_envs/nacos.env| | 20   | swarm    |                  |nacos-server-2|
+| nacos-server-3     | nacos-server                  | 1 |:8848,:9848,:9555|                 | ENVS_FROM_FILE=../init/my_envs/nacos.env| | 20   | swarm    |                  |nacos-server-3|
 
