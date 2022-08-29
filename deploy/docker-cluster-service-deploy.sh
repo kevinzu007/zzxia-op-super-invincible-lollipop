@@ -22,6 +22,8 @@ cd ${SH_PATH}
 #K8S_NAMESAPCE=
 #DEBUG_RANDOM_PORT_MIN=
 #DEBUG_RANDOM_PORT_MAX=
+#DOCKER_IMAGE_BASE=
+#DOCKER_REPO_SECRET_NAME=
 
 # 本地env
 TIME=${TIME:-`date +%Y-%m-%dT%H:%M:%S`}
@@ -550,7 +552,7 @@ spec:
       hostAliases:
       containers:
       - name: c-${SERVICE_X_NAME}
-        image: ${DOCKER_REPO}/${DOCKER_REPO_USER}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER}
+        image: ${DOCKER_IMAGE_BASE}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER}
         imagePullPolicy: IfNotPresent
         args:
         env:
@@ -1456,7 +1458,7 @@ do
                 fi
             fi
             #
-            DOCKER_IMAGE_FULL_URL="${DOCKER_REPO}/${DOCKER_REPO_USER}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER}"
+            DOCKER_IMAGE_FULL_URL="${DOCKER_IMAGE_BASE}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER}"
             #
             case ${CLUSTER} in
                 swarm)
@@ -2031,7 +2033,7 @@ do
                 #
             fi
             #
-            DOCKER_IMAGE_FULL_URL="${DOCKER_REPO}/${DOCKER_REPO_USER}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER_UPDATE}"
+            DOCKER_IMAGE_FULL_URL="${DOCKER_IMAGE_BASE}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER_UPDATE}"
             #
             case ${CLUSTER} in 
                 swarm)
@@ -2130,7 +2132,7 @@ do
                 fi
             fi
             #
-            DOCKER_IMAGE_FULL_URL="${DOCKER_REPO}/${DOCKER_REPO_USER}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER_ROLLBACK}"
+            DOCKER_IMAGE_FULL_URL="${DOCKER_IMAGE_BASE}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER_ROLLBACK}"
             #
             case ${CLUSTER} in
                 swarm)

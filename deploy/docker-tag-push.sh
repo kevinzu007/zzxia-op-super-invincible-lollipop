@@ -16,6 +16,7 @@ cd ${SH_PATH}
 #DOCKER_REPO=
 #DOCKER_REPO_USER=
 #DOCKER_REPO_PASSWORD=
+#DOCKER_IMAGE_BASE=
 
 # 本地env
 TIME=${TIME:-`date +%Y-%m-%dT%H:%M:%S`}
@@ -190,11 +191,11 @@ do
     echo -e "${ECHO_NORMAL}-------------------------------------------------${ECHO_CLOSE}"
     echo ""
     # latest版
-    docker tag   ${IMAGE_NAME}:latest  ${DOCKER_REPO}/${DOCKER_REPO_USER}/${IMAGE_NAME}:latest
-    docker push  ${DOCKER_REPO}/${DOCKER_REPO_USER}/${IMAGE_NAME}:latest
+    docker tag   ${IMAGE_NAME}:latest  ${DOCKER_IMAGE_BASE}/${IMAGE_NAME}:latest
+    docker push  ${DOCKER_IMAGE_BASE}/${IMAGE_NAME}:latest
     # 特定版本号
-    docker tag   ${IMAGE_NAME}:latest  ${DOCKER_REPO}/${DOCKER_REPO_USER}/${IMAGE_NAME}:${IMAGE_VER}
-    docker push  ${DOCKER_REPO}/${DOCKER_REPO_USER}/${IMAGE_NAME}:${IMAGE_VER}
+    docker tag   ${IMAGE_NAME}:latest  ${DOCKER_IMAGE_BASE}/${IMAGE_NAME}:${IMAGE_VER}
+    docker push  ${DOCKER_IMAGE_BASE}/${IMAGE_NAME}:${IMAGE_VER}
     if [[ $? -ne 0 ]]; then
         echo -e "\n猪猪侠警告：项目【${PJ_NAME}】镜像PUSH失败，请检查！\n"
         return 54
