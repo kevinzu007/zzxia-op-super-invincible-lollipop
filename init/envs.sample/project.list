@@ -61,4 +61,6 @@
 | node      | gc-platform-node               | npm_install  | docker_image_push | gc-platform-node               |                      | docker_cluster     | 110        |
 | node      | gc-agent-front                 | npm_build    | direct_deploy     |                                | gc-common-front      | web_release        | 110        |
 | node      | gc-fastprotect-front           | npm_build    | direct_deploy     |                                |                      | web_release        | 110        |
+| product   | nacos-server                   | NONE         | docker_image_push | nacos-server                   |                      | docker_cluster     | 0          |
+
 
