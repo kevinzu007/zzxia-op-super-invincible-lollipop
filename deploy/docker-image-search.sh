@@ -114,7 +114,7 @@ F_SEARCH()
     F_IMAGE_NAME=$1
     curl -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD} -s -X GET ${DOCKER_REPO_URL_BASE}/${F_IMAGE_NAME}/tags/list | jq .tags[] > ${F_SEARCH_RESULT_FILE}
     if [ $? -ne 0 ]; then
-        echo -e "\n猪猪侠警告：项目镜像不存在\n" 1>&2
+        echo -e "\n猪猪侠警告：项目镜像不存在，或者访问【${DOCKER_REPO}】服务器异常\n" 1>&2
         return 53
     fi
     sed -i 's/\"//g'    ${F_SEARCH_RESULT_FILE}
