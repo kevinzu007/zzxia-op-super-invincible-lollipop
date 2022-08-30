@@ -398,7 +398,7 @@ else
         fi
     else
         # 仅构建指定类别指定项目
-        for i in "$@"; do
+        for i in $@; do
             # 查找
             F_FIND_PROJECT ${THIS_LANGUAGE_CATEGORY} $i >> ${PARA_PROJECT_LIST_FILE_TMP}
             if [[ $? -ne 0 ]]; then

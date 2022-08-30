@@ -3,11 +3,61 @@
 > https://github.com/burnettk/delete-docker-registry-image.git
 
 
-## 修改docker registry数据目录：
-方法一：设置shell环境变量
-    export REGISTRY_DATA_DIR="/srv/docker/docker_registry/data/docker/registry/v2"
-方法二：修改delete_docker_registry_image.py中registry_data_dir行：
-    registry_data_dir = "/srv/docker/docker_registry/data/docker/registry/v2"
+## 主程序./clean_old_versions.py运行参数
+这里仅列表，具体用法请看py文件
+```text
+"-e", "--exclude"
+"-E", "--include"
+"-i", "--image"
+"-v", "--verbose"
+"-u", "--registry-url"
+"-s", "--script-path"
+"-l", "--last"
+"-b", "--before-date"
+"-a", "--after-date"
+"-o", "--order"
+"-U", "--user"
+"-P", "--password"
+"--no_check_certificate"
+"--dry-run"
+```
+
+
+## run
+```
+# 设置docker registry数据目录变量
+export REGISTRY_DATA_DIR="/srv/docker/docker_registry/data/docker/registry/v2"
+
+# 执行删除blob
+#（http）
+./clean_old_versions.py  \
+  --script-path ./delete_docker_registry_image.py  \
+  --image gclife-  \
+  --registry-url http://127.0.0.1:5000  \
+  --last 15  \
+  --user ufipf \
+  --password 123456 ;
+#（https）
+./clean_old_versions.py  \
+  --script-path ./delete_docker_registry_image.py  \
+  --image gclife-  \
+  --registry-url https://127.0.0.1:5000  \
+  --last 15  \
+  --user ufipf \
+  --password 123456  \
+  --no_check_certificate ;
+
+# 清理index吧
+# dockerregistry_docker_registry_1 ：改为自己的容器名
+docker exec -ti dockerregistry_docker_registry_1   registry garbage-collect /etc/docker/registry/config.yml
+```
+
+
+## 计划任务
+```
+crontab -l
+0 0 * * *  export REGISTRY_DATA_DIR="/srv/docker/docker_registry/data/docker/registry/v2" ; cd /root/delete-docker-registry-image ; ./clean_old_versions.py -s ./delete_docker_registry_image.py  -i gcl  -u https://127.0.0.1:5000 -l 30  -U ufipf -P 123456  --no_check_certificate ; docker exec -ti dockerregistry_docker_registry_1   registry garbage-collect /etc/docker/registry/config.yml
+```
 
 
 ## 运行错误解决
@@ -18,29 +68,5 @@ pip uninstall urllib3
 pip uninstall chardet
 pip install requests
 ```
-
-
-## run
-```
-# 设置变量
-export REGISTRY_DATA_DIR="/srv/docker/docker_registry/data/docker/registry/v2"
-# -i gcl ：指定镜像匹配
-# -u http://127.0.0.1:5000 ：local访问地址
-# -l 30 ：保留最近30个
-# -U ufipf -P 123456 ：用户密码
-./clean_old_versions.py -s ./delete_docker_registry_image.py  -i gcl  -u http://127.0.0.1:5000 -l 30  -U ufipf -P 123456
-# dockerregistry_docker_registry_1 ：改为自己的容器名
-docker exec -ti dockerregistry_docker_registry_1   registry garbage-collect /etc/docker/registry/config.yml
-```
-
-
-## 计划任务
-```
-crontab -l
-0 0 * * *  export REGISTRY_DATA_DIR="/srv/docker/docker_registry/data/docker/registry/v2" ; cd /root/delete-docker-registry-image ; ./clean_old_versions.py -s ./delete_docker_registry_image.py  -i gcl  -u http://127.0.0.1:5000 -l 30  -U ufipf -P 123456 ; docker exec -ti dockerregistry_docker_registry_1   registry garbage-collect /etc/docker/registry/config.yml
-```
-
-
-
 
 

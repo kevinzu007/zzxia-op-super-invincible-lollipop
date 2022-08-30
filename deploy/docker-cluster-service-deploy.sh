@@ -22,12 +22,15 @@ cd ${SH_PATH}
 #K8S_NAMESAPCE=
 #DEBUG_RANDOM_PORT_MIN=
 #DEBUG_RANDOM_PORT_MAX=
+#DOCKER_IMAGE_BASE=
+#DOCKER_REPO_SECRET_NAME=
 
 # 本地env
 TIME=${TIME:-`date +%Y-%m-%dT%H:%M:%S`}
 TIME_START=${TIME}
 DATE_TIME=`date -d "${TIME}" +%Y%m%dt%H%M%S`
 #
+DEBUG='NO'
 RELEASE_VERSION=''
 # 灰度
 GRAY_TAG="normal"                                             #--- 【normal】正常部署；【gray】灰度部署
@@ -107,7 +110,7 @@ F_HELP()
         $0 [-l|--list]                    #--- 列出配置文件中的服务清单
         $0 [-L|--list-run swarm|k8s]      #--- 列出指定集群中运行的所有服务，不支持持【docker-compose】
         # 创建、修改
-        $0 <-M|--mode [normal|function]>  [-c|--create|-m|--modify]  <<-t|--tag {模糊镜像tag版本}> | <-T|--TAG {精确镜像tag版本}>>  <-n|--number {副本数}>  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>
+        $0 <-M|--mode [normal|function]>  [-c|--create|-m|--modify]  <-D|--debug>  <<-t|--tag {模糊镜像tag版本}> | <-T|--TAG {精确镜像tag版本}>>  <-n|--number {副本数}>  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>
         # 更新
         $0 <-M|--mode [normal|function]>  [-u|--update]  <<-t|--tag {模糊镜像tag版本}> | <-T|--TAG {精确镜像tag版本}>>  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>
         # 回滚
@@ -141,6 +144,7 @@ F_HELP()
         -r|--rm        ：删除服务
         -s|--status    : 获取服务运行状态
         -d|--detail    : 获取服务详细信息
+        -D|--debug     : 开启开发者Debug模式，目前用于开放所有容器服务端口
         -t|--tag       ：模糊镜像tag版本
         -T|--TAG       ：精确镜像tag版本
         -n|--number    ：Pod副本数
@@ -161,6 +165,7 @@ F_HELP()
         # 创建
         $0 -c  -F                                    #--- 根据服务清单创建所有服务
         $0 -c  服务1 服务2  -F                       #--- 创建【服务1】、【服务2】服务
+        $0 -c  -D  服务1 服务2  -F                   #--- 创建【服务1】、【服务2】服务，并开启开发者Debug模式
         $0 -c  -T 2020.12.11  服务1 服务2  -F        #--- 创建【服务1】、【服务2】服务，且使用的镜像版本为【2020.12.11】
         $0 -c  -t 2020.12     服务1 服务2  -F        #--- 创建【服务1】、【服务2】服务，且使用的镜像版本包含【2020.12】的最新镜像
         $0 -c  -n 2  服务1 服务2  -F                 #--- 创建【服务1】、【服务2】服务，且副本数为【2】
@@ -379,7 +384,7 @@ F_SEARCH_IMAGE_TAG()
     search_r=$(cat ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_TAG-result.txt | cut -d " " -f 3-)
     F_GET_IT=""
     # 这个其实不可能有多行
-    for i in "${search_r}"
+    for i in ${search_r}
     do
         if [ "$i" = "${F_THIS_TAG}" ]; then
             F_GET_IT="YES"
@@ -396,6 +401,7 @@ F_SEARCH_IMAGE_TAG()
 
 
 
+##### 已经弃用，因为子脚本异常不方便展示 #####
 # 搜索镜像模糊版本最新的一个
 # 返回是否找到，并输出镜像版本号
 # F_SEARCH_IMAGE_LIKE_TAG  [服务名]  [%镜像版本%]
@@ -403,7 +409,7 @@ F_SEARCH_IMAGE_LIKE_TAG()
 {
     F_SERVICE_NAME=$1
     F_LIKE_THIS_TAG=$2
-    ${DOCKER_IMAGE_SEARCH_SH}  --tag ${F_LIKE_THIS_TAG}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_LIKE_TAG-result.txt  ${F_SERVICE_NAME}  2>/dev/null
+    ${DOCKER_IMAGE_SEARCH_SH}  --tag ${F_LIKE_THIS_TAG}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_LIKE_TAG-result.txt  ${F_SERVICE_NAME}  1>/dev/null 2>/dev/null   #--- 需要关闭任何输出，方便取的结果，以结果是否为空作为成功失败的标志
     search_like_r=$(cat ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_LIKE_TAG-result.txt | cut -d " " -f 3)
     #
     if [[ ! -z ${search_like_r} ]]; then
@@ -494,7 +500,7 @@ F_ENVS_FROM_FILE ()
         # 输出
         case "${F_CLUSTER}" in
             swarm)
-                CONTAINER_ENVS_OK="${CONTAINER_ENVS_OK}  --env ${F_CONTAINER_ENVS_FILE_SET_n}=${F_CONTAINER_ENVS_FILE_SET_v}"
+                CONTAINER_ENVS_OK="${CONTAINER_ENVS_OK}  --env ${F_CONTAINER_ENVS_FILE_SET_n}=\"${F_CONTAINER_ENVS_FILE_SET_v}\""
                 ;;
             k8s)
                 sed -i "/        env:/a\        - name: ${F_CONTAINER_ENVS_FILE_SET_n}\n          value: ${F_CONTAINER_ENVS_FILE_SET_v}"  ${YAML_HOME}/${SERVICE_X_NAME}.yaml
@@ -543,10 +549,11 @@ spec:
       labels:
         project: ${SERVICE_X_NAME}
     spec:
+      hostname:
       hostAliases:
       containers:
       - name: c-${SERVICE_X_NAME}
-        image: ${DOCKER_REPO}/${DOCKER_REPO_USER}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER}
+        image: ${DOCKER_IMAGE_BASE}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER}
         imagePullPolicy: IfNotPresent
         args:
         env:
@@ -585,8 +592,9 @@ version: '3'
 services:
   ${SERVICE_NAME}:
     image: 
-    restart: always
     container_name: ${SERVICE_NAME}.${DATE_TIME}
+    hostname: ${SERVICE_NAME}
+    restart: always
     #entrypoint: ["/path/entrypoint.sh"]
     #command: 
     # 必须有
@@ -794,6 +802,23 @@ F_GEN_RANDOM_PORT()
 
 
 
+# 端口冲突检查
+# 用法：F_PROJECT_LIST_PORT_CONFLICT  [{端口号}]
+# 返回 0，代表冲突
+F_PROJECT_LIST_PORT_CONFLICT()
+{
+    F_C_PORT=$1
+    F_C_NUM=$(grep  ":${F_C_PORT}"  ${SERVICE_LIST_FILE}  |  wc -l)
+    if [[ ${F_C_NUM} -gt 1 ]]; then
+        # 冲突
+        return 0
+    else
+        return 1
+    fi
+}
+
+
+
 # DOCKER_FULL_CMD执行
 # 用法：F_FUCK
 F_FUCK()
@@ -861,7 +886,7 @@ F_FUCK()
 
 
 # 参数检查
-TEMP=`getopt -o hlL:FcmubSrsdt:T:n:GV:aM:  -l help,list,list-run:,fuck,create,modify,update,rollback,scale,rm,status,detail,tag:,TAG:,number:,gray,release-version:,all-release,mode: -- "$@"`
+TEMP=`getopt -o hlL:FcmubSrsdDt:T:n:GV:aM:  -l help,list,list-run:,fuck,create,modify,update,rollback,scale,rm,status,detail,debug,tag:,TAG:,number:,gray,release-version:,all-release,mode: -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
     exit 51
@@ -981,6 +1006,10 @@ do
                 echo -e "\n猪猪侠警告：主要参数太多^_^\n"
                 exit 51
             fi
+            shift
+            ;;
+        -D|--debug)
+            DEBUG='YES'
             shift
             ;;
         -t|--tag)
@@ -1119,7 +1148,7 @@ do
 done
 cp  ${SERVICE_LIST_FILE_TMP}.sort  ${SERVICE_LIST_FILE_TMP}
 # 加表头
-sed -i  '1i#| **服务名** | **DOCKER镜像名** | **POD副本数** | **容器PORTS** | **JAVA选项** | **容器ENVS** | **容器CMDS** | **优先级** | **集群** | **部署位置** |'  ${SERVICE_LIST_FILE_TMP}
+sed -i  '1i#| **服务名** | **DOCKER镜像名** | **POD副本数** | **容器PORTS** | **JAVA选项** | **容器ENVS** | **容器CMDS** | **优先级** | **集群** | **部署位置** | **主机名** |'  ${SERVICE_LIST_FILE_TMP}
 # 屏显
 if [[ ${SH_RUN_MODE} == 'normal' ]]; then
     echo -e "${ECHO_NORMAL}========================= 开始发布 =========================${ECHO_CLOSE}"  #--- 60 (60-50-40)
@@ -1170,6 +1199,9 @@ do
     #
     DEPLOY_PLACEMENT=`echo ${LINE} | cut -d \| -f 11`
     DEPLOY_PLACEMENT=`eval echo ${DEPLOY_PLACEMENT}`
+    #
+    HOSTNAME=`echo ${LINE} | cut -d \| -f 12`
+    HOSTNAME=`eval echo ${HOSTNAME}`
     #
     # 运行环境
     F_SET_RUN_ENV
@@ -1427,7 +1459,7 @@ do
                 fi
             fi
             #
-            DOCKER_IMAGE_FULL_URL="${DOCKER_REPO}/${DOCKER_REPO_USER}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER}"
+            DOCKER_IMAGE_FULL_URL="${DOCKER_IMAGE_BASE}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER}"
             #
             case ${CLUSTER} in
                 swarm)
@@ -1492,15 +1524,17 @@ do
                 fi
                 #
                 # dev环境开放Debug端口
-                if [[ ${RUN_ENV} == 'dev' ]]; then
+                if [[ ${RUN_ENV} == 'dev' ]] || [[ ${DEBUG} == 'YES' ]]; then
                     case ${GRAY_TAG} in
                         gray)
+                            # 灰度
                             # 改用随机端口
                             # 这个是为开发人员另外开放的外部端口，便于开发调试
                             CONTAINER_PORTS_SET_outside=$(F_GEN_RANDOM_PORT)
                             echo -e "\n【${RUN_ENV}】环境，调试端口映射为：【外：${CONTAINER_PORTS_SET_outside}】-->【内：${CONTAINER_PORTS_SET_inside}】\n"
                             ;;
                         normal)
+                            # 非灰度
                             if [[ -n ${RELEASE_VERSION} ]]; then
                                 # 有版本号
                                 # 改用随机端口
@@ -1510,12 +1544,25 @@ do
                             else
                                 # 无版本号
                                 if [[ -z ${CONTAINER_PORTS_SET_outside} ]]; then
-                                    # 无外部端口，则默认将内部端口等值发布出来，便于开发调试
-                                    CONTAINER_PORTS_SET_outside=${CONTAINER_PORTS_SET_inside}
+                                    # 无外部端口
+                                    # 如果不重复，则默认将内部端口等值发布出来
+                                    # 如果重复，则改用随机端口
+                                    # 这个是为开发人员另外开放的外部端口，便于开发调试
+                                    #
+                                    F_PROJECT_LIST_PORT_CONFLICT  ${CONTAINER_PORTS_SET_inside}
+                                    if [[ $? -eq 0 ]]; then
+                                        # 端口冲突
+                                        # 改用随机端口
+                                        CONTAINER_PORTS_SET_outside=$(F_GEN_RANDOM_PORT)
+                                    else
+                                        CONTAINER_PORTS_SET_outside=${CONTAINER_PORTS_SET_inside}
+                                    fi
+                                    #
                                     echo -e "\n【${RUN_ENV}】环境，调试端口映射为：【外：${CONTAINER_PORTS_SET_outside}】-->【内：${CONTAINER_PORTS_SET_inside}】\n"
                                 else
+                                    # 有外部端口
                                     # 保持配置文件指定的端口
-                                    echo
+                                    echo -e "\n【${RUN_ENV}】环境，调试端口映射为：【外：${CONTAINER_PORTS_SET_outside}】-->【内：${CONTAINER_PORTS_SET_inside}】\n"
                                 fi
                             fi
                             #
@@ -1527,8 +1574,10 @@ do
                     esac
                     # 保存端口以备用
                     DEBUG_X_PORT=${CONTAINER_PORTS_SET_outside}
-                    DEBUG_X_PORTS="${DEBUG_X_PORTS} ${DEBUG_X_PORT}"
+                    DEBUG_X_PORTS="${DEBUG_X_PORTS},${DEBUG_X_PORT}"
                     DEBUG_X_PORTS=$(echo ${DEBUG_X_PORTS})
+                    DEBUG_X_PORTS=${DEBUG_X_PORTS#,}
+                    DEBUG_X_PORTS=${DEBUG_X_PORTS%,}
                 fi
                 #
                 # 组装
@@ -1651,7 +1700,7 @@ do
             # 7 组装ENV
             #
             # - 灰度用ENV
-            CONTAINER_ENVS_GRAY_OK="  --env GRAY_TAG=${GRAY_TAG}  --env RELEASE_VERSION=${RELEASE_VERSION}  --env SERVICE_X_NAME=${SERVICE_X_NAME}  --env DEBUG_X_PORTS=${DEBUG_X_PORTS}  --env DEBUG_X_PORT=${DEBUG_X_PORT}"
+            CONTAINER_ENVS_GRAY_OK="  --env GRAY_TAG=${GRAY_TAG}  --env RELEASE_VERSION=${RELEASE_VERSION}  --env SERVICE_X_NAME=${SERVICE_X_NAME}  --env DEBUG_X_PORTS=${DEBUG_X_PORTS}"
             #
             # - 从公共文件
             CONTAINER_ENVS_PUB_OK=""
@@ -1708,7 +1757,7 @@ do
                     fi
                 else
                     # 直接组装
-                    CONTAINER_ENVS_OK="${CONTAINER_ENVS_OK}  --env ${CONTAINER_ENVS_SET_n}=${CONTAINER_ENVS_SET_v}"
+                    CONTAINER_ENVS_OK="${CONTAINER_ENVS_OK}  --env ${CONTAINER_ENVS_SET_n}=\"{CONTAINER_ENVS_SET_v}\""
                 fi
             done
             #
@@ -1798,6 +1847,31 @@ do
             # 11 部署位置
             # 前面已经处理一部分
             #
+            # 12 容器主机名
+            if [[ -n ${HOSTNAME} ]]; then
+                # 正则校验
+                #if [[ ! ${HOSTNAME} =~ ^(?=.{1,255}$)[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?(?:\.[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?)*\.?$ ]]; then
+                if [[ ! ${HOSTNAME} =~ ^[0-9a-z]([0-9a-z\-]{0,61}[0-9a-z])?(\.[0-9a-z](0-9a-z\-]{0,61}[0-9a-z])?)*$ ]]; then
+                    echo -e "\n猪猪侠警告：主机名【${HOSTNAME}】不符合规范\n"
+                    exit 52
+                fi
+                # 直接组装
+                case ${CLUSTER} in
+                    swarm)
+                        HOSTNAME_OK="--hostname ${HOSTNAME}"
+                        ;;
+                    k8s)
+                        sed -i "s/      hostname:.*/      hostname: ${HOSTNAME}/"  "${YAML_HOME}/${SERVICE_X_NAME}.yaml"
+                        ;;
+                    compose)
+                        sed -i "s/    hostname:.*/    hostname: ${HOSTNAME}/"  "${YAML_HOME}/docker-compose.yaml"
+                        ;;
+                    *)
+                        echo -e "\n猪猪侠警告：未定义的集群类型\n"
+                        exit 52
+                esac
+            fi
+            #
             DEPLOY_PLACEMENT_LABELS_OK=''
             #
             if [[ ! -z ${DEPLOY_PLACEMENT_LABELS} ]]; then
@@ -1850,6 +1924,7 @@ do
                         ${CONTAINER_ENVS_PUB_OK}  \
                         ${CONTAINER_ENVS_OK}  \
                         ${DEPLOY_PLACEMENT_LABELS_OK}  \
+                        ${HOSTNAME_OK}  \
                         ${DOCKER_IMAGE_FULL_URL}  \
                         ${CONTAINER_CMDS_OK}"
                     ;;
@@ -1937,7 +2012,9 @@ do
                 #
             elif [ ! -z "${LIKE_THIS_TAG}" ]; then
                 # 更新指定LIKE匹配镜像
-                DOCKER_IMAGE_VER_UPDATE=$(F_SEARCH_IMAGE_LIKE_TAG  ${SERVICE_NAME}  ${LIKE_THIS_TAG})
+                #DOCKER_IMAGE_VER_UPDATE=$(F_SEARCH_IMAGE_LIKE_TAG  ${SERVICE_NAME}  ${LIKE_THIS_TAG})
+                ${DOCKER_IMAGE_SEARCH_SH}  --tag ${LIKE_THIS_TAG}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt  ${SERVICE_NAME}
+                DOCKER_IMAGE_VER_UPDATE=$(cat ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt | cut -d " " -f 3)
                 #
                 if [[ -z ${DOCKER_IMAGE_VER_UPDATE} ]]; then
                     echo "失败，镜像版本【%${LIKE_THIS_TAG}%】未找到"
@@ -1949,7 +2026,9 @@ do
             else
                 # 更新今日发布的服务镜像
                 TODAY=`date +%Y.%m.%d`
-                DOCKER_IMAGE_VER_UPDATE=$(F_SEARCH_IMAGE_LIKE_TAG  ${SERVICE_NAME}  ${TODAY})
+                #DOCKER_IMAGE_VER_UPDATE=$(F_SEARCH_IMAGE_LIKE_TAG  ${SERVICE_NAME}  ${TODAY})
+                ${DOCKER_IMAGE_SEARCH_SH}  --tag ${TODAY}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt  ${SERVICE_NAME}
+                DOCKER_IMAGE_VER_UPDATE=$(cat ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt | cut -d " " -f 3)
                 if [[ -z ${DOCKER_IMAGE_VER_UPDATE} ]]; then
                     echo "跳过，今日无更新"
                     echo "${SERVICE_X_NAME} : 跳过，今日无更新" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
@@ -1959,7 +2038,7 @@ do
                 #
             fi
             #
-            DOCKER_IMAGE_FULL_URL="${DOCKER_REPO}/${DOCKER_REPO_USER}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER_UPDATE}"
+            DOCKER_IMAGE_FULL_URL="${DOCKER_IMAGE_BASE}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER_UPDATE}"
             #
             case ${CLUSTER} in 
                 swarm)
@@ -2042,7 +2121,9 @@ do
             fi
             #
             TODAY=`date +%Y.%m.%d`
-            DOCKER_IMAGE_VER_TODAY=$(F_SEARCH_IMAGE_LIKE_TAG  ${SERVICE_NAME}  ${TODAY})
+            #DOCKER_IMAGE_VER_TODAY=$(F_SEARCH_IMAGE_LIKE_TAG  ${SERVICE_NAME}  ${TODAY})
+            ${DOCKER_IMAGE_SEARCH_SH}  --tag ${TODAY}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt  ${SERVICE_NAME}
+            DOCKER_IMAGE_VER_TODAY=$(cat ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt | cut -d " " -f 3)
             if [[ -z ${DOCKER_IMAGE_VER_TODAY} ]]; then
                 echo "跳过，今日无更新"
                 echo "${SERVICE_X_NAME} : 跳过，今日无更新" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
@@ -2058,7 +2139,7 @@ do
                 fi
             fi
             #
-            DOCKER_IMAGE_FULL_URL="${DOCKER_REPO}/${DOCKER_REPO_USER}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER_ROLLBACK}"
+            DOCKER_IMAGE_FULL_URL="${DOCKER_IMAGE_BASE}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER_ROLLBACK}"
             #
             case ${CLUSTER} in
                 swarm)
@@ -2504,6 +2585,5 @@ case ${SH_RUN_MODE} in
         exit 51
         ;;
 esac
-
 
 

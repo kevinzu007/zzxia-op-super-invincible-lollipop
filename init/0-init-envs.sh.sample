@@ -35,42 +35,42 @@ F_CP ()
 {
     #set -e
     # cp到init目录
-    cp -rf ./${ENVS_FILE_DIR}/3rd_jar                             ./
-    cp -f  ./${ENVS_FILE_DIR}/dingding_send_markdown-login.py  ./
-    cp -f  ./${ENVS_FILE_DIR}/dingding_send_markdown.py        ./
-    cp -f  ./${ENVS_FILE_DIR}/dingding_conver_to_markdown_list.py                ./
-    cp -f  ./${ENVS_FILE_DIR}/ossfs-backup.service                ./
-    cp -f  ./${ENVS_FILE_DIR}/ossfs-internal-backup.service       ./
+    cp -rf ${ENVS_FILE_DIR}/3rd_jar                               ./
+    cp -f  ${ENVS_FILE_DIR}/dingding_send_markdown-login.py       ./
+    cp -f  ${ENVS_FILE_DIR}/dingding_send_markdown.py             ./
+    cp -f  ${ENVS_FILE_DIR}/dingding_conver_to_markdown_list.py   ./
+    cp -f  ${ENVS_FILE_DIR}/ossfs-backup.service                  ./
+    cp -f  ${ENVS_FILE_DIR}/ossfs-internal-backup.service         ./
     #
-    cp -f  ./${ENVS_FILE_DIR}/install-hosts.yml---${R_ENV}          ./install-hosts.yml
-    cp -f  ./${ENVS_FILE_DIR}/host-ip.list---${R_ENV}               ./host-ip.list
-    cp -f  ./${ENVS_FILE_DIR}/bash_aliases---${R_ENV}               ./bash_aliases
-    cp -f  ./${ENVS_FILE_DIR}/run-env.sh---${R_ENV}                 ./run-env.sh
-    cp -f  ./${ENVS_FILE_DIR}/mailrc---${R_ENV}                     ./mailrc
+    cp -f  ${ENVS_FILE_DIR}/install-hosts.yml---${R_ENV}          ./install-hosts.yml
+    cp -f  ${ENVS_FILE_DIR}/host-ip.list---${R_ENV}               ./host-ip.list
+    cp -f  ${ENVS_FILE_DIR}/bash_aliases---${R_ENV}               ./bash_aliases
+    cp -f  ${ENVS_FILE_DIR}/run-env.sh---${R_ENV}                 ./run-env.sh
+    cp -f  ${ENVS_FILE_DIR}/mailrc---${R_ENV}                     ./mailrc
     # cp到init子目录
-    cp -f  ./${ENVS_FILE_DIR}/soft/jdk-*-linux-x64.tar.gz      ./build-envs/java/
-    cp -f  ./${ENVS_FILE_DIR}/soft/apache-maven-*-bin.tar.gz   ./build-envs/maven/
-    cp -f  ./${ENVS_FILE_DIR}/soft/node-v*-linux-x64.tar.xz    ./build-envs/node/
-    cp -f  ./${ENVS_FILE_DIR}/backup-center-project.list       ./backup-center/backup-center-project.list
-    cp -f  ./${ENVS_FILE_DIR}/pg_db.list                       ./pg/backup/pg_db.list
+    cp -f  ${ENVS_FILE_DIR}/soft/jdk-*-linux-x64.tar.gz           ./build-envs/java/
+    cp -f  ${ENVS_FILE_DIR}/soft/apache-maven-*-bin.tar.gz        ./build-envs/maven/
+    cp -f  ${ENVS_FILE_DIR}/soft/node-v*-linux-x64.tar.xz         ./build-envs/node/
+    cp -f  ${ENVS_FILE_DIR}/backup-center-project.list            ./backup-center/backup-center-project.list
+    cp -f  ${ENVS_FILE_DIR}/pg_db.list                            ./pg/backup/pg_db.list
     #
-    cp -f  ./${ENVS_FILE_DIR}/nginx.list---${R_ENV}              ./nginx-config/
-    cp -f  ./${ENVS_FILE_DIR}/fluent.conf---${R_ENV}             ./fluentd-srv/conf/fluent.conf
-    cp -f  ./${ENVS_FILE_DIR}/kibana-srv-env---${R_ENV}          ./kibana-srv/.env
-    cp -f  ./${ENVS_FILE_DIR}/elasticsearch-srv-env---${R_ENV}   ./elasticsearch-srv/.env
+    cp -f  ${ENVS_FILE_DIR}/nginx.list---${R_ENV}                 ./nginx-config/
+    cp -f  ${ENVS_FILE_DIR}/fluent.conf---${R_ENV}                ./fluentd-srv/conf/fluent.conf
+    cp -f  ${ENVS_FILE_DIR}/kibana-srv-env---${R_ENV}             ./kibana-srv/.env
+    cp -f  ${ENVS_FILE_DIR}/elasticsearch-srv-env---${R_ENV}      ./elasticsearch-srv/.env
 
     # cp到deploy目录
-    cp -f  ./${ENVS_FILE_DIR}/project.list                           ../deploy/
+    cp -f  ${ENVS_FILE_DIR}/project.list                             ../deploy/
     #
-    cp -f  ./${ENVS_FILE_DIR}/deploy.env---${R_ENV}                    ../deploy/deploy.env
-    cp -f  ./${ENVS_FILE_DIR}/nginx.list---${R_ENV}                    ../deploy/nginx.list
-    cp -f  ./${ENVS_FILE_DIR}/docker-cluster-service.list---${R_ENV}   ../deploy/docker-cluster-service.list
-    cp -f  ./${ENVS_FILE_DIR}/docker-arg-pub.list---${R_ENV}           ../deploy/docker-arg-pub.list
-    cp -f  ./${ENVS_FILE_DIR}/container-hosts-pub.list---${R_ENV}      ../deploy/container-hosts-pub.list
-    cp -f  ./${ENVS_FILE_DIR}/java-options-pub.list---${R_ENV}         ../deploy/java-options-pub.list
+    cp -f  ${ENVS_FILE_DIR}/deploy.env---${R_ENV}                    ../deploy/deploy.env
+    cp -f  ${ENVS_FILE_DIR}/nginx.list---${R_ENV}                    ../deploy/nginx.list
+    cp -f  ${ENVS_FILE_DIR}/docker-cluster-service.list---${R_ENV}   ../deploy/docker-cluster-service.list
+    cp -f  ${ENVS_FILE_DIR}/docker-arg-pub.list---${R_ENV}           ../deploy/docker-arg-pub.list
+    cp -f  ${ENVS_FILE_DIR}/container-hosts-pub.list---${R_ENV}      ../deploy/container-hosts-pub.list
+    cp -f  ${ENVS_FILE_DIR}/java-options-pub.list---${R_ENV}         ../deploy/java-options-pub.list
 
     # cp到deploy主机，即本机
-    cp -f  ./${ENVS_FILE_DIR}/ansible-hosts---${R_ENV}             /etc/ansible/hosts
+    cp -f  ${ENVS_FILE_DIR}/ansible-hosts---${R_ENV}                 /etc/ansible/hosts
 }
 
 

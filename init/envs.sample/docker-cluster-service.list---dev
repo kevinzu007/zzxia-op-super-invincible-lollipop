@@ -65,19 +65,25 @@
 ###          【SSH:root@192.168.11.77 -p 22】
 ###          【SSH:192.168.11.77】
 ###
+### 12【主机名：HOSTNAME】= [ 自定义 ]
+###    须符合主机名称规范
+###    注：swarm集群下修改hostname后，在其他容器内无法解析ip，而集群自己生成的hostname是可以解析ip的（就是可以ping通对方主机名）
+###
 ###   ***** 以上种种，都可以自己定义，然后调整相关脚本即可 *****
 ###
 ###   ***** 上文提到的变量名可以是下文表头的名字、也可以是sh中可以获得的变量名 *****
 ###
-#| SERVICE_NAME      | DOCKER_IMAGE_NAME | POD_REPLICAS  | CONTAINER_PORTS | JAVA_OPTIONS    | CONTAINER_ENVS     | CONTAINER_CMDS     | PRIORITY   | CLUSTER  | DEPLOY_PLACEMENT  |
-#| **服务名**        | **DOCKER镜像名**  | **POD副本数** | **容器PORTS**   | **JAVA选项**    | **容器ENVS**       | **容器CMDS**       | **优先级** | **集群** | **部署位置**      |
-#| ----------------- | ----------------- | ------------: | -----------  -- | --------------: | ------------------ | ------------------ | ---------- | -------- | ----------------- |
-| neo4j-srv          | neo4j                         | 1 | 7474:7474,7687:7687   |           | NEO4J_AUTH="${NEO4J_USER}/${NEO4J_PASSWORD}" | | 0   | swarm    |                   |
-| redis-srv          | redis                         | 1 | 6379:6379             |           |            | --requirepass "${REDIS_PASSWORD}" | 0   | swarm    |                   |
-| rabbitmq-srv       | rabbitmq                      | 1 | 5672:5672,15672:15672 |           | RABBITMQ_DEFAULT_USER="${RABBITMQ_USER}",RABBITMQ_DEFAULT_PASS="${RABBITMQ_PASSWORD}" | |0|swarm| |
-| gc-gateway         | gc-gateway                    | 1 | 13000:13000 | -Xms512m -Xmx512m   |                    |                    | 15         | swarm    |                   |
-| gc-monitor         | gc-monitor                    | 1 | :13030      | -Xms512m -Xmx512m   |                    |                    | 20         | swarm    |                   |
-| gc-client-service  | gc-client-service             | 1 | :23000      | -Xms512m -Xmx512m   |                    |                    | 20         | k8s      |                   |
-| gc-client-app-service | gc-client-app-service      | 1 | :23100      | -Xms512m -Xmx512m   |                    |                    | 20         | compose  | SSH:192.168.11.77 |
-| gc-travel-service  | gc-travel-service             | 1 | :20201      | -Xms512m -Xmx512m   |                    |                    | 20         | k8s      |                   |
+#| SERVICE_NAME      | DOCKER_IMAGE_NAME | POD_REPLICAS  | CONTAINER_PORTS | JAVA_OPTIONS    | CONTAINER_ENVS   | CONTAINER_CMDS   | PRIORITY   | CLUSTER  | DEPLOY_PLACEMENT | HOSTNAME     |
+#| **服务名**        | **DOCKER镜像名**  | **POD副本数** | **容器PORTS**   | **JAVA选项**    | **容器ENVS**     | **容器CMDS**     | **优先级** | **集群** | **部署位置**     | **主机名**   |
+#| ----------------- | ----------------- | ------------: | -----------  -- | --------------: | ---------------- | ---------------- | ---------- | -------- | ---------------- | ------------ |
+| neo4j-srv          | neo4j                         | 1 | 7474:7474,7687:7687   |           | NEO4J_AUTH="${NEO4J_USER}/${NEO4J_PASSWORD}" | | 0 | swarm  |                  |              |
+| redis-srv          | redis                         | 1 | 6379:6379             |           |            | --requirepass "${REDIS_PASSWORD}" | 0 | swarm  |                  |              |
+| gc-gateway         | gc-gateway                    | 1 | 13000:13000 | -Xms512m -Xmx512m   |                  |                  | 15         | swarm    |                  |              |
+| gc-monitor         | gc-monitor                    | 1 | :13030      | -Xms512m -Xmx512m   |                  |                  | 20         | swarm    |                  |              |
+| gc-client-service  | gc-client-service             | 1 | :23000      | -Xms512m -Xmx512m   |                  |                  | 20         | k8s      |                  |              |
+| gc-client-app-service | gc-client-app-service      | 1 | :23100      | -Xms512m -Xmx512m   |                  |                  | 20         | compose  | SSH:192.168.11.77|              |
+| gc-travel-service  | gc-travel-service             | 1 | :20201      | -Xms512m -Xmx512m   |                  |                  | 20         | k8s      |                  |              |
+| nacos-server-1     | nacos-server                  | 1 |8848:8848,9848:9848,9555:9555|     | ENVS_FROM_FILE=../init/my_envs/nacos.env| | 20   | swarm    |                  |nacos-server-1|
+| nacos-server-2     | nacos-server                  | 1 |:8848,:9848,:9555|                 | ENVS_FROM_FILE=../init/my_envs/nacos.env| | 20   | swarm    |                  |nacos-server-2|
+| nacos-server-3     | nacos-server                  | 1 |:8848,:9848,:9555|                 | ENVS_FROM_FILE=../init/my_envs/nacos.env| | 20   | swarm    |                  |nacos-server-3|
 

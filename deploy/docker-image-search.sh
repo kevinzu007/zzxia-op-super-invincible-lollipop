@@ -13,6 +13,11 @@ cd ${SH_PATH}
 
 # 引入env
 . ${SH_PATH}/deploy.env
+#DOCKER_REPO=
+#DOCKER_REPO_USER=
+#DOCKER_REPO_PASSWORD=
+#DOCKER_REPO_PROTOCOL=
+#DOCKER_REPO_URL_BASE=
 
 # 本地env
 TIME=`date +%Y-%m-%dT%H:%M:%S`
@@ -107,9 +112,9 @@ F_SEARCH()
 {
     F_SEARCH_RESULT_FILE="/tmp/${SH_NAME}-F_SEARCH-result.txt"
     F_IMAGE_NAME=$1
-    curl -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD} -s -X GET https://${DOCKER_REPO}/v2/${DOCKER_REPO_USER}/${F_IMAGE_NAME}/tags/list | jq .tags[] > ${F_SEARCH_RESULT_FILE} 2>/dev/null
+    curl -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD} -s -X GET ${DOCKER_REPO_URL_BASE}/${F_IMAGE_NAME}/tags/list | jq .tags[] > ${F_SEARCH_RESULT_FILE}
     if [ $? -ne 0 ]; then
-        echo -e "\n猪猪侠警告：项目镜像不存在\n" 1>&2
+        echo -e "\n猪猪侠警告：项目镜像不存在，或者访问【${DOCKER_REPO}】服务器异常\n" 1>&2
         return 53
     fi
     sed -i 's/\"//g'    ${F_SEARCH_RESULT_FILE}
@@ -270,9 +275,9 @@ do
         continue
     fi
     #
-    > ${SEARCH_RESULT_FILE}.tmp
+    > ${SEARCH_RESULT_FILE}.${SERVICE_NAME}.tmp
     # 写入文件
-    F_SEARCH ${IMAGE_NAME}  > ${SEARCH_RESULT_FILE}.tmp  2>/tmp/${SH_NAME}-error.txt
+    F_SEARCH ${IMAGE_NAME}  > ${SEARCH_RESULT_FILE}.${SERVICE_NAME}.tmp  2>/tmp/${SH_NAME}-error.txt
     #if [ $? -eq 53 ]; then
     #    echo -e "\n猪猪侠警告：项目镜像不存在\n"
     #fi
@@ -282,7 +287,7 @@ do
         echo -e "${ECHO_NORMAL}# ---------------------------------------------------${ECHO_CLOSE}"
         echo -e "${ECHO_NORMAL}# ${NUM} - 服务名：${SERVICE_NAME} - 镜像名：${IMAGE_NAME} ${ECHO_CLOSE}"
         echo -e "${ECHO_NORMAL}# ---------------------------------------------------${ECHO_CLOSE}"
-        cat  ${SEARCH_RESULT_FILE}.tmp
+        cat  ${SEARCH_RESULT_FILE}.${SERVICE_NAME}.tmp
         cat  /tmp/${SH_NAME}-error.txt
         echo ''
         echo ''
@@ -290,9 +295,9 @@ do
         # 错误信息
         cat  /tmp/${SH_NAME}-error.txt
     fi
-    #
-    if [ `cat ${SEARCH_RESULT_FILE}.tmp | wc -l` -ne 0 ]; then
-        R=`cat ${SEARCH_RESULT_FILE}.tmp`
+    # 文件输出
+    if [ `cat ${SEARCH_RESULT_FILE}.${SERVICE_NAME}.tmp | wc -l` -ne 0 ]; then
+        R=`cat ${SEARCH_RESULT_FILE}.${SERVICE_NAME}.tmp`
         echo ${SERVICE_NAME} ${IMAGE_NAME} $R >> ${SEARCH_RESULT_FILE}
     fi
 done < ${SERVICE_LIST_FILE_TMP}
