@@ -1757,7 +1757,7 @@ do
                     fi
                 else
                     # 直接组装
-                    CONTAINER_ENVS_OK="${CONTAINER_ENVS_OK}  --env ${CONTAINER_ENVS_SET_n}=\"{CONTAINER_ENVS_SET_v}\""
+                    CONTAINER_ENVS_OK="${CONTAINER_ENVS_OK}  --env ${CONTAINER_ENVS_SET_n}=\"${CONTAINER_ENVS_SET_v}\""
                 fi
             done
             #
