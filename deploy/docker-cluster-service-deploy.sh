@@ -2287,6 +2287,7 @@ do
             #
             # 是否运行中
             if [[ ${ALL_RELEASE} == 'YES' ]]; then
+                SERVICE_X_NAME=${SERVICE_NAME}
                 F_ONLINE_SERVICE_SEARCH_LIKE  ${SERVICE_X_NAME}  ${CLUSTER} > ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
                 [[ $? -eq 0 ]] && SERVICE_RUN_STATUS='YES' || SERVICE_RUN_STATUS='NO'
             else
@@ -2366,6 +2367,7 @@ do
             #
             # 是否运行中
             if [[ ${ALL_RELEASE} == 'YES' ]]; then
+                SERVICE_X_NAME=${SERVICE_NAME}
                 F_ONLINE_SERVICE_SEARCH_LIKE  ${SERVICE_X_NAME}  ${CLUSTER} > ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
                 [[ $? -eq 0 ]] && SERVICE_RUN_STATUS='YES' || SERVICE_RUN_STATUS='NO'
             else
@@ -2444,6 +2446,7 @@ do
             #
             # 是否运行中
             if [[ ${ALL_RELEASE} == 'YES' ]]; then
+                SERVICE_X_NAME=${SERVICE_NAME}
                 F_ONLINE_SERVICE_SEARCH_LIKE  ${SERVICE_X_NAME}  ${CLUSTER} > ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
                 [[ $? -eq 0 ]] && SERVICE_RUN_STATUS='YES' || SERVICE_RUN_STATUS='NO'
             else
