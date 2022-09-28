@@ -3,7 +3,6 @@
   become: yes
   tasks:
     - name: crontab - rm-es-history
-      cron: name=rm-es-history backup=yes state=present minute=0 hour=0 day=*/1  month=* weekday=* user=root job='/srv/docker/elasticsearch-srv/rm-es-history.sh >> /srv/docker/elasticsearch-srv/rm-es-history.sh.log 2>&1'
-
+      cron: name=rm-es-history backup=yes state=present minute=0 hour=0 day=*/1  month=* weekday=* user=root job='/srv/docker/elasticsearch-srv/rm-es-history.sh  -r gclife 30  >> /srv/docker/elasticsearch-srv/rm-es-history.sh.log 2>&1'
 
 

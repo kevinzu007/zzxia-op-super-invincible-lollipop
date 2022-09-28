@@ -121,9 +121,9 @@ F_HELP()
         # 删除
         $0 <-M|--mode [normal|function]>  [-r|--rm]  <-V|--release-version {版本号}>  <-G|--gray>  <-a|--all-release>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>
         # 状态
-        $0 [-s|--status]  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>
+        $0 [-s|--status]  <-V|--release-version {版本号}>  <-G|--gray>  <-a|--all-release>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>
         # 详情
-        $0 [-d|--detail]  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>
+        $0 [-d|--detail]  <-V|--release-version {版本号}>  <-G|--gray>  <-a|--all-release>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>
     参数说明：
         \$0   : 代表脚本本身
         []   : 代表是必选项
@@ -150,7 +150,7 @@ F_HELP()
         -n|--number    ：Pod副本数
         -G|--gray      : 设置灰度标志为：gray，默认：normal
         -V|--release-version : 发布版本号
-        -a|--all-release     : 模糊匹配所有已发布的版本号
+        -a|--all-release     : 所有已发布的版本，包含带版本号的、不带版本号的、灰度的、非灰度的
         -M|--mode      ：指定构建方式，二选一【normal|function】，默认为normal方式。此参数用于被外部调用
     示例：
         # 服务清单
@@ -202,13 +202,13 @@ F_HELP()
         $0 -r  服务1 服务2  -F             #--- 删除【服务1】、【服务2】服务
         $0 -r  -G  服务1 服务2  -F         #--- 删除【服务1】、【服务2】的灰度服务
         $0 -r  -V yyy  服务1 服务2  -F     #--- 删除【服务1】、【服务2】，且版本为【yyy】的服务
-        $0 -r  -a  服务1 服务2  -F         #--- 删除模糊匹配【服务1】、【服务2】的服务
-        $0 -r  -a  -V yyy  服务1 服务2  -F #--- 删除模糊匹配【服务1】、【服务2】，且版本为【yyy】的服务
-        # 运行状态
+        $0 -r  -V yyy  -G  服务1 服务2  -F #--- 删除【服务1】、【服务2】，且版本为【yyy】的灰度服务
+        $0 -r  -a  服务1 服务2  -F         #--- 删除模糊匹配【服务1】、【服务2】的服务，包含带版本号的、不带版本号的、灰度的、非灰度的
+        # 运行状态（更多请参考【删除】）
         $0 -s  -F                          #--- 根据服务清单获取服务运行状态
         $0 -s  服务1 服务2  -F             #--- 获取【服务1】、【服务2】服务运行状态
         $0 -s  -G  服务1 服务2  -F         #--- 获取【服务1】、【服务2】的灰度服务运行状态
-        # 运行详细信息
+        # 运行详细信息（更多请参考【删除】）
         $0 -d  -F                          #--- 根据服务清单获服务运行取详细信息
         $0 -d  服务1 服务2  -F             #--- 获取【服务1】、【服务2】服务运行详细信息
         # 外调用★ 
@@ -841,20 +841,20 @@ F_FUCK()
             create|modify|update|rollback|scale)
                 if [[ ${SH_ERROR_CODE} -eq 0 ]]; then
                     ERROR_CODE=50
-                    echo "成功"
+                    echo "${SERVICE_X_NAME} : 成功"
                     echo "${SERVICE_X_NAME} : 成功" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                     # 删除端口
                     F_DEBUG_X_PORTS_RM  $(echo ${PORTS_RM})
                 else
                     ERROR_CODE=54
-                    echo "失败"
+                    echo "${SERVICE_X_NAME} : 失败"
                     echo "${SERVICE_X_NAME} : 失败" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                 fi
                 ;;
             rm|status|detail)
                 if [[ ${SH_ERROR_CODE} -eq 0 ]]; then
                     ERROR_CODE=50
-                    echo "成功"
+                    echo "${SERVICE_X_NAME} : 成功"
                     while read R_LINE
                     do
                         echo "${R_LINE} : 成功" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
@@ -863,7 +863,7 @@ F_FUCK()
                     done < ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
                 else
                     ERROR_CODE=54
-                    echo "失败"
+                    echo "${SERVICE_X_NAME} : 失败"
                     while read R_LINE
                     do
                         echo "${R_LINE} : 失败" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
@@ -1286,7 +1286,7 @@ do
                 # 运行中
                 case "${SERVICE_OPERATION}" in
                     create)
-                        echo "跳过，服务已在运行中"
+                        echo "${SERVICE_X_NAME} : 跳过，服务已在运行中"
                         echo "${SERVICE_X_NAME} : 跳过，服务已在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                         ERROR_CODE=53
                         continue
@@ -1429,7 +1429,7 @@ do
                 # 完全匹配服务镜像
                 F_SEARCH_IMAGE_TAG  ${SERVICE_NAME}  ${THIS_TAG}
                 if [ $? -ne 0 ]; then
-                    echo "失败，镜像版本【${THIS_TAG}】未找到"
+                    echo "${SERVICE_NAME} : 失败，镜像版本【${THIS_TAG}】未找到"
                     echo "${SERVICE_NAME} : 失败，镜像版本【${THIS_TAG}】未找到" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                     ERROR_CODE=54
                     continue
@@ -1441,7 +1441,7 @@ do
                 ${DOCKER_IMAGE_SEARCH_SH}  --tag ${LIKE_THIS_TAG}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-image-search.${SERVICE_OPERATION}  ${SERVICE_NAME}
                 search_r=`cat ${LOG_HOME}/${SH_NAME}-image-search.${SERVICE_OPERATION} | awk '{print $3}'`
                 if [ "x${search_r}" = "x" ]; then
-                    echo "失败，镜像版本【%${LIKE_THIS_TAG}%】未找到"
+                    echo "${SERVICE_NAME} : 失败，镜像版本【%${LIKE_THIS_TAG}%】未找到"
                     echo "${SERVICE_NAME} : 失败，镜像版本【%${LIKE_THIS_TAG}%】未找到" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                     ERROR_CODE=54
                     continue
@@ -1452,7 +1452,7 @@ do
                 # 默认镜像版本
                 F_SEARCH_IMAGE_TAG  ${SERVICE_NAME}  ${DOCKER_IMAGE_VER}
                 if [ $? -ne 0 ]; then
-                    echo "失败，镜像版本【${DOCKER_IMAGE_VER}】未找到"
+                    echo "${SERVICE_NAME} : 失败，镜像版本【${DOCKER_IMAGE_VER}】未找到"
                     echo "${SERVICE_NAME} : 失败，镜像版本【${DOCKER_IMAGE_VER}】未找到" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                     ERROR_CODE=54
                     continue
@@ -1757,7 +1757,7 @@ do
                     fi
                 else
                     # 直接组装
-                    CONTAINER_ENVS_OK="${CONTAINER_ENVS_OK}  --env ${CONTAINER_ENVS_SET_n}=\"{CONTAINER_ENVS_SET_v}\""
+                    CONTAINER_ENVS_OK="${CONTAINER_ENVS_OK}  --env ${CONTAINER_ENVS_SET_n}=\"${CONTAINER_ENVS_SET_v}\""
                 fi
             done
             #
@@ -1992,7 +1992,7 @@ do
             [[ $? -eq 0 ]] && SERVICE_RUN_STATUS='YES' || SERVICE_RUN_STATUS='NO'
             #
             if [[ ${SERVICE_RUN_STATUS} == 'NO' ]]; then
-                echo "跳过，服务不在运行中"
+                echo "${SERVICE_X_NAME} : 跳过，服务不在运行中"
                 echo "${SERVICE_X_NAME} : 跳过，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                 ERROR_CODE=53
                 continue
@@ -2002,7 +2002,7 @@ do
                 # 更新指定完全匹配服务镜像
                 F_SEARCH_IMAGE_TAG  ${SERVICE_NAME}  ${THIS_TAG}
                 if [ $? -ne 0 ]; then
-                    echo "失败，镜像版本【${THIS_TAG}】未找到"
+                    echo "${SERVICE_X_NAME} : 失败，镜像版本【${THIS_TAG}】未找到"
                     echo "${SERVICE_X_NAME} : 失败，镜像版本【${THIS_TAG}】未找到" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                     ERROR_CODE=54
                     continue
@@ -2017,7 +2017,7 @@ do
                 DOCKER_IMAGE_VER_UPDATE=$(cat ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt | cut -d " " -f 3)
                 #
                 if [[ -z ${DOCKER_IMAGE_VER_UPDATE} ]]; then
-                    echo "失败，镜像版本【%${LIKE_THIS_TAG}%】未找到"
+                    echo "${SERVICE_X_NAME} : 失败，镜像版本【%${LIKE_THIS_TAG}%】未找到"
                     echo "${SERVICE_X_NAME} : 失败，镜像版本【%${LIKE_THIS_TAG}%】未找到" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                     ERROR_CODE=54
                     continue
@@ -2030,7 +2030,7 @@ do
                 ${DOCKER_IMAGE_SEARCH_SH}  --tag ${TODAY}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt  ${SERVICE_NAME}
                 DOCKER_IMAGE_VER_UPDATE=$(cat ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt | cut -d " " -f 3)
                 if [[ -z ${DOCKER_IMAGE_VER_UPDATE} ]]; then
-                    echo "跳过，今日无更新"
+                    echo "${SERVICE_X_NAME} : 跳过，今日无更新"
                     echo "${SERVICE_X_NAME} : 跳过，今日无更新" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                     ERROR_CODE=55
                     continue
@@ -2114,7 +2114,7 @@ do
             [[ $? -eq 0 ]] && SERVICE_RUN_STATUS='YES' || SERVICE_RUN_STATUS='NO'
             #
             if [[ ${SERVICE_RUN_STATUS} == 'NO' ]]; then
-                echo "跳过，服务不在运行中"
+                echo "${SERVICE_X_NAME} : 跳过，服务不在运行中"
                 echo "${SERVICE_X_NAME} : 跳过，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                 ERROR_CODE=53
                 continue
@@ -2125,14 +2125,14 @@ do
             ${DOCKER_IMAGE_SEARCH_SH}  --tag ${TODAY}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt  ${SERVICE_NAME}
             DOCKER_IMAGE_VER_TODAY=$(cat ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt | cut -d " " -f 3)
             if [[ -z ${DOCKER_IMAGE_VER_TODAY} ]]; then
-                echo "跳过，今日无更新"
+                echo "${SERVICE_X_NAME} : 跳过，今日无更新"
                 echo "${SERVICE_X_NAME} : 跳过，今日无更新" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                 ERROR_CODE=55
                 continue
             else
                 DOCKER_IMAGE_VER_ROLLBACK=$(F_SEARCH_IMAGE_NOT_LIKE_TAG  ${SERVICE_NAME}  ${TODAY})
                 if [[ -z ${DOCKER_IMAGE_VER_ROLLBACK} ]]; then
-                    echo "跳过，无历史镜像"
+                    echo "${SERVICE_X_NAME} : 跳过，无历史镜像"
                     echo "${SERVICE_X_NAME} : 跳过，无历史镜像" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                     ERROR_CODE=55
                     continue
@@ -2214,7 +2214,7 @@ do
             [[ $? -eq 0 ]] && SERVICE_RUN_STATUS='YES' || SERVICE_RUN_STATUS='NO'
             #
             if [[ ${SERVICE_RUN_STATUS} == 'NO' ]]; then
-                echo "跳过，服务不在运行中"
+                echo "${SERVICE_X_NAME} : 跳过，服务不在运行中"
                 echo "${SERVICE_X_NAME} : 跳过，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                 ERROR_CODE=53
                 continue
@@ -2287,6 +2287,7 @@ do
             #
             # 是否运行中
             if [[ ${ALL_RELEASE} == 'YES' ]]; then
+                SERVICE_X_NAME=${SERVICE_NAME}
                 F_ONLINE_SERVICE_SEARCH_LIKE  ${SERVICE_X_NAME}  ${CLUSTER} > ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
                 [[ $? -eq 0 ]] && SERVICE_RUN_STATUS='YES' || SERVICE_RUN_STATUS='NO'
             else
@@ -2295,7 +2296,7 @@ do
             fi
             #
             if [[ ${SERVICE_RUN_STATUS} == 'NO' ]]; then
-                echo "跳过，服务不在运行中"
+                echo "${SERVICE_X_NAME} : 跳过，服务不在运行中"
                 echo "${SERVICE_X_NAME} : 跳过，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                 ERROR_CODE=53
                 continue
@@ -2366,6 +2367,7 @@ do
             #
             # 是否运行中
             if [[ ${ALL_RELEASE} == 'YES' ]]; then
+                SERVICE_X_NAME=${SERVICE_NAME}
                 F_ONLINE_SERVICE_SEARCH_LIKE  ${SERVICE_X_NAME}  ${CLUSTER} > ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
                 [[ $? -eq 0 ]] && SERVICE_RUN_STATUS='YES' || SERVICE_RUN_STATUS='NO'
             else
@@ -2374,7 +2376,7 @@ do
             fi
             #
             if [[ ${SERVICE_RUN_STATUS} == 'NO' ]]; then
-                echo "跳过，服务不在运行中"
+                echo "${SERVICE_X_NAME} : 跳过，服务不在运行中"
                 echo "${SERVICE_X_NAME} : 跳过，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                 ERROR_CODE=53
                 continue
@@ -2444,6 +2446,7 @@ do
             #
             # 是否运行中
             if [[ ${ALL_RELEASE} == 'YES' ]]; then
+                SERVICE_X_NAME=${SERVICE_NAME}
                 F_ONLINE_SERVICE_SEARCH_LIKE  ${SERVICE_X_NAME}  ${CLUSTER} > ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
                 [[ $? -eq 0 ]] && SERVICE_RUN_STATUS='YES' || SERVICE_RUN_STATUS='NO'
             else
@@ -2452,7 +2455,7 @@ do
             fi
             #
             if [[ ${SERVICE_RUN_STATUS} == 'NO' ]]; then
-                echo "跳过，服务不在运行中"
+                echo "${SERVICE_X_NAME} : 跳过，服务不在运行中"
                 echo "${SERVICE_X_NAME} : 跳过，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                 ERROR_CODE=53
                 continue
