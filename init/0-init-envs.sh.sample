@@ -54,7 +54,7 @@ F_CP ()
     cp -f  ${ENVS_FILE_DIR}/backup-center-project.list            ./backup-center/backup-center-project.list
     cp -f  ${ENVS_FILE_DIR}/pg_db.list                            ./pg/backup/pg_db.list
     #
-    cp -f  ${ENVS_FILE_DIR}/nginx.list---${R_ENV}                 ./nginx-config/
+    cp -f  ${ENVS_FILE_DIR}/nginx.list---${R_ENV}                 ./nginx-config/nginx.list
     cp -f  ${ENVS_FILE_DIR}/fluent.conf---${R_ENV}                ./fluentd-srv/conf/fluent.conf
     cp -f  ${ENVS_FILE_DIR}/kibana-srv-env---${R_ENV}             ./kibana-srv/.env
     cp -f  ${ENVS_FILE_DIR}/elasticsearch-srv-env---${R_ENV}      ./elasticsearch-srv/.env
