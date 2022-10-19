@@ -182,17 +182,18 @@ do
 done
 
 
-if [[ ! -f ${ENVS_FILE_DIR}/deploy.env---${R_ENV} ]]; then
-    echo -e "\n猪猪侠警告：请检查以【---${R_ENV}】结尾的文件是否准备好，例如：【${ENVS_FILE_DIR}/deploy.env---${R_ENV}】\n"
-    exit 1
-fi
-
 
 case ${R_MODE} in
     F_RM)
         F_RM
         ;;
     F_CP)
+        #
+        if [[ ! -f ${ENVS_FILE_DIR}/deploy.env---${R_ENV} ]]; then
+            echo -e "\n猪猪侠警告：请检查以【---${R_ENV}】结尾的文件是否准备好，例如：【${ENVS_FILE_DIR}/deploy.env---${R_ENV}】\n"
+            exit 1
+        fi
+        #
         F_CP
         ;;
     *)
