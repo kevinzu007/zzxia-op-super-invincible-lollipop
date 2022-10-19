@@ -151,6 +151,10 @@ do
             if [[ -z ${R_MODE} ]]; then
                 R_MODE=F_CP
                 R_ENV=$2
+                if [[ -z ${R_ENV} ]]; then
+                    echo -e "\n猪猪侠警告：参数错误，请查看帮助【$0 --help】\n"
+                    exit 1
+                fi
             else
                 echo -e "\n猪猪侠警告：主要参数只能有一个，请查看帮助【$0 --help】\n"
                 exit 1
