@@ -340,19 +340,19 @@ do
             #
             > ${WEB_RELEASE_NGINX_OK_LIST_FILE}
             ansible nginx_real -m command -a "bash /root/nginx-config/web-release-on-nginx.sh  --release  ${PJ}"  > ${WEB_RELEASE_NGINX_OK_LIST_FILE}
-            # ---待检查
             if [[ $? -ne 0 ]]; then
-                ERROR_CODE=3
+                ERROR_CODE=5
                 echo "${PJ} : 发布失败-OS级" >> ${WEB_RELEASE_OK_LIST_FILE}
+            else
+                #
+                sed -i '1d' ${WEB_RELEASE_NGINX_OK_LIST_FILE}
+                while read LINE
+                do
+                    PJ=$(echo "$LINE" | awk '{printf $1}')
+                    WEB_RELEASE_RESULT=$(echo "$LINE" | awk '{printf $2}')
+                    echo "${PJ} : ${WEB_RELEASE_RESULT}" >> ${WEB_RELEASE_OK_LIST_FILE}
+                done < "${WEB_RELEASE_NGINX_OK_LIST_FILE}"
             fi
-            #
-            sed -i '1d' ${WEB_RELEASE_NGINX_OK_LIST_FILE}
-            while read LINE
-            do
-                PJ=$(echo "$LINE" | awk '{printf $1}')
-                WEB_RELEASE_RESULT=$(echo "$LINE" | awk '{printf $2}')
-                echo "${PJ} : ${WEB_RELEASE_RESULT}" >> ${WEB_RELEASE_OK_LIST_FILE}
-            done < "${WEB_RELEASE_NGINX_OK_LIST_FILE}"
             ;;
         rollback)
             WEB_ACTION='回滚'
@@ -366,19 +366,19 @@ do
             #
             > ${WEB_RELEASE_NGINX_OK_LIST_FILE}
             ansible nginx_real -m command -a "bash /root/nginx-config/web-release-on-nginx.sh  --rollback  ${PJ}"  > ${WEB_RELEASE_NGINX_OK_LIST_FILE}
-            # ---待检查
             if [[ $? -ne 0 ]]; then
-                ERROR_CODE=3
+                ERROR_CODE=5
                 echo "${PJ} : 回滚失败-OS级" >> ${WEB_RELEASE_OK_LIST_FILE}
+            else
+                #
+                sed -i '1d' ${WEB_RELEASE_NGINX_OK_LIST_FILE}
+                while read LINE
+                do
+                    PJ=$(echo "$LINE" | awk '{printf $1}')
+                    WEB_RELEASE_RESULT=$(echo "$LINE" | awk '{printf $2}')
+                    echo "${PJ} : ${WEB_RELEASE_RESULT}" >> ${WEB_RELEASE_OK_LIST_FILE}
+                done < "${WEB_RELEASE_NGINX_OK_LIST_FILE}"
             fi
-            #
-            sed -i '1d' ${WEB_RELEASE_NGINX_OK_LIST_FILE}
-            while read LINE
-            do
-                PJ=$(echo "$LINE" | awk '{printf $1}')
-                WEB_RELEASE_RESULT=$(echo "$LINE" | awk '{printf $2}')
-                echo "${PJ} : ${WEB_RELEASE_RESULT}" >> ${WEB_RELEASE_OK_LIST_FILE}
-            done < "${WEB_RELEASE_NGINX_OK_LIST_FILE}"
             ;;
     esac
 done < "${WEB_PROJECT_LIST_FILE_TMP}"

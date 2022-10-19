@@ -282,6 +282,14 @@ do
         esac
     fi
 done < "${WEB_PROJECT_LIST_FILE_TMP}"
-# 被调用时需要
-#return ${ERROR_CODE}
+
+# 返回值：
+# if 被调用时需要
+#    return ${ERROR_CODE}
+#
+# elif ansible调用时返回值
+if [[ ${ERROR_CODE} =~ 5 ]]; then
+    return 0
+fi
+
 
