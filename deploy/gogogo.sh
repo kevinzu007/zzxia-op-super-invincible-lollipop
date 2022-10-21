@@ -36,7 +36,7 @@ LOG_HOME="${LOG_BASE}/${DATE_TIME}"
 DOCKER_IMAGE_VER=$(date -d "${TIME}" +%Y.%m.%d.%H%M%S)
 # 子脚本参数
 export BUILD_OK_LIST_FILE_function="${LOG_HOME}/${SH_NAME}-export-build-OK.list.function"
-export DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE_function="${LOG_HOME}/${SH_NAME}-export-docker_deploy-OK.list.function"   #--- 直接使用返回值，目前没用
+export DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE_function="${LOG_HOME}/${SH_NAME}-export-docker_deploy-OK.list.function"
 export WEB_RELEASE_OK_LIST_FILE_function="${LOG_HOME}/${SH_NAME}-export-web_release-OK.list.function"
 export MY_EMAIL=''
 export MY_XINGMING=''
@@ -514,7 +514,7 @@ F_DOCKER_CLUSTER_SERVICE_DEPLOY()
     A_RETURN=$?
     if [[ ${A_RETURN} == 0 ]]; then
         # 查询服务是否运行中
-        F_DEPLOY_RETURN_CURRENT=0
+        #F_DEPLOY_RETURN_CURRENT=0
         F_DEPLOY_RETURN=0
         F_SERVICE_NUM=0
         unset F_SERVICE_NAME
@@ -575,39 +575,46 @@ F_DOCKER_CLUSTER_SERVICE_DEPLOY()
             if [ $? -eq 0 ]; then
                 # 服务运行中
                 ${DOCKER_CLUSTER_SERVICE_DEPLOY_SH}  --mode function  --update  --fuck  ${F_SERVICE_NAME}  ${DEPLOY_OPTION}
-                F_DEPLOY_RETURN_CURRENT=$?
-                let  F_DEPLOY_RETURN=${F_DEPLOY_RETURN}+${F_DEPLOY_RETURN_CURRENT}-50
+                #F_DEPLOY_RETURN_CURRENT=$?
+                #let  F_DEPLOY_RETURN=${F_DEPLOY_RETURN}+${F_DEPLOY_RETURN_CURRENT}-50
+                F_DEPLOY_RETURN=$?
                 let  F_SERVICE_NUM=${F_SERVICE_NUM}+1
             else
                 # 服务不在运行中
                 ${DOCKER_CLUSTER_SERVICE_DEPLOY_SH}  --mode function  --create  --fuck  ${F_SERVICE_NAME}  ${DEPLOY_OPTION}
-                F_DEPLOY_RETURN_CURRENT=$?
-                let  F_DEPLOY_RETURN=${F_DEPLOY_RETURN}+${F_DEPLOY_RETURN_CURRENT}-50
+                #F_DEPLOY_RETURN_CURRENT=$?
+                #let  F_DEPLOY_RETURN=${F_DEPLOY_RETURN}+${F_DEPLOY_RETURN_CURRENT}-50
+                F_DEPLOY_RETURN=$?
                 let  F_SERVICE_NUM=${F_SERVICE_NUM}+1
+            fi
+            #
+            # 获取deploy结果
+            #if [ ${F_DEPLOY_RETURN} -eq 0 ]; then
+            #    F_DOCKER_CLUSTER_SERVICE_DEPLOY_RESULT='成功'
+            #else
+            #    F_DOCKER_CLUSTER_SERVICE_DEPLOY_RESULT='失败'
+            #fi
+            F_DOCKER_CLUSTER_SERVICE_DEPLOY_RESULT=$(awk  '{print $3}'  ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE_function})
+            #
+            # 一个image对应的service数量
+            N=${F_SERVICE_NUM}
+            if [[ $N -eq 1 ]]; then
+                echo "${PJ} : 构建${BUILD_RESULT} : 发布${F_DOCKER_CLUSTER_SERVICE_DEPLOY_RESULT} : ${BUILD_TIME}s" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
+                echo "构建：${BUILD_RESULT} - 发布: ${F_DOCKER_CLUSTER_SERVICE_DEPLOY_RESULT} - 耗时 : ${BUILD_TIME}s"
+            else
+                # 【*N】代表成功发布的服务数量
+                echo "${PJ} : 构建${BUILD_RESULT} : 发布${F_DOCKER_CLUSTER_SERVICE_DEPLOY_RESULT}*$N : ${BUILD_TIME}s" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
+                echo "构建：${BUILD_RESULT} - 发布: ${F_DOCKER_CLUSTER_SERVICE_DEPLOY_RESULT}*$N - 耗时 : ${BUILD_TIME}s"
             fi
         done
         #
-        if [ ${F_DEPLOY_RETURN} -eq 0 ]; then
-            F_DOCKER_CLUSTER_SERVICE_DEPLOY_RESULT='成功'
-        else
-            F_DOCKER_CLUSTER_SERVICE_DEPLOY_RESULT='失败'
-        fi
-        # 一个image对应的service数量
-        N=${F_SERVICE_NUM}
-        if [[ $N -eq 1 ]]; then
-            echo "${PJ} : ${BUILD_RESULT} : 发布${F_DOCKER_CLUSTER_SERVICE_DEPLOY_RESULT} : ${BUILD_TIME}s" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
-            echo "构建：${BUILD_RESULT} - 发布: 发布${F_DOCKER_CLUSTER_SERVICE_DEPLOY_RESULT} - 耗时 : ${BUILD_TIME}s"
-        else
-            # 【*N】代表成功发布的服务数量
-            echo "${PJ} : ${BUILD_RESULT} : 发布${F_DOCKER_CLUSTER_SERVICE_DEPLOY_RESULT}*$N : ${BUILD_TIME}s" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
-            echo "构建：${BUILD_RESULT} - 发布: 发布${F_DOCKER_CLUSTER_SERVICE_DEPLOY_RESULT}*$N - 耗时 : ${BUILD_TIME}s"
-        fi
-        # 把减掉的50加回去，但是其实如果一个镜像对应多个服务，这个值已经不代表指定含义了，目前这个返回值也没实际用途，只是标准化处理
-        let F_DEPLOY_RETURN=${F_DEPLOY_RETURN}+50
+        ## 把减掉的50加回去，但是其实如果一个镜像对应多个服务，这个值已经不代表指定含义了，目前这个返回值也没实际用途，只是标准化处理
+        #let F_DEPLOY_RETURN=${F_DEPLOY_RETURN}+50
+        # 如果有多个服务，只获取最后一个
         return ${F_DEPLOY_RETURN}
     elif [[ ${A_RETURN} -eq 5 ]]; then
-        echo "${PJ} : ${BUILD_RESULT} : 无需发布* : ${BUILD_TIME}s" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
-        echo "构建：${BUILD_RESULT} - 发布: 无需发布 - 耗时 : ${BUILD_TIME}s"
+        echo "${PJ} : 构建${BUILD_RESULT} : 发布跳过，无需发布* : ${BUILD_TIME}s" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
+        echo "构建：${BUILD_RESULT} - 发布: 跳过，无需发布* - 耗时 : ${BUILD_TIME}s"
         return 56
     else
         echo -e "\n猪猪侠警告：这是程序Bug【不可能】\n"
@@ -932,15 +939,15 @@ do
     echo ""
     #
     case "${BUILD_RESULT}" in
-        'Build 成功')
+        '成功')
             #echo "成功"
             F_BUILD_TIME_UPDATE  ${PJ}  ${BUILD_TIME}
             #
             case "${GOGOGO_RELEASE_METHOD}" in
                 NONE)
                     # 无需发布
-                    echo "${PJ} : ${BUILD_RESULT} : 无需发布 : ${BUILD_TIME}s" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
-                    echo "构建：${BUILD_RESULT} - 发布: 无需发布 - 耗时: ${BUILD_TIME}s"
+                    echo "${PJ} : 构建${BUILD_RESULT} : 发布跳过，无需发布* : ${BUILD_TIME}s" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
+                    echo "构建：${BUILD_RESULT} - 发布: 跳过，无需发布* - 耗时: ${BUILD_TIME}s"
                     ;;
                 docker_cluster)
                     # 根据镜像名搜索服务名，然后发布
@@ -950,13 +957,16 @@ do
                     ;;
                 web_release)
                     > ${GOGOGO_RELEASE_WEB_OK_LIST_FILE}
+                    #./web-release.sh  --release  ${PJ}
                     ansible nginx_real -m command -a "bash /root/nginx-config/web-release-on-nginx.sh  --release  ${PJ}"  > ${GOGOGO_RELEASE_WEB_OK_LIST_FILE}
                     #
                     if [[ $? -eq 0 ]]; then
                         RELEASE_RESULT=$(cat ${GOGOGO_RELEASE_WEB_OK_LIST_FILE} | sed -n '2p' | awk '{printf $2}')
-                        echo "${PJ} : ${BUILD_RESULT} : ${RELEASE_RESULT} : ${BUILD_TIME}s" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
+                        echo "${PJ} : 构建${BUILD_RESULT} : 发布${RELEASE_RESULT} : ${BUILD_TIME}s" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
+                        echo "构建: ${BUILD_RESULT} - 发布: ${RELEASE_RESULT} - 耗时: ${BUILD_TIME}s"
                     else
-                        echo "${PJ} : ${BUILD_RESULT} : 发布失败 : ${BUILD_TIME}s" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
+                        echo "${PJ} : 构建${BUILD_RESULT} : 发布失败 : ${BUILD_TIME}s" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
+                        echo "构建: ${BUILD_RESULT} - 发布: 失败 - 耗时: ${BUILD_TIME}s"
                     fi
                     ;;
                 *)
@@ -965,9 +975,9 @@ do
                     ;;
             esac
             ;;
-        '其他用户正在构建中'|'Git Clone 失败'|'Git Checkout 失败'|'Git Pull 失败'|'Git 分支无更新'|'Build 失败'|'无需 Build')
+        '失败，其他用户正在构建中'|'失败，Git Clone 出错'|'失败，Git Checkout 出错'|'失败，Git Pull 出错'|'跳过，Git 分支无更新'|'失败'|'跳过，无需构建')
             #echo "失败"
-            echo "${PJ} : ${BUILD_RESULT} : 跳过 : ${BUILD_TIME}s" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
+            echo "${PJ} : 构建${BUILD_RESULT} : 发布跳过 : ${BUILD_TIME}s" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
             echo "构建：${BUILD_RESULT} - 发布: 跳过 - 耗时 : ${BUILD_TIME}s"
             ;;
         *)
@@ -984,12 +994,15 @@ echo -e "\nBuild & Release 完成！\n"
 
 
 # 输出结果
+#
+# 结果参考：build.sh、docker-cluster-service-deploy.sh、web-release-on-nginx.sh
+#
 RELEASE_SUCCESS_COUNT=`cat ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE} | grep -o '发布成功' | wc -l`
 RELEASE_ERROR_COUNT=`cat ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE} | grep -o '发布失败' | wc -l`
-RELEASE_NOTNEED_COUNT=`cat ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE} | grep -o '无需发布' | wc -l`
-RELEASE_SKIP_COUNT=`cat ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE} | grep -o '跳过' | wc -l`
+RELEASE_SKIP_COUNT=`cat ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE} | grep -o '发布跳过' | wc -l`
+BUILD_ERROR_COUNT=`cat ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE} | grep -o '构建失败' | wc -l`
 TIME_END=`date +%Y-%m-%dT%H:%M:%S`
-MESSAGE_END="项目构建已完成！ 共企图构建发布${RELEASE_CHECK_COUNT}个项目，成功构建发布${RELEASE_SUCCESS_COUNT}个项目，成功构建失败发布${RELEASE_ERROR_COUNT}个项目，成功构建无需发布${RELEASE_NOTNEED_COUNT}个项目，跳过${RELEASE_SKIP_COUNT}个项目无更新。"
+MESSAGE_END="项目构建已完成！ 共企图构建发布${RELEASE_CHECK_COUNT}个项目，成功构建发布${RELEASE_SUCCESS_COUNT}个项目，成功构建但失败发布${RELEASE_ERROR_COUNT}个项目，跳过发布${RELEASE_SKIP_COUNT}个项目，失败构建${BUILD_ERROR_COUNT}个项目。"
 # 消息回显拼接
 > ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 echo "===== 构建与发布报告 =====" >> ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}

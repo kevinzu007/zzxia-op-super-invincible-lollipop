@@ -1286,8 +1286,8 @@ do
                 # 运行中
                 case "${SERVICE_OPERATION}" in
                     create)
-                        echo "${SERVICE_X_NAME} : 跳过，服务已在运行中"
-                        echo "${SERVICE_X_NAME} : 跳过，服务已在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                        echo "${SERVICE_X_NAME} : 失败，服务已在运行中"
+                        echo "${SERVICE_X_NAME} : 失败，服务已在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                         ERROR_CODE=53
                         continue
                         ;;
@@ -1992,8 +1992,8 @@ do
             [[ $? -eq 0 ]] && SERVICE_RUN_STATUS='YES' || SERVICE_RUN_STATUS='NO'
             #
             if [[ ${SERVICE_RUN_STATUS} == 'NO' ]]; then
-                echo "${SERVICE_X_NAME} : 跳过，服务不在运行中"
-                echo "${SERVICE_X_NAME} : 跳过，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                echo "${SERVICE_X_NAME} : 失败，服务不在运行中"
+                echo "${SERVICE_X_NAME} : 失败，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                 ERROR_CODE=53
                 continue
             fi
@@ -2114,8 +2114,8 @@ do
             [[ $? -eq 0 ]] && SERVICE_RUN_STATUS='YES' || SERVICE_RUN_STATUS='NO'
             #
             if [[ ${SERVICE_RUN_STATUS} == 'NO' ]]; then
-                echo "${SERVICE_X_NAME} : 跳过，服务不在运行中"
-                echo "${SERVICE_X_NAME} : 跳过，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                echo "${SERVICE_X_NAME} : 失败，服务不在运行中"
+                echo "${SERVICE_X_NAME} : 失败，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                 ERROR_CODE=53
                 continue
             fi
@@ -2214,8 +2214,8 @@ do
             [[ $? -eq 0 ]] && SERVICE_RUN_STATUS='YES' || SERVICE_RUN_STATUS='NO'
             #
             if [[ ${SERVICE_RUN_STATUS} == 'NO' ]]; then
-                echo "${SERVICE_X_NAME} : 跳过，服务不在运行中"
-                echo "${SERVICE_X_NAME} : 跳过，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                echo "${SERVICE_X_NAME} : 失败，服务不在运行中"
+                echo "${SERVICE_X_NAME} : 失败，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                 ERROR_CODE=53
                 continue
             fi
@@ -2296,8 +2296,8 @@ do
             fi
             #
             if [[ ${SERVICE_RUN_STATUS} == 'NO' ]]; then
-                echo "${SERVICE_X_NAME} : 跳过，服务不在运行中"
-                echo "${SERVICE_X_NAME} : 跳过，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                echo "${SERVICE_X_NAME} : 失败，服务不在运行中"
+                echo "${SERVICE_X_NAME} : 失败，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                 ERROR_CODE=53
                 continue
             fi
@@ -2376,8 +2376,8 @@ do
             fi
             #
             if [[ ${SERVICE_RUN_STATUS} == 'NO' ]]; then
-                echo "${SERVICE_X_NAME} : 跳过，服务不在运行中"
-                echo "${SERVICE_X_NAME} : 跳过，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                echo "${SERVICE_X_NAME} : 失败，服务不在运行中"
+                echo "${SERVICE_X_NAME} : 失败，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                 ERROR_CODE=53
                 continue
             fi
@@ -2455,8 +2455,8 @@ do
             fi
             #
             if [[ ${SERVICE_RUN_STATUS} == 'NO' ]]; then
-                echo "${SERVICE_X_NAME} : 跳过，服务不在运行中"
-                echo "${SERVICE_X_NAME} : 跳过，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                echo "${SERVICE_X_NAME} : 失败，服务不在运行中"
+                echo "${SERVICE_X_NAME} : 失败，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                 ERROR_CODE=53
                 continue
             fi
@@ -2506,22 +2506,27 @@ fi
 
 
 # 输出结果
+#
 # create:
-# "跳过，服务已在运行中"
-# "失败，镜像版本【${DOCKER_IMAGE_VER} 】未找到"
+# 53  "失败，服务已在运行中"
+# 54  "失败，镜像版本【${DOCKER_IMAGE_VER} 】未找到"
 # update:
-# "跳过，服务不在运行中"
-# "跳过，今日无更新"
-# "失败，镜像版本【${THIS_TAG}】未找到"
-# "失败，镜像版本【%${LIKE_THIS_TAG}%】未找到"
+# 53  "失败，服务不在运行中"
+# 55  "跳过，今日无更新"
+# 54  "失败，镜像版本【${THIS_TAG}】未找到"
+# 54  "失败，镜像版本【%${LIKE_THIS_TAG}%】未找到"
 # rm:
-# "跳过，服务不在运行中"
+# 53  "失败，服务不在运行中"
 # scale
-# "跳过，服务不在运行中"
+# 53  "失败，服务不在运行中"
 # rollback:
-# "跳过，服务不在运行中"
-# "跳过，今日无更新"
-# "跳过，无历史镜像"
+# 53  "失败，服务不在运行中"
+# 55  "跳过，今日无更新"
+# 55  "跳过，无历史镜像"
+# F_FUCK:
+# 50  "成功"
+# 54  "失败"
+#
 CHECK_COUNT=${NUM}
 SUCCESS_COUNT=`cat ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE} | grep -o '成功' | wc -l`
 NONEED_COUNT=`cat ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE} | grep -o '跳过' | wc -l`

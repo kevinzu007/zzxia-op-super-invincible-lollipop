@@ -333,17 +333,20 @@ do
             #
             if [[ "$MODE" == 'proxyserver' ]]; then
                 #printf  "%-32s  %s\n"  "${PJ}"   "无需发布或回滚"
-                echo "${PJ} : 无需发布" >> ${WEB_RELEASE_OK_LIST_FILE}
+                echo "${PJ} : 跳过，无需发布" >> ${WEB_RELEASE_OK_LIST_FILE}
                 ERROR_CODE=56
                 continue
             fi
             #
             > ${WEB_RELEASE_NGINX_OK_LIST_FILE}
-            ansible nginx_real -m command -a "bash /root/nginx-config/web-release-on-nginx.sh  --release  ${PJ}"  > ${WEB_RELEASE_NGINX_OK_LIST_FILE}
+            ansible nginx_real -m command -a "bash /root/nginx-config/web-release-on-nginx.sh  --release  ${PJ}"  > ${WEB_RELEASE_NGINX_OK_LIST_FILE}    #--- 如果子命令返回值不是0，则ansible命令返回值为2
             if [[ $? -ne 0 ]]; then
                 ERROR_CODE=5
-                echo "${PJ} : 发布失败-OS级" >> ${WEB_RELEASE_OK_LIST_FILE}
+                echo "${PJ} : 失败，OS级" >> ${WEB_RELEASE_OK_LIST_FILE}
             else
+                # 例：
+                # 192.168.11.77 | CHANGED | rc=0 >>
+                # gc-h5-front      成功
                 #
                 sed -i '1d' ${WEB_RELEASE_NGINX_OK_LIST_FILE}
                 while read LINE
@@ -359,7 +362,7 @@ do
             #
             if [[ "$MODE" == 'proxyserver' ]]; then
                 #printf  "%-32s  %s\n"  "${PJ}"   "无需发布或回滚"
-                echo "${PJ} : 无需回滚" >> ${WEB_RELEASE_OK_LIST_FILE}
+                echo "${PJ} : 跳过，无需回滚" >> ${WEB_RELEASE_OK_LIST_FILE}
                 ERROR_CODE=56
                 continue
             fi
@@ -368,7 +371,7 @@ do
             ansible nginx_real -m command -a "bash /root/nginx-config/web-release-on-nginx.sh  --rollback  ${PJ}"  > ${WEB_RELEASE_NGINX_OK_LIST_FILE}
             if [[ $? -ne 0 ]]; then
                 ERROR_CODE=5
-                echo "${PJ} : 回滚失败-OS级" >> ${WEB_RELEASE_OK_LIST_FILE}
+                echo "${PJ} : 失败，OS级" >> ${WEB_RELEASE_OK_LIST_FILE}
             else
                 #
                 sed -i '1d' ${WEB_RELEASE_NGINX_OK_LIST_FILE}
@@ -386,17 +389,31 @@ echo -e "\n${WEB_ACTION}完成！\n"
 
 
 
+
+
 # 输出结果
-SUCCESS_COUNT=`cat ${WEB_RELEASE_OK_LIST_FILE} | grep -o '成功' | wc -l`             #--- 发布成功；回滚成功*版本
-NONEED_COUNT=`cat ${WEB_RELEASE_OK_LIST_FILE} | grep -o '无需' | wc -l`
-NOCHANGE_COUNT=`cat ${WEB_RELEASE_OK_LIST_FILE} | grep -o '今日无部署' | wc -l`      #--- 无需发布：今日无部署；无需回滚：今日无部署
-let ERROR_COUNT=${CHECK_COUNT}-${SUCCESS_COUNT}-${NOCHANGE_COUNT}-${NONEED_COUNT}
+#
+# web-release-on-nginx.sh:
+# 0  56  "跳过，无需发布或回滚"
+# 0  53  "失败，项目目录不存在"
+# 0  50  "成功"
+# 0  50  "成功*版本"
+# 0  55  "跳过，今日无部署"
+#
+# web-release.sh:
+# 56  "跳过，无需发布"
+# 56  "跳过，无需回滚"
+# 5   "失败，OS级"
+#
+SUCCESS_COUNT=`cat ${WEB_RELEASE_OK_LIST_FILE} | grep -o '成功' | wc -l`
+ERROR_COUNT=`cat ${WEB_RELEASE_OK_LIST_FILE} | grep -o '失败' | wc -l`
+NONEED_COUNT=`cat ${WEB_RELEASE_OK_LIST_FILE} | grep -o '跳过' | wc -l`
 TIME_END=`date +%Y-%m-%dT%H:%M:%S`
 
 case ${SH_RUN_MODE} in
     normal)
         #
-        MESSAGE_END="WEB项目${WEB_ACTION}已完成！ 共企图${WEB_ACTION}${CHECK_COUNT}个项目，成功${WEB_ACTION}${SUCCESS_COUNT}个项目，${NONEED_COUNT}个项目无需发布或回滚，${NOCHANGE_COUNT}个项目今日无部署，${ERROR_COUNT}个项目出错。"
+        MESSAGE_END="WEB项目${WEB_ACTION}已完成！ 共企图${WEB_ACTION}${CHECK_COUNT}个项目，成功${WEB_ACTION}${SUCCESS_COUNT}个项目，跳过${NONEED_COUNT}个项目，${ERROR_COUNT}个项目出错。"
         # 消息回显拼接
         > ${WEB_RELEASE_HISTORY_CURRENT_FILE}
         echo "===== WEB 站点${WEB_ACTION}报告 =====" >> ${WEB_RELEASE_HISTORY_CURRENT_FILE}

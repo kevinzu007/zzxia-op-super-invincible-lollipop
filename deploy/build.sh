@@ -308,8 +308,8 @@ GIT_CODE()
             cd  "${PJ}"
         else
             ansible nginx_real -m copy -a "src=${GIT_LOG_file} dest=${WEBSITE_BASE}/${BUILD_LOG_PJ_NAME}/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"  > "${GIT_LOG_file}"  2>&1
-            echo "Git Clone 失败，请检查仓库权限！"
-            echo "${PJ} : Git Clone 失败 : x" >> "${BUILD_OK_LIST_FILE}"
+            echo "失败，Git Clone 出错，请检查仓库权限！"
+            echo "${PJ} : 失败，Git Clone 出错 : x" >> "${BUILD_OK_LIST_FILE}"
             ERR_SHOW
             return 54
         fi
@@ -318,9 +318,9 @@ GIT_CODE()
         if [ $? -eq 0 ]; then
             git checkout "${GIT_BRANCH}"  >> "${GIT_LOG_file}"  2>&1
         else
-            echo "Git Checkout 失败，分支未找到！"
+            echo "失败，Git Checkout 出错，分支未找到！"
             echo "${PJ}" >>  "${PROJECT_LIST_RETRY_FILE}"
-            echo "${PJ} : Git Checkout 失败 : x" >> "${BUILD_OK_LIST_FILE}"
+            echo "${PJ} : 失败，Git Checkout 出错 : x" >> "${BUILD_OK_LIST_FILE}"
             ERR_SHOW
             return 54
         fi
@@ -336,9 +336,9 @@ GIT_CODE()
         #timeout 300 git pull   2>&1  | tee ${GIT_LOG_file}
         git pull -p  > "${GIT_LOG_file}"  2>&1  #--- pull + 清理远程已删除本地还存在的分支
         if [ $? -ne 0 ]; then
-            echo "Git Pull 失败，请检查日志文件：${GIT_LOG_file}"
+            echo "失败，Git Pull 出错，请检查日志文件：${GIT_LOG_file}"
             ansible nginx_real -m copy -a "src=${GIT_LOG_file} dest=${WEBSITE_BASE}/${BUILD_LOG_PJ_NAME}/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
-            echo "${PJ} : Git Pull 失败 : x" >> "${BUILD_OK_LIST_FILE}"
+            echo "${PJ} : 失败，Git Pull 出错 : x" >> "${BUILD_OK_LIST_FILE}"
             ERR_SHOW
             return 54
         else
@@ -380,8 +380,8 @@ GIT_CODE()
                     grep -q  "快进"  "${GIT_LOG_file}"
                     GIT_GREP_CN=$?
                     if [[ "${GIT_GREP_EN}" -ne 0 && "${GIT_GREP_CN}" -ne 0 && "${LAST_BUILD_BRANCH}" == "${GIT_BRANCH}" ]]; then
-                        echo "Git 分支【${GIT_BRANCH}】无更新！"
-                        echo "${PJ} : Git 分支无更新 : x" >> "${BUILD_OK_LIST_FILE}"
+                        echo "跳过，Git 分支【${GIT_BRANCH}】无更新！"
+                        echo "${PJ} : 跳过，Git 分支无更新 : x" >> "${BUILD_OK_LIST_FILE}"
                         return 55
                     fi
                 else
@@ -405,8 +405,8 @@ GIT_CODE()
                         # 是否有更新
                         if [ `cat ${LOG_HOME}/${SH_NAME}-git_checkout.log | grep -q 'git pull' ; echo $?` -ne 0 ]; then
                             # 无更新
-                            echo "Git 分支【${GIT_BRANCH}】无更新！"
-                            echo "${PJ} : Git 分支无更新 : x" >> "${BUILD_OK_LIST_FILE}"
+                            echo "跳过，Git 分支【${GIT_BRANCH}】无更新！"
+                            echo "${PJ} : 跳过，Git 分支无更新 : x" >> "${BUILD_OK_LIST_FILE}"
                             return 55
                         fi
                     fi
@@ -417,9 +417,9 @@ GIT_CODE()
                 #
             else
                 # 不存在远程分支
-                echo "Git Checkout 失败，分支未找到！"
+                echo "失败，Git Checkout 出错，分支未找到！"
                 echo "${PJ}" >>  "${PROJECT_LIST_RETRY_FILE}"
-                echo "${PJ} : Git Checkout 失败 : x" >> "${BUILD_OK_LIST_FILE}"
+                echo "${PJ} : 失败，Git Checkout 出错 : x" >> "${BUILD_OK_LIST_FILE}"
                 ERR_SHOW
                 return 54
             fi
@@ -450,10 +450,10 @@ DOCKER_BUILD()
             #
             if [ $? -ne 0 ]; then
                 echo ""
-                echo -e "${ECHO_ERROR}Build 失败！请检查日志文件：${BUILD_LOG_file}  ${ECHO_CLOSE}"
+                echo -e "${ECHO_ERROR} 失败！请检查日志文件：${BUILD_LOG_file}  ${ECHO_CLOSE}"
                 echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"
                 echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
-                echo "${PJ} : Build 失败 : x" >> ${BUILD_OK_LIST_FILE}
+                echo "${PJ} : 失败 : x" >> ${BUILD_OK_LIST_FILE}
                 ERR_SHOW
                 # mail
                 if [[ ! -z "${MY_EMAIL}" ]]; then
@@ -468,7 +468,7 @@ DOCKER_BUILD()
                             echo -e "\n猪猪侠警告：输出方式为【docker_image_push】时，镜像名不能为空！\n"
                             echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"
                             echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
-                            echo "${PJ} : Build 失败 : x" >> ${BUILD_OK_LIST_FILE}
+                            echo "${PJ} : 失败 : x" >> ${BUILD_OK_LIST_FILE}
                             ERR_SHOW
                             return 52
                         fi
@@ -478,7 +478,7 @@ DOCKER_BUILD()
                             echo -e "\n猪猪侠警告：项目镜像PUSH失败！\n"
                             echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"
                             echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
-                            echo "${PJ} : Build 失败 : x" >> ${BUILD_OK_LIST_FILE}
+                            echo "${PJ} : 失败 : x" >> ${BUILD_OK_LIST_FILE}
                             ERR_SHOW
                             return 54
                         fi
@@ -493,8 +493,8 @@ DOCKER_BUILD()
                         ;;
                 esac
                 # echo
-                echo 'Build 成功！'
-                #echo "${PJ} : Build 成功 : x" >> ${BUILD_OK_LIST_FILE}
+                echo '成功！'
+                #echo "${PJ} : 成功 : x" >> ${BUILD_OK_LIST_FILE}
                 return 50
             fi
             ;;
@@ -538,10 +538,10 @@ JAVA_BUILD()
             #
             if [ $? -ne 0 ]; then
                 echo ""
-                echo -e "${ECHO_ERROR}Build 失败！请检查日志文件：${BUILD_LOG_file}  ${ECHO_CLOSE}"
+                echo -e "${ECHO_ERROR}失败！请检查日志文件：${BUILD_LOG_file}  ${ECHO_CLOSE}"
                 echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"
                 echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
-                echo "${PJ} : Build 失败 : x" >> ${BUILD_OK_LIST_FILE}
+                echo "${PJ} : 失败 : x" >> ${BUILD_OK_LIST_FILE}
                 ERR_SHOW
                 # mail
                 if [[ ! -z "${MY_EMAIL}" ]]; then
@@ -556,7 +556,7 @@ JAVA_BUILD()
                             echo -e "\n猪猪侠警告：输出方式为【docker_image_push】时，镜像名不能为空！\n"
                             echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"
                             echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
-                            echo "${PJ} : Build 失败 : x" >> ${BUILD_OK_LIST_FILE}
+                            echo "${PJ} : 失败 : x" >> ${BUILD_OK_LIST_FILE}
                             ERR_SHOW
                             return 52
                         fi
@@ -566,7 +566,7 @@ JAVA_BUILD()
                             echo -e "\n猪猪侠警告：项目镜像PUSH失败！\n"
                             echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"
                             echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
-                            echo "${PJ} : Build 失败 : x" >> ${BUILD_OK_LIST_FILE}
+                            echo "${PJ} : 失败 : x" >> ${BUILD_OK_LIST_FILE}
                             ERR_SHOW
                             return 54
                         fi
@@ -592,8 +592,8 @@ JAVA_BUILD()
                         ;;
                 esac
                 # echo
-                echo 'Build 成功！'
-                #echo "${PJ} : Build 成功 : x" >> ${BUILD_OK_LIST_FILE}
+                echo '成功！'
+                #echo "${PJ} : 成功 : x" >> ${BUILD_OK_LIST_FILE}
                 return 50
             fi
             ;;
@@ -667,10 +667,10 @@ NODE_BUILD()
     grep -E 'Error|ERR!'  ${BUILD_LOG_file}
     if [ $? -eq 0 ]; then
         echo ""
-        echo -e "${ECHO_ERROR}Build 失败！请检查日志文件：${BUILD_LOG_file}  ${ECHO_CLOSE}"
+        echo -e "${ECHO_ERROR}失败！请检查日志文件：${BUILD_LOG_file}  ${ECHO_CLOSE}"
         echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"
         echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
-        echo "${PJ} : Build 失败 : x" >> ${BUILD_OK_LIST_FILE}
+        echo "${PJ} : 失败 : x" >> ${BUILD_OK_LIST_FILE}
         ERR_SHOW
         # mail
         if [[ ! -z "${MY_EMAIL}" ]]; then
@@ -695,7 +695,7 @@ NODE_BUILD()
                     echo -e "\n猪猪侠警告：输出方式为【docker_image_push】时，镜像名不能为空！\n"
                     echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"
                     echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
-                    echo "${PJ} : Build 失败 : x" >> ${BUILD_OK_LIST_FILE}
+                    echo "${PJ} : 失败 : x" >> ${BUILD_OK_LIST_FILE}
                     ERR_SHOW
                     return 52
                 fi
@@ -706,7 +706,7 @@ NODE_BUILD()
                     echo "Docker image build 失败！"
                     echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"
                     echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
-                    echo "${PJ} : Build 失败 : x" >> ${BUILD_OK_LIST_FILE}
+                    echo "${PJ} : 失败 : x" >> ${BUILD_OK_LIST_FILE}
                     ERR_SHOW
                     return 54
                 fi
@@ -716,14 +716,14 @@ NODE_BUILD()
                     echo -e "\n猪猪侠警告：项目镜像PUSH失败！\n"
                     echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"
                     echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
-                    echo "${PJ} : Build 失败 : x" >> ${BUILD_OK_LIST_FILE}
+                    echo "${PJ} : 失败 : x" >> ${BUILD_OK_LIST_FILE}
                     ERR_SHOW
                     return 54
                 fi
                 #
                 # echo
                 echo 'Build and Push 成功！'
-                #echo "${PJ} : Build 成功 : x" >> ${BUILD_OK_LIST_FILE}
+                #echo "${PJ} : 成功 : x" >> ${BUILD_OK_LIST_FILE}
                 F_NODE_MODULES_BACKUP
                 return 50
                 ;;
@@ -736,15 +736,15 @@ NODE_BUILD()
                 ansible nginx_real -m synchronize -a "src=${CP_FROM_DIR}/  dest=${CP_TO_DIR}/  rsync_opts=--perms=yes,--times=yes"
                 # echo
                 echo 'Build and Deploy 成功！'
-                #echo "${PJ} : Build 成功 : x" >> ${BUILD_OK_LIST_FILE}
+                #echo "${PJ} : 成功 : x" >> ${BUILD_OK_LIST_FILE}
                 F_NODE_MODULES_BACKUP
                 return 50
                 ;;
             NONE)
                 # 啥也不需要做
                 # 我这里用作公共项目共别人链接node_modules用
-                echo 'Build 成功！'
-                #echo "${PJ} : Build 成功 : x" >> ${BUILD_OK_LIST_FILE}
+                echo '成功！'
+                #echo "${PJ} : 成功 : x" >> ${BUILD_OK_LIST_FILE}
                 #F_NODE_MODULES_BACKUP
                 return 50
                 ;;
@@ -1098,8 +1098,8 @@ do
         BUILD_TIME=0
         F_BUILD_TIME_UPDATE  ${PJ}  ${BUILD_TIME}
         #
-        echo "${PJ} : 无需 Build : x" >> ${BUILD_OK_LIST_FILE}
-        echo  "构建方法【${BUILD_METHOD}】无需构建！"
+        echo "${PJ} : 跳过，无需构建 : x" >> ${BUILD_OK_LIST_FILE}
+        echo  "跳过，构建方法【${BUILD_METHOD}】无需构建！"
         #
         ERROR_CODE=56
         continue
@@ -1115,9 +1115,9 @@ do
     # 检查是否正在构建
     ps -ef | grep "${PJ}" | grep -v "$0" | grep -v '.sh' | grep -v grep > /dev/null 2>&1
     if [ $? -eq 0 ]; then
-        echo "${PJ} : 其他用户正在构建中 : x" >> ${BUILD_OK_LIST_FILE}
-        echo -e "${ECHO_ERROR}其他用户正在构建中${ECHO_CLOSE}"
-        ${DINGDING_MARKDOWN_PY}  "*** Error:Build:${RUN_ENV} ***" "【${PJ}】其他用户正在构建中" > /dev/null
+        echo "${PJ} : 失败，其他用户正在构建中 : x" >> ${BUILD_OK_LIST_FILE}
+        echo -e "${ECHO_ERROR}失败，其他用户正在构建中${ECHO_CLOSE}"
+        ${DINGDING_MARKDOWN_PY}  "*** Error:Build:${RUN_ENV} ***" "【${PJ}】失败，其他用户正在构建中" > /dev/null
         [ "x${ERROR_EXIT}" = 'xYES' ] && break
         ERROR_CODE=53
         continue
@@ -1232,7 +1232,7 @@ do
     # 注意：这里的ERROR_CODE是自定义输出:50代表成功
     if [[ ${ERROR_CODE} -eq 50 ]]; then
         F_BUILD_TIME_UPDATE  ${PJ}  ${BUILD_TIME}
-        echo "${PJ} : Build 成功 : ${BUILD_TIME}s" >> ${BUILD_OK_LIST_FILE}
+        echo "${PJ} : 成功 : ${BUILD_TIME}s" >> ${BUILD_OK_LIST_FILE}
     else
         [ "x${ERROR_EXIT}" = 'xYES' ] && break
     fi
@@ -1244,15 +1244,25 @@ echo -e "Build 完成！\n"
 
 
 # 输出结果
-BUILD_SUCCESS_COUNT=`cat ${BUILD_OK_LIST_FILE} | grep -o 'Build 成功' | wc -l`
-BUILD_NOCHANGE_COUNT=`cat ${BUILD_OK_LIST_FILE} | grep -o '无更新' | wc -l`
-BUILD_NOTNEED_COUNT=`cat ${BUILD_OK_LIST_FILE} | grep -o '无需 Build' | wc -l`
-let BUILD_ERROR_COUNT=${BUILD_CHECK_COUNT}-${BUILD_SUCCESS_COUNT}-${BUILD_NOCHANGE_COUNT}-${BUILD_NOTNEED_COUNT}
+# 
+# 54  "失败，Git Clone 出错"
+# 54  "失败，Git Checkout 出错"
+# 54  "失败，Git Pull 出错"
+# 55  "跳过，Git 分支无更新"
+# 53  "失败，其他用户正在构建中"
+# 54(52)  "失败"
+# 50  "成功"
+# 56  "跳过，无需构建"
+#
+BUILD_SUCCESS_COUNT=`cat ${BUILD_OK_LIST_FILE} | grep -o '成功' | wc -l`
+BUILD_ERROR_COUNT=`cat ${BUILD_OK_LIST_FILE} | grep -o '失败' | wc -l`
+BUILD_NOCHANGE_COUNT=`cat ${BUILD_OK_LIST_FILE} | grep -o '跳过，Git 分支无更新' | wc -l`
+BUILD_NOTNEED_COUNT=`cat ${BUILD_OK_LIST_FILE} | grep -o '跳过，无需构建' | wc -l`
 TIME_END=`date +%Y-%m-%dT%H:%M:%S`
 case ${SH_RUN_MODE} in
     normal)
         #
-        MESSAGE_END="项目构建已完成！共企图构建${BUILD_CHECK_COUNT}个项目，成功构建${BUILD_SUCCESS_COUNT}个项目，${BUILD_NOCHANGE_COUNT}个项目无更新，${BUILD_NOTNEED_COUNT}个项目无需 Build，${BUILD_ERROR_COUNT}个项目出错。"
+        MESSAGE_END="项目构建已完成！共企图构建${BUILD_CHECK_COUNT}个项目，成功构建${BUILD_SUCCESS_COUNT}个项目，${BUILD_NOCHANGE_COUNT}个项目无更新，${BUILD_NOTNEED_COUNT}个项目无需构建，${BUILD_ERROR_COUNT}个项目出错。"
         # 消息回显拼接
         > ${BUILD_HISTORY_CURRENT_FILE}
         echo "======== 构建报告 ========" >> ${BUILD_HISTORY_CURRENT_FILE}
