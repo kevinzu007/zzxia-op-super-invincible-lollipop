@@ -1017,7 +1017,7 @@ else
 fi
 # 删除无关行
 #sed  -i  -E  -e '/^\s*$/d'  -e '/^#.*$/d'  -e 's/[ \t]*//g'  ${PROJECT_LIST_FILE_TMP}
-sed  -i  -E  -e '/^\s*$/d'  -e '/^##.*$/d'  -e '/---/d'  -e '/^#.*PRIORITY/d'  ${PROJECT_LIST_FILE_TMP}
+sed  -i  -E  -e '/^\s*$/d'  -e '/^#.*$/d'  ${PROJECT_LIST_FILE_TMP}
 # 优先级排序
 > ${PROJECT_LIST_FILE_TMP}.sort
 for i in  `awk -F '|' '{split($9,a," ");print NR,a[1]}' ${PROJECT_LIST_FILE_TMP}  |  sort -n -k 2 |  awk '{print $1}'`

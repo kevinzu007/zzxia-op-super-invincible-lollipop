@@ -1139,7 +1139,7 @@ fi
 #
 # 删除无关行
 #sed  -i  -E  -e '/^\s*$/d'  -e '/^#.*$/d'  -e 's/[ \t]*//g'  ${SERVICE_LIST_FILE_TMP}
-sed  -i  -E  -e '/^\s*$/d'  -e '/^##.*$/d'  -e '/---/d'  -e '/^#.*PRIORITY/d'  ${SERVICE_LIST_FILE_TMP}
+sed  -i  -E  -e '/^\s*$/d'  -e '/^#.*$/d'  ${SERVICE_LIST_FILE_TMP}
 # 优先级排序
 > ${SERVICE_LIST_FILE_TMP}.sort
 for i in  `awk -F '|' '{split($9,a," ");print NR,a[1]}' ${SERVICE_LIST_FILE_TMP}  |  sort -n -k 2 |  awk '{print $1}'`

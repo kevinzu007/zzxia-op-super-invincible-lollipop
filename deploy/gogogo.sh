@@ -798,7 +798,7 @@ else
 fi
 # 删除无关行
 #sed  -i  -E  -e '/^\s*$/d'  -e '/^#.*$/d'  -e 's/[ \t]*//g'  ${GOGOGO_PROJECT_LIST_FILE_TMP}
-sed  -i  -E  -e '/^\s*$/d'  -e '/^##.*$/d'  -e '/---/d'  -e '/^#.*PRIORITY/d'  ${GOGOGO_PROJECT_LIST_FILE_TMP}
+sed  -i  -E  -e '/^\s*$/d'  -e '/^#.*$/d'  ${GOGOGO_PROJECT_LIST_FILE_TMP}
 # 优先级排序
 > ${GOGOGO_PROJECT_LIST_FILE_TMP}.sort
 for i in  `awk -F '|' '{split($9,a," ");print NR,a[1]}' ${GOGOGO_PROJECT_LIST_FILE_TMP}  |  sort -n -k 2 |  awk '{print $1}'`
@@ -995,7 +995,7 @@ echo -e "\nBuild & Release 完成！\n"
 
 # 输出结果
 #
-# 结果参考：build.sh、docker-cluster-service-deploy.sh、web-release-on-nginx.sh
+# 结果参考：build.sh、docker-cluster-service-deploy.sh、web-release-on-nginx.sh，在原结果前加了【发布】两个字
 #
 RELEASE_SUCCESS_COUNT=`cat ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE} | grep -o '发布成功' | wc -l`
 RELEASE_ERROR_COUNT=`cat ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE} | grep -o '发布失败' | wc -l`

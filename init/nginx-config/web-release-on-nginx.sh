@@ -230,7 +230,7 @@ else
 fi
 # 删除无关行
 #sed  -i  -e '/^\s*$/d'  -e '/^#.*$/d'  -e 's/[ \t]*//g'  ${WEB_PROJECT_LIST_FILE_TMP}
-sed  -i  -E  -e '/^\s*$/d'  -e '/^##.*$/d'  -e '/---/d'  -e '/^#.*PRIORITY/d'  ${WEB_PROJECT_LIST_FILE_TMP}
+sed  -i  -E  -e '/^\s*$/d'  -e '/^#.*$/d'  ${WEB_PROJECT_LIST_FILE_TMP}
 # 优先级排序
 > ${WEB_PROJECT_LIST_FILE_TMP}.sort
 for i in  `awk -F '|' '{split($10,a," ");print NR,a[1]}' ${WEB_PROJECT_LIST_FILE_TMP}  |  sort -n -k 2 |  awk '{print $1}'`
