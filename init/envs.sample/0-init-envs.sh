@@ -14,7 +14,7 @@ cd ${SH_PATH}
 
 
 # 默认运行环境相关文件所在目录
-ENVS_FILE_DIR="${SH_PATH}/envs"
+ENVS_FILE_DIR="${SH_PATH}/envs.sample"
 
 
 
