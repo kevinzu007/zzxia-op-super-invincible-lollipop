@@ -163,7 +163,7 @@ else
     done
 fi
 # 加表头
-sed -i  '1i#| **类别** | **项目名** | **构建方法** | **输出方法** | **镜像名** | **链接node_project** | **GOGOGO发布方式** | **优先级** |' > ${PROJECT_LIST_FILE_TMP}
+sed -i  '1i#| **类别** | **项目名** | **构建方法** | **输出方法** | **镜像名** | **链接node_project** | **GOGOGO发布方式** | **优先级** |'  ${PROJECT_LIST_FILE_TMP}
 
 
 
