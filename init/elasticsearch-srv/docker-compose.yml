@@ -21,7 +21,7 @@ services:
         soft: -1
         hard: -1
     volumes:
-      - ./data01:/usr/share/elasticsearch/data
+      - ./data/elasticsearch/data:/usr/share/elasticsearch/data
       - ./conf/elasticsearch/plugins:/usr/share/elasticsearch/plugins
     ports:
       - 9200:9200
