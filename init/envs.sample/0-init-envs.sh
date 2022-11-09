@@ -14,7 +14,7 @@ cd ${SH_PATH}
 
 
 # 默认运行环境相关文件所在目录
-ENVS_FILE_DIR="${SH_PATH}/envs"
+ENVS_FILE_DIR="${SH_PATH}/envs.sample"
 
 
 
@@ -54,7 +54,7 @@ F_CP ()
     cp -f  ${ENVS_FILE_DIR}/backup-center-project.list            ./backup-center/backup-center-project.list
     cp -f  ${ENVS_FILE_DIR}/pg_db.list                            ./pg/backup/pg_db.list
     #
-    cp -f  ${ENVS_FILE_DIR}/nginx.list---${R_ENV}                 ./nginx-config/
+    cp -f  ${ENVS_FILE_DIR}/nginx.list---${R_ENV}                 ./nginx-config/nginx.list
     cp -f  ${ENVS_FILE_DIR}/fluent.conf---${R_ENV}                ./fluentd-srv/conf/fluent.conf
     cp -f  ${ENVS_FILE_DIR}/kibana-srv-env---${R_ENV}             ./kibana-srv/.env
     cp -f  ${ENVS_FILE_DIR}/elasticsearch-srv-env---${R_ENV}      ./elasticsearch-srv/.env
@@ -151,6 +151,10 @@ do
             if [[ -z ${R_MODE} ]]; then
                 R_MODE=F_CP
                 R_ENV=$2
+                if [[ -z ${R_ENV} ]]; then
+                    echo -e "\n猪猪侠警告：参数错误，请查看帮助【$0 --help】\n"
+                    exit 1
+                fi
             else
                 echo -e "\n猪猪侠警告：主要参数只能有一个，请查看帮助【$0 --help】\n"
                 exit 1
@@ -178,17 +182,18 @@ do
 done
 
 
-if [[ ! -f ${ENVS_FILE_DIR}/deploy.env---${R_ENV} ]]; then
-    echo -e "\n猪猪侠警告：请检查以【---${R_ENV}】结尾的文件是否准备好，例如：【${ENVS_FILE_DIR}/deploy.env---${R_ENV}】\n"
-    exit 1
-fi
-
 
 case ${R_MODE} in
     F_RM)
         F_RM
         ;;
     F_CP)
+        #
+        if [[ ! -f ${ENVS_FILE_DIR}/deploy.env---${R_ENV} ]]; then
+            echo -e "\n猪猪侠警告：请检查以【---${R_ENV}】结尾的文件是否准备好，例如：【${ENVS_FILE_DIR}/deploy.env---${R_ENV}】\n"
+            exit 1
+        fi
+        #
         F_CP
         ;;
     *)

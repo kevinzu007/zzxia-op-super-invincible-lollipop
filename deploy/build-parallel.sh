@@ -411,7 +411,7 @@ else
 fi
 # 删除无关行
 #sed  -i  -E  -e '/^\s*$/d'  -e '/^#.*$/d'  -e 's/[ \t]*//g'  ${PARA_PROJECT_LIST_FILE_TMP}
-sed  -i  -E  -e '/^\s*$/d'  -e '/^##.*$/d'  -e '/---/d'  -e '/^#.*PRIORITY/d'  ${PARA_PROJECT_LIST_FILE_TMP}
+sed  -i  -E  -e '/^\s*$/d'  -e '/^#.*$/d'  ${PARA_PROJECT_LIST_FILE_TMP}
 # 优先级排序
 > ${PARA_PROJECT_LIST_FILE_TMP}.sort
 for i in  `awk -F '|' '{split($9,a," ");print NR,a[1]}' ${PARA_PROJECT_LIST_FILE_TMP}  |  sort -n -k 2 |  awk '{print $1}'`
@@ -492,7 +492,7 @@ do
         if [[ `cat ${BUILD_OK_LIST_FILE_function} | wc -l` -eq 1 ]]; then
             cat  ${BUILD_OK_LIST_FILE_function} >> ${PARA_BUILD_OK_LIST_FILE}
         else
-            echo  "${PJ} : 非预期错误" >> ${PARA_BUILD_OK_LIST_FILE}
+            echo  "${PJ} : 失败，非预期错误" >> ${PARA_BUILD_OK_LIST_FILE}
         fi
         echo >&6    # 归还令牌。完成后往命名管道写入一行，模拟归还令牌操作
     } &             # 后台运行，故加上 & 命令
@@ -505,12 +505,27 @@ echo -e "\nParallel Build 完成！\n"
 
 
 # 输出结果
-BUILD_SUCCESS_COUNT=`cat ${PARA_BUILD_OK_LIST_FILE} | grep -o 'Build 成功' | wc -l`
-BUILD_NOCHANGE_COUNT=`cat ${PARA_BUILD_OK_LIST_FILE} | grep -o '无更新' | wc -l`
-BUILD_NOTNEED_COUNT=`cat ${BUILD_OK_LIST_FILE} | grep -o '无需 Build' | wc -l`
-let BUILD_ERROR_COUNT=${BUILD_CHECK_COUNT}-${BUILD_SUCCESS_COUNT}-${BUILD_NOCHANGE_COUNT}-${BUILD_NOTNEED_COUNT}
+#
+# build.sh
+# 54  "失败，Git Clone 出错"
+# 54  "失败，Git Checkout 出错"
+# 54  "失败，Git Pull 出错"
+# 55  "跳过，Git 分支无更新"
+# 53  "失败，其他用户正在构建中"
+# 54(52)  "失败"
+# 50  "成功"
+# 56  "跳过，无需构建"
+#
+# build-parallel.sh
+# 0   "失败，非预期错误"
+#
+BUILD_SUCCESS_COUNT=`cat ${PARA_BUILD_OK_LIST_FILE} | grep -o '成功' | wc -l`
+BUILD_ERROR_COUNT=`cat ${PARA_BUILD_OK_LIST_FILE} | grep -o '失败' | wc -l`
+BUILD_NOCHANGE_COUNT=`cat ${PARA_BUILD_OK_LIST_FILE} | grep -o '跳过，Git 分支无更新' | wc -l`
+BUILD_NOTNEED_COUNT=`cat ${BUILD_OK_LIST_FILE} | grep -o '跳过，无需构建' | wc -l`
+#
 TIME_END=`date +%Y-%m-%dT%H:%M:%S`
-MESSAGE_END="项目构建已完成！ 共企图构建${BUILD_CHECK_COUNT}个项目，成功构建${BUILD_SUCCESS_COUNT}个项目，${BUILD_NOCHANGE_COUNT}个项目无更新，${BUILD_NOTNEED_COUNT}个项目无需 Build，${BUILD_ERROR_COUNT}个项目出错。"
+MESSAGE_END="项目构建已完成！ 共企图构建${BUILD_CHECK_COUNT}个项目，成功构建${BUILD_SUCCESS_COUNT}个项目，${BUILD_NOCHANGE_COUNT}个项目无更新，${BUILD_NOTNEED_COUNT}个项目无需构建，${BUILD_ERROR_COUNT}个项目出错。"
 # 消息回显拼接
 >  ${PARA_BUILD_HISTORY_CURRENT_FILE}
 echo "====== 并行构建报告 ======" >> ${PARA_BUILD_HISTORY_CURRENT_FILE}

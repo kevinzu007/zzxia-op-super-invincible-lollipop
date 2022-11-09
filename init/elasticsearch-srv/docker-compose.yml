@@ -2,12 +2,13 @@ version: '3'
 # 参考：https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html
 services:
   es01:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.8.1
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.4.3
     #container_name: es01
     restart: always
     environment:
+      - xpack.security.enabled=false
       - discovery.type=single-node
-      #- node.name=es01
+      - node.name=es01
       #- cluster.name=es-docker-cluster
       #- discovery.seed_hosts=es02,es03
       #- cluster.initial_master_nodes=es01,es02,es03
@@ -21,6 +22,7 @@ services:
         hard: -1
     volumes:
       - ./data01:/usr/share/elasticsearch/data
+      - ./conf/elasticsearch/plugins:/usr/share/elasticsearch/plugins
     ports:
       - 9200:9200
       - 9300:9300

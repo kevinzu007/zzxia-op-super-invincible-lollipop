@@ -30,17 +30,6 @@
   </parse>
 </filter>
 
-##解析logback过来的数据
-<filter gc-*-service.logback>
-  @type parser
-  key_name msg
-  reserve_data true
-  emit_invalid_record_to_error false
-  <parse>
-    @type regexp
-    expression (\d{4}-\d{1,2}-\d{1,2} \d{1,2}:\d{1,2}:\d{1,2}.\d{1,5})\s+(?<level>[^ ]*)\s+\[([^ ,]*),(?<traceid>[^ ,]*),(?<spanid>[^ ]*)]\s+(?<pid>[^ ]*)\s+---\s+\[(?<thread>[^\]]*)\]\s+(?<classname>[^ ]*)
-  </parse>
-</filter>
 
 ##收集logback的日志发送到es
 <match gc-*-service.logback>

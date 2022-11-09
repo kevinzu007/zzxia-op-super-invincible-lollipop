@@ -113,12 +113,12 @@ F_RELEASE()
     RELE_DATE_LATEST=$(ls -l ./ | grep ^d | awk '{print $9}' | sort -gr | sed -n '1p')
     if [ "${RELE_DATE_LATEST}" != "${TODAY}" ]; then
         ERROR_CODE=55
-        printf  "%-32s  %s\n"  "${F_PJ}"   "无需发布，今日无部署"
+        printf  "%-32s  %s\n"  "${F_PJ}"   "跳过，今日无部署"
     else
         [ -L ./current ] && rm -f ./current
         ln -s  ./"${RELE_DATE_LATEST}"  ./current
         ERROR_CODE=50
-        printf  "%-32s  %s\n"  "${F_PJ}"   "发布成功"
+        printf  "%-32s  %s\n"  "${F_PJ}"   "成功"
     fi
     #
     cd ../..
@@ -138,13 +138,13 @@ F_ROLLBACK()
     # 今天有部署才需要回滚
     if [ "${RELE_DATE_LATEST}" != "${TODAY}" ]; then
         ERROR_CODE=55
-        printf  "%-32s  %s\n"  "${F_PJ}"   "无需回滚，今日无部署"
+        printf  "%-32s  %s\n"  "${F_PJ}"   "跳过，今日无部署"
     else
         RELE_DATE_NEAR=$(ls -l ./ | grep ^d | awk '{print $9}' | sort -gr | sed -n '2p')
         [ -L ./current ] && rm -f ./current
         ln -s  ./"${RELE_DATE_NEAR}"  ./current
         ERROR_CODE=50
-        printf  "%-32s  %s\n"  "${F_PJ}"   "回滚成功*版本：${RELE_DATE_NEAR}"
+        printf  "%-32s  %s\n"  "${F_PJ}"   "成功*版本：${RELE_DATE_NEAR}"
     fi
     #
     cd ../..
@@ -230,7 +230,7 @@ else
 fi
 # 删除无关行
 #sed  -i  -e '/^\s*$/d'  -e '/^#.*$/d'  -e 's/[ \t]*//g'  ${WEB_PROJECT_LIST_FILE_TMP}
-sed  -i  -E  -e '/^\s*$/d'  -e '/^##.*$/d'  -e '/---/d'  -e '/^#.*PRIORITY/d'  ${WEB_PROJECT_LIST_FILE_TMP}
+sed  -i  -E  -e '/^\s*$/d'  -e '/^#.*$/d'  ${WEB_PROJECT_LIST_FILE_TMP}
 # 优先级排序
 > ${WEB_PROJECT_LIST_FILE_TMP}.sort
 for i in  `awk -F '|' '{split($10,a," ");print NR,a[1]}' ${WEB_PROJECT_LIST_FILE_TMP}  |  sort -n -k 2 |  awk '{print $1}'`
@@ -260,13 +260,13 @@ do
     MODE=`echo $MODE`
     #
     if [[ "$MODE" == 'proxyserver' ]]; then
-        printf  "%-32s  %s\n"  "${PJ}"   "无需发布或回滚"
+        printf  "%-32s  %s\n"  "${PJ}"   "跳过，无需发布或回滚"
         ERROR_CODE=56
         continue
     fi
     # 目录
     if [ ! -d "${PJ}/releases" ]; then
-        printf  "%-32s  %s\n"  "${PJ}"   "发布或回滚失败，项目目录不存在"
+        printf  "%-32s  %s\n"  "${PJ}"   "失败，项目目录不存在"
         ERROR_CODE=53
         continue
     else
@@ -282,6 +282,25 @@ do
         esac
     fi
 done < "${WEB_PROJECT_LIST_FILE_TMP}"
-# 被调用时需要
-#return ${ERROR_CODE}
+
+
+# 输出结果：
+#
+# 0  56  "跳过，无需发布或回滚"
+# 0  53  "失败，项目目录不存在"
+# 0  50  "成功"
+# 0  50  "成功*版本"
+# 0  55  "跳过，今日无部署"
+
+
+# 返回值：
+# if 被调用时需要
+#    exit ${ERROR_CODE}
+#
+# elif ansible调用时返回值
+# 在返回值不是0时，用ansible调用执行时返回值为2，所以所有自定义输出全部改为0
+if [[ ${ERROR_CODE} =~ 5 ]]; then
+    exit 0
+fi
+
 
