@@ -1,6 +1,8 @@
 # 说明
 
-nacos数据库使用docker-compose启动
+
+nacos数据库使用docker-compose启动，数据初始化sql请从官方包中获取【https://github.com/alibaba/nacos/releases/tag/2.1.2】
+
 nacos-server运行在集群中，需要先把镜像拉取并推送到自己的仓库【运行nacos-image-pull.sh】
 
 
