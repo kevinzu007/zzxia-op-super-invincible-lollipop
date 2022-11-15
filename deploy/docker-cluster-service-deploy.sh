@@ -486,9 +486,11 @@ F_ENVS_FROM_FILE ()
         ENV_LINE=${ENV_LINE//'~/${HOME}'}
         if [[ "${ENV_LINE}" =~ ^export.*=.+$ ]]; then
             # 有export，有=
-            F_CONTAINER_ENVS_FILE_SET_n=$( echo ${ENV_LINE} | awk '{print $2}' | awk -F '=' '{print $1}' )
+            #F_CONTAINER_ENVS_FILE_SET_n=$( echo ${ENV_LINE} | awk '{print $2}' | awk -F '=' '{print $1}' )
+            F_CONTAINER_ENVS_FILE_SET_n=$( echo ${ENV_LINE} | awk '{$1="",print}' | awk -F '=' '{print $1}' )
             F_CONTAINER_ENVS_FILE_SET_n=$( echo ${F_CONTAINER_ENVS_FILE_SET_n} )
-            F_CONTAINER_ENVS_FILE_SET_v=$( echo ${ENV_LINE} | awk '{print $2}' | awk -F '=' '{print $2}' | sed 's/\"//g' )
+            #F_CONTAINER_ENVS_FILE_SET_v=$( echo ${ENV_LINE} | awk '{print $2}' | awk -F '=' '{print $2}' | sed 's/\"//g' )
+            F_CONTAINER_ENVS_FILE_SET_v=$( echo ${ENV_LINE} | cut -d ' ' -f 2- | awk -F '=' '{print $2}' | sed 's/\"//g' )
             F_CONTAINER_ENVS_FILE_SET_v=$( echo ${F_CONTAINER_ENVS_FILE_SET_v} )
         elif [[ "${ENV_LINE}" =~ ^[a-zA-Z]+.*=.+$ ]]; then
             # 无export，有=
