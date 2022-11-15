@@ -1,5 +1,13 @@
 # 说明
 
+nacos数据库使用docker-compose启动
+nacos-server运行在集群中，需要先把镜像拉取并推送到自己的仓库【运行nacos-image-pull.sh】
+
+
+
+
+
+=============================================================================
 作者：ZZXia
 参考摘抄：`https://github.com/nacos-group/nacos-docker.git`
 模式：单机+mysql5.7
