@@ -877,7 +877,7 @@ F_FUCK()
         esac
         #
     else
-        echo \# 完整命令如下，请拷贝到命令行运行，或使用【-F|--fuck】参数运行：
+        echo '完整命令如下，请拷贝到命令行运行，或使用【-F|--fuck】参数运行：'
         echo  ${DOCKER_FULL_CMD}
     fi
     #echo ''
