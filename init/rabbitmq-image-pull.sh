@@ -2,11 +2,11 @@
 
 
 # 镜像名称与版本
-IMAGE_NAME=nacos/nacos-server
-VER=v2.1.2
+IMAGE_NAME=rabbitmq
+VER=3.11-management
 
 
-# docker官方仓库（官方默认）
+# docker官方仓库（默认，一般不用改）
 DOCKER_REPO=docker.io/library
 
 

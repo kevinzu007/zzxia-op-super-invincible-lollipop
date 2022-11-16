@@ -2,8 +2,8 @@
 
 
 # 镜像名称与版本
-IMAGE_NAME=nacos/nacos-server
-VER=v2.1.2
+IMAGE_NAME=neo4j
+VER=5.1
 
 
 # docker官方仓库（官方默认）
