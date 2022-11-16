@@ -204,5 +204,5 @@ done < ${PROJECT_LIST_FILE_TMP}
 
 
 echo -e "\nPUSH 完成！"
-echo "IMAGE版本号为：${IMAGE_VER}"
+echo -e "IMAGE版本号为：\n    ${IMAGE_VER}\n    latest"
 
