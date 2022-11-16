@@ -20,7 +20,7 @@ fi
 
 #
 echo "开始推送到仓库"
-bash ../../../deploy/docker-tag-push.sh -v ${DOCKER_IMAGE_VER} ${DOCKER_IMAGE_NAME}
+bash ../../../deploy/docker-tag-push.sh  --tag ${DOCKER_IMAGE_VER}  ${DOCKER_IMAGE_NAME}
 if [[ $? -ne 0 ]]; then
     echo "猪猪侠警告：镜像【${DOCKER_IMAGE_NAME}】推送失败，请检查！"
     exit 1
