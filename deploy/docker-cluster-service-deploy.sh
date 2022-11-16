@@ -835,7 +835,7 @@ F_FUCK()
             done < ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
         fi
         #
-        echo "正在执行以下指令："
+        echo -e '# 正在执行以下指令：\n'
         echo "${DOCKER_FULL_CMD}"
         echo "${DOCKER_FULL_CMD}" | bash
         SH_ERROR_CODE=$?
