@@ -1311,7 +1311,7 @@ case ${SH_RUN_MODE} in
             exit 59
         fi
         #
-        cat  ${BUILD_OK_LIST_FILE} >> ${BUILD_OK_LIST_FILE_function}
+        cat  ${BUILD_OK_LIST_FILE} > ${BUILD_OK_LIST_FILE_function}
         exit ${ERROR_CODE}
         ;;
     *)

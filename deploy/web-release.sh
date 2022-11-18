@@ -458,7 +458,7 @@ case ${SH_RUN_MODE} in
             exit 59
         fi
         #
-        cat  ${WEB_RELEASE_OK_LIST_FILE} >> ${WEB_RELEASE_OK_LIST_FILE_function}
+        cat  ${WEB_RELEASE_OK_LIST_FILE} > ${WEB_RELEASE_OK_LIST_FILE_function}
         #grep -q '成功' ${WEB_RELEASE_OK_LIST_FILE} >/dev/null 2>&1
         #exit $?
         exit ${ERROR_CODE}

@@ -876,8 +876,6 @@ do
     #
     # 构建
     #
-    > ${BUILD_OK_LIST_FILE_function}
-    #
     echo "正在构建环节，需要较长时间，请等待......"
     > "${GOGOGO_PROJECT_BUILD_RESULT}.${PJ}"
     SEARCH_s=$( F_BUILD_TIME_SEARCH  ${PJ} )

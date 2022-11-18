@@ -2584,7 +2584,7 @@ case ${SH_RUN_MODE} in
             exit 59
         fi
         #
-        cat  ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE} >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE_function}
+        cat  ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE} > ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE_function}
         #grep -q '成功' ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE} >/dev/null 2>&1
         #exit $?
         #exit ${ERROR_COUNT}
