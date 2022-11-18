@@ -477,7 +477,7 @@ do
     BUILD_METHOD=`echo ${BUILD_METHOD}`
     #
     BUILD_CHECK_COUNT=`expr ${BUILD_CHECK_COUNT} + 1`
-    echo -e "${ECHO_NORMAL}++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++${ECHO_CLOSE}"   #--- 70 (80-70-60)
+    echo -e "${ECHO_BLACK_GREEN}++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++${ECHO_CLOSE}"   #--- 70 (80-70-60)
     echo -e "${ECHO_NORMAL}${BUILD_CHECK_COUNT} - ${PJ} :${ECHO_CLOSE}"
     echo ""
     # build
