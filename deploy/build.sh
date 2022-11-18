@@ -26,7 +26,7 @@ BUILD_CODE_VERIFY=${BUILD_CODE_VERIFY:-'NONE'}    #--- BUILD_CODE_VERIFY="sonarQ
 # 本地env
 TIME=${TIME:-`date +%Y-%m-%dT%H:%M:%S`}
 TIME_START=${TIME}
-DATE_TIME=`date -d "${TIME}" +%Y%m%dt%H%M%S`
+DATE_TIME=`date -d "${TIME}" +%Y%m%dT%H%M%S`
 ERROR_CODE=''     #--- 程序最终返回值，一般用于【--mode=function】时
 #
 DOCKER_IMAGE_VER=$(date -d "${TIME}" +%Y.%m.%d.%H%M%S)

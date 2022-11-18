@@ -24,7 +24,7 @@ BUILD_SKIP_TEST=${BUILD_SKIP_TEST:-'NO'}  #--- 跳过测试
 # 本地env
 export TIME=`date +%Y-%m-%dT%H:%M:%S`
 TIME_START=${TIME}
-DATE_TIME=`date -d "${TIME}" +%Y%m%dt%H%M%S`
+DATE_TIME=`date -d "${TIME}" +%Y%m%dT%H%M%S`
 #
 LOG_BASE="${SH_PATH}/tmp/log"
 LOG_HOME="${LOG_BASE}/${DATE_TIME}"

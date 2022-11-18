@@ -19,7 +19,7 @@ DINGDING_API=${DINGDING_API:-"请定义"}
 # 本地env
 TIME=${TIME:-`date +%Y-%m-%dT%H:%M:%S`}
 TIME_START=${TIME}
-DATE_TIME=`date -d "${TIME}" +%Y%m%dt%H%M%S`
+DATE_TIME=`date -d "${TIME}" +%Y%m%dT%H%M%S`
 #
 LOG_BASE="${SH_PATH}/tmp/log"
 LOG_HOME="${LOG_BASE}/${DATE_TIME}"
