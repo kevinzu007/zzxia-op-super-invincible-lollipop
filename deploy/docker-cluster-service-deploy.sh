@@ -30,7 +30,7 @@ TIME=${TIME:-`date +%Y-%m-%dT%H:%M:%S`}
 TIME_START=${TIME}
 DATE_TIME=`date -d "${TIME}" +%Y%m%dT%H%M%S`
 #
-DEBUG='NO'
+DEBUG='NO'                                                    #--- YES|NO，如果设置DEBUG='YES'，则可以在非【dev】环境将容器端口publish出来
 RELEASE_VERSION=''
 # 灰度
 GRAY_TAG="normal"                                             #--- 【normal】正常部署；【gray】灰度部署
