@@ -24,7 +24,7 @@ BUILD_SKIP_TEST=${BUILD_SKIP_TEST:-'NO'}  #--- 跳过测试
 # 本地env
 export TIME=`date +%Y-%m-%dT%H:%M:%S`
 TIME_START=${TIME}
-DATE_TIME=`date -d "${TIME}" +%Y%m%dt%H%M%S`
+DATE_TIME=`date -d "${TIME}" +%Y%m%dT%H%M%S`
 #
 LOG_BASE="${SH_PATH}/tmp/log"
 LOG_HOME="${LOG_BASE}/${DATE_TIME}"
@@ -477,7 +477,7 @@ do
     BUILD_METHOD=`echo ${BUILD_METHOD}`
     #
     BUILD_CHECK_COUNT=`expr ${BUILD_CHECK_COUNT} + 1`
-    echo -e "${ECHO_NORMAL}++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++${ECHO_CLOSE}"   #--- 70 (80-70-60)
+    echo -e "${ECHO_BLACK_GREEN}++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++${ECHO_CLOSE}"   #--- 70 (80-70-60)
     echo -e "${ECHO_NORMAL}${BUILD_CHECK_COUNT} - ${PJ} :${ECHO_CLOSE}"
     echo ""
     # build

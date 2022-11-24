@@ -24,7 +24,7 @@ BUILD_SKIP_TEST=${BUILD_SKIP_TEST:-'NO'}  #--- 跳过测试（YES|NO）
 # 本地env
 export TIME=`date +%Y-%m-%dT%H:%M:%S`
 TIME_START=${TIME}
-DATE_TIME=`date -d "${TIME}" +%Y%m%dt%H%M%S`
+DATE_TIME=`date -d "${TIME}" +%Y%m%dT%H%M%S`
 #
 RELEASE_VERSION=''
 # 灰度
@@ -869,14 +869,12 @@ do
     #
     RELEASE_CHECK_COUNT=`expr ${RELEASE_CHECK_COUNT} + 1`
     echo ""
-    echo -e "${ECHO_NORMAL}++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++${ECHO_CLOSE}"  #--- 70 (80-70-60)
+    echo -e "${ECHO_BLACK_GREEN}++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++${ECHO_CLOSE}"  #--- 70 (80-70-60)
     echo -e "${ECHO_NORMAL}${RELEASE_CHECK_COUNT} - ${PJ} :${ECHO_CLOSE}"
-    #echo -e "${ECHO_NORMAL}++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++${ECHO_CLOSE}"  #--- 70 (80-70-60)
+    #echo -e "${ECHO_BLACK_GREEN}++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++${ECHO_CLOSE}"  #--- 70 (80-70-60)
     echo ""
     #
     # 构建
-    #
-    > ${BUILD_OK_LIST_FILE_function}
     #
     echo "正在构建环节，需要较长时间，请等待......"
     > "${GOGOGO_PROJECT_BUILD_RESULT}.${PJ}"

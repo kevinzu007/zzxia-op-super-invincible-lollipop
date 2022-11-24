@@ -7,7 +7,7 @@ cd "${SH_PATH}"
 rm -rf /opt/node-v*
 
 
-if [[ ! $(ll *.xz | awk '{print $9}' | head -n 1) =~ node-v.*-linux-x64.tar.xz ]]; then
+if [[ ! $(ls -l *.xz | awk '{print $9}' | head -n 1) =~ node-v.*-linux-x64.tar.xz ]]; then
     echo -e "\n猪猪侠警告：未找到java安装文件【node-v*-linux-x64.tar.xz】，请自行下载到目录【${SH_PATH}】\n"
     exit 1
 fi

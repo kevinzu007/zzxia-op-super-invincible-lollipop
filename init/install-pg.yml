@@ -6,7 +6,7 @@
     - name: cp pg-install.sh
       copy: src=./pg/setup/pg-install.sh  dest=/tmp/ mode=0755
     - name: install pg
-      shell: /tmp/pg-install.sh -v 10.14
+      shell: /tmp/pg-install.sh -v 14.6
 
 
 

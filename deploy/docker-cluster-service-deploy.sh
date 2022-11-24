@@ -28,9 +28,9 @@ cd ${SH_PATH}
 # 本地env
 TIME=${TIME:-`date +%Y-%m-%dT%H:%M:%S`}
 TIME_START=${TIME}
-DATE_TIME=`date -d "${TIME}" +%Y%m%dt%H%M%S`
+DATE_TIME=`date -d "${TIME}" +%Y%m%dT%H%M%S`
 #
-DEBUG='NO'
+DEBUG='NO'                                                    #--- YES|NO，如果设置DEBUG='YES'，则可以在非【dev】环境将容器端口publish出来
 RELEASE_VERSION=''
 # 灰度
 GRAY_TAG="normal"                                             #--- 【normal】正常部署；【gray】灰度部署
@@ -486,9 +486,11 @@ F_ENVS_FROM_FILE ()
         ENV_LINE=${ENV_LINE//'~/${HOME}'}
         if [[ "${ENV_LINE}" =~ ^export.*=.+$ ]]; then
             # 有export，有=
-            F_CONTAINER_ENVS_FILE_SET_n=$( echo ${ENV_LINE} | awk '{print $2}' | awk -F '=' '{print $1}' )
+            #F_CONTAINER_ENVS_FILE_SET_n=$( echo ${ENV_LINE} | awk '{print $2}' | awk -F '=' '{print $1}' )
+            F_CONTAINER_ENVS_FILE_SET_n=$( echo ${ENV_LINE} | awk '{$1="";print}' | awk -F '=' '{print $1}' )
             F_CONTAINER_ENVS_FILE_SET_n=$( echo ${F_CONTAINER_ENVS_FILE_SET_n} )
-            F_CONTAINER_ENVS_FILE_SET_v=$( echo ${ENV_LINE} | awk '{print $2}' | awk -F '=' '{print $2}' | sed 's/\"//g' )
+            #F_CONTAINER_ENVS_FILE_SET_v=$( echo ${ENV_LINE} | awk '{print $2}' | awk -F '=' '{print $2}' | sed 's/\"//g' )
+            F_CONTAINER_ENVS_FILE_SET_v=$( echo ${ENV_LINE} | cut -d ' ' -f 2- | awk -F '=' '{print $2}' | sed 's/\"//g' )
             F_CONTAINER_ENVS_FILE_SET_v=$( echo ${F_CONTAINER_ENVS_FILE_SET_v} )
         elif [[ "${ENV_LINE}" =~ ^[a-zA-Z]+.*=.+$ ]]; then
             # 无export，有=
@@ -833,7 +835,7 @@ F_FUCK()
             done < ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
         fi
         #
-        echo "正在执行以下指令："
+        echo -e '# 正在执行以下指令：\n'
         echo "${DOCKER_FULL_CMD}"
         echo "${DOCKER_FULL_CMD}" | bash
         SH_ERROR_CODE=$?
@@ -877,7 +879,7 @@ F_FUCK()
         esac
         #
     else
-        echo \# 完整命令如下，请拷贝到命令行运行，或使用【-F|--fuck】参数运行：
+        echo -e '# 完整命令如下，请确认，可以拷贝到命令行运行，或使用【-F|--fuck】参数运行：\n'
         echo  ${DOCKER_FULL_CMD}
     fi
     #echo ''
@@ -2582,7 +2584,7 @@ case ${SH_RUN_MODE} in
             exit 59
         fi
         #
-        cat  ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE} >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE_function}
+        cat  ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE} > ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE_function}
         #grep -q '成功' ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE} >/dev/null 2>&1
         #exit $?
         #exit ${ERROR_COUNT}

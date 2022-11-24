@@ -1,0 +1,32 @@
+version: "3"                                                                                                                                                                                   
+services:
+  mysql:
+    # https://dev.mysql.com/doc/refman/8.0/en/docker-mysql-more-topics.html
+    image: mysql:5.7
+    restart: always
+    ports:
+      - 3306:3306
+    volumes:
+      - ./data/mysql/db:/var/lib/mysql
+      - ./conf/mysql/my.cnf:/etc/my.cnf
+      - ./conf/mysql/conf.d:/etc/mysql/conf.d
+      - ./conf/mysql/initdb.d:/docker-entrypoint-initdb.d    #如果有任何.sh或.sql你想它在创建后立即在数据库上运行脚本，把它放在这里
+    env_file:
+      - ./mysql.env
+    environment:
+      - MYSQL_LOG_CONSOLE=true
+      #- MYSQL_ROOT_HOST=%        #默认情况下，MySQL创建 'root'@'localhost'帐户。只能从容器内部连接该帐户，例如MYSQL_ROOT_HOST=172.*.*.*
+      #- MYSQL_ROOT_PASSWORD=1234567890
+      #- MYSQL_ALLOW_EMPTY_PASSWORD=false
+      #- MYSQL_ONETIME_PASSWORD=false
+      #- MYSQL_RANDOM_ROOT_PASSWORD=false
+      #
+      #- MYSQL_DATABASE=nacos_config
+      #- MYSQL_USER=unacos
+      #- MYSQL_PASSWORD=nacos1234
+
+    # 使用utf8mb4默认字符集和utf8mb4_col数据库的默认排序规则启动
+    command:
+      - '--character-set-server=utf8mb4'
+      - '--collation-server=utf8mb4_unicode_ci'
+

@@ -26,7 +26,7 @@ BUILD_CODE_VERIFY=${BUILD_CODE_VERIFY:-'NONE'}    #--- BUILD_CODE_VERIFY="sonarQ
 # 本地env
 TIME=${TIME:-`date +%Y-%m-%dT%H:%M:%S`}
 TIME_START=${TIME}
-DATE_TIME=`date -d "${TIME}" +%Y%m%dt%H%M%S`
+DATE_TIME=`date -d "${TIME}" +%Y%m%dT%H%M%S`
 ERROR_CODE=''     #--- 程序最终返回值，一般用于【--mode=function】时
 #
 DOCKER_IMAGE_VER=$(date -d "${TIME}" +%Y.%m.%d.%H%M%S)
@@ -629,6 +629,11 @@ NODE_BUILD()
     [ ! -d ../TMP_NODE_MODULES ] && mkdir ../TMP_NODE_MODULES
     if [ ${RUN_ENV} != 'stag'  -a  -d ../TMP_NODE_MODULES/${PJ}/node_modules ]; then
         mv ../TMP_NODE_MODULES/${PJ}/node_modules  ./
+    fi
+    #
+    if [[ $(which cnpm >/dev/null; echo $?) -ne 0 ]]; then
+        echo -e "\n猪猪侠警告：未找到命令【cnpm】，请修正！\n"
+        return 53
     fi
     #
     cnpm install --ignore-scripts
@@ -1311,7 +1316,7 @@ case ${SH_RUN_MODE} in
             exit 59
         fi
         #
-        cat  ${BUILD_OK_LIST_FILE} >> ${BUILD_OK_LIST_FILE_function}
+        cat  ${BUILD_OK_LIST_FILE} > ${BUILD_OK_LIST_FILE_function}
         exit ${ERROR_CODE}
         ;;
     *)

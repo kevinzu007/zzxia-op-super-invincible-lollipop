@@ -7,7 +7,7 @@ cd "${SH_PATH}"
 rm -rf /opt/jdk*
 
 
-if [[ ! $(ll *.gz | awk '{print $9}' | head -n 1) =~ jdk-.*-linux-x64.tar.gz ]]; then
+if [[ ! $(ls -l *.gz | awk '{print $9}' | head -n 1) =~ jdk-.*-linux-x64.tar.gz ]]; then
     echo -e "\n猪猪侠警告：未找到java安装文件【jdk-*-linux-x64.tar.gz】，请自行下载到目录【${SH_PATH}】\n"
     exit 1
 fi

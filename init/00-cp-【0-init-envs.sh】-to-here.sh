@@ -47,12 +47,17 @@ fi
 # go
 ENVS_FILE_DIR=$1
 ENVS_FILE_DIR=${ENVS_FILE_DIR%*/}
-if [[ ! -d ${ENVS_FILE_DIR} ]]; then
-    echo -e "\n猪猪侠警告：目录【${ENVS_FILE_DIR}】不存在，请检查\n"
+if [[ ! -f ${ENVS_FILE_DIR}/0-init-envs.sh ]]; then
+    echo -e "\n猪猪侠警告：目录【${ENVS_FILE_DIR}】不存在，或目录下不存在文件【0-init-envs.sh】，请检查\n"
     exit 1
 fi
 #
 # cp到init目录
 cp -f ${ENVS_FILE_DIR}/0-init-envs.sh  ./0-init-envs.sh
-
+if [[ $? -ne 0 ]]; then
+    echo  -e "\n拷贝失败，请检查\n"
+    exit 1
+else
+    echo  -e "\nOK，你现在可以运行【0-init-envs.sh】以实现对环境变量的初始化\n"
+fi
 

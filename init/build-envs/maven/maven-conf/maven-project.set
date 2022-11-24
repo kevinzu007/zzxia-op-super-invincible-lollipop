@@ -7,13 +7,13 @@
     <repository>
       <id>nexus</id>
       <name>Releases</name>
-      <url>http://mvn-repo:8081/repository/my-mvn-releases/</url>
+      <url>http://mvn-repo:8081/repository/gclife-mvn-releases/</url>
     </repository>
 
     <snapshotRepository>
       <id>nexus</id>
       <name>Snapshot</name>
-      <url>http://mvn-repo:8081/repository/my-mvn-snapshots/</url>
+      <url>http://mvn-repo:8081/repository/gclife-mvn-snapshots/</url>
     </snapshotRepository>
 
   </distributionManagement>

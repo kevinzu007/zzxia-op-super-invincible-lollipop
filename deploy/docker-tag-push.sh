@@ -57,7 +57,7 @@ export ECHO_REPORT=${ECHO_BLACK_CYAN}
 F_HELP()
 {
     echo "
-    用途：为项目镜像打版本号，并推送到docker仓库
+    用途：为项目镜像打版本号，并推送到docker仓库（推送 明确版本 + latest版本）
     依赖：
         ${SH_PATH}/deploy.env
         ${PROJECT_LIST_FILE}
@@ -204,5 +204,5 @@ done < ${PROJECT_LIST_FILE_TMP}
 
 
 echo -e "\nPUSH 完成！"
-echo "IMAGE版本号为：${IMAGE_VER}"
+echo -e "IMAGE版本号为：\n    ${IMAGE_VER}\n    latest"
 

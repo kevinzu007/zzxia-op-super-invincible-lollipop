@@ -1,0 +1,10 @@
+
+- hosts: nacos_db
+  become: yes
+  tasks:
+    - name: cp nacos-mysql-srv
+      copy: src=./nacos/nacos-mysql-srv/  dest=/srv/docker/nacos-mysql-srv/  owner=root group=root mode=644 backup=yes
+    - name: 启动 nacos-mysql-srv
+      shell: cd /srv/docker/nacos-mysql-srv/ && docker-compose up -d
+
+

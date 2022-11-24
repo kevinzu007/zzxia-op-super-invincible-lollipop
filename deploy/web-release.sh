@@ -19,7 +19,7 @@ DINGDING_API=${DINGDING_API:-"请定义"}
 # 本地env
 TIME=${TIME:-`date +%Y-%m-%dT%H:%M:%S`}
 TIME_START=${TIME}
-DATE_TIME=`date -d "${TIME}" +%Y%m%dt%H%M%S`
+DATE_TIME=`date -d "${TIME}" +%Y%m%dT%H%M%S`
 #
 LOG_BASE="${SH_PATH}/tmp/log"
 LOG_HOME="${LOG_BASE}/${DATE_TIME}"
@@ -458,7 +458,7 @@ case ${SH_RUN_MODE} in
             exit 59
         fi
         #
-        cat  ${WEB_RELEASE_OK_LIST_FILE} >> ${WEB_RELEASE_OK_LIST_FILE_function}
+        cat  ${WEB_RELEASE_OK_LIST_FILE} > ${WEB_RELEASE_OK_LIST_FILE_function}
         #grep -q '成功' ${WEB_RELEASE_OK_LIST_FILE} >/dev/null 2>&1
         #exit $?
         exit ${ERROR_CODE}
