@@ -56,9 +56,9 @@ F_HELP ()
     注意：需在root账户下运行，在还原时会自动设置访问限制、删库、创建、导入、取消限制。
     用法：
         $0  [-h|--help]
-        $0  [-b|--backup]   <-d|--path-dir 备份目录路径>   <-c<目标路径>|--copy-to-path=<目标路径>>   #--- 特别注意-c参数用法
-        $0  [-r|--resotore] [-d|--path-dir 备份目录路径]
-        $0  [-s|--search]   <-p|--search-path 搜索父目录>  <-n|--search-name 搜索子目录名>
+        $0  [-b|--backup]   <-d|--path-dir {备份目录路径}>   <-c<{目标路径}>|--copy-to-path=<{目标路径}>>   #--- 特别注意-c参数用法
+        $0  [-r|--resotore] [-d|--path-dir {备份目录路径}]
+        $0  [-s|--search]   <-p|--search-path {搜索父目录}>  <-n|--search-name {搜索子目录名}>
     参数说明：
         \$0   : 代表脚本本身
         []   : 代表是必选项

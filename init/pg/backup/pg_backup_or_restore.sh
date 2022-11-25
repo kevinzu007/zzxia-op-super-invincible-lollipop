@@ -38,8 +38,8 @@ F_HELP()
     注意：需在root账户下运行，会自动设置访问限制、删库、创建、导入、取消限制。
     用法:
         $0  [-h|--help]
-        $0  [-b|--backup]   [PATH_TO_FILENAME]  [数据库名]     #--- 备份，文件格式为gzip，备份时会自动在指定的名字后面自动加上.gz
-        $0  [-r|--resotore] [PATH_TO_FILENAME]  [数据库名]     #--- 恢复，文件须为gzip格式
+        $0  [-b|--backup]   {PATH/TO/FILENAME}  {数据库名}     #--- 备份，文件格式为gzip，备份时会自动在指定的名字后面自动加上.gz
+        $0  [-r|--resotore] {PATH/TO/FILENAME}  {数据库名}     #--- 恢复，文件须为gzip格式
     参数说明：
         \$0   : 代表脚本本身
         []   : 代表是必选项
@@ -104,7 +104,7 @@ do
             exit
             ;;
         -b|--backup)
-            BACKUP_TO_PATH_FILENAME="$2"
+            BACKUP_TO_PATH_AND_FILENAME="$2"
             shift 2
             shift 1
             DB_NAME="$1"
@@ -114,7 +114,7 @@ do
             fi
             #
             echo "${DB_NAME}："
-            su - postgres -c  "cd ${SH_PATH} && bash  ${PG_BACKUP_OR_RESTORE_BY_USER_POSTGRES_SH}  --backup ${BACKUP_TO_PATH_FILENAME} ${DB_NAME}"
+            su - postgres -c  "cd ${SH_PATH} && bash  ${PG_BACKUP_OR_RESTORE_BY_USER_POSTGRES_SH}  --backup ${BACKUP_TO_PATH_AND_FILENAME} ${DB_NAME}"
             exit
             ;;
         -r|--restore)

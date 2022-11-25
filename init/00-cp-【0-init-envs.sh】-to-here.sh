@@ -58,6 +58,6 @@ if [[ $? -ne 0 ]]; then
     echo  -e "\n拷贝失败，请检查\n"
     exit 1
 else
-    echo  -e "\nOK，你现在可以运行【0-init-envs.sh】以实现对环境变量的初始化\n"
+    echo  -e "\nOK !\n你现在可以运行【0-init-envs.sh】以实现对环境变量的初始化了！\n"
 fi
 
