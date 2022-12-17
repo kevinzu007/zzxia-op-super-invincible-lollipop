@@ -12,6 +12,10 @@
       file: dest=/backup/pg/pg_list_backup_or_restore.sh  state=file  owner=postgres  group=postgres  mode=0755
     - name: 加执行权限：pg_backup_or_restore.sh
       file: dest=/backup/pg/pg_backup_or_restore.sh  state=file  owner=postgres  group=postgres  mode=0755
+    - name: 拷贝：pg_hba.conf
+      copy: src=./pg/setup/pg_hba.conf  dest=/usr/local/pgsql/data/pg_hba.conf        owner=postgres group=postgres mode=644 backup=yes
+    - name: 拷贝：my-pg.conf
+      copy: src=./pg/setup/my-pg.conf   dest=/usr/local/pgsql/data/conf.d/my-pg.conf  owner=postgres group=postgres mode=644 backup=yes
 
 
 - hosts: pg_m
@@ -23,7 +27,5 @@
       cron: name=pg-list-backup backup=yes state=present minute=0 hour=2 day=*  month=* weekday=* user=postgres  job='. /etc/profile; bash /backup/pg/pg_list_backup_or_restore_by_user_postgres.sh -b -c  >/tmp/pg_list_backup_or_restore_by_user_postgres.sh.log 2>&1'
       when: RUN_ENV == "prod"
       #when: ansible_default_ipv4.address == '10.1.1.182'
-
-
 
 
