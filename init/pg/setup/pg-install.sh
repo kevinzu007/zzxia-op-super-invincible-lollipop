@@ -86,9 +86,9 @@ mkdir /usr/local/pgsql/data/conf.d
 chown -R postgres:postgres /usr/local/pgsql/data
 cp  ./contrib/start-scripts/linux  /root/postgresql_daemon.sh
 chmod +x /root/postgresql_daemon.sh
-su - postgres -c "/usr/local/pgsql/bin/initdb  -E UTF8 --local=C  -D /usr/local/pgsql/data -E UTF8 --local=C"
+su - postgres -c "/usr/local/pgsql/bin/initdb  -D /usr/local/pgsql/data -E UTF8 --local=C"
 su - postgres -c "/usr/local/pgsql/bin/pg_ctl -D /usr/local/pgsql/data -l logfile start"
-su - postgres -c "sed -i '/^include_dir/d' /usr/local/pgsql/data/postgresql.conf ; echo 'include_dir=./conf.d' >> /usr/local/pgsql/data/postgresql.conf"
+su - postgres -c "sed -i '/^include_dir/d' /usr/local/pgsql/data/postgresql.conf ;  echo include_dir = \'./conf.d\' >> /usr/local/pgsql/data/postgresql.conf"
 
 
 # os env
