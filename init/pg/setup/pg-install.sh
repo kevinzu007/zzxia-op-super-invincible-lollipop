@@ -8,7 +8,7 @@ F_HELP()
     用途：安装世界上最牛B的数据库：PostGreSQL
     用法:
     sh $0 [-h|--help]
-    sh $0 -v <版本号>          #--- 默认版本号：10.5
+    sh $0 -v <版本号>          #--- 默认版本号：14.6
     "
 }
 
@@ -19,7 +19,7 @@ case "$1" in
         exit 0
         ;;
     "-v")
-        VER=${2:-10.5}
+        VER=${2:-14.6}
         ;;
     *)
         F_HELP
@@ -82,11 +82,13 @@ ln -s /usr/local/pgsql-${VER} /usr/local/pgsql
 # init
 grep 'postgres' /etc/passwd >/dev/null 2>&1 || adduser postgres
 mkdir /usr/local/pgsql/data
+mkdir /usr/local/pgsql/data/conf.d
 chown -R postgres:postgres /usr/local/pgsql/data
 cp  ./contrib/start-scripts/linux  /root/postgresql_daemon.sh
 chmod +x /root/postgresql_daemon.sh
 su - postgres -c "/usr/local/pgsql/bin/initdb  -E UTF8 --local=C  -D /usr/local/pgsql/data -E UTF8 --local=C"
 su - postgres -c "/usr/local/pgsql/bin/pg_ctl -D /usr/local/pgsql/data -l logfile start"
+su - postgres -c "sed -i '/^include_dir/d' /usr/local/pgsql/data/postgresql.conf ; echo 'include_dir=./conf.d' >> /usr/local/pgsql/data/postgresql.conf"
 
 
 # os env
