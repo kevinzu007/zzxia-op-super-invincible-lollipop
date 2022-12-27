@@ -2,7 +2,7 @@
 export RUN_ENV='dev'
 
 # 此项目克隆路径
-export DEPLOY_HOME_BASE='/root/zzxia-om-super-invincible-lollipop'
+export DEPLOY_HOME_BASE='/root/zzxia-op-super-invincible-lollipop'
 
 ## 部署域名
 export DOMAIN="zjlh.lan"
