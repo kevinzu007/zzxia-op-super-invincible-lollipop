@@ -1256,7 +1256,8 @@ $ ./gan.sh -d ngx-root --help
         /root/deploy-bmp/init/nginx-config/nginx-root.sh  项目a 项目b    #--- 为【项目a、项目b】建立项目目录
         
         
-$ ./gan.sh -d ngx-root        #--- 为所有项目建立nginx root目录
+$ ./gan.sh -d ngx-root            #--- 为所有项目建立nginx root目录
+$ ./gan.sh -d ngx-root 项目1       #--- 为项目1建立nginx root目录
 ```
 
 ```bash
@@ -1296,7 +1297,8 @@ $ ./gan.sh -d ngx-conf --help
         /root/deploy-bmp/init/nginx-config/nginx-conf.sh  -p https  -c wildcard  项目a 项目b   #--- https泛域名证书方式，为【项目a、项目b】创建配置文件
         
         
-$ ./gan.sh -d ngx-conf  -p https  -c single        #--- 为所有项目生成配置文件并部署，使用https+单域名证书
+$ ./gan.sh -d ngx-conf  -p https  -c single            #--- 为所有项目生成配置文件并部署，使用https+单域名证书
+$ ./gan.sh -d ngx-conf  -p https  -c single  项目1      #--- 为项目1生成配置文件并部署，使用https+单域名证书
 ```
 
 ```bash
@@ -1334,7 +1336,8 @@ $ ./gan.sh -d ngx-dns --help
         /root/deploy-bmp/init/nginx-config/nginx-dns.sh  -p aliyun  项目a 项目b    #--- 为【项目a、项目b】添加域名记录，域名解析为阿里云
         
      
-$ ./gan.sh -d ngx-dns       #--- 为所有项目添加域名A记录
+$ ./gan.sh -d ngx-dns        #--- 为所有项目添加域名A记录
+$ ./gan.sh -d ngx-dns 项目1   #--- 为项目1添加域名A记录
 ```
 
 好了，其他就不一一展示了
