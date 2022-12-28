@@ -1,7 +1,7 @@
-# zzxia-om-super-invincible-lollipop
+# zzxia-op-super-invincible-lollipop
 
 #### Description
-zzxia-om-super-invincible-lollipop超级无敌棒棒糖
+zzxia-op-super-invincible-lollipop运维之超级无敌棒棒糖
 
 #### Software Architecture
 Software architecture description
