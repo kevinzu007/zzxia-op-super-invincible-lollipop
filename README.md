@@ -1802,7 +1802,7 @@ $ ./pg_backup_or_restore.sh --help
 
 **写文档是停费神的，将就看吧。如果你在使用中遇到任何问题请在Issues中提出，或留下联系方式线下沟通也可以。**
 
-![mmexport1654556730558-2](http://pic-bed.zzxia.vip/pic1/mmexport1654556730558-2.jpg)
+![mmexport1654556730558-2](https://img-blog.csdnimg.cn/img_convert/9b8748abeedc4f8eef5a2e69baec8c64.jpeg)
 
 **写文档是停费神的，将就看吧。如果你在使用中遇到任何问题请在Issues中提出，或留下联系方式线下沟通也可以。**
 
