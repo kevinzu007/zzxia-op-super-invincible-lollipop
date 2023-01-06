@@ -22,6 +22,7 @@ DINGDING_API=${DINGDING_API:-"请定义"}
 ERROR_EXIT=${ERROR_EXIT:-'NO'}                    #--- 出错立即退出
 BUILD_SKIP_TEST=${BUILD_SKIP_TEST:-'NO'}          #--- 跳过测试
 BUILD_CODE_VERIFY=${BUILD_CODE_VERIFY:-'NONE'}    #--- BUILD_CODE_VERIFY="sonarQube"
+NPM_BIN=${NPM_BIN:-'npm'}                         #--- 可选 npm|cnpm
 
 # 本地env
 TIME=${TIME:-`date +%Y-%m-%dT%H:%M:%S`}
@@ -631,13 +632,8 @@ NODE_BUILD()
         mv ../TMP_NODE_MODULES/${PJ}/node_modules  ./
     fi
     #
-    if [[ $(which cnpm >/dev/null; echo $?) -ne 0 ]]; then
-        echo -e "\n猪猪侠警告：未找到命令【cnpm】，请修正！\n"
-        return 53
-    fi
-    #
-    cnpm install --ignore-scripts
-    cnpm i   2>&1 | tee ${BUILD_LOG_file}
+    ${NPM_BIN} install --ignore-scripts
+    ${NPM_BIN} install   2>&1 | tee ${BUILD_LOG_file}
     #
     #
     # ========== 特殊处理START ==========
