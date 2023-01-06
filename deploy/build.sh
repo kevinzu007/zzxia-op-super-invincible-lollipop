@@ -615,10 +615,8 @@ JAVA_BUILD()
 F_NODE_MODULES_BACKUP()
 {
     [ -d ../TMP_NODE_MODULES ] || mkdir ../TMP_NODE_MODULES
-    if [ ${RUN_ENV} != 'stag' ]; then
-        [ ! -d ../TMP_NODE_MODULES/${PJ} ] && mkdir ../TMP_NODE_MODULES/${PJ}
-        mv  ./node_modules  ../TMP_NODE_MODULES/${PJ}/
-    fi
+    [ ! -d ../TMP_NODE_MODULES/${PJ} ] && mkdir ../TMP_NODE_MODULES/${PJ}
+    mv  ./node_modules  ../TMP_NODE_MODULES/${PJ}/
 }
 
 
@@ -628,7 +626,7 @@ NODE_BUILD()
     echo  "Node Build ......"
     # node_modules还原
     [ ! -d ../TMP_NODE_MODULES ] && mkdir ../TMP_NODE_MODULES
-    if [ ${RUN_ENV} != 'stag'  -a  -d ../TMP_NODE_MODULES/${PJ}/node_modules ]; then
+    if [ -d ../TMP_NODE_MODULES/${PJ}/node_modules ]; then
         mv ../TMP_NODE_MODULES/${PJ}/node_modules  ./
     fi
     #
