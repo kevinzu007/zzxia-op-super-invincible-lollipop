@@ -71,6 +71,18 @@ cd postgresql-${VER}/
 ./configure --prefix=/usr/local/pgsql-${VER}
 make
 make install
+#
+# 安装扩展
+cd  contrib/
+cd  pgstattuple
+make
+make install
+cd  ../pg_buffercache
+make
+make install
+cd  ../pg_stat_statements
+make
+make install
 set +e
 
 
