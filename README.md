@@ -369,7 +369,7 @@ ansible-playbook install-config-certbot.yml
 
 【home项目路径/init/envs.sample/deploy.env---dev】
 
-```bash
+```sh
 #!/bin/bash
 
 # 0  基本
@@ -480,7 +480,7 @@ esac
 
 【home项目路径/init/envs.sample/project.list】
 
-```markdown
+```sh
 ## 项目清单
 ###
 ### 2【类别：LANGUAGE_CATEGORY】= [ product|dockerfile|java|node|自定义 ]
@@ -555,7 +555,7 @@ esac
 
 【home项目路径/init/envs.sample/docker-cluster-service.list---dev】
 
-```markdown
+```sh
 ## docker cluster 服务部署清单
 ###
 ###  0 公共参数（ *** 对所有项目生效，以#开头的无效，以空格开头无效，可以是变量 *** ）：
@@ -654,7 +654,7 @@ esac
 
 【home项目路径/init/envs.sample/nginx.list---dev】
 
-```markdown
+```sh
 ## nginx网站配置清单
 ###
 ###  2【项目名：PJ】= [ 自定义名称 ]
@@ -698,12 +698,6 @@ esac
 | gc-client-mobile-h5-front     | app-client-h5       | 80           | 443           | realserver  |                  | try_files            | 192.168.11.77   | 5          |
 | gc-client-app-service         | app-client-public   | 80           | 443           | proxyserver | http:23100       | upload_size=50m      | 192.168.11.77   | 5          |
 ```
-
-
-
-
-
-
 
 
 
@@ -1802,7 +1796,7 @@ $ ./pg_backup_or_restore.sh --help
 
 **写文档是停费神的，将就看吧。如果你在使用中遇到任何问题请在Issues中提出，或留下联系方式线下沟通也可以。**
 
-![mmexport1654556730558-2](http://pic-bed.zzxia.vip/pic1/mmexport1654556730558-2.jpg)
+![mmexport1654556730558-2](https://img-blog.csdnimg.cn/img_convert/9b8748abeedc4f8eef5a2e69baec8c64.jpeg)
 
 **写文档是停费神的，将就看吧。如果你在使用中遇到任何问题请在Issues中提出，或留下联系方式线下沟通也可以。**
 
