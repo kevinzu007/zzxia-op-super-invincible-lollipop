@@ -35,7 +35,9 @@
 #| PJ                           | DOMAIN_A            |FRONT_HTTP_PORT|FRONT_HTTPS_PORT| MODE      |BACKEND_PROTOCOL_PORT| ITEMS             |  DOMAIN_IPS     | PRIORITY   |
 #| **项目名**                   | **域名A记录**       | **http端口** | **https端口** | **方式**    | **后端协议端口** | **附加项**           | **域名A记录IP** | **优先级** |
 #| ---------------------------- | ------------------- | ------------ | ------------- | ----------- | ---------------- | -------------------- | --------------- | ---------- |
-| build-log                     | build-log           | 80           | 443           | realserver  |                  | auth_basic,autoindex | 192.168.11.77   | 5          |
+| gan                           | gan                 | 80           | 443           | realserver  |                  |                      | 192.168.11.77   | 0          |
+| gan-api                       | gan-api             | 80           | 443           | proxyserver | http:9527        |                      | 192.168.11.77   | 0          |
+| build-log                     | build-log           | 80           | 443           | realserver  |                  | auth_basic,autoindex | 192.168.11.77   | 0          |
 | log                           | log                 | 80           | 443           | proxyserver | http:5601        | auth_basic           | 192.168.11.77   | 5          |
 | gc-platform-node              | bmp-platform-node   | 80           | 443           | proxyserver | http:41300       |                      | 192.168.11.77   | 5          |
 | gc-client-mobile-h5-front     | app-client-h5       | 80           | 443           | realserver  |                  | try_files            | 192.168.11.77   | 5          |

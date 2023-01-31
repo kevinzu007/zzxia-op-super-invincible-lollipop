@@ -26,4 +26,7 @@
       shell: sed -i '/gc-public-service/d' /etc/hosts ; echo '192.168.11.73  gc-public-service-1' | tee -a /etc/hosts ; echo '192.168.11.74  gc-public-service-2' | tee -a /etc/hosts
     - name: modify hosts log
       shell: sed -i '/log/d' /etc/hosts ; echo '192.168.11.85  log-1' | tee -a /etc/hosts ; echo '192.168.11.85  log-2' | tee -a /etc/hosts
+    - name: modify hosts gan-api
+      shell: sed -i '/gan-api/d' /etc/hosts ; echo '192.168.11.81  gan-api-1' | tee -a /etc/hosts ; echo '192.168.11.81  gan-api-2' | tee -a /etc/hosts
+
 
