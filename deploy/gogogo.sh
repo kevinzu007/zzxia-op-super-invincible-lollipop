@@ -625,6 +625,15 @@ F_DOCKER_CLUSTER_SERVICE_DEPLOY()
 
 
 
+# F_PYTHON_DEPLOY {项目名称}
+# 重启python服务
+F_PYTHON_DEPLOY()
+{
+    echo  没搞
+}
+
+
+
 # 参数检查
 TEMP=`getopt -o hlc:b:e:sfvGV:  -l help,list,category:,branch:,email:,skiptest,force,verbose,gray,release-version: -- "$@"`
 if [ $? != 0 ]; then
@@ -966,6 +975,10 @@ do
                         echo "${PJ} : 构建${BUILD_RESULT} : 发布失败 : ${BUILD_TIME}s" >> ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
                         echo "构建: ${BUILD_RESULT} - 发布: 失败 - 耗时: ${BUILD_TIME}s"
                     fi
+                    ;;
+                python_deploy)
+                    F_PYTHON_DEPLOY  ${PJ}
+                    # 结果在函数里处理
                     ;;
                 *)
                     echo -e "\n猪猪侠警告：【${GOGOGO_RELEASE_METHOD}】这个发布方式你自己加的，你自己把它完善下！【脚本名：${SH_NAME}】\n"
