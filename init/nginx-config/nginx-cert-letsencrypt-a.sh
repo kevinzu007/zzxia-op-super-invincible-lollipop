@@ -15,7 +15,7 @@ EMAIL=${EMAIL:-"kevinzu@xxx.com"}
 # 本地env
 TIME=`date +%Y-%m-%dT%H:%M:%S`
 TIME_START=${TIME}
-WEBSITE_BASE="/srv/www"
+WEBSITE_BASE="/srv/web_sites"
 WEB_PROJECT_LIST_FILE="${SH_PATH}/nginx.list"
 WEB_PROJECT_LIST_FILE_TMP="/tmp/${SH_NAME}-nginx.tmp.list"
 #
