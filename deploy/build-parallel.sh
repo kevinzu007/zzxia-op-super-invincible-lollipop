@@ -45,8 +45,10 @@ BASE_BUILD_OK_LIST_FILE="${LOG_HOME}/${SH_NAME}-export-build-OK.list"
 export BUILD_OK_LIST_FILE=
 BASE_BUILD_OK_LIST_FILE_function="${LOG_HOME}/${SH_NAME}-export-build-OK.list.function"
 export BUILD_OK_LIST_FILE_function=''
+export MY_USER_NAME=''
 export MY_EMAIL=''
-export MY_XINGMING=''
+export HOOK_GAN_ENV=${HOOK_GAN_ENV:-''}
+export HOOK_USER=${HOOK_USER:-''}
 # 公共
 FUCK_HISTORY_FILE="${LOG_BASE}/fuck.history"
 # LOG_DOWNLOAD_SERVER
@@ -322,17 +324,32 @@ do
 done
 
 
+
+# 运行环境匹配for Hook
+if [[ -n ${HOOK_GAN_ENV} ]] && [[ ${HOOK_GAN_ENV} != ${RUN_ENV} ]]; then
+    echo -e "\n猪猪侠警告：运行环境不匹配，跳过（这是正常情况）\n"
+    exit
+fi
+
+
+
 # 用户信息
-# if sudo -i 取${SUDO_USER}；
-# if sudo cmd 取${LOGNAME}
-LOGIN_USER_NAME=${SUDO_USER:-"${LOGNAME}"}
-F_USER_SEARCH ${LOGIN_USER_NAME} > /dev/null
-if [ $? -eq 0 ]; then
-    R=`F_USER_SEARCH ${LOGIN_USER_NAME}`
-    export MY_XINGMING=`echo $R | cut -d ' ' -f 1`
-    export MY_EMAIL=${MY_EMAIL:-"`echo $R | cut -d ' ' -f 2`"}
+if [[ -n ${HOOK_USER} ]]; then
+    MY_USER_NAME=${HOOK_USER}
 else
-    export MY_XINGMING='X-Man'
+    # if sudo -i 取${SUDO_USER}；
+    # if sudo cmd 取${LOGNAME}
+    MY_USER_NAME=${SUDO_USER:-"${LOGNAME}"}
+fi
+export MY_USER_NAME
+#
+F_USER_SEARCH ${MY_USER_NAME} > /dev/null
+if [ $? -eq 0 ]; then
+    R=`F_USER_SEARCH ${MY_USER_NAME}`
+    export MY_EMAIL=${MY_EMAIL:-"`echo $R | cut -d ' ' -f 2`"}
+    MY_XINGMING=`echo $R | cut -d ' ' -f 1`
+else
+    MY_XINGMING='X-Man'
 fi
 
 

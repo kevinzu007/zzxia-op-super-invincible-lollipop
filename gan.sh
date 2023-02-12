@@ -9,7 +9,7 @@ F_HELP()
     注意：在deploy节点上运行，需要一堆关联脚本
     用法:
         $0 [-h|--help]    #--- 帮助
-        $0 [-d|--do web|ngx-root|ngx-conf|cert|cert-w|pg-b-r|aliyun-dns|godaddy-dns]  <参数1> ... <参数n>     #--- 参数1...n 是 \$1 模块的参数
+        $0 [-d|--do build|build-para|gogogo|deploy|deploy-docker|deploy-web|ngx-dns|ngx-root|ngx-conf|ngx-cert|ngx-cert-w|pg-b-r|aliyun-dns|godaddy-dns]  <参数1> ... <参数n>     #--- 参数1...n 是 \$1 模块的参数
     参数说明：
         \$0   : 代表脚本本身
         []   : 代表是必选项
@@ -23,8 +23,9 @@ F_HELP()
                        - build        【build.sh】：项目打包
                        - build-para   【build-parallel.sh】：并行项目打包
                        - gogogo       【gogogo.sh】：项目打包并部署上线
-                       - docker       【docker-cluster-service-deploy.sh】：docker服务部署上线、回滚
-                       - web          【web-release.sh】：网站代码部署上线、回滚
+                       - deploy       【deploy.sh】：服务部署上线、回滚
+                       - deploy-docker【docker-cluster-service-deploy.sh】：docker服务部署上线、回滚
+                       - deploy-web   【web-release.sh】：网站代码部署上线、回滚
                        - ngx-dns      【nginx-dns.sh】：网站域名A记录添加或修改
                        - ngx-root     【nginx-root.sh】：网站root目录初始化
                        - ngx-conf     【nginx-conf.sh】：网站nginx配置设置
@@ -36,9 +37,9 @@ F_HELP()
     示例:
         #
         $0  -h
-        $0  -d web  -h                 #--- 运行web-release.sh命令帮助
-        $0  -d web  -r                 #--- 运行web-release.sh命令，发布所有前端项目
-        $0  -d web  -r  项目a 项目b    #--- 运行web-release.sh命令，发布所有前端【项目a、项目b】
+        $0  -d deploy-web  -h                 #--- 运行web-release.sh命令帮助
+        $0  -d deploy-web  -r                 #--- 运行web-release.sh命令，发布所有前端项目
+        $0  -d deploy-web  -r  项目a 项目b    #--- 运行web-release.sh命令，发布所有前端【项目a、项目b】
     "
 }
 
@@ -97,10 +98,13 @@ case "${DO}" in
     "gogogo")
         bash ${SH_PATH}/deploy/gogogo.sh  ${CMD_ARG}
         ;;
-    "docker")
+    "deploy")
+        bash ${SH_PATH}/deploy/deploy.sh  ${CMD_ARG}
+        ;;
+    "deploy-docker")
         bash ${SH_PATH}/deploy/docker-cluster-service-deploy.sh  ${CMD_ARG}
         ;;
-    "web")
+    "deploy-web")
         bash ${SH_PATH}/deploy/web-release.sh  ${CMD_ARG}
         ;;
     "ngx-dns")
