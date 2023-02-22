@@ -19,7 +19,7 @@ DOMAIN=${DOMAIN:-"xxx.lan"}
 . ${SH_PATH}/deploy.env
 DINGDING_API=${DINGDING_API:-"请定义"}
 BUILD_SKIP_TEST=${BUILD_SKIP_TEST:-'NO'}  #--- 跳过测试（YES|NO）
-#USER_DB=
+#USER_DB_FILE=
 
 # 本地env
 export TIME=`date +%Y-%m-%dT%H:%M:%S`
@@ -346,7 +346,7 @@ F_USER_SEARCH()
             echo "${CURRENT_USER_XINGMING} ${CURRENT_USER_EMAIL}"
             return 0
         fi
-    done < "${USER_DB}"
+    done < "${USER_DB_FILE}"
     return 1
 }
 

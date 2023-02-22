@@ -1,11 +1,8 @@
 ## 用户信息及安全码清单
-### 6 密码  : sha1(用户名+用户口令+盐)，截取32位
-###           口令：用户自己指定
-###           盐  ：所有用户一样（我这里是ZZXia）
 ## 
-#| USER_ID | USER_NAME     | USER_XINGMING | USER_EMAIL               | SECRET                           |
-#| 用户ID  | 用户名        | 姓名          | E-MAIL                   | 密码                             |
-#| ------- | ------------- | ------------- | ------------------------ | -------------------------------- |
-| 1        | kevin         | 猪猪侠        | zhu@gc.com               | 62062998434f08cdd1a0f39366a179ab |
-| 2        | wang          | 王            | wang@gc.com              | ce59d94ebbdba55be0178373568c89c5 |
+#| USER_ID | USER_NAME     | USER_XINGMING | USER_EMAIL               | USER_SALT  | USER_SECRET                                        |
+#| 用户ID  | 用户名        | 姓名          | E-MAIL                   | 盐         | 密码                                               |
+#| ------- | ------------- | ------------- | ------------------------ | ---------- | -------------------------------------------------- |
+| 1        | kevin         | 猪猪侠        | zhu@gc.com               | de6dfccccd | de6227a2e0e83e05ce7503f2d1110c86b5857bf790343b6a92 |
+| 2        | wang          | 王            | wang@gc.com              | de6dw33fff | 33333332e0e83e05ce7503f2d1110c86b5857bf790343b6a92 |
 

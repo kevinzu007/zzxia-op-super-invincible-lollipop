@@ -14,7 +14,7 @@ cd "${SH_PATH}"
 # 引入env
 . ${SH_PATH}/deploy.env
 DINGDING_API=${DINGDING_API:-"请定义"}
-#USER_DB=
+#USER_DB_FILE=
 
 # 本地env
 TIME=${TIME:-`date +%Y-%m-%dT%H:%M:%S`}
@@ -174,7 +174,7 @@ F_USER_SEARCH()
             echo "${CURRENT_USER_XINGMING} ${CURRENT_USER_EMAIL}"
             return 0
         fi
-    done < "${USER_DB}"
+    done < "${USER_DB_FILE}"
     return 1
 }
 

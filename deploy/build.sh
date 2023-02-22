@@ -18,7 +18,7 @@ DOMAIN=${DOMAIN:-"xxx.lan"}
 # 引入env
 . "${SH_PATH}/deploy.env"
 DINGDING_API=${DINGDING_API:-"请定义"}
-#USER_DB=
+#USER_DB_FILE=
 ERROR_EXIT=${ERROR_EXIT:-'NO'}                    #--- 出错立即退出
 BUILD_SKIP_TEST=${BUILD_SKIP_TEST:-'NO'}          #--- 跳过测试
 BUILD_CODE_VERIFY=${BUILD_CODE_VERIFY:-'NONE'}    #--- BUILD_CODE_VERIFY="sonarQube"
@@ -1023,7 +1023,7 @@ F_USER_SEARCH()
             echo "${CURRENT_USER_XINGMING} ${CURRENT_USER_EMAIL}"
             return 0
         fi
-    done < "${USER_DB}"
+    done < "${USER_DB_FILE}"
     return 3
 }
 

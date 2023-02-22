@@ -14,7 +14,7 @@ cd ${SH_PATH}
 # 引入env
 . ${SH_PATH}/deploy.env
 #DINGDING_API=
-#USER_DB=
+#USER_DB_FILE=
 #CONTAINER_ENVS_PUB_FILE=
 #NETWORK_SWARM=
 #NETWORK_COMPOSE=
@@ -467,7 +467,7 @@ F_USER_SEARCH()
             echo "${CURRENT_USER_XINGMING} ${CURRENT_USER_EMAIL}"
             return 0
         fi
-    done < "${USER_DB}"
+    done < "${USER_DB_FILE}"
     return 3
 }
 
