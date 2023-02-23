@@ -1,5 +1,23 @@
 #!/bin/bash
 
+
+# sh
+SH_NAME=${0##*/}
+SH_PATH=$( cd "$( dirname "$0" )" && pwd )
+cd ${SH_PATH}
+
+
+# 引入env
+.  ./gitlab-backup.sh.env
+
+
+# env
+YEAR=`date +%Y`
+TIME_START=`date +%Y-%m-%dT%H:%M:%S`
+DINGDING_MARKDOWN_PY='/usr/local/bin/dingding_conver_to_markdown_list.py'
+
+
+
 # 时间差计算函数
 F_TimeDiff ()
 {
@@ -28,17 +46,16 @@ F_TimeDiff ()
 }
 
 
-BACKUP_DIR='/var/opt/gitlab/backups'
-BACKUP_REMOTE_DIR='/oss/backup/gitlab'
-YEAR=`date +%Y`
-TIME_START=`date +%Y-%m-%dT%H:%M:%S`
+echo '#######################################################'
 date
+echo '#######################################################'
+
 
 # backup
-/opt/gitlab/bin/gitlab-rake gitlab:backup:create
+${BACKUP_CMD}
 if [ $? != 0 ]; then
     echo  "gitlab备份：gitlab:backup:create备份出错，请检查！"
-    /usr/local/bin/dingding_conver_to_markdown_list.py  "【Error:备份:gitlab】" "gitlab备份：gitlab:backup:create备份出错，请检查！"
+    ${DINGDING_MARKDOWN_PY}  "【Error:备份:gitlab】" "gitlab备份：gitlab:backup:create备份出错，请检查！"
     exit 1
 fi
 FILE_NAME=$(ls ${BACKUP_DIR} | grep "`date +%Y_%m_%d`" | sed -n '$p')
@@ -48,7 +65,7 @@ FILE_NAME=$(ls ${BACKUP_DIR} | grep "`date +%Y_%m_%d`" | sed -n '$p')
 df -h | grep ossfs > /dev/null 2>&1
 if [ $? != 0 ]; then
     echo "gitlab备份：ossfs没有挂载，请检查！"
-    /usr/local/bin/dingding_conver_to_markdown_list.py  "【Error:备份:gitlab】"  "gitlab备份：ossfs没有挂载，请检查！"
+    ${DINGDING_MARKDOWN_PY}  "【Error:备份:gitlab】"  "gitlab备份：ossfs没有挂载，请检查！"
     exit
 fi
 
@@ -63,7 +80,7 @@ date
 cp ${BACKUP_DIR}/${FILE_NAME} ${BACKUP_REMOTE_DIR}/${YEAR}/
 if [ $? != 0 ]; then
     echo "gitlab备份：备份文件拷贝到ossfs不成功，请检查！"
-    /usr/local/bin/dingding_conver_to_markdown_list.py  "【Error:备份:gitlab】"  "gitlab备份：备份文件拷贝到ossfs不成功，请检查！"
+    ${DINGDING_MARKDOWN_PY}  "【Error:备份:gitlab】"  "gitlab备份：备份文件拷贝到ossfs不成功，请检查！"
     exit
 fi
 date
@@ -74,7 +91,7 @@ TIME_COST=`F_TimeDiff "${TIME_START}" "${TIME_END}"`
 
 # 每周一发通知
 if [ `date +%w` = 1 ]; then
-    /usr/local/bin/dingding_conver_to_markdown_list.py  "【Info:备份:gitlab】"  "gitlab备份：成功！ ${TIME_COST}"
+    ${DINGDING_MARKDOWN_PY}  "【Info:备份:gitlab】"  "gitlab备份：成功！ ${TIME_COST}"
 fi
 
 
