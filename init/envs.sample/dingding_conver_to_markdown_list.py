@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # encoding: utf-8
 #############################################################################
 # Create By: 猪猪侠
@@ -66,23 +66,13 @@ def msg(a):
     #json_text= {"msgtype": "markdown", "markdown": {"title": "aa", "text": "### 天龙盖地虎\n @18620021887\n\n- bb\n\n- cc"}, "at": {"atMobiles":  ["18620021887"], "isAtAll": False}}
     #json_text= {'msgtype': 'markdown', 'markdown': {'title': 'aa', 'text': '### 天龙盖地虎\n @18620021887\n\n- bb\n\n- cc'}, 'at': {'atMobiles':  ['18620021887'], 'isAtAll': False}}
 
-
-    #print  json_text
-    #json_text = json_text.replace('\"', '\'')
-
     # http://www.pythoner.com/56.html
-    #exec """print "json_text=" , json_text"""
     # https://blog.csdn.net/wangato/article/details/71104173
     json_text= eval(json_text)
-    #print json_text
 
-    print requests.post(api_url,json.dumps(json_text),headers=headers).content
+    print(requests.post(api_url,json.dumps(json_text),headers=headers).content)
 
 if __name__ == '__main__':
-    #print '参数个数: ' , len(sys.argv)  ##参数个数
-    #print '参数数组: ' , sys.argv  ###参数数组
-    #print sys.argv[0] ##脚本名
-    #print sys.argv[1] ## 第一个参数
 
 #    tt1 = sys.argv[1]
 #    tt2 = sys.argv[2]

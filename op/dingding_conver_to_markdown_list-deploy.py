@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # encoding: utf-8
 #############################################################################
 # Create By: 猪猪侠
@@ -61,7 +61,7 @@ def msg(a):
     # https://blog.csdn.net/wangato/article/details/71104173
     json_text= eval(json_text)
 
-    print requests.post(api_url,json.dumps(json_text),headers=headers).content
+    print(requests.post(api_url,json.dumps(json_text),headers=headers).content)
 
 if __name__ == '__main__':
     msg(sys.argv)
