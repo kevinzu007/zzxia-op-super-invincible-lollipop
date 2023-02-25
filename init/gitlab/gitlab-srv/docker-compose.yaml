@@ -1,0 +1,27 @@
+# 官方参考：https://docs.gitlab.com/ee/install/docker.html
+# 升级参考：https://blog.51cto.com/droptoking/5058134
+# 注意：gitlab.rb和gitlab-secrets.json文件包含敏感数据，不会包含在备份文件中，您需要手动备份，这对于备份恢复很重要。
+
+version: '3'
+services:
+  gitlab-srv:
+    image: gitlab/gitlab-ce:13.12.15-ce.0
+    restart: always
+    hostname: g.zjlh.lan
+    environment:
+      TZ: "Asia/Shanghai"
+      GITLAB_OMNIBUS_CONFIG: |
+        # 将/etc/gitlab.rb中需要的参数直接写在这里
+        external_url 'http://g.zjlh.lan'
+        gitlab_rails['time_zone'] = 'PRC'
+    volumes:
+      - ./conf/gitlab/etc:/etc/gitlab
+      - ./data/gitlab/data:/var/opt/gitlab
+      - ./data/gitlab/log:/var/log/gitlab
+    ports:
+      - "22:22"
+      - "80:80"
+      - "443:443"
+    shm_size: 256M
+    privileged: true
+
