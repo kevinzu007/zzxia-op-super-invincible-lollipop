@@ -580,10 +580,12 @@ if __name__ == '__main__':
 x = '{"Status": "Error", "Message": "请提供登录信息"}'
 y = {"Status": "Error", "Message": "请提供登录信息"}
 
-# 对于【x】，需要使用【json.loads】格式化，例如： 
-xx = json.loads(y)
+# 对于【x】，需要先使用【json.loads】格式化，例如： 
+xx = json.loads(x)
+xxx = xx["Status"]
 xxx = extract_element_from_json(xx, ["Status"])[0]
 # 对于【y】，不需要需要使用【json.loads】格式化，例如：
+yyy = y["Status"]
 yyy = extract_element_from_json(y, ["Status"])[0]
 
  """
