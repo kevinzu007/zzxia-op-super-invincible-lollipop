@@ -75,15 +75,16 @@ fi
 
 
 # cp
-echo "cp ${BACKUP_DIR}/${FILE_NAME} ${BACKUP_REMOTE_DIR}/${YEAR}/"
-date
+echo "正在执行：cp ${BACKUP_DIR}/${FILE_NAME} ${BACKUP_REMOTE_DIR}/${YEAR}/"
+echo "`date` ，请等待........"
 cp ${BACKUP_DIR}/${FILE_NAME} ${BACKUP_REMOTE_DIR}/${YEAR}/
 if [ $? != 0 ]; then
     echo "gitlab备份：备份文件拷贝到ossfs不成功，请检查！"
     ${DINGDING_MARKDOWN_PY}  "【Error:备份:gitlab】"  "gitlab备份：备份文件拷贝到ossfs不成功，请检查！"
     exit
 fi
-date
+echo "`date` ，OK"
+
 
 
 TIME_END=`date +%Y-%m-%dT%H:%M:%S`
