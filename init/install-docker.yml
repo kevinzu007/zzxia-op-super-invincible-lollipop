@@ -1,6 +1,6 @@
 
 # docker
-- hosts: deploy,swarm,k8s,repo_docker,repo_nexus,efk,redis,rabbitmq,neo4j
+- hosts: deploy,swarm,k8s,repo_docker,repo_nexus,efk,redis,rabbitmq,neo4j,nacos_db
   become: yes
   tasks:
     - name: docker install
