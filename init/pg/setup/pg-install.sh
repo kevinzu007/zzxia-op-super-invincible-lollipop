@@ -83,7 +83,7 @@ make install
 cd  ../pg_stat_statements
 make
 make install
-cd ../
+cd ../../
 set +e
 
 
