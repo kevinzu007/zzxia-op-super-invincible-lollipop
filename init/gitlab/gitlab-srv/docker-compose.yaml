@@ -13,7 +13,7 @@ services:
       GITLAB_OMNIBUS_CONFIG: |
         # 将/etc/gitlab.rb中需要的参数直接写在这里
         external_url 'http://g.zjlh.lan'
-        gitlab_rails['time_zone'] = 'PRC'
+        gitlab_rails['time_zone'] = 'Asia/Shanghai'
     volumes:
       - ./conf/gitlab/etc:/etc/gitlab
       - ./data/gitlab/data:/var/opt/gitlab
