@@ -2,8 +2,27 @@
 
 
 # 镜像名称与版本
-IMAGE_NAME=nacos/nacos-server
+IMAGE_SERVER=''
+NAME_SPACE=apache
+IMAGE_NAME=nacos-server
 VER=v2.1.2
+
+
+# 命名空间
+if [[ -n ${NAME_SPACE} ]]; then
+    IMAGE_NAME="${NAME_SPACE}/${IMAGE_NAME}"
+fi
+
+# 镜像服务器
+if [[ -n ${IMAGE_SERVER} ]]; then
+    IMAGE_NAME="${IMAGE_SERVER}/${IMAGE_NAME}"
+fi
+
+# 版本
+if [[ -z ${VER} ]]; then
+    VER=latest
+fi
+
 
 
 # pull、tag
