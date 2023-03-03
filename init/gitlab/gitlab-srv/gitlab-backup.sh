@@ -47,6 +47,7 @@ F_TimeDiff ()
 
 
 echo '#######################################################'
+echo "开始备份"
 date
 echo '#######################################################'
 
@@ -58,7 +59,14 @@ if [ $? != 0 ]; then
     ${DINGDING_MARKDOWN_PY}  "【Error:备份:gitlab】" "gitlab备份：gitlab:backup:create备份出错，请检查！"
     exit 1
 fi
+
 FILE_NAME=$(ls ${BACKUP_DIR} | grep "`date +%Y_%m_%d`" | sed -n '$p')
+if [[ -z ${FILE_NAME} ]]; then
+    echo  "gitlab备份：gitlab:backup:create备份出错，文件为空，请检查！"
+    ${DINGDING_MARKDOWN_PY}  "【Error:备份:gitlab】" "gitlab备份：gitlab:backup:create备份出错
+，文件为空，请检查！"
+    exit 2
+fi
 
 
 # 检查oss
@@ -78,11 +86,13 @@ fi
 echo "正在执行：cp ${BACKUP_DIR}/${FILE_NAME} ${BACKUP_REMOTE_DIR}/${YEAR}/"
 echo "`date` ，请等待........"
 cp ${BACKUP_DIR}/${FILE_NAME} ${BACKUP_REMOTE_DIR}/${YEAR}/
+
 if [ $? != 0 ]; then
-    echo "gitlab备份：备份文件拷贝到ossfs不成功，请检查！"
-    ${DINGDING_MARKDOWN_PY}  "【Error:备份:gitlab】"  "gitlab备份：备份文件拷贝到ossfs不成功，请检查！"
-    exit
+    echo "gitlab备份：备份文件拷贝不成功，请检查！"
+    ${DINGDING_MARKDOWN_PY}  "【Error:备份:gitlab】"  "gitlab备份：备份文件拷贝不成功，请检查！"
+    exit 3
 fi
+
 echo "`date` ，OK"
 
 
