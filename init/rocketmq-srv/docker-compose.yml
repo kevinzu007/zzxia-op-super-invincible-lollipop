@@ -1,0 +1,72 @@
+# 参考：https://github.com/apache/rocketmq-docker.git
+#
+version: '2'
+services:
+  #Service for nameserver
+  namesrv:
+    image: apache/rocketmq:4.9.3
+    #container_name: rmqnamesrv
+    ports:
+      - 9876:9876
+    volumes:
+      - ./data/namesrv/logs:/home/rocketmq/logs
+    command: sh mqnamesrv
+    networks:
+      - rmq
+
+  #Service for broker-a
+  broker-a0:
+    image: apache/rocketmq:4.9.3
+    #container_name: rmqbroker-a0
+    depends_on:
+      - namesrv
+    #links:
+    #  - namesrv
+    ports:
+      - 10909:10909
+      - 10911:10911
+      - 10912:10912
+    environment:
+      - NAMESRV_ADDR=namesrv:9876
+    volumes:
+      - ./data/broker-a0/logs:/root/rocketmq/logs
+      - ./data/broker-a0/store:/root/rocketmq/store
+      - ./conf/broker-a0/broker.conf:/opt/rocketmq-4.9.3/conf/broker.conf
+    command: sh mqbroker -c /opt/rocketmq-4.9.3/conf/broker.conf
+    networks:
+      - rmq
+
+#  #Service for broker-b （另一个broker群）
+#  broker-b0:
+#    image: apache/rocketmq:4.9.3
+#    #container_name: rmqbroker-b0
+#    links:
+#      - namesrv
+#    ports:
+#      - 10929:10909
+#      - 10931:10911
+#      - 10932:10912
+#    environment:
+#      - NAMESRV_ADDR=namesrv:9876
+#    volumes:
+#      - ./data/broker-b0/logs:/home/rocketmq/logs
+#      - ./data/broker-b0/store:/home/rocketmq/store
+#      - ./conf/broker-b0/broker.conf:/opt/rocketmq-4.9.3/conf/broker.conf
+#    command: sh mqbroker -c /opt/rocketmq-4.9.3/conf/broker.conf
+
+  rmq-console:
+    image: styletang/rocketmq-console-ng:1.0.0
+    ports: 
+      - 9080:8080
+    environment:
+      JAVA_OPTS: "-Drocketmq.namesrv.addr=namesrv:9876 -Dcom.rocketmq.sendMessageWithVIPChannel=false"
+    depends_on:
+      - namesrv
+    networks:
+      - rmq
+
+networks:
+  rmq:
+    driver: bridge
+
+
