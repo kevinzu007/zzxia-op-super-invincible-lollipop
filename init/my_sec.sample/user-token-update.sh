@@ -22,9 +22,9 @@ if [[ ! -f ${USER_DB_FILE} ]]; then
     echo -e  "\n猪猪侠警告：USER_DB_FILE 文件不存在，请先参考模板创建！\n"
 fi
 #
-#if [[ ! -f ${USER_TOKEN_FILE} ]]; then
-#    echo -e  "\n猪猪侠警告：USER_TOKEN_FILE 文件不存在，请先参考模板创建！\n"
-#fi
+if [[ ! -f ${USER_TOKEN_FILE} ]]; then
+    touch  ${USER_TOKEN_FILE}
+fi
 
 
 
