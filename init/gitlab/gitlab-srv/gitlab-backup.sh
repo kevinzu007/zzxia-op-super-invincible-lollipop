@@ -60,8 +60,9 @@ if [ $? != 0 ]; then
     exit 1
 fi
 
-FILE_NAME=$(ls ${BACKUP_DIR} | grep "`date +%Y_%m_%d`" | sed -n '$p')
-if [[ -z ${FILE_NAME} ]]; then
+#THIS_BACKUP_FILE=$(ls ${BACKUP_DIR} | grep "`date +%Y_%m_%d`" | sed -n '$p')
+THIS_BACKUP_FILE=$(find  ${BACKUP_DIR}  -maxdepth 1  -type f  -size +2G  -mtime 0 | head -n 1)
+if [[ -z ${THIS_BACKUP_FILE} ]]; then
     echo  "gitlab备份：gitlab:backup:create备份出错，文件为空，请检查！"
     ${DINGDING_MARKDOWN_PY}  "【Error:备份:gitlab】" "gitlab备份：gitlab:backup:create备份出错
 ，文件为空，请检查！"
@@ -83,9 +84,9 @@ fi
 
 
 # cp
-echo "正在执行：cp ${BACKUP_DIR}/${FILE_NAME} ${BACKUP_REMOTE_DIR}/${YEAR}/"
+echo "正在执行：cp  ${THIS_BACKUP_FILE}  ${BACKUP_REMOTE_DIR}/${YEAR}/"
 echo "`date` ，请等待........"
-cp ${BACKUP_DIR}/${FILE_NAME} ${BACKUP_REMOTE_DIR}/${YEAR}/
+cp  ${THIS_BACKUP_FILE}  ${BACKUP_REMOTE_DIR}/${YEAR}/
 
 if [ $? != 0 ]; then
     echo "gitlab备份：备份文件拷贝不成功，请检查！"

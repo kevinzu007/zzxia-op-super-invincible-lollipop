@@ -14,6 +14,8 @@ services:
         # 将/etc/gitlab.rb中需要的参数直接写在这里
         external_url 'http://g.zjlh.lan'
         gitlab_rails['time_zone'] = 'Asia/Shanghai'
+        gitlab_rails['backup_path'] = "/var/opt/gitlab/backups"
+        gitlab_rails['backup_keep_time'] = 86400
     volumes:
       - ./conf/gitlab/etc:/etc/gitlab
       - ./data/gitlab/data:/var/opt/gitlab
