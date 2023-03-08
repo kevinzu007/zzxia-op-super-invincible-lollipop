@@ -17,6 +17,7 @@ DOMAIN=${DOMAIN:-"xxx.lan"}
 
 # 引入env
 . "${SH_PATH}/deploy.env"
+GAN_PLATFORM_NAME="${GAN_PLATFORM_NAME:-'超甜B&D系统'}"
 DINGDING_API=${DINGDING_API:-"请定义"}
 #USER_DB_FILE=
 ERROR_EXIT=${ERROR_EXIT:-'NO'}                    #--- 出错立即退出
@@ -25,6 +26,7 @@ BUILD_CODE_VERIFY=${BUILD_CODE_VERIFY:-'NONE'}    #--- BUILD_CODE_VERIFY="sonarQ
 NPM_BIN=${NPM_BIN:-'npm'}                         #--- 可选 npm|cnpm
 
 # 本地env
+GAN_WHAT_FUCK='Build'
 TIME=${TIME:-`date +%Y-%m-%dT%H:%M:%S`}
 TIME_START=${TIME}
 DATE_TIME=`date -d "${TIME}" +%Y%m%dT%H%M%S`
@@ -294,7 +296,7 @@ ERR_SHOW()
         MESSAGE_ERR="【${PJ}】build 出错了，请检查！ 代码分支：${GIT_BRANCH}。将继续构建后续项目！"
     fi
     echo -e "${ECHO_ERROR}${MESSAGE_ERR}${ECHO_CLOSE}"
-    ${DINGDING_MARKDOWN_PY}  "*** Error:Build:${RUN_ENV} ***" "${MESSAGE_ERR}" > /dev/null
+    ${DINGDING_MARKDOWN_PY}  "*** Error:${GAN_PLATFORM_NAME}:${GAN_WHAT_FUCK} ***" "${MESSAGE_ERR}" > /dev/null
 }
 
 
@@ -1215,7 +1217,7 @@ else
         F_FIND_PROJECT "${THIS_LANGUAGE_CATEGORY}" >> ${PROJECT_LIST_FILE_TMP}
         if [[ $? -ne 0 ]]; then
             echo -e "\n猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！\n"
-            ${DINGDING_MARKDOWN_PY}  "【Info:Build:${RUN_ENV}】" "猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！" > /dev/null
+            ${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${GAN_WHAT_FUCK}】" "猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！" > /dev/null
             exit 51
         fi
     else
@@ -1226,7 +1228,7 @@ else
             F_FIND_PROJECT "${THIS_LANGUAGE_CATEGORY}" "$i" >> ${PROJECT_LIST_FILE_TMP}
             if [[ $? -ne 0 ]]; then
                 echo -e "\n猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目【$i】，请检查！\n"
-                ${DINGDING_MARKDOWN_PY}  "【Info:Build:${RUN_ENV}】" "猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目【$i】，请检查！" > /dev/null
+                ${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${GAN_WHAT_FUCK}】" "猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目【$i】，请检查！" > /dev/null
                 exit 51
             fi
         done
@@ -1334,7 +1336,7 @@ do
     if [ $? -eq 0 ]; then
         echo "${PJ} : 失败，其他用户正在构建中 : x" >> ${BUILD_OK_LIST_FILE}
         echo -e "${ECHO_ERROR}失败，其他用户正在构建中${ECHO_CLOSE}"
-        ${DINGDING_MARKDOWN_PY}  "*** Error:Build:${RUN_ENV} ***" "【${PJ}】失败，其他用户正在构建中" > /dev/null
+        ${DINGDING_MARKDOWN_PY}  "*** Error:${GAN_PLATFORM_NAME}:${GAN_WHAT_FUCK} ***" "【${PJ}】失败，其他用户正在构建中" > /dev/null
         [ "x${ERROR_EXIT}" = 'xYES' ] && break
         ERROR_CODE=53
         continue
@@ -1494,6 +1496,7 @@ case ${SH_RUN_MODE} in
         MESSAGE_END="项目构建已完成！共企图构建${BUILD_CHECK_COUNT}个项目，成功构建${BUILD_SUCCESS_COUNT}个项目，${BUILD_NOCHANGE_COUNT}个项目无更新，${BUILD_NOTNEED_COUNT}个项目无需构建，${BUILD_ERROR_COUNT}个项目出错。"
         # 消息回显拼接
         > ${BUILD_HISTORY_CURRENT_FILE}
+        echo "干    啥：**${GAN_WHAT_FUCK}**" | tee -a ${BUILD_HISTORY_CURRENT_FILE}
         echo "======== 构建报告 ========" >> ${BUILD_HISTORY_CURRENT_FILE}
         echo -e "${ECHO_REPORT}========================= 构建报告 ==========================${ECHO_CLOSE}"    #--- 60 (60-50-40)
         #
@@ -1530,7 +1533,7 @@ case ${SH_RUN_MODE} in
             #echo ${MSG[$t]}
             let  t=$t+1
         done < ${BUILD_HISTORY_CURRENT_FILE}
-        ${DINGDING_MARKDOWN_PY}  "【Info:Build:${RUN_ENV}】" "${MSG[@]}" > /dev/null
+        ${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${GAN_WHAT_FUCK}】" "${MSG[@]}" > /dev/null
         exit 0
         ;;
     function)

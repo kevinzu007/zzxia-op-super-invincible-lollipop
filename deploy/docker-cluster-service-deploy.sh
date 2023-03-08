@@ -13,6 +13,7 @@ cd ${SH_PATH}
 
 # 引入env
 . ${SH_PATH}/deploy.env
+GAN_PLATFORM_NAME="${GAN_PLATFORM_NAME:-'超甜B&D系统'}"
 #DINGDING_API=
 #USER_DB_FILE=
 #CONTAINER_ENVS_PUB_FILE=
@@ -26,6 +27,7 @@ cd ${SH_PATH}
 #DOCKER_REPO_SECRET_NAME=
 
 # 本地env
+GAN_WHAT_FUCK='D_Deploy'
 TIME=${TIME:-`date +%Y-%m-%dT%H:%M:%S`}
 TIME_START=${TIME}
 DATE_TIME=`date -d "${TIME}" +%Y%m%dT%H%M%S`
@@ -2557,6 +2559,7 @@ case ${SH_RUN_MODE} in
         MESSAGE_END="DOCKER SERVICE ${SERVICE_OPERATION} 已完成！ 共企图 ${SERVICE_OPERATION} ${CHECK_COUNT} 个项目，成功 ${SERVICE_OPERATION} ${SUCCESS_COUNT} 个项目，跳过 ${NONEED_COUNT} 个项目，${ERROR_COUNT} 个项目失败。"
         # 消息回显拼接
         > ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
+        echo "干    啥：**${GAN_WHAT_FUCK}**" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         echo "== DOCKER SERVICE ${SERVICE_OPERATION} 报告 ==" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         echo -e "${ECHO_REPORT}==================== DOCKER SERVICE ${SERVICE_OPERATION} 报告 ====================${ECHO_CLOSE}"
         #
@@ -2592,7 +2595,7 @@ case ${SH_RUN_MODE} in
             #echo ${MSG[$t]}
             let  t=$t+1
         done < ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
-        ${DINGDING_MARKDOWN_PY}  "【Info:Deploy:${RUN_ENV}】" "${MSG[@]}" > /dev/null
+        ${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${GAN_WHAT_FUCK}】" "${MSG[@]}" > /dev/null
         ;;
     function)
         #

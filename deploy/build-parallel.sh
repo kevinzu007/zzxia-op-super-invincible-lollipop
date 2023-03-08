@@ -17,11 +17,13 @@ DOMAIN=${DOMAIN:-"xxx.lan"}
 
 # 引入env
 . ${SH_PATH}/deploy.env
+GAN_PLATFORM_NAME="${GAN_PLATFORM_NAME:-'超甜B&D系统'}"
 DINGDING_API=${DINGDING_API:-"请定义"}
 BUILD_SKIP_TEST=${BUILD_SKIP_TEST:-'NO'}  #--- 跳过测试
 #USER_DB_FILE=
 
 # 本地env
+GAN_WHAT_FUCK='P_Build'
 export TIME=`date +%Y-%m-%dT%H:%M:%S`
 TIME_START=${TIME}
 DATE_TIME=`date -d "${TIME}" +%Y%m%dT%H%M%S`
@@ -410,7 +412,7 @@ else
         F_FIND_PROJECT ${THIS_LANGUAGE_CATEGORY} >> ${PARA_PROJECT_LIST_FILE_TMP}
         if [[ $? -ne 0 ]]; then
             echo -e "\n猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！\n"
-            ${DINGDING_MARKDOWN_PY}  "【Info:Build:${RUN_ENV}】" "猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！" > /dev/null
+            ${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${GAN_WHAT_FUCK}】" "猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！" > /dev/null
             exit 51
         fi
     else
@@ -420,7 +422,7 @@ else
             F_FIND_PROJECT ${THIS_LANGUAGE_CATEGORY} $i >> ${PARA_PROJECT_LIST_FILE_TMP}
             if [[ $? -ne 0 ]]; then
                 echo -e "\n猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目【$i】，请检查！\n"
-                ${DINGDING_MARKDOWN_PY}  "【Info:Build:${RUN_ENV}】" "猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目【$i】，请检查！" > /dev/null
+                ${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${GAN_WHAT_FUCK}】" "猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目【$i】，请检查！" > /dev/null
                 exit 51
             fi
         done
@@ -545,6 +547,7 @@ TIME_END=`date +%Y-%m-%dT%H:%M:%S`
 MESSAGE_END="项目构建已完成！ 共企图构建${BUILD_CHECK_COUNT}个项目，成功构建${BUILD_SUCCESS_COUNT}个项目，${BUILD_NOCHANGE_COUNT}个项目无更新，${BUILD_NOTNEED_COUNT}个项目无需构建，${BUILD_ERROR_COUNT}个项目出错。"
 # 消息回显拼接
 >  ${PARA_BUILD_HISTORY_CURRENT_FILE}
+echo "干    啥：**${GAN_WHAT_FUCK}**" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
 echo "====== 并行构建报告 ======" >> ${PARA_BUILD_HISTORY_CURRENT_FILE}
 echo -e "${ECHO_REPORT}################################# 并行构建报告 #################################${ECHO_CLOSE}"    #--- 80 (80-70-60)
 #
@@ -583,7 +586,7 @@ do
     #echo ${MSG[$t]}
     let  t=$t+1
 done < ${PARA_BUILD_HISTORY_CURRENT_FILE}
-${DINGDING_MARKDOWN_PY}  "【Info:Build:${RUN_ENV}】" "${MSG[@]}" > /dev/null
+${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${GAN_WHAT_FUCK}】" "${MSG[@]}" > /dev/null
 
 
 
