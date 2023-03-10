@@ -18,6 +18,7 @@ DOMAIN=${DOMAIN:-"xxx.lan"}
 # 引入env
 . ${SH_PATH}/deploy.env
 GAN_PLATFORM_NAME="${GAN_PLATFORM_NAME:-'超甜B&D系统'}"
+BUILD_LOG_WEBSITE_DOMAIN_A=${BUILD_LOG_WEBSITE_DOMAIN_A:-"build-log"}         #--- 这个需要与【nginx.list】中【项目名】为【build-log】的【域名A记录】保持一致
 DINGDING_API=${DINGDING_API:-"请定义"}
 BUILD_SKIP_TEST=${BUILD_SKIP_TEST:-'NO'}  #--- 跳过测试
 #USER_DB_FILE=
@@ -54,11 +55,10 @@ export HOOK_USER=${HOOK_USER:-''}
 # 公共
 FUCK_HISTORY_FILE="${SH_PATH}/db/fuck.history"
 # LOG_DOWNLOAD_SERVER
-BUILD_LOG_PJ_NAME="build-log"
 if [ "x${RUN_ENV}" = "xprod" ]; then
-    LOG_DOWNLOAD_SERVER="https://${BUILD_LOG_PJ_NAME}.${DOMAIN}"
+    LOG_DOWNLOAD_SERVER="https://${BUILD_LOG_WEBSITE_DOMAIN_A}.${DOMAIN}"
 else
-    LOG_DOWNLOAD_SERVER="https://${RUN_ENV}-${BUILD_LOG_PJ_NAME}.${DOMAIN}"
+    LOG_DOWNLOAD_SERVER="https://${RUN_ENV}-${BUILD_LOG_WEBSITE_DOMAIN_A}.${DOMAIN}"
 fi
 # sh
 BUILD_SH="${SH_PATH}/build.sh"
