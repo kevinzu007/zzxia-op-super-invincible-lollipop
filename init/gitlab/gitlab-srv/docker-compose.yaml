@@ -17,6 +17,7 @@ services:
         gitlab_rails['backup_path'] = "/var/opt/gitlab/backups"
         gitlab_rails['backup_keep_time'] = 86400
     volumes:
+      - /etc/localtime:/etc/localtime
       - ./conf/gitlab/etc:/etc/gitlab
       - ./data/gitlab/data:/var/opt/gitlab
       - ./data/gitlab/log:/var/log/gitlab
