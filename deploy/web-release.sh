@@ -36,7 +36,7 @@ WEB_RELEASE_NGINX_OK_LIST_FILE="${LOG_HOME}/${SH_NAME}-web_release_nginx-OK.list
 WEB_RELEASE_OK_LIST_FILE="${LOG_HOME}/${SH_NAME}-web_release-OK.list"
 #
 WEB_RELEASE_HISTORY_CURRENT_FILE="${LOG_HOME}/${SH_NAME}.history.current"
-FUCK_HISTORY_FILE="${LOG_BASE}/fuck.history"
+FUCK_HISTORY_FILE="${SH_PATH}/db/fuck.history"
 # 运行方式
 SH_RUN_MODE="normal"
 # 来自父shell

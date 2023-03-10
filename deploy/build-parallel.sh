@@ -52,7 +52,7 @@ export MY_EMAIL=''
 export HOOK_GAN_ENV=${HOOK_GAN_ENV:-''}
 export HOOK_USER=${HOOK_USER:-''}
 # 公共
-FUCK_HISTORY_FILE="${LOG_BASE}/fuck.history"
+FUCK_HISTORY_FILE="${SH_PATH}/db/fuck.history"
 # LOG_DOWNLOAD_SERVER
 BUILD_LOG_PJ_NAME="build-log"
 if [ "x${RUN_ENV}" = "xprod" ]; then

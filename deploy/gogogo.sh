@@ -56,7 +56,7 @@ GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE="${LOG_HOME}/${SH_NAME}.history.cu
 GOGOGO_PROJECT_BUILD_RESULT="${LOG_HOME}/${SH_NAME}-build.result"
 GOGOGO_PROJECT_BUILD_DURATION_FILE="${SH_PATH}/db/${SH_NAME}-build_duration.last.db"      #--- db目录下的文件不建议删除
 # 公共
-FUCK_HISTORY_FILE="${LOG_BASE}/fuck.history"
+FUCK_HISTORY_FILE="${SH_PATH}/db/fuck.history"
 # LOG_DOWNLOAD_SERVER
 BUILD_LOG_PJ_NAME="build-log"
 if [ "x${RUN_ENV}" = "xprod" ]; then
@@ -139,8 +139,8 @@ F_HELP()
         # 类别
         $0  -c java                           #--- 构建发布所有java项目，用默认分支
         $0  -c java  -b 分支a                 #--- 构建发布所有java项目，用分支a
-        $0  -c java  -b 分支a  项目1  项目2   #--- 构建发布node【项目1、项目2】，用分支a（一般可不用-c参数）
-        $0  -c java            项目1  项目2   #--- 构建发布node【项目1、项目2】，用默认分支
+        $0  -c java  -b 分支a  项目1  项目2   #--- 构建发布java【项目1、项目2】，用分支a（一般可不用-c参数）
+        $0  -c java            项目1  项目2   #--- 构建发布java【项目1、项目2】，用默认分支
         # 一般
         $0                           #--- 构建发布所有项目，用默认分支
         $0  -b 分支a                 #--- 构建发布所有项目，用【分支a】

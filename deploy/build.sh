@@ -62,7 +62,7 @@ BUILD_LOG="${LOG_HOME}/${SH_NAME}-build.log"
 BUILD_OK_LIST_FILE=${BUILD_OK_LIST_FILE:-"${LOG_HOME}/${SH_NAME}-build-OK.list"}
 BUILD_HISTORY_CURRENT_FILE="${LOG_HOME}/${SH_NAME}-history.current"
 # 公共
-FUCK_HISTORY_FILE="${LOG_BASE}/fuck.history"
+FUCK_HISTORY_FILE="${SH_PATH}/db/fuck.history"
 # LOG_DOWNLOAD_SERVER
 BUILD_LOG_PJ_NAME="build-log"
 if [ "x${RUN_ENV}" = "xprod" ]; then
@@ -148,8 +148,8 @@ F_HELP()
         # 按类别
         $0  -c java                           #--- 构建所有java项目，用默认分支
         $0  -c java  -b 分支a                 #--- 构建所有java项目，用【分支a】
-        $0  -c java  -b 分支a  项目1  项目2   #--- 构建node项目：【项目1、项目2】，用【分支a】
-        $0  -c java            项目1  项目2   #--- 构建node项目：【项目1、项目2】，用默认分支
+        $0  -c java  -b 分支a  项目1  项目2   #--- 构建java项目：【项目1、项目2】，用【分支a】
+        $0  -c java            项目1  项目2   #--- 构建java项目：【项目1、项目2】，用默认分支
         # 项目名称用正则表达式完全匹配
         $0   .*xxx.*        #--- 构建项目名称正则匹配【^.*xxx.*】的项目，用默认分支
         $0   [ab]*xxx       #--- 构建项目名称正则匹配【^[ab]*xxx$】的项目，用默认分支
