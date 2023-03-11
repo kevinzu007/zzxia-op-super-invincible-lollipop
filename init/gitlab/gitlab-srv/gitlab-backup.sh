@@ -61,6 +61,7 @@ if [ $? != 0 ]; then
 fi
 
 THIS_BACKUP_FILE=$(ls ${BACKUP_DIR} | grep "`date +%Y_%m_%d`" | sed -n '$p')
+THIS_BACKUP_FILE=${BACKUP_DIR}/${THIS_BACKUP_FILE}
 #THIS_BACKUP_FILE=$(find  ${BACKUP_DIR}  -maxdepth 1  -type f  -size +2G  -mtime 0 | head -n 1)
 if [[ -z ${THIS_BACKUP_FILE} ]]; then
     echo  "gitlab备份：gitlab:backup:create备份出错，文件为空，请检查！"
