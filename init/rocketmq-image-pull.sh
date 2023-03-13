@@ -4,8 +4,8 @@
 # 镜像名称与版本
 IMAGE_SERVER=''
 NAME_SPACE=apache
-IMAGE_NAME=rabbitmq
-VER=3.11-management
+IMAGE_NAME=rocketmq
+VER=4.9.3
 
 
 # 命名空间
