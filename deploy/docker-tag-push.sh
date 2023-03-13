@@ -198,7 +198,7 @@ do
     docker push  ${DOCKER_IMAGE_BASE}/${IMAGE_NAME}:${IMAGE_VER}
     if [[ $? -ne 0 ]]; then
         echo -e "\n猪猪侠警告：项目【${PJ_NAME}】镜像PUSH失败，请检查！\n"
-        return 54
+        exit 54
     fi
 done < ${PROJECT_LIST_FILE_TMP}
 
