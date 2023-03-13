@@ -17,11 +17,14 @@ DOMAIN=${DOMAIN:-"xxx.lan"}
 
 # 引入env
 . ${SH_PATH}/deploy.env
+GAN_PLATFORM_NAME="${GAN_PLATFORM_NAME:-'超甜B&D系统'}"
+BUILD_LOG_WEBSITE_DOMAIN_A=${BUILD_LOG_WEBSITE_DOMAIN_A:-"build-log"}         #--- 这个需要与【nginx.list】中【项目名】为【build-log】的【域名A记录】保持一致
 DINGDING_API=${DINGDING_API:-"请定义"}
 BUILD_SKIP_TEST=${BUILD_SKIP_TEST:-'NO'}  #--- 跳过测试
-#USER_DB=
+#USER_DB_FILE=
 
 # 本地env
+GAN_WHAT_FUCK='P_Build'
 export TIME=`date +%Y-%m-%dT%H:%M:%S`
 TIME_START=${TIME}
 DATE_TIME=`date -d "${TIME}" +%Y%m%dT%H%M%S`
@@ -45,16 +48,17 @@ BASE_BUILD_OK_LIST_FILE="${LOG_HOME}/${SH_NAME}-export-build-OK.list"
 export BUILD_OK_LIST_FILE=
 BASE_BUILD_OK_LIST_FILE_function="${LOG_HOME}/${SH_NAME}-export-build-OK.list.function"
 export BUILD_OK_LIST_FILE_function=''
+export MY_USER_NAME=''
 export MY_EMAIL=''
-export MY_XINGMING=''
+export HOOK_GAN_ENV=${HOOK_GAN_ENV:-''}
+export HOOK_USER=${HOOK_USER:-''}
 # 公共
-FUCK_HISTORY_FILE="${LOG_BASE}/fuck.history"
+FUCK_HISTORY_FILE="${SH_PATH}/db/fuck.history"
 # LOG_DOWNLOAD_SERVER
-BUILD_LOG_PJ_NAME="build-log"
 if [ "x${RUN_ENV}" = "xprod" ]; then
-    LOG_DOWNLOAD_SERVER="https://${BUILD_LOG_PJ_NAME}.${DOMAIN}"
+    LOG_DOWNLOAD_SERVER="https://${BUILD_LOG_WEBSITE_DOMAIN_A}.${DOMAIN}"
 else
-    LOG_DOWNLOAD_SERVER="https://${RUN_ENV}-${BUILD_LOG_PJ_NAME}.${DOMAIN}"
+    LOG_DOWNLOAD_SERVER="https://${RUN_ENV}-${BUILD_LOG_WEBSITE_DOMAIN_A}.${DOMAIN}"
 fi
 # sh
 BUILD_SH="${SH_PATH}/build.sh"
@@ -243,7 +247,7 @@ F_USER_SEARCH()
             echo "${CURRENT_USER_XINGMING} ${CURRENT_USER_EMAIL}"
             return 0
         fi
-    done < "${USER_DB}"
+    done < "${USER_DB_FILE}"
     return 1
 }
 
@@ -322,17 +326,32 @@ do
 done
 
 
+
+# 运行环境匹配for Hook
+if [[ -n ${HOOK_GAN_ENV} ]] && [[ ${HOOK_GAN_ENV} != ${RUN_ENV} ]]; then
+    echo -e "\n猪猪侠警告：运行环境不匹配，跳过（这是正常情况）\n"
+    exit
+fi
+
+
+
 # 用户信息
-# if sudo -i 取${SUDO_USER}；
-# if sudo cmd 取${LOGNAME}
-LOGIN_USER_NAME=${SUDO_USER:-"${LOGNAME}"}
-F_USER_SEARCH ${LOGIN_USER_NAME} > /dev/null
-if [ $? -eq 0 ]; then
-    R=`F_USER_SEARCH ${LOGIN_USER_NAME}`
-    export MY_XINGMING=`echo $R | cut -d ' ' -f 1`
-    export MY_EMAIL=${MY_EMAIL:-"`echo $R | cut -d ' ' -f 2`"}
+if [[ -n ${HOOK_USER} ]]; then
+    MY_USER_NAME=${HOOK_USER}
 else
-    export MY_XINGMING='X-Man'
+    # if sudo -i 取${SUDO_USER}；
+    # if sudo cmd 取${LOGNAME}
+    MY_USER_NAME=${SUDO_USER:-"${LOGNAME}"}
+fi
+export MY_USER_NAME
+#
+F_USER_SEARCH ${MY_USER_NAME} > /dev/null
+if [ $? -eq 0 ]; then
+    R=`F_USER_SEARCH ${MY_USER_NAME}`
+    export MY_EMAIL=${MY_EMAIL:-"`echo $R | cut -d ' ' -f 2`"}
+    MY_XINGMING=`echo $R | cut -d ' ' -f 1`
+else
+    MY_XINGMING='X-Man'
 fi
 
 
@@ -393,7 +412,7 @@ else
         F_FIND_PROJECT ${THIS_LANGUAGE_CATEGORY} >> ${PARA_PROJECT_LIST_FILE_TMP}
         if [[ $? -ne 0 ]]; then
             echo -e "\n猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！\n"
-            ${DINGDING_MARKDOWN_PY}  "【Info:Build:${RUN_ENV}】" "猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！" > /dev/null
+            ${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${GAN_WHAT_FUCK}】" "猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！" > /dev/null
             exit 51
         fi
     else
@@ -403,7 +422,7 @@ else
             F_FIND_PROJECT ${THIS_LANGUAGE_CATEGORY} $i >> ${PARA_PROJECT_LIST_FILE_TMP}
             if [[ $? -ne 0 ]]; then
                 echo -e "\n猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目【$i】，请检查！\n"
-                ${DINGDING_MARKDOWN_PY}  "【Info:Build:${RUN_ENV}】" "猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目【$i】，请检查！" > /dev/null
+                ${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${GAN_WHAT_FUCK}】" "猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目【$i】，请检查！" > /dev/null
                 exit 51
             fi
         done
@@ -528,6 +547,7 @@ TIME_END=`date +%Y-%m-%dT%H:%M:%S`
 MESSAGE_END="项目构建已完成！ 共企图构建${BUILD_CHECK_COUNT}个项目，成功构建${BUILD_SUCCESS_COUNT}个项目，${BUILD_NOCHANGE_COUNT}个项目无更新，${BUILD_NOTNEED_COUNT}个项目无需构建，${BUILD_ERROR_COUNT}个项目出错。"
 # 消息回显拼接
 >  ${PARA_BUILD_HISTORY_CURRENT_FILE}
+echo "干    啥：**${GAN_WHAT_FUCK}**" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
 echo "====== 并行构建报告 ======" >> ${PARA_BUILD_HISTORY_CURRENT_FILE}
 echo -e "${ECHO_REPORT}################################# 并行构建报告 #################################${ECHO_CLOSE}"    #--- 80 (80-70-60)
 #
@@ -566,7 +586,7 @@ do
     #echo ${MSG[$t]}
     let  t=$t+1
 done < ${PARA_BUILD_HISTORY_CURRENT_FILE}
-${DINGDING_MARKDOWN_PY}  "【Info:Build:${RUN_ENV}】" "${MSG[@]}" > /dev/null
+${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${GAN_WHAT_FUCK}】" "${MSG[@]}" > /dev/null
 
 
 

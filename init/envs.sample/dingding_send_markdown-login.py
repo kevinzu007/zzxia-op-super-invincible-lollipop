@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # encoding: utf-8
 #############################################################################
 # Create By: 猪猪侠
@@ -22,6 +22,14 @@ import socket
 import os
 import time
 
+
+# 钉钉api --- 引入OS变量
+ENV_DIST = os.environ
+#api_url = ENV_DIST.get('DINGDING_API')
+dingding_api_url = "https://oapi.dingtalk.com/robot/send?access_token=你自己的钉钉机器人token"
+
+
+
 # 获取主机名
 HOSTNAME = socket.gethostname()
 
@@ -31,9 +39,6 @@ DATETIME = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 # 获取OS变量
 ENV_DIST = os.environ
 
-# 钉钉api
-#dingding_api_url = ENV_DIST.get('DINGDING_API')
-dingding_api_url = "https://oapi.dingtalk.com/robot/send?access_token=你自己的钉钉机器人token"
 
 
 try:

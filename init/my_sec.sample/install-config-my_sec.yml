@@ -12,10 +12,24 @@
   vars:
     - RUN_ENV: "{{ lookup('env','RUN_ENV') }}"
   tasks:
+    - name: 拷贝 - 用户密码工具
+      copy:.
+          src: '{{ item.srcc }}'
+          dest: '{{ item.destt }}'
+          owner: root
+          group: root
+          mode: 0700
+          backup: yes
+      with_items:
+        - { srcc: './user-secret-update.sh', destt: '~/.my_sec/' }
+        - { srcc: './user-token-update.sh', destt: '~/.my_sec/' }
+        - { srcc: './user-manage.sh', destt: '~/.my_sec/' }
+    - name: crontab - user-token-update
+      cron: name=user-token-update backup=yes state=present minute=0 hour=0 day=*  month=* weekday=* user=root job='~/.my_sec/user-token-update.sh'
     - name: 拷贝 - user.db
       copy: src=./{{ RUN_ENV }}/user.db    dest=~/.my_sec/ owner=root group=root mode=0600  backup=no
-    - name: 拷贝 - user.db.sec
-      copy: src=./{{ RUN_ENV }}/user.db.sec    dest=~/.my_sec/ owner=root group=root mode=0600  backup=no
+    - name: 拷贝 - user.env.sec
+      copy: src=./{{ RUN_ENV }}/user.env.sec    dest=~/.my_sec/ owner=root group=root mode=0600  backup=no
     - name: 拷贝 - dingding.sec
       copy: src=./{{ RUN_ENV }}/dingding.sec    dest=~/.my_sec/ owner=root group=root mode=0600  backup=no
     - name: 拷贝 - docker-repo.sec

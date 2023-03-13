@@ -18,7 +18,7 @@ WEB_PROJECT_LIST_FILE="${SH_PATH}/nginx.list"
 WEB_PROJECT_LIST_FILE_TMP="/tmp/${SH_NAME}-nginx.tmp.list"
 TMP_CONF_DIR="${SH_PATH}/tmp/conf.d"
 DST_CONF_DIR="/etc/nginx/conf.d"
-WEBSITE_BASE="/srv/www"
+WEBSITE_BASE="/srv/web_sites"
 
 [ -d ${TMP_CONF_DIR} ] && rm -rf   ${TMP_CONF_DIR}
 mkdir -p ${TMP_CONF_DIR}

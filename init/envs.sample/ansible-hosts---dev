@@ -45,6 +45,9 @@ nginx_letsencrypt
 [nginx_letsencrypt]
 192.168.11.77
 
+[python_real]
+192.168.11.81 ansible_ssh_user=kevin
+
 
 [zabbix]
 192.168.11.80

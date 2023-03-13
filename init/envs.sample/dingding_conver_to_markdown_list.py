@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # encoding: utf-8
 #############################################################################
 # Create By: 猪猪侠
@@ -21,6 +21,14 @@ import os
 import socket
 import time
 
+
+# 钉钉api --- 引入OS变量
+ENV_DIST = os.environ
+#api_url = ENV_DIST.get('DINGDING_API')
+api_url = "https://oapi.dingtalk.com/robot/send?access_token=你自己的钉钉机器人token"
+
+
+
 # 获取主机名
 HOSTNAME = socket.gethostname()
 
@@ -31,14 +39,13 @@ DATETIME = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 ENV_DIST = os.environ
 
 
+# Header
 headers = {'Content-Type': 'application/json;charset=utf-8'}
-#api_url = ENV_DIST.get('DINGDING_API')
-api_url = "https://oapi.dingtalk.com/robot/send?access_token=你自己的钉钉机器人token"
 
 
 def msg(a):
 
-    #json_text= {"msgtype": "markdown", "markdown": {"title": t1, "text": "### 天龙盖地虎\n" + "@18620021887" + "\n\n" + "- " + t2 + "\n\n" + "- " + t3}, "at": {"atMobiles":  ["18620021887"], "isAtAll": False}}
+    #json_text = {"msgtype": "markdown", "markdown": {"title": t1, "text": "### 天龙盖地虎\n" + "@18620021887" + "\n\n" + "- " + t2 + "\n\n" + "- " + t3}, "at": {"atMobiles":  ["18620021887"], "isAtAll": False}}
 
     #print 'a: ', a
     # 删除数组a[0]的值，这里a[0]是脚本本身的名字：dingding_markdown-array-deploy.py
@@ -46,7 +53,7 @@ def msg(a):
     #print 'a del: ', a
 
     json_text = '{"msgtype": "markdown", "markdown": {"title": '
-    j=0
+    j = 0
 
     for k in a:
         if j == 0 :
@@ -56,33 +63,23 @@ def msg(a):
             #json_text = json_text + ', "text": "### ' + k + '\\n'
             #json_text = json_text + ', "text": "### ' + k
             json_text = json_text + ', "text": "### ' + k + "\\n" + "---\\n"
-            j=1
+            j = 1
             continue
         json_text = json_text + '- ' + k + '\\n'
 
     #json_text = json_text + "\\n\\n---\\n\\n*发自: " + HOSTNAME + "*\\n\\n" '"}, "at": {"atMobiles": ["18620021887"], "isAtAll": True}}'
     json_text = json_text + "---\\n" + "*发自: " + HOSTNAME + "*\\n\\n" + "*时间: " + DATETIME + "*\\n\\n" '"}, "at": {"atMobiles": ["18620021887"], "isAtAll": True}}'
 
-    #json_text= {"msgtype": "markdown", "markdown": {"title": "aa", "text": "### 天龙盖地虎\n @18620021887\n\n- bb\n\n- cc"}, "at": {"atMobiles":  ["18620021887"], "isAtAll": False}}
-    #json_text= {'msgtype': 'markdown', 'markdown': {'title': 'aa', 'text': '### 天龙盖地虎\n @18620021887\n\n- bb\n\n- cc'}, 'at': {'atMobiles':  ['18620021887'], 'isAtAll': False}}
-
-
-    #print  json_text
-    #json_text = json_text.replace('\"', '\'')
+    #json_text = {"msgtype": "markdown", "markdown": {"title": "aa", "text": "### 天龙盖地虎\n @18620021887\n\n- bb\n\n- cc"}, "at": {"atMobiles":  ["18620021887"], "isAtAll": False}}
+    #json_text = {'msgtype': 'markdown', 'markdown': {'title': 'aa', 'text': '### 天龙盖地虎\n @18620021887\n\n- bb\n\n- cc'}, 'at': {'atMobiles':  ['18620021887'], 'isAtAll': False}}
 
     # http://www.pythoner.com/56.html
-    #exec """print "json_text=" , json_text"""
     # https://blog.csdn.net/wangato/article/details/71104173
-    json_text= eval(json_text)
-    #print json_text
+    json_text = eval(json_text)
 
-    print requests.post(api_url,json.dumps(json_text),headers=headers).content
+    print(requests.post(api_url,json.dumps(json_text),headers=headers).content)
 
 if __name__ == '__main__':
-    #print '参数个数: ' , len(sys.argv)  ##参数个数
-    #print '参数数组: ' , sys.argv  ###参数数组
-    #print sys.argv[0] ##脚本名
-    #print sys.argv[1] ## 第一个参数
 
 #    tt1 = sys.argv[1]
 #    tt2 = sys.argv[2]

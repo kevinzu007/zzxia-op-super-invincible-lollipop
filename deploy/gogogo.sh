@@ -17,11 +17,14 @@ DOMAIN=${DOMAIN:-"xxx.lan"}
 
 # 引入env
 . ${SH_PATH}/deploy.env
+GAN_PLATFORM_NAME="${GAN_PLATFORM_NAME:-'超甜B&D系统'}"
+BUILD_LOG_WEBSITE_DOMAIN_A=${BUILD_LOG_WEBSITE_DOMAIN_A:-"build-log"}         #--- 这个需要与【nginx.list】中【项目名】为【build-log】的【域名A记录】保持一致
 DINGDING_API=${DINGDING_API:-"请定义"}
 BUILD_SKIP_TEST=${BUILD_SKIP_TEST:-'NO'}  #--- 跳过测试（YES|NO）
-#USER_DB=
+#USER_DB_FILE=
 
 # 本地env
+GAN_WHAT_FUCK='Gogogo'
 export TIME=`date +%Y-%m-%dT%H:%M:%S`
 TIME_START=${TIME}
 DATE_TIME=`date -d "${TIME}" +%Y%m%dT%H%M%S`
@@ -38,8 +41,10 @@ DOCKER_IMAGE_VER=$(date -d "${TIME}" +%Y.%m.%d.%H%M%S)
 export BUILD_OK_LIST_FILE_function="${LOG_HOME}/${SH_NAME}-export-build-OK.list.function"
 export DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE_function="${LOG_HOME}/${SH_NAME}-export-docker_deploy-OK.list.function"
 export WEB_RELEASE_OK_LIST_FILE_function="${LOG_HOME}/${SH_NAME}-export-web_release-OK.list.function"
+export MY_USER_NAME=''
 export MY_EMAIL=''
-export MY_XINGMING=''
+export HOOK_GAN_ENV=${HOOK_GAN_ENV:-''}
+export HOOK_USER=${HOOK_USER:-''}
 # 独有
 BUILD_QUIET='YES'
 BUILD_FORCE='NO'
@@ -52,13 +57,12 @@ GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE="${LOG_HOME}/${SH_NAME}.history.cu
 GOGOGO_PROJECT_BUILD_RESULT="${LOG_HOME}/${SH_NAME}-build.result"
 GOGOGO_PROJECT_BUILD_DURATION_FILE="${SH_PATH}/db/${SH_NAME}-build_duration.last.db"      #--- db目录下的文件不建议删除
 # 公共
-FUCK_HISTORY_FILE="${LOG_BASE}/fuck.history"
+FUCK_HISTORY_FILE="${SH_PATH}/db/fuck.history"
 # LOG_DOWNLOAD_SERVER
-BUILD_LOG_PJ_NAME="build-log"
 if [ "x${RUN_ENV}" = "xprod" ]; then
-    LOG_DOWNLOAD_SERVER="https://${BUILD_LOG_PJ_NAME}.${DOMAIN}"
+    LOG_DOWNLOAD_SERVER="https://${BUILD_LOG_WEBSITE_DOMAIN_A}.${DOMAIN}"
 else
-    LOG_DOWNLOAD_SERVER="https://${RUN_ENV}-${BUILD_LOG_PJ_NAME}.${DOMAIN}"
+    LOG_DOWNLOAD_SERVER="https://${RUN_ENV}-${BUILD_LOG_WEBSITE_DOMAIN_A}.${DOMAIN}"
 fi
 
 BUILD_SH="${SH_PATH}/build.sh"
@@ -110,7 +114,7 @@ F_HELP()
     用法:
         $0  [-h|--help]
         $0  [-l|--list]
-        $0  <-c [dockerfile|java|node|自定义]>  <-b {代码分支}>  <-e|--email {邮件地址}>  <-s|--skiptest>  <-f|--force>  <-v|--verbose>  <-V|--release-version>  <-G|--gray>  <{项目1}  {项目2} ... {项目n}> ... {项目名称正则匹配}>
+        $0  <-c [dockerfile|java|node|自定义]>  <-b|--branch {代码分支}>  <-e|--email {邮件地址}>  <-s|--skiptest>  <-f|--force>  <-v|--verbose>  <-V|--release-version>  <-G|--gray>  <{项目1}  {项目2} ... {项目n}> ... {项目名称正则匹配}>
     参数说明：
         \$0   : 代表脚本本身
         []   : 代表是必选项
@@ -135,8 +139,8 @@ F_HELP()
         # 类别
         $0  -c java                           #--- 构建发布所有java项目，用默认分支
         $0  -c java  -b 分支a                 #--- 构建发布所有java项目，用分支a
-        $0  -c java  -b 分支a  项目1  项目2   #--- 构建发布node【项目1、项目2】，用分支a（一般可不用-c参数）
-        $0  -c java            项目1  项目2   #--- 构建发布node【项目1、项目2】，用默认分支
+        $0  -c java  -b 分支a  项目1  项目2   #--- 构建发布java【项目1、项目2】，用分支a（一般可不用-c参数）
+        $0  -c java            项目1  项目2   #--- 构建发布java【项目1、项目2】，用默认分支
         # 一般
         $0                           #--- 构建发布所有项目，用默认分支
         $0  -b 分支a                 #--- 构建发布所有项目，用【分支a】
@@ -344,7 +348,7 @@ F_USER_SEARCH()
             echo "${CURRENT_USER_XINGMING} ${CURRENT_USER_EMAIL}"
             return 0
         fi
-    done < "${USER_DB}"
+    done < "${USER_DB_FILE}"
     return 1
 }
 
@@ -625,6 +629,15 @@ F_DOCKER_CLUSTER_SERVICE_DEPLOY()
 
 
 
+# F_PYTHON_DEPLOY {项目名称}
+# 重启python服务
+F_PYTHON_DEPLOY()
+{
+    echo  没搞
+}
+
+
+
 # 参数检查
 TEMP=`getopt -o hlc:b:e:sfvGV:  -l help,list,category:,branch:,email:,skiptest,force,verbose,gray,release-version: -- "$@"`
 if [ $? != 0 ]; then
@@ -706,17 +719,32 @@ do
 done
 
 
+
+# 运行环境匹配for Hook
+if [[ -n ${HOOK_GAN_ENV} ]] && [[ ${HOOK_GAN_ENV} != ${RUN_ENV} ]]; then
+    echo -e "\n猪猪侠警告：运行环境不匹配，跳过（这是正常情况）\n"
+    exit
+fi
+
+
+
 # 用户信息
-# if sudo -i 取${SUDO_USER}；
-# if sudo cmd 取${LOGNAME}
-LOGIN_USER_NAME=${SUDO_USER:-"${LOGNAME}"}
-F_USER_SEARCH ${LOGIN_USER_NAME} > /dev/null
-if [ $? -eq 0 ]; then
-    R=`F_USER_SEARCH ${LOGIN_USER_NAME}`
-    export MY_XINGMING=`echo $R | cut -d ' ' -f 1`
-    export MY_EMAIL=${MY_EMAIL:-"`echo $R | cut -d ' ' -f 2`"}
+if [[ -n ${HOOK_USER} ]]; then
+    MY_USER_NAME=${HOOK_USER}
 else
-    export MY_XINGMING='X-Man'
+    # if sudo -i 取${SUDO_USER}；
+    # if sudo cmd 取${LOGNAME}
+    MY_USER_NAME=${SUDO_USER:-"${LOGNAME}"}
+fi
+export MY_USER_NAME
+#
+F_USER_SEARCH ${MY_USER_NAME} > /dev/null
+if [ $? -eq 0 ]; then
+    R=`F_USER_SEARCH ${MY_USER_NAME}`
+    export MY_EMAIL=${MY_EMAIL:-"`echo $R | cut -d ' ' -f 2`"}
+    MY_XINGMING=`echo $R | cut -d ' ' -f 1`
+else
+    MY_XINGMING='X-Man'
 fi
 
 
@@ -779,7 +807,7 @@ else
         F_FIND_PROJECT ${THIS_LANGUAGE_CATEGORY} >> ${GOGOGO_PROJECT_LIST_FILE_TMP}
         if [[ $? -ne 0 ]]; then
             echo -e "\n猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！\n"
-            ${DINGDING_MARKDOWN_PY}  "【Info:Build:${RUN_ENV}】" "猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！" > /dev/null
+            ${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${GAN_WHAT_FUCK}】" "猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！" > /dev/null
             exit 51
         fi
     else
@@ -790,7 +818,7 @@ else
             F_FIND_PROJECT ${THIS_LANGUAGE_CATEGORY} $i >> ${GOGOGO_PROJECT_LIST_FILE_TMP}
             if [[ $? -ne 0 ]]; then
                 echo -e "\n猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】且正则匹配【$i】的项目，请检查！\n"
-                ${DINGDING_MARKDOWN_PY}  "【Info:Build:${RUN_ENV}】" "猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】且正则匹配【$i】的项目，请检查！" > /dev/null
+                ${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${GAN_WHAT_FUCK}】" "猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】且正则匹配【$i】的项目，请检查！" > /dev/null
                 exit 51
             fi
         done
@@ -967,6 +995,10 @@ do
                         echo "构建: ${BUILD_RESULT} - 发布: 失败 - 耗时: ${BUILD_TIME}s"
                     fi
                     ;;
+                python_deploy)
+                    F_PYTHON_DEPLOY  ${PJ}
+                    # 结果在函数里处理
+                    ;;
                 *)
                     echo -e "\n猪猪侠警告：【${GOGOGO_RELEASE_METHOD}】这个发布方式你自己加的，你自己把它完善下！【脚本名：${SH_NAME}】\n"
                     exit 52
@@ -1003,6 +1035,7 @@ TIME_END=`date +%Y-%m-%dT%H:%M:%S`
 MESSAGE_END="项目构建已完成！ 共企图构建发布${RELEASE_CHECK_COUNT}个项目，成功构建发布${RELEASE_SUCCESS_COUNT}个项目，成功构建但失败发布${RELEASE_ERROR_COUNT}个项目，跳过发布${RELEASE_SKIP_COUNT}个项目，失败构建${BUILD_ERROR_COUNT}个项目。"
 # 消息回显拼接
 > ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
+echo "干    啥：**${GAN_WHAT_FUCK}**" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 echo "===== 构建与发布报告 =====" >> ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 echo -e "${ECHO_REPORT}################################ 构建与发布报告 ################################${ECHO_CLOSE}"   #--- 80 (80-70-60)
 #
@@ -1042,7 +1075,7 @@ do
     #echo ${MSG[$t]}
     let  t=$t+1
 done < ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
-${DINGDING_MARKDOWN_PY}  "【Info:Gogogo:${RUN_ENV}】" "${MSG[@]}" > /dev/null
+${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${GAN_WHAT_FUCK}】" "${MSG[@]}" > /dev/null
 
 
 

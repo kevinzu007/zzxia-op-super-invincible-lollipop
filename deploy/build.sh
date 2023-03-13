@@ -17,14 +17,17 @@ DOMAIN=${DOMAIN:-"xxx.lan"}
 
 # 引入env
 . "${SH_PATH}/deploy.env"
+GAN_PLATFORM_NAME="${GAN_PLATFORM_NAME:-'超甜B&D系统'}"
+BUILD_LOG_WEBSITE_DOMAIN_A=${BUILD_LOG_WEBSITE_DOMAIN_A:-"build-log"}         #--- 这个需要与【nginx.list】中【项目名】为【build-log】的【域名A记录】保持一致
 DINGDING_API=${DINGDING_API:-"请定义"}
-#USER_DB=
+#USER_DB_FILE=
 ERROR_EXIT=${ERROR_EXIT:-'NO'}                    #--- 出错立即退出
 BUILD_SKIP_TEST=${BUILD_SKIP_TEST:-'NO'}          #--- 跳过测试
 BUILD_CODE_VERIFY=${BUILD_CODE_VERIFY:-'NONE'}    #--- BUILD_CODE_VERIFY="sonarQube"
 NPM_BIN=${NPM_BIN:-'npm'}                         #--- 可选 npm|cnpm
 
 # 本地env
+GAN_WHAT_FUCK='Build'
 TIME=${TIME:-`date +%Y-%m-%dT%H:%M:%S`}
 TIME_START=${TIME}
 DATE_TIME=`date -d "${TIME}" +%Y%m%dT%H%M%S`
@@ -35,15 +38,19 @@ DOCKER_IMAGE_VER=$(date -d "${TIME}" +%Y.%m.%d.%H%M%S)
 PROJECT_BASE="${SH_PATH}/tmp/build"
 LOG_BASE="${SH_PATH}/tmp/log"
 LOG_HOME="${LOG_BASE}/${DATE_TIME}"
-WEBSITE_BASE='/srv/www'
+WEBSITE_BASE='/srv/web_sites'
+PYTHON_SERVICES_BASE='/srv/python_services'
 # 方式
 SH_RUN_MODE="normal"
 BUILD_QUIET='YES'
 BUILD_FORCE='NO'
 # 来自父shell
 BUILD_OK_LIST_FILE_function=${BUILD_OK_LIST_FILE_function:-"${LOG_HOME}/${SH_NAME}-build-OK.list.function"}
+MY_USER_NAME=${MY_USER_NAME:-''}
 MY_EMAIL=${MY_EMAIL:-''}
-MY_XINGMING=${MY_XINGMING:-''}
+# 来自webhook
+HOOK_GAN_ENV=${HOOK_GAN_ENV:-''}
+HOOK_USER=${HOOK_USER:-''}
 #
 PROJECT_LIST_FILE="${SH_PATH}/project.list"
 PROJECT_LIST_RETRY_FILE="${SH_PATH}/project.list.retry"
@@ -56,13 +63,12 @@ BUILD_LOG="${LOG_HOME}/${SH_NAME}-build.log"
 BUILD_OK_LIST_FILE=${BUILD_OK_LIST_FILE:-"${LOG_HOME}/${SH_NAME}-build-OK.list"}
 BUILD_HISTORY_CURRENT_FILE="${LOG_HOME}/${SH_NAME}-history.current"
 # 公共
-FUCK_HISTORY_FILE="${LOG_BASE}/fuck.history"
+FUCK_HISTORY_FILE="${SH_PATH}/db/fuck.history"
 # LOG_DOWNLOAD_SERVER
-BUILD_LOG_PJ_NAME="build-log"
 if [ "x${RUN_ENV}" = "xprod" ]; then
-    LOG_DOWNLOAD_SERVER="https://${BUILD_LOG_PJ_NAME}.${DOMAIN}"
+    LOG_DOWNLOAD_SERVER="https://${BUILD_LOG_WEBSITE_DOMAIN_A}.${DOMAIN}"
 else
-    LOG_DOWNLOAD_SERVER="https://${RUN_ENV}-${BUILD_LOG_PJ_NAME}.${DOMAIN}"
+    LOG_DOWNLOAD_SERVER="https://${RUN_ENV}-${BUILD_LOG_WEBSITE_DOMAIN_A}.${DOMAIN}"
 fi
 # sh
 SEND_MAIL="${SH_PATH}/../op/send_mail.sh"
@@ -142,8 +148,8 @@ F_HELP()
         # 按类别
         $0  -c java                           #--- 构建所有java项目，用默认分支
         $0  -c java  -b 分支a                 #--- 构建所有java项目，用【分支a】
-        $0  -c java  -b 分支a  项目1  项目2   #--- 构建node项目：【项目1、项目2】，用【分支a】
-        $0  -c java            项目1  项目2   #--- 构建node项目：【项目1、项目2】，用默认分支
+        $0  -c java  -b 分支a  项目1  项目2   #--- 构建java项目：【项目1、项目2】，用【分支a】
+        $0  -c java            项目1  项目2   #--- 构建java项目：【项目1、项目2】，用默认分支
         # 项目名称用正则表达式完全匹配
         $0   .*xxx.*        #--- 构建项目名称正则匹配【^.*xxx.*】的项目，用默认分支
         $0   [ab]*xxx       #--- 构建项目名称正则匹配【^[ab]*xxx$】的项目，用默认分支
@@ -290,7 +296,7 @@ ERR_SHOW()
         MESSAGE_ERR="【${PJ}】build 出错了，请检查！ 代码分支：${GIT_BRANCH}。将继续构建后续项目！"
     fi
     echo -e "${ECHO_ERROR}${MESSAGE_ERR}${ECHO_CLOSE}"
-    ${DINGDING_MARKDOWN_PY}  "*** Error:Build:${RUN_ENV} ***" "${MESSAGE_ERR}" > /dev/null
+    ${DINGDING_MARKDOWN_PY}  "*** Error:${GAN_PLATFORM_NAME}:${GAN_WHAT_FUCK} ***" "${MESSAGE_ERR}" > /dev/null
 }
 
 
@@ -757,6 +763,206 @@ NODE_BUILD()
 
 
 
+HTML_BUILD()
+{
+    echo  "HTML Build ......"
+    #
+    # ========== 特殊处理START ==========
+    #
+    # ========== 特殊处理  END ==========
+    #
+    # 构建方法
+    case "${BUILD_METHOD}" in
+        NONE)
+            echo "这是静态文件，无需处理"   2>&1 | tee -a ${BUILD_LOG_file}
+            ;;
+        *)
+            echo -e "\n猪猪侠警告：【 ${LANGUAGE_CATEGORY} 之 ${BUILD_METHOD} 】这个构建方法我没弄，你自己搞下！\n"
+            ;;
+    esac
+    #
+    ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/${BUILD_LOG_PJ_NAME}/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
+    #
+    grep -E 'Error|ERR!'  ${BUILD_LOG_file}
+    if [ $? -eq 0 ]; then
+        echo ""
+        echo -e "${ECHO_ERROR}失败！请检查日志文件：${BUILD_LOG_file}  ${ECHO_CLOSE}"
+        echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"
+        echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
+        echo "${PJ} : 失败 : x" >> ${BUILD_OK_LIST_FILE}
+        ERR_SHOW
+        # mail
+        if [[ ! -z "${MY_EMAIL}" ]]; then
+            ${SEND_MAIL}  --subject "【${RUN_ENV}】Build Log - ${PJ}"  --content "请看附件\n"  --attach "${BUILD_LOG_file}"  "${MY_EMAIL}"
+        fi
+        return 54
+    else
+        #
+        # ========== 特殊处理START ==========
+        #
+        # ========== 特殊处理  END ==========
+        #
+        # 输出方法
+        case "${OUTPUT_METHOD}" in
+            docker_image_push)
+                if [ -z "${DOCKER_IMAGE_NAME}" ]; then
+                    echo -e "\n猪猪侠警告：输出方式为【docker_image_push】时，镜像名不能为空！\n"
+                    echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"
+                    echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
+                    echo "${PJ} : 失败 : x" >> ${BUILD_OK_LIST_FILE}
+                    ERR_SHOW
+                    return 52
+                fi
+                #
+                docker build -t ${DOCKER_IMAGE_NAME} ./   2>&1 | tee -a ${BUILD_LOG_file}
+                DOCKER_BUILD_RETURN=$?
+                if [ ${DOCKER_BUILD_RETURN} -ne 0 ]; then
+                    echo "Docker image build 失败！"
+                    echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"
+                    echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
+                    echo "${PJ} : 失败 : x" >> ${BUILD_OK_LIST_FILE}
+                    ERR_SHOW
+                    return 54
+                fi
+                #
+                ${DOCKER_TAG_PUSH_SH}  --tag ${DOCKER_IMAGE_VER}  ${PJ}
+                if [[ $? -ne 0 ]]; then
+                    echo -e "\n猪猪侠警告：项目镜像PUSH失败！\n"
+                    echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"
+                    echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
+                    echo "${PJ} : 失败 : x" >> ${BUILD_OK_LIST_FILE}
+                    ERR_SHOW
+                    return 54
+                fi
+                #
+                # echo
+                echo 'Build and Push 成功！'
+                return 50
+                ;;
+            direct_deploy)
+                # 可以拷贝软连接，还会自动创建父目录（仅目录拷贝时）
+                CP_FROM_DIR='./'
+                CP_TO_DIR="${WEBSITE_BASE}/${PJ}/releases/$(date +%Y%m%d)"
+                ansible nginx_real -m synchronize -a "src=${CP_FROM_DIR}/  dest=${CP_TO_DIR}/  rsync_opts=--perms=yes,--times=yes"
+                # echo
+                echo 'Build and Deploy 成功！'
+                return 50
+                ;;
+            NONE)
+                # 啥也不需要做
+                echo '成功！'
+                return 50
+                ;;
+            *)
+                echo -e "\n猪猪侠警告：【 ${LANGUAGE_CATEGORY} 之 ${OUTPUT_METHOD} 】这个输出方法我没弄，你自己搞下！\n"
+                return 52
+                ;;
+        esac
+    fi
+}
+
+
+
+PYTHON_BUILD()
+{
+    echo  "PYTHON Build ......"
+    #
+    # ========== 特殊处理START ==========
+    #
+    # ========== 特殊处理  END ==========
+    #
+    # 构建方法
+    case "${BUILD_METHOD}" in
+        NONE)
+            echo "这是静态文件，无需处理"   2>&1 | tee -a ${BUILD_LOG_file}
+            ;;
+        *)
+            echo -e "\n猪猪侠警告：【 ${LANGUAGE_CATEGORY} 之 ${BUILD_METHOD} 】这个构建方法我没弄，你自己搞下！\n"
+            ;;
+    esac
+    #
+    ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/${BUILD_LOG_PJ_NAME}/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
+    #
+    grep -E 'Error|ERR!'  ${BUILD_LOG_file}
+    if [ $? -eq 0 ]; then
+        echo ""
+        echo -e "${ECHO_ERROR}失败！请检查日志文件：${BUILD_LOG_file}  ${ECHO_CLOSE}"
+        echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"
+        echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
+        echo "${PJ} : 失败 : x" >> ${BUILD_OK_LIST_FILE}
+        ERR_SHOW
+        # mail
+        if [[ ! -z "${MY_EMAIL}" ]]; then
+            ${SEND_MAIL}  --subject "【${RUN_ENV}】Build Log - ${PJ}"  --content "请看附件\n"  --attach "${BUILD_LOG_file}"  "${MY_EMAIL}"
+        fi
+        return 54
+    else
+        #
+        # ========== 特殊处理START ==========
+        #
+        # ========== 特殊处理  END ==========
+        #
+        # 输出方法
+        case "${OUTPUT_METHOD}" in
+            docker_image_push)
+                if [ -z "${DOCKER_IMAGE_NAME}" ]; then
+                    echo -e "\n猪猪侠警告：输出方式为【docker_image_push】时，镜像名不能为空！\n"
+                    echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"
+                    echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
+                    echo "${PJ} : 失败 : x" >> ${BUILD_OK_LIST_FILE}
+                    ERR_SHOW
+                    return 52
+                fi
+                #
+                docker build -t ${DOCKER_IMAGE_NAME} ./   2>&1 | tee -a ${BUILD_LOG_file}
+                DOCKER_BUILD_RETURN=$?
+                if [ ${DOCKER_BUILD_RETURN} -ne 0 ]; then
+                    echo "Docker image build 失败！"
+                    echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"
+                    echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
+                    echo "${PJ} : 失败 : x" >> ${BUILD_OK_LIST_FILE}
+                    ERR_SHOW
+                    return 54
+                fi
+                #
+                ${DOCKER_TAG_PUSH_SH}  --tag ${DOCKER_IMAGE_VER}  ${PJ}
+                if [[ $? -ne 0 ]]; then
+                    echo -e "\n猪猪侠警告：项目镜像PUSH失败！\n"
+                    echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"
+                    echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
+                    echo "${PJ} : 失败 : x" >> ${BUILD_OK_LIST_FILE}
+                    ERR_SHOW
+                    return 54
+                fi
+                #
+                # echo
+                echo 'Build and Push 成功！'
+                return 50
+                ;;
+            direct_deploy)
+                # 可以拷贝软连接，还会自动创建父目录（仅目录拷贝时）
+                CP_FROM_DIR='./'
+                CP_TO_DIR="${PYTHON_SERVICES_BASE}/${PJ}/releases/$(date +%Y%m%d)"
+                ansible python_real -m synchronize -a "src=${CP_FROM_DIR}/  dest=${CP_TO_DIR}/  rsync_opts=--perms=yes,--times=yes"
+                # echo
+                echo 'Build and Deploy 成功！'
+                return 50
+                ;;
+            NONE)
+                # 啥也不需要做
+                echo '成功！'
+                return 50
+                ;;
+            *)
+                echo -e "\n猪猪侠警告：【 ${LANGUAGE_CATEGORY} 之 ${OUTPUT_METHOD} 】这个输出方法我没弄，你自己搞下！\n"
+                return 52
+                ;;
+        esac
+    fi
+}
+
+
+
 # 项目构建时间更新
 # F_BUILD_TIME_UPDATE  项目名  用时(s)
 F_BUILD_TIME_UPDATE()
@@ -819,7 +1025,7 @@ F_USER_SEARCH()
             echo "${CURRENT_USER_XINGMING} ${CURRENT_USER_EMAIL}"
             return 0
         fi
-    done < "${USER_DB}"
+    done < "${USER_DB_FILE}"
     return 3
 }
 
@@ -910,19 +1116,33 @@ do
 done
 
 
+
+# 运行环境匹配for Hook
+if [[ -n ${HOOK_GAN_ENV} ]] && [[ ${HOOK_GAN_ENV} != ${RUN_ENV} ]]; then
+    echo -e "\n猪猪侠警告：运行环境不匹配，跳过（这是正常情况）\n"
+    exit
+fi
+
+
+
 # 用户信息
-if [[ -z ${MY_XINGMING} ]]; then
+if [[ -n ${HOOK_USER} ]]; then
+    MY_USER_NAME=${HOOK_USER}
+elif [[ -n ${MY_USER_NAME} ]]; then
+    MY_USER_NAME=${MY_USER_NAME}
+else
     # if sudo -i 取${SUDO_USER}；
     # if sudo cmd 取${LOGNAME}
-    LOGIN_USER_NAME=${SUDO_USER:-"${LOGNAME}"}
-    F_USER_SEARCH ${LOGIN_USER_NAME} > /dev/null
-    if [ $? -eq 0 ]; then
-        R=`F_USER_SEARCH ${LOGIN_USER_NAME}`
-        export MY_XINGMING=`echo $R | cut -d ' ' -f 1`
-        export MY_EMAIL=${MY_EMAIL:-"`echo $R | cut -d ' ' -f 2`"}
-    else
-        export MY_XINGMING='X-Man'
-    fi
+    MY_USER_NAME=${SUDO_USER:-"${LOGNAME}"}
+fi
+#
+F_USER_SEARCH ${MY_USER_NAME} > /dev/null
+if [ $? -eq 0 ]; then
+    R=`F_USER_SEARCH ${MY_USER_NAME}`
+    export MY_EMAIL=${MY_EMAIL:-"`echo $R | cut -d ' ' -f 2`"}
+    MY_XINGMING=`echo $R | cut -d ' ' -f 1`
+else
+    MY_XINGMING='X-Man'
 fi
 
 
@@ -997,7 +1217,7 @@ else
         F_FIND_PROJECT "${THIS_LANGUAGE_CATEGORY}" >> ${PROJECT_LIST_FILE_TMP}
         if [[ $? -ne 0 ]]; then
             echo -e "\n猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！\n"
-            ${DINGDING_MARKDOWN_PY}  "【Info:Build:${RUN_ENV}】" "猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！" > /dev/null
+            ${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${GAN_WHAT_FUCK}】" "猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！" > /dev/null
             exit 51
         fi
     else
@@ -1008,7 +1228,7 @@ else
             F_FIND_PROJECT "${THIS_LANGUAGE_CATEGORY}" "$i" >> ${PROJECT_LIST_FILE_TMP}
             if [[ $? -ne 0 ]]; then
                 echo -e "\n猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目【$i】，请检查！\n"
-                ${DINGDING_MARKDOWN_PY}  "【Info:Build:${RUN_ENV}】" "猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目【$i】，请检查！" > /dev/null
+                ${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${GAN_WHAT_FUCK}】" "猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目【$i】，请检查！" > /dev/null
                 exit 51
             fi
         done
@@ -1116,7 +1336,7 @@ do
     if [ $? -eq 0 ]; then
         echo "${PJ} : 失败，其他用户正在构建中 : x" >> ${BUILD_OK_LIST_FILE}
         echo -e "${ECHO_ERROR}失败，其他用户正在构建中${ECHO_CLOSE}"
-        ${DINGDING_MARKDOWN_PY}  "*** Error:Build:${RUN_ENV} ***" "【${PJ}】失败，其他用户正在构建中" > /dev/null
+        ${DINGDING_MARKDOWN_PY}  "*** Error:${GAN_PLATFORM_NAME}:${GAN_WHAT_FUCK} ***" "【${PJ}】失败，其他用户正在构建中" > /dev/null
         [ "x${ERROR_EXIT}" = 'xYES' ] && break
         ERROR_CODE=53
         continue
@@ -1157,6 +1377,12 @@ do
                     ;;
                 node)
                     NODE_BUILD  > /dev/null 2>&1
+                    ;;
+                html)
+                    HTML_BUILD  > /dev/null 2>&1
+                    ;;
+                python)
+                    PYTHON_BUILD  > /dev/null 2>&1
                     ;;
                 *)
                     echo -e "\n猪猪侠警告：【${LANGUAGE_CATEGORY}】这个类别的语言是你新加的，你自己把它完善下！\n"
@@ -1211,6 +1437,12 @@ do
             node)
                 NODE_BUILD
                 ;;
+            html)
+                HTML_BUILD  > /dev/null 2>&1
+                ;;
+            python)
+                PYTHON_BUILD  > /dev/null 2>&1
+                ;;
             *)
                 echo -e "\n猪猪侠警告：【${LANGUAGE_CATEGORY}】这个类别的语言是你新加的，你自己把它完善下！\n"
                 ${LANGUAGE_CATEGORY}_BUILD      #--- 自己定义
@@ -1264,6 +1496,7 @@ case ${SH_RUN_MODE} in
         MESSAGE_END="项目构建已完成！共企图构建${BUILD_CHECK_COUNT}个项目，成功构建${BUILD_SUCCESS_COUNT}个项目，${BUILD_NOCHANGE_COUNT}个项目无更新，${BUILD_NOTNEED_COUNT}个项目无需构建，${BUILD_ERROR_COUNT}个项目出错。"
         # 消息回显拼接
         > ${BUILD_HISTORY_CURRENT_FILE}
+        echo "干    啥：**${GAN_WHAT_FUCK}**" | tee -a ${BUILD_HISTORY_CURRENT_FILE}
         echo "======== 构建报告 ========" >> ${BUILD_HISTORY_CURRENT_FILE}
         echo -e "${ECHO_REPORT}========================= 构建报告 ==========================${ECHO_CLOSE}"    #--- 60 (60-50-40)
         #
@@ -1300,7 +1533,7 @@ case ${SH_RUN_MODE} in
             #echo ${MSG[$t]}
             let  t=$t+1
         done < ${BUILD_HISTORY_CURRENT_FILE}
-        ${DINGDING_MARKDOWN_PY}  "【Info:Build:${RUN_ENV}】" "${MSG[@]}" > /dev/null
+        ${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${GAN_WHAT_FUCK}】" "${MSG[@]}" > /dev/null
         exit 0
         ;;
     function)

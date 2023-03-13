@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # encoding: utf-8
 #############################################################################
 # Create By: 猪猪侠
@@ -21,19 +21,22 @@ import os
 import socket
 import time
 
+
+# 钉钉api --- 引入OS变量
+ENV_DIST = os.environ
+api_url = ENV_DIST.get('DINGDING_API')
+#api_url = "https://oapi.dingtalk.com/robot/send?access_token=f75b4e5582c3720dxxxxxxxxxxxx849eba76bd3bffcccc"
+
+
 # 获取主机名
 HOSTNAME = socket.gethostname()
 
 # 时间
 DATETIME = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
-# 获取OS变量
-ENV_DIST = os.environ
 
-
+# Header
 headers = {'Content-Type': 'application/json;charset=utf-8'}
-api_url = ENV_DIST.get('DINGDING_API')
-#api_url = "https://oapi.dingtalk.com/robot/send?access_token=f75b4e5582c3720dxxxxxxxxxxxx849eba76bd3bffcccc"
 
 
 def msg(a):
@@ -42,26 +45,26 @@ def msg(a):
     del a[0]
 
     json_text = '{"msgtype": "markdown", "markdown": {"title": '
-    j=0
+    j = 0
 
     for k in a:
         if j == 0 :
             json_text = json_text + '"' + k + '"'
             json_text = json_text + ', "text": "### ' + k + '\\n'
-            j=1
+            j = 1
             continue
         json_text = json_text + '- ' + k + '\\n'
 
-    #json_text= {'msgtype': 'markdown', 'markdown': {'title': 'aa', 'text': '### 天龙盖地虎\n @1860021887\n\n- bb\n\n- cc'}, 'at': {'atMobiles':  ['1860021887'], 'isAtAll': False}}
+    #json_text = {'msgtype': 'markdown', 'markdown': {'title': 'aa', 'text': '### 天龙盖地虎\n @1860021887\n\n- bb\n\n- cc'}, 'at': {'atMobiles':  ['1860021887'], 'isAtAll': False}}
     #json_text = json_text + "\\n\\n---\\n\\n*发自: " + HOSTNAME + "*\\n\\n" '"}, "at": {"atMobiles": ["1860021887"], "isAtAll": True}}'
     json_text = json_text + "---\\n" + "*发自: " + HOSTNAME + "*\\n\\n" + "*时间: " + DATETIME + "*\\n\\n" '"}, "at": {"atMobiles": ["1860021887"], "isAtAll": True}}'
 
     # http://www.pythoner.com/56.html
     #exec """print "json_text=" , json_text"""
     # https://blog.csdn.net/wangato/article/details/71104173
-    json_text= eval(json_text)
+    json_text = eval(json_text)
 
-    print requests.post(api_url,json.dumps(json_text),headers=headers).content
+    print(requests.post(api_url,json.dumps(json_text),headers=headers).content)
 
 if __name__ == '__main__':
     msg(sys.argv)

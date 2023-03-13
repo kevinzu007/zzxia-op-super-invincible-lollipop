@@ -1,7 +1,7 @@
 version: "3"                                                                                                                                                                                   
 services:
   mysql:
-    # https://dev.mysql.com/doc/refman/8.0/en/docker-mysql-more-topics.html
+    # https://dev.mysql.com/doc/refman/5.7/en/docker-mysql-more-topics.html
     image: mysql:5.7
     restart: always
     ports:
@@ -24,7 +24,7 @@ services:
       #- MYSQL_USER=unacos
       #- MYSQL_PASSWORD=nacos1234
 
-    # 使用utf8mb4默认字符集和utf8mb4_col数据库的默认排序规则启动
+    # 使用utf8mb4字符集和utf8mb4_unicode_ci排序规则
     command:
       - '--character-set-server=utf8mb4'
       - '--collation-server=utf8mb4_unicode_ci'
