@@ -3,7 +3,7 @@
 
 # 镜像名称与版本
 IMAGE_SERVER=''
-NAME_SPACE=apache
+NAME_SPACE=nacos
 IMAGE_NAME=nacos-server
 VER=v2.1.2
 
