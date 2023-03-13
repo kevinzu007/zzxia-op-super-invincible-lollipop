@@ -291,12 +291,12 @@ F_FIND_LOCAL_BR()
 ERR_SHOW()
 {
     if [ "${ERROR_EXIT}" = 'YES' ]; then
-        MESSAGE_ERR="【${PJ}】build 出错了，请检查！ 代码分支：${GIT_BRANCH}。构建已终止！"
+        MESSAGE_ERR="猪猪侠警告：【${GAN_WHAT_FUCK}】时，【${PJ}】出错了，请检查！ 代码分支：${GIT_BRANCH}。构建已终止！"
     else
-        MESSAGE_ERR="【${PJ}】build 出错了，请检查！ 代码分支：${GIT_BRANCH}。将继续构建后续项目！"
+        MESSAGE_ERR="猪猪侠警告：【${GAN_WHAT_FUCK}】时，【${PJ}】出错了，请检查！ 代码分支：${GIT_BRANCH}。将继续构建后续项目！"
     fi
     echo -e "${ECHO_ERROR}${MESSAGE_ERR}${ECHO_CLOSE}"
-    ${DINGDING_MARKDOWN_PY}  "*** Error:${GAN_PLATFORM_NAME}:${GAN_WHAT_FUCK} ***" "${MESSAGE_ERR}" > /dev/null
+    ${DINGDING_MARKDOWN_PY}  "【Error:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "${MESSAGE_ERR}" > /dev/null
 }
 
 
@@ -1216,8 +1216,8 @@ else
         # 查找
         F_FIND_PROJECT "${THIS_LANGUAGE_CATEGORY}" >> ${PROJECT_LIST_FILE_TMP}
         if [[ $? -ne 0 ]]; then
-            echo -e "\n猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！\n"
-            ${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${GAN_WHAT_FUCK}】" "猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！" > /dev/null
+            echo -e "\n${ECHO_ERROR}猪猪侠警告：【${GAN_WHAT_FUCK}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！${ECHO_CLOSE}\n"
+            ${DINGDING_MARKDOWN_PY}  "【Error:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_WHAT_FUCK}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！" > /dev/null
             exit 51
         fi
     else
@@ -1227,8 +1227,8 @@ else
             # 查找
             F_FIND_PROJECT "${THIS_LANGUAGE_CATEGORY}" "$i" >> ${PROJECT_LIST_FILE_TMP}
             if [[ $? -ne 0 ]]; then
-                echo -e "\n猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目【$i】，请检查！\n"
-                ${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${GAN_WHAT_FUCK}】" "猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目【$i】，请检查！" > /dev/null
+                echo -e "\n${ECHO_ERROR}猪猪侠警告：【${GAN_WHAT_FUCK}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目【$i】，请检查！${ECHO_CLOSE}\n"
+                ${DINGDING_MARKDOWN_PY}  "【Error:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_WHAT_FUCK}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目【$i】，请检查！" > /dev/null
                 exit 51
             fi
         done
@@ -1335,8 +1335,8 @@ do
     ps -ef | grep "${PJ}" | grep -v "$0" | grep -v '.sh' | grep -v grep > /dev/null 2>&1
     if [ $? -eq 0 ]; then
         echo "${PJ} : 失败，其他用户正在构建中 : x" >> ${BUILD_OK_LIST_FILE}
-        echo -e "${ECHO_ERROR}失败，其他用户正在构建中${ECHO_CLOSE}"
-        ${DINGDING_MARKDOWN_PY}  "*** Error:${GAN_PLATFORM_NAME}:${GAN_WHAT_FUCK} ***" "【${PJ}】失败，其他用户正在构建中" > /dev/null
+        echo -e "${ECHO_ERROR}【${GAN_WHAT_FUCK}】时，【${PJ}】失败了，其他用户正在构建中${ECHO_CLOSE}"
+        ${DINGDING_MARKDOWN_PY}  "【Error:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "【${GAN_WHAT_FUCK}】时，【${PJ}】失败了，其他用户正在构建中" > /dev/null
         [ "x${ERROR_EXIT}" = 'xYES' ] && break
         ERROR_CODE=53
         continue
@@ -1496,7 +1496,7 @@ case ${SH_RUN_MODE} in
         MESSAGE_END="项目构建已完成！共企图构建${BUILD_CHECK_COUNT}个项目，成功构建${BUILD_SUCCESS_COUNT}个项目，${BUILD_NOCHANGE_COUNT}个项目无更新，${BUILD_NOTNEED_COUNT}个项目无需构建，${BUILD_ERROR_COUNT}个项目出错。"
         # 消息回显拼接
         > ${BUILD_HISTORY_CURRENT_FILE}
-        echo "干    啥：**${GAN_WHAT_FUCK}**" | tee -a ${BUILD_HISTORY_CURRENT_FILE}
+        echo "干      ：**${GAN_WHAT_FUCK}**" | tee -a ${BUILD_HISTORY_CURRENT_FILE}
         echo "======== 构建报告 ========" >> ${BUILD_HISTORY_CURRENT_FILE}
         echo -e "${ECHO_REPORT}========================= 构建报告 ==========================${ECHO_CLOSE}"    #--- 60 (60-50-40)
         #
@@ -1533,7 +1533,7 @@ case ${SH_RUN_MODE} in
             #echo ${MSG[$t]}
             let  t=$t+1
         done < ${BUILD_HISTORY_CURRENT_FILE}
-        ${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${GAN_WHAT_FUCK}】" "${MSG[@]}" > /dev/null
+        ${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "${MSG[@]}" > /dev/null
         exit 0
         ;;
     function)

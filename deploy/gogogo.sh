@@ -787,7 +787,8 @@ if [[ -z ${THIS_LANGUAGE_CATEGORY} ]]; then
             done < ${GOGOGO_PROJECT_LIST_FILE}
             #
             if [[ $GET_IT != 'YES' ]]; then
-                echo -e "\n猪猪侠警告：项目【${i}】正则不匹配项目列表【${GOGOGO_PROJECT_LIST_FILE}】中任何项目，请检查！\n"
+                echo -e "\n${ECHO_ERROR}猪猪侠警告：【${GAN_WHAT_FUCK}】时，项目【${i}】正则不匹配项目列表【${GOGOGO_PROJECT_LIST_FILE}】中任何项目，请检查！${ECHO_CLOSE}\n"
+                ${DINGDING_MARKDOWN_PY}  "【Error:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_WHAT_FUCK}】时，项目【${i}】正则不匹配项目列表【${GOGOGO_PROJECT_LIST_FILE}】中任何项目，请检查！" > /dev/null
                 exit 51
             fi
         done
@@ -806,8 +807,8 @@ else
         # 查找
         F_FIND_PROJECT ${THIS_LANGUAGE_CATEGORY} >> ${GOGOGO_PROJECT_LIST_FILE_TMP}
         if [[ $? -ne 0 ]]; then
-            echo -e "\n猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！\n"
-            ${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${GAN_WHAT_FUCK}】" "猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！" > /dev/null
+            echo -e "\n${ECHO_ERROR}猪猪侠警告：【${GAN_WHAT_FUCK}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！${ECHO_CLOSE}\n"
+            ${DINGDING_MARKDOWN_PY}  "【Error:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_WHAT_FUCK}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！" > /dev/null
             exit 51
         fi
     else
@@ -817,8 +818,8 @@ else
             # 查找
             F_FIND_PROJECT ${THIS_LANGUAGE_CATEGORY} $i >> ${GOGOGO_PROJECT_LIST_FILE_TMP}
             if [[ $? -ne 0 ]]; then
-                echo -e "\n猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】且正则匹配【$i】的项目，请检查！\n"
-                ${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${GAN_WHAT_FUCK}】" "猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】且正则匹配【$i】的项目，请检查！" > /dev/null
+                echo -e "\n${ECHO_ERROR}猪猪侠警告：【GAN_WHAT_FUCK】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】且正则匹配【$i】的项目，请检查！${ECHO_CLOSE}\n"
+                ${DINGDING_MARKDOWN_PY}  "【Error:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【GAN_WHAT_FUCK】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】且正则匹配【$i】的项目，请检查！" > /dev/null
                 exit 51
             fi
         done
@@ -1035,7 +1036,7 @@ TIME_END=`date +%Y-%m-%dT%H:%M:%S`
 MESSAGE_END="项目构建已完成！ 共企图构建发布${RELEASE_CHECK_COUNT}个项目，成功构建发布${RELEASE_SUCCESS_COUNT}个项目，成功构建但失败发布${RELEASE_ERROR_COUNT}个项目，跳过发布${RELEASE_SKIP_COUNT}个项目，失败构建${BUILD_ERROR_COUNT}个项目。"
 # 消息回显拼接
 > ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
-echo "干    啥：**${GAN_WHAT_FUCK}**" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
+echo "干      ：**${GAN_WHAT_FUCK}**" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 echo "===== 构建与发布报告 =====" >> ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 echo -e "${ECHO_REPORT}################################ 构建与发布报告 ################################${ECHO_CLOSE}"   #--- 80 (80-70-60)
 #
@@ -1075,7 +1076,7 @@ do
     #echo ${MSG[$t]}
     let  t=$t+1
 done < ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
-${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${GAN_WHAT_FUCK}】" "${MSG[@]}" > /dev/null
+${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "${MSG[@]}" > /dev/null
 
 
 

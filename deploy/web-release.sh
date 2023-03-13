@@ -11,6 +11,9 @@ SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd "${SH_PATH}"
 
+# 自动从/etc/profile.d/run-env.sh引入以下变量
+RUN_ENV=${RUN_ENV:-'dev'}
+
 # 引入env
 . ${SH_PATH}/deploy.env
 GAN_PLATFORM_NAME="${GAN_PLATFORM_NAME:-'超甜B&D系统'}"
@@ -303,7 +306,8 @@ else
         done < "${WEB_PROJECT_LIST_FILE}"
         #
         if [[ $GET_IT != 'YES' ]]; then
-            echo -e "\n猪猪侠警告：项目【${i}】不在WEB项目列表【${WEB_PROJECT_LIST_FILE}】中，请检查！\n"
+            echo -e "\n${ECHO_ERROR}猪猪侠警告：【${GAN_WHAT_FUCK}】时，项目【${i}】正则不匹配项目列表【${WEB_PROJECT_LIST_FILE}】中任何项目，请检查！${ECHO_CLOSE}\n"
+            ${DINGDING_MARKDOWN_PY}  "【Error:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_WHAT_FUCK}】时，项目【${i}】正则不匹配项目列表【${WEB_PROJECT_LIST_FILE}】中任何项目，请检查！" > /dev/null
             exit 51
         fi
     done
@@ -435,7 +439,7 @@ case ${SH_RUN_MODE} in
         MESSAGE_END="WEB项目${WEB_ACTION}已完成！ 共企图${WEB_ACTION}${CHECK_COUNT}个项目，成功${WEB_ACTION}${SUCCESS_COUNT}个项目，跳过${NONEED_COUNT}个项目，${ERROR_COUNT}个项目出错。"
         # 消息回显拼接
         > ${WEB_RELEASE_HISTORY_CURRENT_FILE}
-        echo "干    啥：**${GAN_WHAT_FUCK}**" | tee -a ${WEB_RELEASE_HISTORY_CURRENT_FILE}
+        echo "干      ：**${GAN_WHAT_FUCK}**" | tee -a ${WEB_RELEASE_HISTORY_CURRENT_FILE}
         echo "===== WEB 站点${WEB_ACTION}报告 =====" >> ${WEB_RELEASE_HISTORY_CURRENT_FILE}
         echo -e "${ECHO_REPORT}========================== WEB 站点${WEB_ACTION}报告 ==========================${ECHO_CLOSE}"
         #
@@ -469,7 +473,7 @@ case ${SH_RUN_MODE} in
             #echo ${MSG[$t]}
             let  t=$t+1
         done < ${WEB_RELEASE_HISTORY_CURRENT_FILE}
-        ${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${GAN_WHAT_FUCK}】" "${MSG[@]}" > /dev/null
+        ${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "${MSG[@]}" > /dev/null
         ;;
     function)
         #
