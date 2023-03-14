@@ -547,7 +547,7 @@ TIME_END=`date +%Y-%m-%dT%H:%M:%S`
 MESSAGE_END="项目构建已完成！ 共企图构建${BUILD_CHECK_COUNT}个项目，成功构建${BUILD_SUCCESS_COUNT}个项目，${BUILD_NOCHANGE_COUNT}个项目无更新，${BUILD_NOTNEED_COUNT}个项目无需构建，${BUILD_ERROR_COUNT}个项目出错。"
 # 消息回显拼接
 >  ${PARA_BUILD_HISTORY_CURRENT_FILE}
-echo "干      ：**${GAN_WHAT_FUCK}**" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
+echo "干：**${GAN_WHAT_FUCK}**" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
 echo "====== 并行构建报告 ======" >> ${PARA_BUILD_HISTORY_CURRENT_FILE}
 echo -e "${ECHO_REPORT}################################# 并行构建报告 #################################${ECHO_CLOSE}"    #--- 80 (80-70-60)
 #

@@ -1036,7 +1036,7 @@ TIME_END=`date +%Y-%m-%dT%H:%M:%S`
 MESSAGE_END="项目构建已完成！ 共企图构建发布${RELEASE_CHECK_COUNT}个项目，成功构建发布${RELEASE_SUCCESS_COUNT}个项目，成功构建但失败发布${RELEASE_ERROR_COUNT}个项目，跳过发布${RELEASE_SKIP_COUNT}个项目，失败构建${BUILD_ERROR_COUNT}个项目。"
 # 消息回显拼接
 > ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
-echo "干      ：**${GAN_WHAT_FUCK}**" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
+echo "干：**${GAN_WHAT_FUCK}**" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 echo "===== 构建与发布报告 =====" >> ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 echo -e "${ECHO_REPORT}################################ 构建与发布报告 ################################${ECHO_CLOSE}"   #--- 80 (80-70-60)
 #

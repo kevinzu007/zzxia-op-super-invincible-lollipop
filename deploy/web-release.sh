@@ -439,7 +439,7 @@ case ${SH_RUN_MODE} in
         MESSAGE_END="WEB项目${WEB_ACTION}已完成！ 共企图${WEB_ACTION}${CHECK_COUNT}个项目，成功${WEB_ACTION}${SUCCESS_COUNT}个项目，跳过${NONEED_COUNT}个项目，${ERROR_COUNT}个项目出错。"
         # 消息回显拼接
         > ${WEB_RELEASE_HISTORY_CURRENT_FILE}
-        echo "干      ：**${GAN_WHAT_FUCK}**" | tee -a ${WEB_RELEASE_HISTORY_CURRENT_FILE}
+        echo "干：**${GAN_WHAT_FUCK}**" | tee -a ${WEB_RELEASE_HISTORY_CURRENT_FILE}
         echo "===== WEB 站点${WEB_ACTION}报告 =====" >> ${WEB_RELEASE_HISTORY_CURRENT_FILE}
         echo -e "${ECHO_REPORT}========================== WEB 站点${WEB_ACTION}报告 ==========================${ECHO_CLOSE}"
         #
