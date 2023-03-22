@@ -291,12 +291,12 @@ F_FIND_LOCAL_BR()
 ERR_SHOW()
 {
     if [ "${ERROR_EXIT}" = 'YES' ]; then
-        MESSAGE_ERR="【${PJ}】build 出错了，请检查！ 代码分支：${GIT_BRANCH}。构建已终止！"
+        MESSAGE_ERR="猪猪侠警告：【${GAN_WHAT_FUCK}】时，【${PJ}】出错了，请检查！ 代码分支：${GIT_BRANCH}。构建已终止！"
     else
-        MESSAGE_ERR="【${PJ}】build 出错了，请检查！ 代码分支：${GIT_BRANCH}。将继续构建后续项目！"
+        MESSAGE_ERR="猪猪侠警告：【${GAN_WHAT_FUCK}】时，【${PJ}】出错了，请检查！ 代码分支：${GIT_BRANCH}。将继续构建后续项目！"
     fi
     echo -e "${ECHO_ERROR}${MESSAGE_ERR}${ECHO_CLOSE}"
-    ${DINGDING_MARKDOWN_PY}  "*** Error:${GAN_PLATFORM_NAME}:${GAN_WHAT_FUCK} ***" "${MESSAGE_ERR}" > /dev/null
+    ${DINGDING_MARKDOWN_PY}  "【Error:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "${MESSAGE_ERR}" > /dev/null
 }
 
 
@@ -311,10 +311,10 @@ GIT_CODE()
         #git clone  "git@${GIT_SERVER}:${GIT_GROUP}/${PJ}.git"   > "${GIT_LOG_file}"  2>&1
         git clone  "${GIT_REPO_URL_BASE}/${PJ}.git"   > "${GIT_LOG_file}"  2>&1
         if [ $? -eq 0 ]; then
-            ansible nginx_real -m copy -a "src=${GIT_LOG_file} dest=${WEBSITE_BASE}/${BUILD_LOG_PJ_NAME}/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"  > "${GIT_LOG_file}"  2>&1
+            ansible nginx_real -m copy -a "src=${GIT_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"  > "${GIT_LOG_file}"  2>&1
             cd  "${PJ}"
         else
-            ansible nginx_real -m copy -a "src=${GIT_LOG_file} dest=${WEBSITE_BASE}/${BUILD_LOG_PJ_NAME}/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"  > "${GIT_LOG_file}"  2>&1
+            ansible nginx_real -m copy -a "src=${GIT_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"  > "${GIT_LOG_file}"  2>&1
             echo "失败，Git Clone 出错，请检查仓库权限！"
             echo "${PJ} : 失败，Git Clone 出错 : x" >> "${BUILD_OK_LIST_FILE}"
             ERR_SHOW
@@ -344,12 +344,12 @@ GIT_CODE()
         git pull -p  > "${GIT_LOG_file}"  2>&1  #--- pull + 清理远程已删除本地还存在的分支
         if [ $? -ne 0 ]; then
             echo "失败，Git Pull 出错，请检查日志文件：${GIT_LOG_file}"
-            ansible nginx_real -m copy -a "src=${GIT_LOG_file} dest=${WEBSITE_BASE}/${BUILD_LOG_PJ_NAME}/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
+            ansible nginx_real -m copy -a "src=${GIT_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
             echo "${PJ} : 失败，Git Pull 出错 : x" >> "${BUILD_OK_LIST_FILE}"
             ERR_SHOW
             return 54
         else
-            ansible nginx_real -m copy -a "src=${GIT_LOG_file} dest=${WEBSITE_BASE}/${BUILD_LOG_PJ_NAME}/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
+            ansible nginx_real -m copy -a "src=${GIT_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
             #
             CURRENT_BRANCH=$(git branch | grep '*' | awk '{print $2}')
             # 是否存在远程分支
@@ -540,7 +540,7 @@ JAVA_BUILD()
             fi
             # build
             mvn clean ${MVN_OPT} -X  2>&1 | tee ${BUILD_LOG_file}
-            ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/${BUILD_LOG_PJ_NAME}/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
+            ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
             grep  'BUILD\ SUCCESS'  ${BUILD_LOG_file}
             #
             if [ $? -ne 0 ]; then
@@ -667,7 +667,7 @@ NODE_BUILD()
             ;;
     esac
     #
-    ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/${BUILD_LOG_PJ_NAME}/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
+    ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
     #
     grep -E 'Error|ERR!'  ${BUILD_LOG_file}
     if [ $? -eq 0 ]; then
@@ -781,7 +781,7 @@ HTML_BUILD()
             ;;
     esac
     #
-    ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/${BUILD_LOG_PJ_NAME}/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
+    ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
     #
     grep -E 'Error|ERR!'  ${BUILD_LOG_file}
     if [ $? -eq 0 ]; then
@@ -881,7 +881,7 @@ PYTHON_BUILD()
             ;;
     esac
     #
-    ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/${BUILD_LOG_PJ_NAME}/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
+    ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
     #
     grep -E 'Error|ERR!'  ${BUILD_LOG_file}
     if [ $? -eq 0 ]; then
@@ -1216,8 +1216,8 @@ else
         # 查找
         F_FIND_PROJECT "${THIS_LANGUAGE_CATEGORY}" >> ${PROJECT_LIST_FILE_TMP}
         if [[ $? -ne 0 ]]; then
-            echo -e "\n猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！\n"
-            ${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${GAN_WHAT_FUCK}】" "猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！" > /dev/null
+            echo -e "\n${ECHO_ERROR}猪猪侠警告：【${GAN_WHAT_FUCK}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！${ECHO_CLOSE}\n"
+            ${DINGDING_MARKDOWN_PY}  "【Error:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_WHAT_FUCK}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！" > /dev/null
             exit 51
         fi
     else
@@ -1227,8 +1227,8 @@ else
             # 查找
             F_FIND_PROJECT "${THIS_LANGUAGE_CATEGORY}" "$i" >> ${PROJECT_LIST_FILE_TMP}
             if [[ $? -ne 0 ]]; then
-                echo -e "\n猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目【$i】，请检查！\n"
-                ${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${GAN_WHAT_FUCK}】" "猪猪侠警告：没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目【$i】，请检查！" > /dev/null
+                echo -e "\n${ECHO_ERROR}猪猪侠警告：【${GAN_WHAT_FUCK}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目【$i】，请检查！${ECHO_CLOSE}\n"
+                ${DINGDING_MARKDOWN_PY}  "【Error:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_WHAT_FUCK}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目【$i】，请检查！" > /dev/null
                 exit 51
             fi
         done
@@ -1335,8 +1335,8 @@ do
     ps -ef | grep "${PJ}" | grep -v "$0" | grep -v '.sh' | grep -v grep > /dev/null 2>&1
     if [ $? -eq 0 ]; then
         echo "${PJ} : 失败，其他用户正在构建中 : x" >> ${BUILD_OK_LIST_FILE}
-        echo -e "${ECHO_ERROR}失败，其他用户正在构建中${ECHO_CLOSE}"
-        ${DINGDING_MARKDOWN_PY}  "*** Error:${GAN_PLATFORM_NAME}:${GAN_WHAT_FUCK} ***" "【${PJ}】失败，其他用户正在构建中" > /dev/null
+        echo -e "${ECHO_ERROR}【${GAN_WHAT_FUCK}】时，【${PJ}】失败了，其他用户正在构建中${ECHO_CLOSE}"
+        ${DINGDING_MARKDOWN_PY}  "【Error:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "【${GAN_WHAT_FUCK}】时，【${PJ}】失败了，其他用户正在构建中" > /dev/null
         [ "x${ERROR_EXIT}" = 'xYES' ] && break
         ERROR_CODE=53
         continue
@@ -1496,7 +1496,7 @@ case ${SH_RUN_MODE} in
         MESSAGE_END="项目构建已完成！共企图构建${BUILD_CHECK_COUNT}个项目，成功构建${BUILD_SUCCESS_COUNT}个项目，${BUILD_NOCHANGE_COUNT}个项目无更新，${BUILD_NOTNEED_COUNT}个项目无需构建，${BUILD_ERROR_COUNT}个项目出错。"
         # 消息回显拼接
         > ${BUILD_HISTORY_CURRENT_FILE}
-        echo "干    啥：**${GAN_WHAT_FUCK}**" | tee -a ${BUILD_HISTORY_CURRENT_FILE}
+        echo "干：**${GAN_WHAT_FUCK}**" | tee -a ${BUILD_HISTORY_CURRENT_FILE}
         echo "======== 构建报告 ========" >> ${BUILD_HISTORY_CURRENT_FILE}
         echo -e "${ECHO_REPORT}========================= 构建报告 ==========================${ECHO_CLOSE}"    #--- 60 (60-50-40)
         #
@@ -1533,7 +1533,7 @@ case ${SH_RUN_MODE} in
             #echo ${MSG[$t]}
             let  t=$t+1
         done < ${BUILD_HISTORY_CURRENT_FILE}
-        ${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${GAN_WHAT_FUCK}】" "${MSG[@]}" > /dev/null
+        ${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "${MSG[@]}" > /dev/null
         exit 0
         ;;
     function)
