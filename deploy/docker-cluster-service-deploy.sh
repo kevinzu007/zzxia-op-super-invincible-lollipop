@@ -30,7 +30,7 @@ GAN_PLATFORM_NAME="${GAN_PLATFORM_NAME:-'超甜B&D系统'}"
 #DOCKER_REPO_SECRET_NAME=
 
 # 本地env
-GAN_WHAT_FUCK='D_Deploy'
+GAN_WHAT_FUCK='Docker_Deploy'
 TIME=${TIME:-`date +%Y-%m-%dT%H:%M:%S`}
 TIME_START=${TIME}
 DATE_TIME=`date -d "${TIME}" +%Y%m%dT%H%M%S`

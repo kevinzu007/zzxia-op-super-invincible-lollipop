@@ -21,7 +21,7 @@ DINGDING_API=${DINGDING_API:-"请定义"}
 #USER_DB_FILE=
 
 # 本地env
-GAN_WHAT_FUCK='W_Release'
+GAN_WHAT_FUCK='Web_Release'
 TIME=${TIME:-`date +%Y-%m-%dT%H:%M:%S`}
 TIME_START=${TIME}
 DATE_TIME=`date -d "${TIME}" +%Y%m%dT%H%M%S`
