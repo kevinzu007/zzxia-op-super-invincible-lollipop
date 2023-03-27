@@ -639,7 +639,7 @@ F_SET_RUN_ENV()
         swarm)
             if [[ ! -z ${DEPLOY_PLACEMENT} ]]; then
                 DEPLOY_PLACEMENT=${DEPLOY_PLACEMENT// /}               #--- 删除字符串中所有的空格
-                DEPLOY_PLACEMENT_ARG_NUM=$(echo ${DEPLOY_PLACEMENT} | grep -o , | wc -l)
+                DEPLOY_PLACEMENT_ARG_NUM=$(echo ${DEPLOY_PLACEMENT} | grep -o ',' | wc -l)
                 DEPLOY_PLACEMENT_LABELS=''
                 for ((i=DEPLOY_PLACEMENT_ARG_NUM; i>=0; i--))
                 do
@@ -647,7 +647,7 @@ F_SET_RUN_ENV()
                         break
                     fi
                     FIELD=$((i+1))
-                    DEPLOY_PLACEMENT_SET=`echo ${DEPLOY_PLACEMENT} | cut -d , -f ${FIELD}`
+                    DEPLOY_PLACEMENT_SET=`echo ${DEPLOY_PLACEMENT} | cut -d ',' -f ${FIELD}`
                     # 
                     if [[ ${DEPLOY_PLACEMENT_SET} =~ ^NET ]]; then
                         NETWORK_SWARM=$(echo ${DEPLOY_PLACEMENT_SET} | awk -F ':' '{print $2}')
@@ -665,7 +665,7 @@ F_SET_RUN_ENV()
         k8s)
             if [[ ! -z ${DEPLOY_PLACEMENT} ]]; then
                 DEPLOY_PLACEMENT=${DEPLOY_PLACEMENT// /}               #--- 删除字符串中所有的空格
-                DEPLOY_PLACEMENT_ARG_NUM=$(echo ${DEPLOY_PLACEMENT} | grep -o , | wc -l)
+                DEPLOY_PLACEMENT_ARG_NUM=$(echo ${DEPLOY_PLACEMENT} | grep -o ',' | wc -l)
                 DEPLOY_PLACEMENT_LABELS=''
                 for ((i=DEPLOY_PLACEMENT_ARG_NUM; i>=0; i--))
                 do
@@ -673,7 +673,7 @@ F_SET_RUN_ENV()
                         break
                     fi
                     FIELD=$((i+1))
-                    DEPLOY_PLACEMENT_SET=`echo ${DEPLOY_PLACEMENT} | cut -d , -f ${FIELD}`
+                    DEPLOY_PLACEMENT_SET=`echo ${DEPLOY_PLACEMENT} | cut -d ',' -f ${FIELD}`
                     # 假设只有一个Label
                     if [[ ${DEPLOY_PLACEMENT_SET} =~ ^NS ]]; then
                         K8S_NAMESAPCE=$(echo ${DEPLOY_PLACEMENT_SET} | awk -F ':' '{print $2}')
@@ -1526,7 +1526,7 @@ do
             DEBUG_X_PORT=''
             DEBUG_X_PORTS=''
             #
-            CONTAINER_PORTS_NUM=`echo ${CONTAINER_PORTS} | grep -o , | wc -l`
+            CONTAINER_PORTS_NUM=`echo ${CONTAINER_PORTS} | grep -o ',' | wc -l`
             for ((i=CONTAINER_PORTS_NUM; i>=0; i--))
             do
                 # 无端口
@@ -1536,10 +1536,10 @@ do
                 fi
                 #
                 FIELD=$((i+1))
-                CONTAINER_PORTS_SET=`echo ${CONTAINER_PORTS} | cut -d , -f ${FIELD}`
-                CONTAINER_PORTS_SET_outside=`echo ${CONTAINER_PORTS} | cut -d , -f ${FIELD} | cut -d : -f 1`
+                CONTAINER_PORTS_SET=`echo ${CONTAINER_PORTS} | cut -d ',' -f ${FIELD}`
+                CONTAINER_PORTS_SET_outside=`echo ${CONTAINER_PORTS} | cut -d ',' -f ${FIELD} | cut -d : -f 1`
                 CONTAINER_PORTS_SET_outside=`echo ${CONTAINER_PORTS_SET_outside}`
-                CONTAINER_PORTS_SET_inside=`echo ${CONTAINER_PORTS} | cut -d , -f ${FIELD} | cut -d : -f 2`
+                CONTAINER_PORTS_SET_inside=`echo ${CONTAINER_PORTS} | cut -d ',' -f ${FIELD} | cut -d : -f 2`
                 CONTAINER_PORTS_SET_inside=`echo ${CONTAINER_PORTS_SET_inside}`
                 #
                 if [[ -z ${CONTAINER_PORTS_SET_inside} ]]; then
@@ -1654,14 +1654,14 @@ do
             # - 从配置文件
             JAVA_OPTIONS_OK_V=""
             #
-            JAVA_OPTIONS_NUM=`echo ${JAVA_OPTIONS} | grep -o , | wc -l`
+            JAVA_OPTIONS_NUM=`echo ${JAVA_OPTIONS} | grep -o ',' | wc -l`
             for ((i=JAVA_OPTIONS_NUM; i>=0; i--))
             do
                 if [ "x${JAVA_OPTIONS}" = 'x' ]; then
                     break
                 fi
                 FIELD=$((i+1))
-                JAVA_OPTIONS_SET=`echo ${JAVA_OPTIONS} | cut -d , -f ${FIELD}`
+                JAVA_OPTIONS_SET=`echo ${JAVA_OPTIONS} | cut -d ',' -f ${FIELD}`
                 #
                 if [[ "${JAVA_OPTIONS_SET}" =~ ^JAVA_OPT_FROM_FILE.* ]]; then
                     # 从指定文件组装
@@ -1742,19 +1742,19 @@ do
             # - 从配置文件
             CONTAINER_ENVS_OK=''
             #
-            CONTAINER_ENVS_NUM=`echo ${CONTAINER_ENVS} | grep -o , | wc -l`
+            CONTAINER_ENVS_NUM=`echo ${CONTAINER_ENVS} | grep -o ',' | wc -l`
             for ((i=CONTAINER_ENVS_NUM; i>=0; i--))
             do
                 if [ "x${CONTAINER_ENVS}" = 'x' ]; then
                     break
                 fi
                 FIELD=$((i+1))
-                CONTAINER_ENVS_SET=`echo ${CONTAINER_ENVS} | cut -d , -f ${FIELD}`
+                CONTAINER_ENVS_SET=`echo ${CONTAINER_ENVS} | cut -d ',' -f ${FIELD}`
                 #
-                CONTAINER_ENVS_SET_n=`echo ${CONTAINER_ENVS} | cut -d , -f ${FIELD} | cut -d = -f 1`
+                CONTAINER_ENVS_SET_n=`echo ${CONTAINER_ENVS} | cut -d ',' -f ${FIELD} | cut -d = -f 1`
                 CONTAINER_ENVS_SET_n=`echo ${CONTAINER_ENVS_SET_n}`
                 #
-                CONTAINER_ENVS_SET_v=`echo ${CONTAINER_ENVS} | cut -d , -f ${FIELD} | cut -d = -f 2`
+                CONTAINER_ENVS_SET_v=`echo ${CONTAINER_ENVS} | cut -d ',' -f ${FIELD} | cut -d = -f 2`
                 CONTAINER_ENVS_SET_v=`echo ${CONTAINER_ENVS_SET_v}`
                 # 是否为空
                 if [ -z "${CONTAINER_ENVS_SET_n}" -o -z "${CONTAINER_ENVS_SET_v}" ]; then
@@ -1791,14 +1791,14 @@ do
             # 8 组装CMD
             CONTAINER_CMDS_OK=''
             #
-            CONTAINER_CMDS_NUM=`echo ${CONTAINER_CMDS} | grep -o , | wc -l`
+            CONTAINER_CMDS_NUM=`echo ${CONTAINER_CMDS} | grep -o ',' | wc -l`
             for ((i=CONTAINER_CMDS_NUM; i>=0; i--))
             do
                 if [ "x${CONTAINER_CMDS}" = 'x' ]; then
                     break
                 fi
                 FIELD=$((i+1))
-                CONTAINER_CMDS_SET=`echo ${CONTAINER_CMDS} | cut -d , -f ${FIELD}`
+                CONTAINER_CMDS_SET=`echo ${CONTAINER_CMDS} | cut -d ',' -f ${FIELD}`
                 CONTAINER_CMDS_SET=`echo ${CONTAINER_CMDS_SET}`
                 if [[ "${CONTAINER_CMDS_SET}" =~ ^CMDS_FROM_FILE.* ]]; then
                     # 从指定文件组装
