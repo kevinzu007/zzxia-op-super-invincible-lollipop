@@ -24,6 +24,7 @@ GAN_PLATFORM_NAME="${GAN_PLATFORM_NAME:-'超甜B&D系统'}"
 #NETWORK_COMPOSE=
 #SWARM_DOCKER_HOST=
 #K8S_NAMESAPCE=
+#DEBUG=
 #DEBUG_RANDOM_PORT_MIN=
 #DEBUG_RANDOM_PORT_MAX=
 #DOCKER_IMAGE_BASE=
@@ -35,7 +36,6 @@ TIME=${TIME:-`date +%Y-%m-%dT%H:%M:%S`}
 TIME_START=${TIME}
 DATE_TIME=`date -d "${TIME}" +%Y%m%dT%H%M%S`
 #
-DEBUG='NO'                                                    #--- YES|NO，如果设置DEBUG='YES'，则可以在非【dev】环境将容器端口publish出来
 RELEASE_VERSION=''
 # 灰度
 GRAY_TAG="normal"                                             #--- 【normal】正常部署；【gray】灰度部署
@@ -152,7 +152,7 @@ F_HELP()
         -r|--rm        ：删除服务
         -s|--status    : 获取服务运行状态
         -d|--detail    : 获取服务详细信息
-        -D|--debug     : 开启开发者Debug模式，目前用于开放所有容器服务端口
+        -D|--debug     : 开启开发者Debug模式，目前用于开放所有容器内部服务端口
         -t|--tag       ：模糊镜像tag版本
         -T|--TAG       ：精确镜像tag版本
         -n|--number    ：Pod副本数
@@ -1547,8 +1547,8 @@ do
                     exit 52
                 fi
                 #
-                # dev环境开放Debug端口
-                if [[ ${RUN_ENV} == 'dev' ]] || [[ ${DEBUG} == 'YES' ]]; then
+                # 开放Debug端口
+                if [[ ${DEBUG} == 'YES' ]]; then
                     case ${GRAY_TAG} in
                         gray)
                             # 灰度
