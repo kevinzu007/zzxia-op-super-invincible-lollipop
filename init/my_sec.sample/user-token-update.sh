@@ -63,7 +63,6 @@ case $1 in
         exit
         ;;
     -u|--update)
-        echo
         ;;
     *)
         echo -e "\n猪猪侠警告：参数错误，请看帮助【$0 --help】\n"
