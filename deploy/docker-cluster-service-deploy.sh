@@ -53,6 +53,7 @@ CONTAINER_HOSTS_PUB_FILE="${SH_PATH}/container-hosts-pub.list"
 JAVA_OPTIONS_PUB_FILE="${SH_PATH}/java-options-pub.list"
 #
 SERVICE_LIST_FILE="${SH_PATH}/docker-cluster-service.list"
+SERVICE_LIST_FILE_APPEND="${SH_PATH}/docker-cluster-service.list.append"
 SERVICE_LIST_FILE_TMP="${LOG_HOME}/${SH_NAME}-docker-cluster-service.list.tmp"
 SERVICE_ONLINE_LIST_FILE_TMP="${LOG_HOME}/${SH_NAME}-docker-cluster-service-online.list.tmp"
 DOCKER_IMAGE_VER='latest'
@@ -101,6 +102,7 @@ F_HELP()
     用途：用于创建、更新、查看、删除......服务
     依赖：
         ${SERVICE_LIST_FILE}
+        ${SERVICE_LIST_FILE_APPEND}
         ${CONTAINER_ENVS_PUB_FILE}
         ${DOCKER_ARG_PUB_FILE}
         ${CONTAINER_HOSTS_PUB_FILE}
@@ -1164,15 +1166,15 @@ fi
 # 删除无关行
 #sed  -i  -E  -e '/^\s*$/d'  -e '/^#.*$/d'  -e 's/[ \t]*//g'  ${SERVICE_LIST_FILE_TMP}
 sed  -i  -E  -e '/^\s*$/d'  -e '/^#.*$/d'  ${SERVICE_LIST_FILE_TMP}
-# 优先级排序
+# 按第6列排序（PRIORITY）
 > ${SERVICE_LIST_FILE_TMP}.sort
-for i in  `awk -F '|' '{split($9,a," ");print NR,a[1]}' ${SERVICE_LIST_FILE_TMP}  |  sort -n -k 2 |  awk '{print $1}'`
+for i in  `awk -F '|' '{split($6,a," ");print NR,a[1]}' ${SERVICE_LIST_FILE_TMP}  |  sort -n -k 2 |  awk '{print $1}'`
 do
     awk "NR=="$i'{print}' ${SERVICE_LIST_FILE_TMP}  >> ${SERVICE_LIST_FILE_TMP}.sort
 done
 cp  ${SERVICE_LIST_FILE_TMP}.sort  ${SERVICE_LIST_FILE_TMP}
 # 加表头
-sed -i  '1i#| **服务名** | **DOCKER镜像名** | **POD副本数** | **容器PORTS** | **JAVA选项** | **容器ENVS** | **容器CMDS** | **优先级** | **集群** | **部署位置** | **主机名** |'  ${SERVICE_LIST_FILE_TMP}
+sed -i  '1i#| **服务名** | **DOCKER镜像名** | **POD副本数** | **容器PORTS** | **优先级** | **集群** | **主机名** | **部署位置** | **备注** |'  ${SERVICE_LIST_FILE_TMP}
 # 屏显
 if [[ ${SH_RUN_MODE} == 'normal' ]]; then
     echo -e "${ECHO_NORMAL}========================= 开始发布 =========================${ECHO_CLOSE}"  #--- 60 (60-50-40)
@@ -1204,28 +1206,54 @@ do
     CONTAINER_PORTS=`echo ${LINE} | cut -d \| -f 5`
     CONTAINER_PORTS=`eval echo ${CONTAINER_PORTS}`
     #
-    JAVA_OPTIONS=`echo ${LINE} | cut -d \| -f 6`
-    JAVA_OPTIONS=`eval echo ${JAVA_OPTIONS}`
-    JAVA_OPTIONS=${JAVA_OPTIONS//'~'/${HOME}}
+    # PRIORITY 这里无需处理
     #
-    CONTAINER_ENVS=`echo ${LINE} | cut -d \| -f 7`
-    CONTAINER_ENVS=`eval echo ${CONTAINER_ENVS}`
-    CONTAINER_ENVS=${CONTAINER_ENVS//'~'/${HOME}}
-    #
-    CONTAINER_CMDS=`echo ${LINE} | cut -d \| -f 8`
-    CONTAINER_CMDS=`eval echo ${CONTAINER_CMDS}`
-    CONTAINER_CMDS=${CONTAINER_CMDS//'~'/${HOME}}
-    #
-    # 9
-    #
-    CLUSTER=`echo ${LINE} | cut -d \| -f 10`
+    CLUSTER=`echo ${LINE} | cut -d \| -f 7`
     CLUSTER=`eval echo ${CLUSTER}`
     #
-    DEPLOY_PLACEMENT=`echo ${LINE} | cut -d \| -f 11`
+    HOSTNAME=`echo ${LINE} | cut -d \| -f 8`
+    HOSTNAME=`eval echo ${HOSTNAME}`
+    #
+    DEPLOY_PLACEMENT=`echo ${LINE} | cut -d \| -f 9`
     DEPLOY_PLACEMENT=`eval echo ${DEPLOY_PLACEMENT}`
     #
-    HOSTNAME=`echo ${LINE} | cut -d \| -f 12`
-    HOSTNAME=`eval echo ${HOSTNAME}`
+    NOTE=`echo ${LINE} | cut -d \| -f 10`
+    NOTE=`echo ${NOTE}`
+    #
+    #
+    SERVICE_LIST_FILE_APPEND_TMP="${SERVICE_LIST_FILE_TMP}.append---${SERVICE_NAME}"
+    cat ${SERVICE_LIST_FILE_APPEND} | grep "${SERVICE_NAME}"  >  ${SERVICE_LIST_FILE_APPEND_TMP}
+    GET_IT_A='N'
+    while read LINE_A
+    do
+        # 跳过以#开头的行或空行
+        [[ "$LINE_A" =~ ^# ]] || [[ "$LINE_A" =~ ^[\ ]*$ ]] && continue
+        #
+        SERVICE_NAME_A=`echo ${LINE_A} | cut -d \| -f 2`
+        SERVICE_NAME_A=`echo ${SERVICE_NAME_A}`
+        if [[ ${SERVICE_NAME_A} == ${SERVICE_NAME} ]]; then
+            #
+            GET_IT_A='Y'
+            #
+            JAVA_OPTIONS=`echo ${LINE_A} | cut -d \| -f 3`
+            JAVA_OPTIONS=`eval echo ${JAVA_OPTIONS}`
+            JAVA_OPTIONS=${JAVA_OPTIONS//'~'/${HOME}}
+            #
+            CONTAINER_ENVS=`echo ${LINE_A} | cut -d \| -f 4`
+            CONTAINER_ENVS=`eval echo ${CONTAINER_ENVS}`
+            CONTAINER_ENVS=${CONTAINER_ENVS//'~'/${HOME}}
+            #
+            CONTAINER_CMDS=`echo ${LINE_A} | cut -d \| -f 5`
+            CONTAINER_CMDS=`eval echo ${CONTAINER_CMDS}`
+            CONTAINER_CMDS=${CONTAINER_CMDS//'~'/${HOME}}
+        fi
+        #
+        #if [[ ${GET_IT_A} != 'YES' ]];then
+        #    echo -e "\n猪猪侠警告：在【${SERVICE_LIST_FILE_APPEND}】文件中没有找到服务名【${SERVICE_NAME}】，请检查！\n"
+        #    exit 51
+        #fi
+    done < ${SERVICE_LIST_FILE_APPEND_TMP}
+    #
     #
     # 运行环境
     F_SET_RUN_ENV

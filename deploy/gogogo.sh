@@ -533,10 +533,10 @@ F_DOCKER_CLUSTER_SERVICE_DEPLOY()
                    SERVICE_NAME=`echo ${SERVICE_NAME}`
                    #
                    if [[ ${SERVICE_NAME} == ${F_SERVICE_NAME} ]]; then
-                       CLUSTER=`echo ${LINE} | cut -d \| -f 10`
+                       CLUSTER=`echo ${LINE} | cut -d \| -f 7`
                        CLUSTER=`eval echo ${CLUSTER}`
                        #
-                       DEPLOY_PLACEMENT=`echo ${LINE} | cut -d \| -f 11`
+                       DEPLOY_PLACEMENT=`echo ${LINE} | cut -d \| -f 9`
                        DEPLOY_PLACEMENT=`eval echo ${DEPLOY_PLACEMENT}`
                        #
                        F_SET_RUN_ENV

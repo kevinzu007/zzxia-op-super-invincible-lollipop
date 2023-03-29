@@ -56,22 +56,22 @@
 ###
 ###   ***** 以上种种，都可以自己定义，然后调整相关脚本即可 *****
 ###
-#| LANGUAGE_CATEGORY | PJ                    | BUILD_METHOD | OUTPUT_METHOD     | DOCKER_IMAGE_NAME              | LINK_NODE_PROJECT    |GOGOGO_RELEASE_METHOD | PRIORITY |
-#| **类别** | **项目名**                     | **构建方法** | **输出方法**      | **镜像名**                     | **链接node_project** | **GOGOGO发布方式** | **优先级** |
-#| -------- | ------------------------------ | ------------ | ----------------- | ------------------------------ | -------------------- | ------------------ | ---------- |
-#| html     | gan                            | NONE         | direct_deploy     | gan                            |                      | web_release        | 0          |
-#| python   | gan-api                        | NONE         | direct_deploy     | gan-api                        |                      | python_deploy      | 0          |
-| product   | neo4j                          | NONE         | docker_image_push | neo4j                          |                      | docker_cluster     | 0          |
-| product   | fluentd                        | NONE         | docker_image_push | fluentd-gcl                    |                      | docker_cluster     | 0          |
-| dockerfile| my-oracle-java-8               | docker_bulid | docker_image_push | my-oracle-java-8               |                      | NONE               | 1          |
-| java      | gc-common                      | mvn_deploy   | NONE              |                                |                      | NONE               | 5          |
-| java      | gc-gray                        | mvn_deploy   | NONE              |                                |                      | NONE               | 5          |
-| java      | gc-auth-service                | mvn_package  | docker_image_push | gc-auth-service                |                      | docker_cluster     | 10         |
-| java      | gc-monitor                     | mvn_package  | docker_image_push | gc-monitor                     |                      | docker_cluster     | 20         |
-| node      | gc-common-front                | npm_install  | NONE              |                                |                      | NONE               | 100        |
-| node      | gc-platform-node               | npm_install  | docker_image_push | gc-platform-node               |                      | docker_cluster     | 110        |
-| node      | gc-agent-front                 | npm_build    | direct_deploy     |                                | gc-common-front      | web_release        | 110        |
-| node      | gc-fastprotect-front           | npm_build    | direct_deploy     |                                |                      | web_release        | 110        |
-| product   | nacos-server                   | NONE         | docker_image_push | nacos-server                   |                      | docker_cluster     | 0          |
+#| LANGUAGE_CATEGORY | PJ                  | BUILD_METHOD | OUTPUT_METHOD     | DOCKER_IMAGE_NAME              | LINK_NODE_PROJECT    |GOGOGO_RELEASE_METHOD | PRIORITY | NOTE            |
+#| **类别** | **项目名**                   | **构建方法** | **输出方法**      | **镜像名**                     | **链接node_project** | **GOGOGO发布方式** | **优先级** | **备注**        |
+#| -------- | ---------------------------- | ------------ | ----------------- | ------------------------------ | -------------------- | ------------------ | ---------- | --------------- |
+#| html     | gan                          | NONE         | direct_deploy     | gan                            |                      | web_release        | 0          |                 |
+#| python   | gan-api                      | NONE         | direct_deploy     | gan-api                        |                      | python_deploy      | 0          |                 |
+| product   | neo4j                        | NONE         | docker_image_push | neo4j                          |                      | docker_cluster     | 0          |                 |
+| product   | fluentd                      | NONE         | docker_image_push | fluentd-gcl                    |                      | docker_cluster     | 0          |                 |
+| dockerfile| my-oracle-java-8             | docker_bulid | docker_image_push | my-oracle-java-8               |                      | NONE               | 1          |                 |
+| java      | gc-common                    | mvn_deploy   | NONE              |                                |                      | NONE               | 5          |                 |
+| java      | gc-gray                      | mvn_deploy   | NONE              |                                |                      | NONE               | 5          |                 |
+| java      | gc-auth-service              | mvn_package  | docker_image_push | gc-auth-service                |                      | docker_cluster     | 10         |                 |
+| java      | gc-monitor                   | mvn_package  | docker_image_push | gc-monitor                     |                      | docker_cluster     | 20         |                 |
+| node      | gc-common-front              | npm_install  | NONE              |                                |                      | NONE               | 100        |                 |
+| node      | gc-platform-node             | npm_install  | docker_image_push | gc-platform-node               |                      | docker_cluster     | 110        |                 |
+| node      | gc-agent-front               | npm_build    | direct_deploy     |                                | gc-common-front      | web_release        | 110        |                 |
+| node      | gc-fastprotect-front         | npm_build    | direct_deploy     |                                |                      | web_release        | 110        |                 |
+| product   | nacos-server                 | NONE         | docker_image_push | nacos-server                   |                      | docker_cluster     | 0          |                 |
 
 
