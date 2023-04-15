@@ -1,0 +1,95 @@
+# 测试样例
+
+
+## 0 说明
+
+用户名：kevin
+密码：123456
+
+sec  是  用户名+密码  然后 sha1
+Gitlab-Token: QQQQQ12345
+
+cat  user.db
+#| 用户ID   | 用户名        | 姓名           | E-MAIL                   | 盐         | 密码                                               |
+#| ------- | ------------- | ------------- | ------------------------ | ---------- | -------------------------------------------------- |
+| 1        | kevin         | 猪猪侠        | zzzz@gc.com               | dac2c04ab2 | bd33fa688aed96a0a5fa04ea79381faa61f6f77384aebb86bc |
+
+cat  user.db.token 
+kevin 4317222cd25b9517ed15564c0f213c787a404668
+
+
+# 1 获取token
+# 命令：
+curl -X POST  \
+    -H "Content-Type: application/json"  \
+    -H "user: kevin"  \
+    -H "sec: 47326cfc1e19fb380329440c00149a80a2a0b8d7"  \
+    http://192.168.11.81:9527/get/token
+
+# 结果：
+^_^ kevin@TM1701-b38cbc23:~$ curl -X POST  \
+>     -H "Content-Type: application/json"  \
+>     -H "user: kevin"  \
+>     -H "sec: 47326cfc1e19fb380329440c00149a80a2a0b8d7"  \
+>     http://192.168.11.81:9527/get/token
+{"Status":"Success","Token":"4317222cd25b9517ed15564c0f213c787a404668"}
+
+
+# 2 手动hook，通过用户名密码
+# 命令：
+curl -X POST  \
+    -H "Content-Type: application/json"  \
+    -H "user: kevin"  \
+    -H "sec: 47326cfc1e19fb380329440c00149a80a2a0b8d7"  \
+    http://192.168.11.81:9527/hook/hand -d  \
+    '{"do":"build","branch":"dev_deploy","version":"5.5","gray":"yes","skiptest":"yes","force":"yes","category":"java","projects":["pj1","pj2"]}'
+
+# 结果：
+^_^ kevin@TM1701-b38cbc23:~$ curl -X POST  \
+>     -H "Content-Type: application/json"  \
+>     -H "user: kevin"  \
+>     -H "sec: 47326cfc1e19fb380329440c00149a80a2a0b8d7"  \
+>     http://192.168.11.81:9527/hook/hand -d  \
+>     '{"do":"build","branch":"dev_deploy","version":"5.5","gray":"yes","skiptest":"yes","force":"yes","category":"java","projects":["pj1","pj2"]}'
+
+猪猪侠警告：【Build】时，没有找到类别为【java】的项目【pj1】，请检查！
+
+
+## 3 手动hook，通过用户token
+# 命令：
+curl -X POST  \
+    -H "Content-Type: application/json"  \
+    -H "token: 4317222cd25b9517ed15564c0f213c787a404668"  \
+    http://192.168.11.81:9527/hook/hand -d  \
+    '{"do":"build","branch":"dev_deploy","version":"5.5","gray":"yes","skiptest":"yes","force":"yes","category":"java","projects":["pj1","pj2"]}'
+
+# 结果：
+^_^ kevin@TM1701-b38cbc23:~$ curl -X POST  \
+>     -H "Content-Type: application/json"  \
+>     -H "token: 4317222cd25b9517ed15564c0f213c787a404668"  \
+>     http://192.168.11.81:9527/hook/hand -d  \
+>     '{"do":"build","branch":"dev_deploy","version":"5.5","gray":"yes","skiptest":"yes","force":"yes","category":"java","projects":["pj1","pj2"]}'
+
+猪猪侠警告：【Build】时，没有找到类别为【java】的项目【pj1】，请检查！
+
+
+# 4 手动gitlab hook模拟
+# 命令：
+curl  -X POST  \
+        -H "Content-Type: application/json"  \
+        -H "X-Gitlab-Event: Push Hook"  \
+        -H "X-Gitlab-Token: QQQQQ12345"  \
+        http://192.168.11.81:9527/hook/gitlab  \
+        -d  @./jianguoyun/IT/python-webhook/gitlab-push-body.json
+
+# 结果：
+^_^ kevin@TM1701-b38cbc23:~$ curl  -X POST  \
+>         -H "Content-Type: application/json"  \
+>         -H "X-Gitlab-Event: Push Hook"  \
+>         -H "X-Gitlab-Token: QQQQQ12345"  \
+>         http://192.168.11.81:9527/hook/gitlab  \
+>         -d  @./jianguoyun/IT/python-webhook/gitlab-push-body.json
+{"Logfile":"/root/tmp/web_hook_gitlab---2023-04-15_T_171003.log","Status":"OK"}
+
+
+
