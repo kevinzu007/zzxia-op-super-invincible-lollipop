@@ -65,7 +65,8 @@ F_CP ()
     cp -f  ${ENVS_FILE_DIR}/deploy.env---${R_ENV}                    ../deploy/deploy.env
     cp -f  ${ENVS_FILE_DIR}/nginx.list---${R_ENV}                    ../deploy/nginx.list
     cp -f  ${ENVS_FILE_DIR}/docker-cluster-service.list---${R_ENV}   ../deploy/docker-cluster-service.list
-    cp -f  ${ENVS_FILE_DIR}/docker-cluster-service.list.append---${R_ENV}   ../deploy/docker-cluster-service.list.append
+    cp -f  ${ENVS_FILE_DIR}/docker-cluster-service.list.append.1---${R_ENV}   ../deploy/docker-cluster-service.list.append.1
+    cp -f  ${ENVS_FILE_DIR}/docker-cluster-service.list.append.2---${R_ENV}   ../deploy/docker-cluster-service.list.append.2
     cp -f  ${ENVS_FILE_DIR}/docker-arg-pub.list---${R_ENV}           ../deploy/docker-arg-pub.list
     cp -f  ${ENVS_FILE_DIR}/container-hosts-pub.list---${R_ENV}      ../deploy/container-hosts-pub.list
     cp -f  ${ENVS_FILE_DIR}/java-options-pub.list---${R_ENV}         ../deploy/java-options-pub.list
@@ -109,7 +110,8 @@ F_RM ()
     rm -f  ../deploy/deploy.env
     rm -f  ../deploy/nginx.list
     rm -f  ../deploy/docker-cluster-service.list
-    rm -f  ../deploy/docker-cluster-service.list.append
+    rm -f  ../deploy/docker-cluster-service.list.append.1
+    rm -f  ../deploy/docker-cluster-service.list.append.2
     rm -f  ../deploy/docker-arg-pub.list
     rm -f  ../deploy/container-hosts-pub.list
     rm -f  ../deploy/java-options-pub.list

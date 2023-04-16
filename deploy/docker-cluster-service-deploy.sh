@@ -53,7 +53,8 @@ CONTAINER_HOSTS_PUB_FILE="${SH_PATH}/container-hosts-pub.list"
 JAVA_OPTIONS_PUB_FILE="${SH_PATH}/java-options-pub.list"
 #
 SERVICE_LIST_FILE="${SH_PATH}/docker-cluster-service.list"
-SERVICE_LIST_FILE_APPEND="${SH_PATH}/docker-cluster-service.list.append"
+SERVICE_LIST_FILE_APPEND_1="${SH_PATH}/docker-cluster-service.list.append.1"
+SERVICE_LIST_FILE_APPEND_2="${SH_PATH}/docker-cluster-service.list.append.2"
 SERVICE_LIST_FILE_TMP="${LOG_HOME}/${SH_NAME}-docker-cluster-service.list.tmp"
 SERVICE_ONLINE_LIST_FILE_TMP="${LOG_HOME}/${SH_NAME}-docker-cluster-service-online.list.tmp"
 DOCKER_IMAGE_VER='latest'
@@ -102,7 +103,8 @@ F_HELP()
     用途：用于创建、更新、查看、删除......服务
     依赖：
         ${SERVICE_LIST_FILE}
-        ${SERVICE_LIST_FILE_APPEND}
+        ${SERVICE_LIST_FILE_APPEND_1}
+        ${SERVICE_LIST_FILE_APPEND_2}
         ${CONTAINER_ENVS_PUB_FILE}
         ${DOCKER_ARG_PUB_FILE}
         ${CONTAINER_HOSTS_PUB_FILE}
@@ -1206,23 +1208,14 @@ do
     CONTAINER_PORTS=`echo ${LINE} | cut -d \| -f 5`
     CONTAINER_PORTS=`eval echo ${CONTAINER_PORTS}`
     #
-    # PRIORITY 这里无需处理
+    # 6 PRIORITY 这里无需处理
     #
-    CLUSTER=`echo ${LINE} | cut -d \| -f 7`
-    CLUSTER=`eval echo ${CLUSTER}`
-    #
-    HOSTNAME=`echo ${LINE} | cut -d \| -f 8`
-    HOSTNAME=`eval echo ${HOSTNAME}`
-    #
-    DEPLOY_PLACEMENT=`echo ${LINE} | cut -d \| -f 9`
-    DEPLOY_PLACEMENT=`eval echo ${DEPLOY_PLACEMENT}`
-    #
-    NOTE=`echo ${LINE} | cut -d \| -f 10`
+    NOTE=`echo ${LINE} | cut -d \| -f 7`
     NOTE=`echo ${NOTE}`
     #
     #
-    SERVICE_LIST_FILE_APPEND_TMP="${SERVICE_LIST_FILE_TMP}.append---${SERVICE_NAME}"
-    cat ${SERVICE_LIST_FILE_APPEND} | grep "${SERVICE_NAME}"  >  ${SERVICE_LIST_FILE_APPEND_TMP}
+    SERVICE_LIST_FILE_APPEND_1_TMP="${SERVICE_LIST_FILE_APPEND_1}---${SERVICE_NAME}"
+    cat ${SERVICE_LIST_FILE_APPEND_1} | grep "${SERVICE_NAME}"  >  ${SERVICE_LIST_FILE_APPEND_1_TMP}
     GET_IT_A='N'
     while read LINE_A
     do
@@ -1235,24 +1228,55 @@ do
             #
             GET_IT_A='Y'
             #
-            JAVA_OPTIONS=`echo ${LINE_A} | cut -d \| -f 3`
+            CLUSTER=`echo ${LINE_A} | cut -d \| -f 3`
+            CLUSTER=`eval echo ${CLUSTER}`
+            #
+            HOST_NAME=`echo ${LINE_A} | cut -d \| -f 4`
+            HOST_NAME=`eval echo ${HOST_NAME}`
+            #
+            DEPLOY_PLACEMENT=`echo ${LINE_A} | cut -d \| -f 5`
+            DEPLOY_PLACEMENT=`eval echo ${DEPLOY_PLACEMENT}`
+        fi
+        #
+        if [[ ${GET_IT_A} != 'YES' ]];then
+            echo -e "\n猪猪侠警告：在【${SERVICE_LIST_FILE_APPEND_1}】文件中没有找到服务名【${SERVICE_NAME}】，请检查！\n"
+            exit 51
+        fi
+    done < ${SERVICE_LIST_FILE_APPEND_1_TMP}
+    #
+    #
+    SERVICE_LIST_FILE_APPEND_2_TMP="${SERVICE_LIST_FILE_APPEND_2}---${SERVICE_NAME}"
+    cat ${SERVICE_LIST_FILE_APPEND_2} | grep "${SERVICE_NAME}"  >  ${SERVICE_LIST_FILE_APPEND_2_TMP}
+    GET_IT_B='N'
+    while read LINE_B
+    do
+        # 跳过以#开头的行或空行
+        [[ "$LINE_B" =~ ^# ]] || [[ "$LINE_B" =~ ^[\ ]*$ ]] && continue
+        #
+        SERVICE_NAME_B=`echo ${LINE_B} | cut -d \| -f 2`
+        SERVICE_NAME_B=`echo ${SERVICE_NAME_B}`
+        if [[ ${SERVICE_NAME_B} == ${SERVICE_NAME} ]]; then
+            #
+            GET_IT_B='Y'
+            #
+            JAVA_OPTIONS=`echo ${LINE_B} | cut -d \| -f 3`
             JAVA_OPTIONS=`eval echo ${JAVA_OPTIONS}`
             JAVA_OPTIONS=${JAVA_OPTIONS//'~'/${HOME}}
             #
-            CONTAINER_ENVS=`echo ${LINE_A} | cut -d \| -f 4`
+            CONTAINER_ENVS=`echo ${LINE_B} | cut -d \| -f 4`
             CONTAINER_ENVS=`eval echo ${CONTAINER_ENVS}`
             CONTAINER_ENVS=${CONTAINER_ENVS//'~'/${HOME}}
             #
-            CONTAINER_CMDS=`echo ${LINE_A} | cut -d \| -f 5`
+            CONTAINER_CMDS=`echo ${LINE_B} | cut -d \| -f 5`
             CONTAINER_CMDS=`eval echo ${CONTAINER_CMDS}`
             CONTAINER_CMDS=${CONTAINER_CMDS//'~'/${HOME}}
         fi
         #
-        #if [[ ${GET_IT_A} != 'YES' ]];then
-        #    echo -e "\n猪猪侠警告：在【${SERVICE_LIST_FILE_APPEND}】文件中没有找到服务名【${SERVICE_NAME}】，请检查！\n"
+        #if [[ ${GET_IT_B} != 'YES' ]];then
+        #    echo -e "\n猪猪侠警告：在【${SERVICE_LIST_FILE_APPEND_2}】文件中没有找到服务名【${SERVICE_NAME}】，请检查！\n"
         #    exit 51
         #fi
-    done < ${SERVICE_LIST_FILE_APPEND_TMP}
+    done < ${SERVICE_LIST_FILE_APPEND_2_TMP}
     #
     #
     # 运行环境
@@ -1900,23 +1924,23 @@ do
             # 前面已经处理一部分
             #
             # 12 容器主机名
-            if [[ -n ${HOSTNAME} ]]; then
+            if [[ -n ${HOST_NAME} ]]; then
                 # 正则校验
-                #if [[ ! ${HOSTNAME} =~ ^(?=.{1,255}$)[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?(?:\.[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?)*\.?$ ]]; then
-                if [[ ! ${HOSTNAME} =~ ^[0-9a-z]([0-9a-z\-]{0,61}[0-9a-z])?(\.[0-9a-z](0-9a-z\-]{0,61}[0-9a-z])?)*$ ]]; then
-                    echo -e "\n猪猪侠警告：主机名【${HOSTNAME}】不符合规范\n"
+                #if [[ ! ${HOST_NAME} =~ ^(?=.{1,255}$)[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?(?:\.[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?)*\.?$ ]]; then
+                if [[ ! ${HOST_NAME} =~ ^[0-9a-z]([0-9a-z\-]{0,61}[0-9a-z])?(\.[0-9a-z](0-9a-z\-]{0,61}[0-9a-z])?)*$ ]]; then
+                    echo -e "\n猪猪侠警告：主机名【${HOST_NAME}】不符合规范\n"
                     exit 52
                 fi
                 # 直接组装
                 case ${CLUSTER} in
                     swarm)
-                        HOSTNAME_OK="--hostname ${HOSTNAME}"
+                        HOST_NAME_OK="--hostname ${HOST_NAME}"
                         ;;
                     k8s)
-                        sed -i "s/      hostname:.*/      hostname: ${HOSTNAME}/"  "${YAML_HOME}/${SERVICE_X_NAME}.yaml"
+                        sed -i "s/      hostname:.*/      hostname: ${HOST_NAME}/"  "${YAML_HOME}/${SERVICE_X_NAME}.yaml"
                         ;;
                     compose)
-                        sed -i "s/    hostname:.*/    hostname: ${HOSTNAME}/"  "${YAML_HOME}/docker-compose.yaml"
+                        sed -i "s/    hostname:.*/    hostname: ${HOST_NAME}/"  "${YAML_HOME}/docker-compose.yaml"
                         ;;
                     *)
                         echo -e "\n猪猪侠警告：未定义的集群类型\n"
@@ -1976,7 +2000,7 @@ do
                         ${CONTAINER_ENVS_PUB_OK}  \
                         ${CONTAINER_ENVS_OK}  \
                         ${DEPLOY_PLACEMENT_LABELS_OK}  \
-                        ${HOSTNAME_OK}  \
+                        ${HOST_NAME_OK}  \
                         ${DOCKER_IMAGE_FULL_URL}  \
                         ${CONTAINER_CMDS_OK}"
                     ;;
