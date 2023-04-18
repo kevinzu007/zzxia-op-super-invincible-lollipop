@@ -34,7 +34,7 @@ dingding_api_url = "https://oapi.dingtalk.com/robot/send?access_token=你自己�
 HOSTNAME = socket.gethostname()
 
 # 时间
-DATETIME = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+DATETIME = time.strftime("%Y-%m-%d %H:%M:%S %z", time.localtime())
 
 # 获取OS变量
 ENV_DIST = os.environ
