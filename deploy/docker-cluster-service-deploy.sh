@@ -1679,6 +1679,9 @@ do
                     esac
                 fi
             done
+            #
+            # 将变量值中的【,】替换为空格，并在前后加上引号
+            #DEBUG_X_PORTS='"'${DEBUG_X_PORTS/,/ }'"'
 
 
             # 6 组装 JAVA ENV（JAVA_OPTIONS）
