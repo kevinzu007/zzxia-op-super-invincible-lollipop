@@ -1216,7 +1216,7 @@ do
     #
     SERVICE_LIST_FILE_APPEND_1_TMP="${SERVICE_LIST_FILE_APPEND_1}---${SERVICE_NAME}"
     cat ${SERVICE_LIST_FILE_APPEND_1} | grep "${SERVICE_NAME}"  >  ${SERVICE_LIST_FILE_APPEND_1_TMP}
-    GET_IT_A='N'
+    GET_IT_A='NO'
     while read LINE_A
     do
         # 跳过以#开头的行或空行
@@ -1226,7 +1226,7 @@ do
         SERVICE_NAME_A=`echo ${SERVICE_NAME_A}`
         if [[ ${SERVICE_NAME_A} == ${SERVICE_NAME} ]]; then
             #
-            GET_IT_A='Y'
+            GET_IT_A='YES'
             #
             CLUSTER=`echo ${LINE_A} | cut -d \| -f 3`
             CLUSTER=`eval echo ${CLUSTER}`
@@ -1247,7 +1247,7 @@ do
     #
     SERVICE_LIST_FILE_APPEND_2_TMP="${SERVICE_LIST_FILE_APPEND_2}---${SERVICE_NAME}"
     cat ${SERVICE_LIST_FILE_APPEND_2} | grep "${SERVICE_NAME}"  >  ${SERVICE_LIST_FILE_APPEND_2_TMP}
-    GET_IT_B='N'
+    GET_IT_B='NO'
     while read LINE_B
     do
         # 跳过以#开头的行或空行
@@ -1257,7 +1257,7 @@ do
         SERVICE_NAME_B=`echo ${SERVICE_NAME_B}`
         if [[ ${SERVICE_NAME_B} == ${SERVICE_NAME} ]]; then
             #
-            GET_IT_B='Y'
+            GET_IT_B='YES'
             #
             JAVA_OPTIONS=`echo ${LINE_B} | cut -d \| -f 3`
             JAVA_OPTIONS=`eval echo ${JAVA_OPTIONS}`
