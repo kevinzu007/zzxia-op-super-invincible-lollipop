@@ -1214,6 +1214,7 @@ do
     NOTE=`echo ${NOTE}`
     #
     #
+    # append.1
     SERVICE_LIST_FILE_APPEND_1_TMP="${SERVICE_LIST_FILE_APPEND_1}---${SERVICE_NAME}"
     cat ${SERVICE_LIST_FILE_APPEND_1} | grep "${SERVICE_NAME}"  >  ${SERVICE_LIST_FILE_APPEND_1_TMP}
     GET_IT_A='NO'
@@ -1245,6 +1246,7 @@ do
     done < ${SERVICE_LIST_FILE_APPEND_1_TMP}
     #
     #
+    # append.2
     SERVICE_LIST_FILE_APPEND_2_TMP="${SERVICE_LIST_FILE_APPEND_2}---${SERVICE_NAME}"
     cat ${SERVICE_LIST_FILE_APPEND_2} | grep "${SERVICE_NAME}"  >  ${SERVICE_LIST_FILE_APPEND_2_TMP}
     GET_IT_B='NO'
@@ -1476,18 +1478,18 @@ do
                     LINE=$( eval echo ${LINE} )
                     LINE=${LINE//'~'/${HOME}}
                     if [[ "${LINE}" =~ ^[1-9]+ ]]; then
-                        HOST_IP=$(   echo ${LINE} | awk '{print $1}' )
-                        HOST_NAME=$( echo ${LINE} | awk '{print $2}' )
+                        HOSTS_IP=$(   echo ${LINE} | awk '{print $1}' )
+                        HOSTS_NAME=$( echo ${LINE} | awk '{print $2}' )
                         #
                         case "${CLUSTER}" in
                             swarm)
-                                CONTAINER_HOSTS_PUB_OK="${CONTAINER_HOSTS_PUB_OK}  --host ${HOST_NAME}:${HOST_IP}"
+                                CONTAINER_HOSTS_PUB_OK="${CONTAINER_HOSTS_PUB_OK}  --host ${HOSTS_NAME}:${HOSTS_IP}"
                                 ;;
                             k8s)
-                                sed -i "/^      hostAliases:/a\      - ip: ${HOST_IP}\n        hostnames:\n        - ${HOST_NAME}"  ${YAML_HOME}/${SERVICE_X_NAME}.yaml
+                                sed -i "/^      hostAliases:/a\      - ip: ${HOSTS_IP}\n        hostnames:\n        - ${HOSTS_NAME}"  ${YAML_HOME}/${SERVICE_X_NAME}.yaml
                                 ;;
                             compose)
-                                sed -i "/^    extra_hosts:/a\      - \"${HOST_NAME}:${HOST_IP}\""  ${YAML_HOME}/docker-compose.yaml
+                                sed -i "/^    extra_hosts:/a\      - \"${HOSTS_NAME}:${HOSTS_IP}\""  ${YAML_HOME}/docker-compose.yaml
                                 ;;
                             *)
                                 echo -e "\n猪猪侠警告：未定义的集群类型\n"
