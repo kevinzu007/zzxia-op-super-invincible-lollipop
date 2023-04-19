@@ -4,7 +4,7 @@
 
 # 0 基本变量
 GAN_CMD_HOME = '/root/zzxia-op-super-invincible-lollipop'      #--- 项目路径
-
+WEB_ROOT = '/root/tmp'
 
 # 1
 

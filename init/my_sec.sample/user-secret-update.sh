@@ -83,12 +83,12 @@ do
     if [[ ${F_USER_NAME} == ${USER_NAME} ]]; then
         # secret
         #
-        USER_SALT=$(echo ${RANDOM} | md5sum | cut -c 1-10)
+        USER_SALT=$(echo ${RANDOM} | md5sum | cut -c 1-10)     #--- 取10，即1-10
         #
         USER_SECRET_sha1=$(echo -n "${USER_NAME}${USER_PASSWORD}" | sha1sum | awk '{print $1}')
-        USER_SECRET_sha1_30=${USER_SECRET_sha1:2:30}                             #--- 与webhook-server.py保持一致
-        USER_SECRET_sha256=$(echo -n "${USER_SALT}${USER_SECRET_sha_30}" | sha256sum | awk '{print $1}')
-        USER_SECRET_sha256_50=${USER_SECRET_sha256:3:50}                         #--- 与webhook-server.py保持一致
+        USER_SECRET_sha1_30=${USER_SECRET_sha1:2:30}                             #--- 与webhook-server.py保持一致，从第3位开始，取30位，即3-32
+        USER_SECRET_sha256=$(echo -n "${USER_SALT}${USER_SECRET_sha1_30}" | sha256sum | awk '{print $1}')
+        USER_SECRET_sha256_50=${USER_SECRET_sha256:3:50}                         #--- 与webhook-server.py保持一致，从第4位开始，取50位，即4-53
         USER_SECRET=${USER_SECRET_sha256_50}
         #
         #sed -i -E "s/(\|[ ]*[0-9]+[ ]*\|[ ]*${USER_NAME}[ ]*\|.+\|.+\|).+\|.+\|$/\1 ${USER_SALT} \| ${USER_SECRET} \|/"  ${USER_DB_FILE}

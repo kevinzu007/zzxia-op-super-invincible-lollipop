@@ -51,6 +51,8 @@ BUILD_FORCE='NO'
 GOGOGO_PROJECT_LIST_FILE="${SH_PATH}/project.list"
 GOGOGO_PROJECT_LIST_FILE_TMP="${LOG_HOME}/${SH_NAME}-project.list.tmp"
 GOGOGO_SERVICE_LIST_FILE="${SH_PATH}/docker-cluster-service.list"
+GOGOGO_SERVICE_LIST_FILE_APPEND_1="${SH_PATH}/docker-cluster-service.list.append.1"
+GOGOGO_SERVICE_LIST_FILE_APPEND_2="${SH_PATH}/docker-cluster-service.list.append.2"
 GOGOGO_RELEASE_WEB_OK_LIST_FILE="${LOG_HOME}/${SH_NAME}-web_release-OK.list"
 GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE="${LOG_HOME}/${SH_NAME}-build_and_release-OK.list"
 GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE="${LOG_HOME}/${SH_NAME}.history.current"
@@ -106,6 +108,8 @@ F_HELP()
         ${GOGOGO_PROJECT_LIST_FILE}
         ${BUILD_SH}
         ${GOGOGO_SERVICE_LIST_FILE}
+        ${GOGOGO_SERVICE_LIST_FILE_APPEND_1}
+        ${GOGOGO_SERVICE_LIST_FILE_APPEND_2}
         ${DOCKER_CLUSTER_SERVICE_DEPLOY_SH}
         ${FORMAT_TABLE_SH}
         ${DINGDING_MARKDOWN_PY}
@@ -523,28 +527,52 @@ F_DOCKER_CLUSTER_SERVICE_DEPLOY()
         F_SERVICE_NUM=0
         unset F_SERVICE_NAME
         for F_SERVICE_NAME in ${F_SERVICE_NAME_S}; do
+            #
             # 获取${CLUSTER}并设置运行环境
             while read LINE
-               do
-                   # 跳过以#开头的行或空行
-                   [[ "$LINE" =~ ^# ]] || [[ "$LINE" =~ ^[\ ]*$ ]] && continue
-                   #
-                   SERVICE_NAME=`echo $LINE | awk -F '|' '{print $2}'`
-                   SERVICE_NAME=`echo ${SERVICE_NAME}`
-                   #
-                   if [[ ${SERVICE_NAME} == ${F_SERVICE_NAME} ]]; then
-                       CLUSTER=`echo ${LINE} | cut -d \| -f 10`
-                       CLUSTER=`eval echo ${CLUSTER}`
-                       #
-                       DEPLOY_PLACEMENT=`echo ${LINE} | cut -d \| -f 11`
-                       DEPLOY_PLACEMENT=`eval echo ${DEPLOY_PLACEMENT}`
-                       #
-                       F_SET_RUN_ENV
-                       if [[ $? -ne 0 ]]; then
-                           return 52
-                       fi
-                       break
-                   fi
+            do
+                # 跳过以#开头的行或空行
+                [[ "$LINE" =~ ^# ]] || [[ "$LINE" =~ ^[\ ]*$ ]] && continue
+                #
+                SERVICE_NAME=`echo $LINE | awk -F '|' '{print $2}'`
+                SERVICE_NAME=`echo ${SERVICE_NAME}`
+                #
+                if [[ ${SERVICE_NAME} == ${F_SERVICE_NAME} ]]; then
+                    #
+                    # append.1
+                    GOGOGO_SERVICE_LIST_FILE_APPEND_1_TMP="${GOGOGO_SERVICE_LIST_FILE_APPEND_1}---${SERVICE_NAME}"
+                    cat ${GOGOGO_SERVICE_LIST_FILE_APPEND_1} | grep "${SERVICE_NAME}"  >  ${GOGOGO_SERVICE_LIST_FILE_APPEND_1_TMP}
+                    GET_IT_A='NO'
+                    while read LINE_A
+                    do
+                        # 跳过以#开头的行或空行
+                        [[ "$LINE_A" =~ ^# ]] || [[ "$LINE_A" =~ ^[\ ]*$ ]] && continue
+                        #
+                        SERVICE_NAME_A=`echo ${LINE_A} | cut -d \| -f 2`
+                        SERVICE_NAME_A=`echo ${SERVICE_NAME_A}`
+                        if [[ ${SERVICE_NAME_A} == ${SERVICE_NAME} ]]; then
+                            #
+                            GET_IT_A='YES'
+                            #
+                            CLUSTER=`echo ${LINE_A} | cut -d \| -f 3`
+                            CLUSTER=`eval echo ${CLUSTER}`
+                            #
+                            DEPLOY_PLACEMENT=`echo ${LINE_A} | cut -d \| -f 5`
+                            DEPLOY_PLACEMENT=`eval echo ${DEPLOY_PLACEMENT}`
+                        fi
+                        #
+                        if [[ ${GET_IT_A} != 'YES' ]];then
+                            echo -e "\n猪猪侠警告：在【${GOGOGO_SERVICE_LIST_FILE_APPEND_1}】文件中没有找到服务名【${SERVICE_NAME}】，请检查！\n"
+                            exit 51
+                        fi
+                    done < ${GOGOGO_SERVICE_LIST_FILE_APPEND_1_TMP}
+                    #
+                    F_SET_RUN_ENV
+                    if [[ $? -ne 0 ]]; then
+                        return 52
+                    fi
+                    break
+                fi
             done < ${GOGOGO_SERVICE_LIST_FILE}
             #
             # 子函数的变量可以在父函数中直接使用

@@ -97,12 +97,14 @@ def auth_user_pw(user, sec):
         except:
             return {"Status": "Error", "Message": "服务器用户信息异常"}
         if line_user == _user:
-            _sec = _sec[2:32]   # --- 与【user-secret-update.sh】保持一致，取30个字符
-            print('sha256前_sec：' + _sec)
-            _secrect = digest_hashlib_salt(line_salt, _sec)
-            _secrect = _secrect[3:53]   # --- 与【user-secret-update.sh】保持一致，取50个字符
-            print('计算得出_secrect：' + _secrect)
-            if _secrect == line_secret:
+            # --- 与【user-secret-update.sh】保持一致，从第3位开始，取30位，即3-32
+            _new_sec = _sec[2:32]
+            print('sha256前_new_sec：' + _new_sec)
+            _secrect = digest_hashlib_salt(line_salt, _new_sec)
+            # --- 与【user-secret-update.sh】保持一致，从第4位开始，取50位，即4-53
+            _new_secrect = _secrect[3:53]
+            print('计算得出_secrect：' + _new_secrect)
+            if _new_secrect == line_secret:
                 _USER_PW_OK = 'Y'
                 break
             else:
@@ -210,6 +212,7 @@ def digest_hmac_sha1(key, msg):
 
 # web应用框架Flask
 app = Flask(__name__)
+app.config['JSON_AS_ASCII'] = False     #--- 解决中文显示为unicode问题
 gan_cmd = ''
 CORS(app, supports_credentials=True)    #--- 开启全局跨域，调试用
 
@@ -220,7 +223,7 @@ CORS(app, supports_credentials=True)    #--- 开启全局跨域，调试用
 @app.route('/get/token', methods=['POST'])
 def get_token():
     #
-    # header【"user: kevin", "sec: md5(用户名+密码)"】
+    # header【"user: kevin", "sec: sha1(用户名+密码)"】
     #
     recive_header = request.headers
     print("请求头：")
@@ -255,7 +258,7 @@ def get_token():
 #
 @app.route('/hook/gitlab', methods=['POST'])
 def hook_gitlab():
-    # msg: {env=dev,do=gogogo,skiptest=yes,version=5.5,gray=yes}
+    # msg包含信息: {env=dev,do=gogogo,skiptest=yes,version=5.5,gray=yes}
     recive_header = request.headers
     recive_raw_body = request.data
     recive_json_body = recive_raw_body.decode('utf-8')
@@ -316,8 +319,9 @@ def hook_gitlab():
     print('提交次数:' + str(gan_repo_commits_count))
     print('提交信息:' + gan_repo_commits_message)
     #
-    if gan_repo_commits_message.find('{') == -1 or gan_repo_commits_message.find('}') == -1 :
-        return jsonify({"Status": "Error", "Message": "wehook信息不存在或不完整"})
+    # 调试用，多余
+    #if gan_repo_commits_message.find('{') == -1 or gan_repo_commits_message.find('}') == -1 :
+    #    return jsonify({"Status": "Error", "Message": "wehook信息不存在或不完整"})
     #
     gan_arg = gan_repo_commits_message
     gan_arg = gan_arg.split('{')[1]
@@ -388,6 +392,8 @@ def hook_gitlab():
     web_hook_logfile = WEB_ROOT + '/web_hook_gitlab---' + hook_time + '.log'
     run_result = os.system(gan_cmd_0 + ' ; ' + gan_cmd +
                            ' > ' + web_hook_logfile + ' 2>&1')
+    
+    # 返回详细信息没用：
     #return send_file(web_hook_logfile, mimetype='text/plain')
     return jsonify({"Status": "OK", "Logfile": web_hook_logfile})
 
@@ -575,85 +581,20 @@ if __name__ == '__main__':
 
 
 
-# 注意事项：
-""" 
-x = '{"Status": "Error", "Message": "请提供登录信息"}'
-y = {"Status": "Error", "Message": "请提供登录信息"}
+# # 注意事项：
+# """
+# x = '{"Status": "Error", "Message": "请提供登录信息"}'
+# y = {"Status": "Error", "Message": "请提供登录信息"}
+# 
+# # 对于【x】，需要先使用【json.loads】格式化，例如： 
+# xx = json.loads(x)
+# xxx = xx["Status"]
+# xxx = extract_element_from_json(xx, ["Status"])[0]
+# # 对于【y】，不需要需要使用【json.loads】格式化，例如：
+# yyy = y["Status"]
+# yyy = extract_element_from_json(y, ["Status"])[0]
+# 
+# """
 
-# 对于【x】，需要先使用【json.loads】格式化，例如： 
-xx = json.loads(x)
-xxx = xx["Status"]
-xxx = extract_element_from_json(xx, ["Status"])[0]
-# 对于【y】，不需要需要使用【json.loads】格式化，例如：
-yyy = y["Status"]
-yyy = extract_element_from_json(y, ["Status"])[0]
-
- """
-
-
-#  用法：
-""" 
-# 获取token
-#
-curl - X POST \
-    - H "Content-Type: application/json"  \
-    - H "user: kevin"  \
-    - H "sec: 47326cfc1e19fb380329440c00149a80a2a0b8d7"  \
-    http: // 192.168.11.81: 9527/get/token
-#
-^_ ^ kevin@TM1701-b38cbc23: ~$ curl - X POST - H  "Content-Type: application/json" - H "token: 62062998434f08cdd1a0f39366a179ab"    http: // 192.168.11.81: 9527/hook/hand - d    '{"do":"build","branch":"dev_deploy","version":"5.5","gray":"yes","skiptest":"yes","force":"yes","category":"java","projects":["pj1","pj2"]}'
-{"Status": "Success", "Username": "kevin"}
-^_ ^ kevin@TM1701-b38cbc23: ~$ curl - X POST \
-    > -H  "Content-Type: application/json"  \
-    > -H "user: kevin"  \
-    > -H "sec: 47326cfc1e19fb380329440c00149a80a2a0b8d7"  \
-    > http: // 192.168.11.81: 9527/get/token
-{"Status": "Success", "Token": "62062998434f08cdd1a0f39366a179ab"}
-
-
-# 手动hook，通过用户名密码
-#
-curl - X POST \
-    - H "Content-Type: application/json"  \
-    - H "user: kevin"  \
-    - H "sec: 47326cfc1e19fb380329440c00149a80a2a0b8d7"  \
-    http: // 192.168.11.81: 9527/hook/hand - d  \
-    '{"do":"build","branch":"dev_deploy","version":"5.5","gray":"yes","skiptest":"yes","force":"yes","category":"java","projects":["pj1","pj2"]}'
-#
-^_ ^ kevin@TM1701-b38cbc23: ~$ curl - X POST \
-    > -H  "Content-Type: application/json"  \
-    > -H "user: kevin"  \
-    > -H "sec: 47326cfc1e19fb380329440c00149a80a2a0b8d7"  \
-    > http: // 192.168.11.81: 9527/hook/hand - d  \
-    > '{"do":"build","branch":"dev_deploy","version":"5.5","gray":"yes","skiptest":"yes","force":"yes","category":"java","projects":["pj1","pj2"]}'
-
-
-# 手动hook，通过用户token
-#
-curl - X POST \
-    - H "Content-Type: application/json"  \
-    - H "token: 62062998434f08cdd1a0f39366a179ab"  \
-    http: // 192.168.11.81: 9527/hook/hand - d  \
-    '{"do":"build","branch":"dev_deploy","version":"5.5","gray":"yes","skiptest":"yes","force":"yes","category":"java","projects":["pj1","pj2"]}'
-#
-^_ ^ kevin@TM1701-b38cbc23: ~$ curl - X POST - H  "Content-Type: application/json" - H "token: 62062998434f08cdd1a0f39366a179ab"    http: // 192.168.11.81: 9527/hook/hand - d    '{"do":"build","branch":"dev_deploy","version":"5.5","gray":"yes","skiptest":"yes","force":"yes","category":"java","projects":["pj1","pj2"]}'
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN" >
-<title > 500 Internal Server Error < /title >
-<h1 > Internal Server Error < /h1 >
-<p > The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application. < /p >
-^_ ^ kevin@TM1701-b38cbc23: ~$
-^_ ^ kevin@TM1701-b38cbc23: ~$ curl - X POST - H  "Content-Type: application/json" - H "token: 62062998434f08cdd1a0f39366a179ab"    http: // 192.168.11.81: 9527/hook/hand - d    '{"do":"build","branch":"dev_deploy","version":"5.5","gray":"yes","skiptest":"yes","force":"yes","category":"java","projects":["pj1","pj2"]}'
-
-
-# 手动gitlab hook模拟
-#
-curl  -X POST  \
-        -H "Content-Type: application/json"  \
-        -H "X-Gitlab-Event: Push Hook"  \
-        -H "X-Gitlab-Token: QQQQQ12345"  \
-        http://192.168.11.81:9527/hook/gitlab  \
-        -d  @gitlab-push-body.json
-
-"""
 
 

@@ -32,7 +32,7 @@ api_url = ENV_DIST.get('DINGDING_API')
 HOSTNAME = socket.gethostname()
 
 # 时间
-DATETIME = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+DATETIME = time.strftime("%Y-%m-%d %H:%M:%S %z", time.localtime())
 
 
 # Header

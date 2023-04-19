@@ -4,7 +4,7 @@
 
 ## 1 介绍
 
-这是一套集环境搭建，代码构建、部署、发布及周边的运维工具箱。适用于微服务编排的docker集群的项目使用（k8s、swarm、docker-compose）。这些工具也可以独立使用，比如项目构建、部署发布、dns修改、服务器登录异常警报、数据库备份归档与还原、表格绘制、申请与续签（泛）域名证书等等，具体参考帮助。**写文档是停费神的，将就看吧。如果你在使用中遇到任何问题请在Issues中提出，或留下联系方式线下沟通也不是不可以。**
+这是一套集环境搭建，项目构建、部署、发布及周边的运维工具箱。适用docker集群（k8s、swarm、docker-compose）及Web站点等项目发布，支持灰度、扩缩容与回滚。这些工具也可以独立使用，比如项目构建、部署发布、Webhook server、dns修改、服务器登录异常警报、数据库备份归档与还原、表格绘制、申请与续签（泛）域名证书等等，具体参考帮助。**写文档是挺费神的，将就看吧。如果你在使用中遇到任何问题请在Issues中提出，或留下联系方式线下沟通。**
 
 
 
@@ -26,7 +26,7 @@
 
 - shell语言，模块化编码，使得每个人可以轻松的增加自己的专属功能。shell语言还带来的好处是极少存在版本升级带来的运行异常问题，也不挑Linux版本（极少功能使用Python实现）。
 
-  
+
 
 
 ### 1.2 适用条件
@@ -135,7 +135,8 @@
 |  17  | init/nginx-config/web-release-on-nginx.sh     | 上线或回滚nginx站点               | nginx                                    |
 |  18  | init/pg/backup/pg_backup_or_restore.sh        | 备份pg数据库                      | pg                                       |
 |  19  | init/pg/backup/pg_list_backup_or_restore.sh   | 备份pg数据库指定清单              | pg                                       |
-|  20  | 其他                                          | 略                                |                                          |
+|  20  | init/webhook/                                 | webhook前后端                     | python3                                  |
+|  21  | 其他                                          | 略                                |                                          |
 
 
 
@@ -151,7 +152,7 @@
 
 | 服务器类别 | 数量 | 说明         | 例如       |
 | ---------- | ---- | ------------ | ---------- |
-| deploy     | 1    | 用于构建与发布 |          |
+| deploy     | 1    | 用于构建与发布、webhook |          |
 | docker集群 | 1~n  | 根据自己需要 | k8s；swarm；docker-compose |
 | nginx      | 0~n  | 根据自己需要 | 放到集群也行 |
 | db         | 0~n  | 根据自己需要 | postgresql；mysql |
@@ -374,10 +375,18 @@ ansible-playbook install-config-certbot.yml
 
 # 0  基本
 
-# 【dev】环境用Debug随机端口范围
+GAN_PLATFORM_NAME="超甜B&D系统"    #--- 给本构建发布系统取个名字
+BUILD_LOG_WEBSITE_DOMAIN_A="build-log"    #--- 这个需要与【nginx.list】中【项目名】为【build-log】的【域名A记录】保持一致，一般无需更改此项
+ERROR_EXIT='NO'                    #--- 出错立即退出，YES|NO
+
+# DEBUG 模式
+DEBUG='YES'                         #--- YES|NO，如果设置DEBUG='YES'，则将容器所有内部端口publish出来，一般用于【dev】环境
+# Debug模式容器随机端口范围
 DEBUG_RANDOM_PORT_MIN=45000        #--- 最小
 DEBUG_RANDOM_PORT_MAX=49999        #--- 最大
 
+# 根据需要选择【npm|cnpm】
+NPM_BIN='npm'
 
 # 1  Build
 
@@ -389,22 +398,22 @@ export GIT_BRANCH='develop'
 ## 跳过测试
 export BUILD_SKIP_TEST='NO'    #--- YES|NO
 
-
 # 2  Docker集群相关
 
 ##  运行方式
-# fuck    : 直接执行命令； 
+# fuck    : 直接执行命令；.
 # notfuck : 打印命令到屏幕，自行拷贝执行
 export FUCK='notfuck'
 
 ##  集群类型
 
 ## ----------------------------------------
-## A  swarm 
+## A  swarm.
 
 ### 远程管理
 #export SWARM_DOCKER_HOST="ssh://root@192.168.11.141:2222"
 export SWARM_DOCKER_HOST="tcp://192.168.11.71:2375"
+
 ### 基本运行参数
 #### 网络
 export NETWORK_SWARM='onet_1'         #--- 默认值，可以在服务清单中指定其他
@@ -427,7 +436,6 @@ export JSON_LOG_MAX_FILES=5
 export K8S_NAMESAPCE='default'                       #--- 默认值，可以在服务清单中指定其他
 export DOCKER_REPO_SECRET_NAME='my-docker-repo-pw'   #--- 请自行创建相关secret
 
-
 ## ----------------------------------------
 ## C  docker-compose
 
@@ -435,6 +443,7 @@ export DOCKER_REPO_SECRET_NAME='my-docker-repo-pw'   #--- 请自行创建相关s
 export NETWORK_COMPOSE='net_gc'
 
 ## ----------------------------------------
+
 # 3 Build 与 Docker
 
 ## 密码相关 ( *** 存放在【~/.my_sec/*.sec/*.sec】下的文件皆包含密码，不推荐保存到代码仓库 *** )
@@ -445,8 +454,6 @@ done
 
 ## Container env(自定义希望注入到docker容器的环境变量)
 export CONTAINER_ENVS_PUB_FILE="${HOME}/.my_sec/container-envs-pub.sec"
-
-
 
 ##############################################################
 #
@@ -549,66 +556,77 @@ esac
 
 
 
-### 4.3 【docker-cluster-service.list---dev】
+### 4.3 【docker-cluster-service.list---dev、docker-cluster-service.list。append.1---dev、docker-cluster-service.list.append.2---dev】
 
 这个是发布docker服务时的关键文件，这里可以实现较为复杂的部署要求，也可以根据需要增加列以实现更为复杂的需求
 
-【home项目路径/init/envs.sample/docker-cluster-service.list---dev】
+- 【home项目路径/init/envs.sample/docker-cluster-service.list---dev】
 
 ```sh
-## docker cluster 服务部署清单
-###
-###  0 公共参数（ *** 对所有项目生效，以#开头的无效，以空格开头无效，可以是变量 *** ）：
-###    DOCKER_LOG_PUB :      Docker通用日志参数变量。定义在【deploy.env---*】文件中，仅对【swarm】集群有效
-###    DOCKER_ARG_PUB :      Docker通用运行参数文件。文件名【docker-arg-pub.list---*】，仅对【swarm】集群有效
-###    CONTAINER_HOSTS_PUB : 所有容器中的hosts定义文件。文件名【container-hosts-pub.list---*】
-### 
-###    CONTAINER_ENVS_PUB :  所有容器中的变量定义文件。文件名【~/.my_sec/container-envs-pub.sec】(因为包含用户密码相关信息，所以不保存于当前仓库)
-###    JAVA_OPTIONS_PUB :    所有容器中的JAVA_OPTIONS变量定义文件。文件名【java-options-pub.list---*】。要使【JAVA_OPTIONS】变量生效，需在docker镜像中指定使用此变量
-### 
-###  ---------------------------------------------------------------------------------------
-### 
-###  2【服务名：SERVICE_NAME】= [ 自定义名称 ] 
-### 
-###  3【DOCKER镜像名：DOCKER_IMAGE_NAME】= [ 自定义名称 ]
-### 
 ###  4【POD副本数：POD_REPLICAS】= [ 数字|${变量名} ]
 ###    1 数字          : 例如：2
 ###    2 ${变量名}     : 例如：【${SERVICE_NAME}】
-### 
+###
 ###  5【容器PORTS：CONTAINER_PORTS】= [ 外部端口号1:内部端口号2, 外部端口号3:内部端口号4, ...... , ${变量名} ]
 ###    若有多个，则用【,】分隔
 ###    示例：【17474:7474】
 ###          【${xName}:7474】
 ###          【27474:7474,7687:7687】
-### 
-###  6【JAVA选项：JAVA_OPTIONS】= [ Java参数1 , Java参数2, Java参数n, JAVA_OPT_FROM_FILE="/path/to/filename" ]
-###    如果有多个，则用【,】号分隔，例如：【-Dencoding=UTF-8,-Dfile=${FILE},JAVA_OPT_FROM_FILE="/path/to/filename"】
-###    -  指定为具体参数，例如：【-Dencoding=UTF-8】
-###    -  指定变量参数，例如：【-Dfile=${FILE}】
-###    -  指定从文件获取，参数名需指定为【JAVA_OPT_FROM_FILE】，例如：【JAVA_OPT_FROM_FILE="/path/to/filename"】，建议放在【init/my_envs/】目录下，用git管理
-### 
-###  7【容器ENVS：CONTAINER_ENVS】= [ 变量1=值1, 变量2=值2, 变量n=值n, ENVS_FROM_FILE="/path/to/filename"]
-###    如果有多个，则用【,】号分隔，例如：【aa=1,bb=2,NEO4J_AUTH=${NEO4J_USER}/${NEO4J_PASSWORD},ENVS_FROM_FILE="/path/to/filename"】
-###    - 指定为具体参数，例如：【aa=1,bb=2】
-###    - 指定变量参数，例如：【NEO4J_AUTH=${NEO4J_USER}/${NEO4J_PASSWORD}】
-###    - 指定从文件获取，参数名需指定为【ENVS_FROM_FILE】，例如【ENVS_FROM_FILE="/path/to/filename"】，建议放在【init/my_envs/】目录下，用git管理
-### 
-###  8【容器CMDS：CONTAINER_CMDS】= [ 命令参数2, 命令参数n, CMDS_FROM_FILE="/path/to/filename" ]
-###    如果有多个，则用【,】号分隔，例如：【--quiet,--requirepass "${REDIS_PASSWORD}",CMDS_FROM_FILE="/path/to/filename"】
-###    - 指定为具体参数，例如：【--quiet】
-###    - 指定变量参数，例如：【--requirepass "${REDIS_PASSWORD}"】
-###    - 指定从文件获取，参数名需指定为【CMDS_FROM_FILE】，例如【CMDS_FROM_FILE="/path/to/filename"】，建议放在【init/my_envs/】目录下，用git管理
-### 
-###  9【优先级：PRIORITY】= [ 数字 ]
+###
+###  6【优先级：PRIORITY】= [ 数字 ]
 ###    数字越小越优先
 ###
-### 10【集群：CLUSTER】= [ swarm|k8s|compose|自定义 ]
+###  7【备注：NOTE】= [ 自定义 ]
+###    说明信息
+###
+###
+### A.1 更多扩展项，请在文件【docker-cluster-service.list.append.1】中添加
+###    3 集群
+###    4 主机名
+###    5 部署位置
+###
+###
+### A.2 更多扩展项，请在文件【docker-cluster-service.list.append.2】中添加
+###    3 JAVA选项
+###    4 容器ENVS
+###    5 容器CMDS
+###
+###
+###   ***** 以上种种，都可以自己定义，然后调整相关脚本即可 *****
+###
+###   ***** 上文提到的变量名可以是下文表头的名字、也可以是sh中可以获得的变量名 *****
+###
+#| SERVICE_NAME           | DOCKER_IMAGE_NAME       | POD_REPLICAS  | CONTAINER_PORTS    | PRIORITY   | NOTE                         |
+#| **服务名**             | **DOCKER镜像名**        | **POD副本数** | **容器PORTS**      | **优先级** | **备注**                     |
+#| ---------------------- | ----------------------- | ------------: | ------------------ | ---------- | ---------------------------- |
+|neo4j-srv                |neo4j                    | 1             | 7474:7474,7687:7687| 0          |                              |
+|redis-srv                |redis                    | 1             | 6379:6379          | 0          |                              |
+|nacos-server-1           |nacos-server             | 1             | 8848:8848,9848:9848,9555:9555| 0|                              |
+|nacos-server-2           |nacos-server             | 1             | :8848,:9848,:9555  | 20         |                              |
+|nacos-server-3           |nacos-server             | 1             | :8848,:9848,:9555  | 20         |                              |
+|gc-gateway               |gc-gateway               | 1             | 13000:13000        | 15         |                              |
+|gc-monitor               |gc-monitor               | 1             | :13030             | 20         |                              |
+|gc-client-service        |gc-client-service        | 1             | :23000             | 20         |                              |
+|gc-client-app-service    |gc-client-app-service    | 1             | :23100             | 20         |                              |
+|gc-travel-service        |gc-travel-service        | 1             | :20201             | 20         |                              |
+```
+
+- 【home项目路径/init/envs.sample/docker-cluster-service.list.append.1---dev】
+
+```sh
+###  ---------------------------------------------------------------------------------------
+###.
+###  2【服务名：SERVICE_NAME】= [ 自定义名称 ].
+###
+###  3【集群：CLUSTER】= [ swarm|k8s|compose|自定义 ]
 ###    1 swarm       : swarm
 ###    2 k8s         : k8s
 ###    3 compose     : docker-compose
 ###
-### 11【部署位置：DEPLOY_PLACEMENT】= [ NET:网络 , L:label键值对 | NS:命名空间, L:label键值对 | SSH:<用户@>主机名或IP <-p ssh端口> ]
+###  4【主机名：HOST_NAME】= [ 自定义 ]
+###    须符合主机名称规范
+###
+###  5【部署位置：DEPLOY_PLACEMENT】= [ NET:网络 , L:label键值对 | NS:命名空间, L:label键值对 | SSH:<用户@>主机名或IP <-p ssh端口> ]
 ###    1 集群='swarm'      : NET:网络, L:label键值对             : NET 即network，默认在deploy.env---*中定义，这里可以省略
 ###                                                              : L 即Label，指定标签，可以有多个，代表服务部署到这个标签主机节点，可以不指定
 ###    2 集群='k8s'        : NS:命名空间, L:label键值对          : NS 即k8s命名空间，默认在deploy.env---*中定义，这里可以省略
@@ -623,29 +641,77 @@ esac
 ###          【SSH:root@192.168.11.77 -p 22】
 ###          【SSH:192.168.11.77】
 ###
-### 12【主机名：HOSTNAME】= [ 自定义 ]
-###    须符合主机名称规范
-###    注：swarm集群下修改hostname后，在其他容器内无法解析ip，而集群自己生成的hostname是可以解析ip的（就是可以ping通对方主机名）
 ###
 ###   ***** 以上种种，都可以自己定义，然后调整相关脚本即可 *****
 ###
 ###   ***** 上文提到的变量名可以是下文表头的名字、也可以是sh中可以获得的变量名 *****
 ###
-#| SERVICE_NAME      | DOCKER_IMAGE_NAME | POD_REPLICAS  | CONTAINER_PORTS | JAVA_OPTIONS    | CONTAINER_ENVS   | CONTAINER_CMDS   | PRIORITY   | CLUSTER  | DEPLOY_PLACEMENT | HOSTNAME     |
-#| **服务名**        | **DOCKER镜像名**  | **POD副本数** | **容器PORTS**   | **JAVA选项**    | **容器ENVS**     | **容器CMDS**     | **优先级** | **集群** | **部署位置**     | **主机名**   |
-#| ----------------- | ----------------- | ------------: | -----------  -- | --------------: | ---------------- | ---------------- | ---------- | -------- | ---------------- | ------------ |
-| neo4j-srv          | neo4j                         | 1 | 7474:7474,7687:7687   |           | NEO4J_AUTH="${NEO4J_USER}/${NEO4J_PASSWORD}" | | 0 | swarm  |                  |              |
-| redis-srv          | redis                         | 1 | 6379:6379             |           |            | --requirepass "${REDIS_PASSWORD}" | 0 | swarm  |                  |              |
-| gc-gateway         | gc-gateway                    | 1 | 13000:13000 | -Xms512m -Xmx512m   |                  |                  | 15         | swarm    |                  |              |
-| gc-monitor         | gc-monitor                    | 1 | :13030      | -Xms512m -Xmx512m   |                  |                  | 20         | swarm    |                  |              |
-| gc-client-service  | gc-client-service             | 1 | :23000      | -Xms512m -Xmx512m   |                  |                  | 20         | k8s      |                  |              |
-| gc-client-app-service | gc-client-app-service      | 1 | :23100      | -Xms512m -Xmx512m   |                  |                  | 20         | compose  | SSH:192.168.11.77|              |
-| gc-travel-service  | gc-travel-service             | 1 | :20201      | -Xms512m -Xmx512m   |                  |                  | 20         | k8s      |                  |              |
-| nacos-server-1     | nacos-server                  | 1 |8848:8848,9848:9848,9555:9555|     | ENVS_FROM_FILE=../init/my_envs/nacos.env| | 20   | swarm    |                  |nacos-server-1|
-| nacos-server-2     | nacos-server                  | 1 |:8848,:9848,:9555|                 | ENVS_FROM_FILE=../init/my_envs/nacos.env| | 20   | swarm    |                  |nacos-server-2|
-| nacos-server-3     | nacos-server                  | 1 |:8848,:9848,:9555|                 | ENVS_FROM_FILE=../init/my_envs/nacos.env| | 20   | swarm    |                  |nacos-server-3|
+#| SERVICE_NAME           | CLUSTER  | HOST_NAME     | DEPLOY_PLACEMENT                                           |
+#| **服务名**             | **集群** | **主机名**    | **部署位置**                                               |
+#| ---------------------- | -------- | ------------- | ---------------------------------------------------------- |
+|neo4j-srv                | swarm    |               |                                                            |
+|redis-srv                | swarm    |               |                                                            |
+|nacos-server-1           | swarm    |nacos-server-a |                                                            |
+|nacos-server-2           | swarm    |nacos-server-b |                                                            |
+|nacos-server-3           | swarm    |nacos-server-c |                                                            |
+|gc-gateway               | swarm    |               |                                                            |
+|gc-monitor               | swarm    |               |                                                            |
+|gc-client-service        | k8s      |               |                                                            |
+|gc-client-app-service    | compose  |               | SSH:192.168.11.77                                          |
+|gc-travel-service        | k8s      |               |                                                            |
+
 ```
 
+- 【home项目路径/init/envs.sample/docker-cluster-service.list.append.2---dev】
+
+```sh
+## docker cluster 服务部署清单扩展
+###
+### 此文件【docker-cluster-service.list.append.2】是【docker-cluster-service.list】的扩展，请确保两个文件的【服务名】相匹配，否则无效，如果某服务不需要扩展项，则可以删除该行
+###
+###.
+###  ---------------------------------------------------------------------------------------
+###.
+###  2【服务名：SERVICE_NAME】= [ 自定义名称 ].
+###    确保与【docker-cluster-service.list】中的【服务名】相匹配，否则无效
+###.
+###  3【JAVA选项：JAVA_OPTIONS】= [ Java参数1 , Java参数2, Java参数n, JAVA_OPT_FROM_FILE="/path/to/filename" ]
+###    如果有多个，则用【,】号分隔，例如：【-Dencoding=UTF-8,-Dfile=${FILE},JAVA_OPT_FROM_FILE="/path/to/filename"】
+###    -  指定为具体参数，例如：【-Dencoding=UTF-8】
+###    -  指定变量参数，例如：【-Dfile=${FILE}】
+###    -  指定从文件获取，参数名需指定为【JAVA_OPT_FROM_FILE】，例如：【JAVA_OPT_FROM_FILE="/path/to/filename"】，建议放在【init/my_envs/】目录下，用git管理
+###.
+###  4【容器ENVS：CONTAINER_ENVS】= [ 变量1=值1, 变量2=值2, 变量n=值n, ENVS_FROM_FILE="/path/to/filename"]
+###    如果有多个，则用【,】号分隔，例如：【aa=1,bb=2,NEO4J_AUTH=${NEO4J_USER}/${NEO4J_PASSWORD},ENVS_FROM_FILE="/path/to/filename"】
+###    - 指定为具体参数，例如：【aa=1,bb=2】
+###    - 指定变量参数，例如：【NEO4J_AUTH=${NEO4J_USER}/${NEO4J_PASSWORD}】
+###    - 指定从文件获取，参数名需指定为【ENVS_FROM_FILE】，例如【ENVS_FROM_FILE="/path/to/filename"】，建议放在【init/my_envs/】目录下，用git管理
+###.
+###  5【容器CMDS：CONTAINER_CMDS】= [ 命令参数2, 命令参数n, CMDS_FROM_FILE="/path/to/filename" ]
+###    如果有多个，则用【,】号分隔，例如：【--quiet,--requirepass "${REDIS_PASSWORD}",CMDS_FROM_FILE="/path/to/filename"】
+###    - 指定为具体参数，例如：【--quiet】
+###    - 指定变量参数，例如：【--requirepass "${REDIS_PASSWORD}"】
+###    - 指定从文件获取，参数名需指定为【CMDS_FROM_FILE】，例如【CMDS_FROM_FILE="/path/to/filename"】，建议放在【init/my_envs/】目录下，用git管理
+###.
+###
+###   ***** 以上种种，都可以自己定义，然后调整相关脚本即可 *****
+###
+###   ***** 上文提到的变量名可以是下文表头的名字、也可以是sh中可以获得的变量名 *****
+###
+#| SERVICE_NAME           | JAVA_OPTIONS                      | CONTAINER_ENVS                                             | CONTAINER_CMDS                    |
+#| **服务名**             | **JAVA选项**                      | **容器ENVS**                                               | **容器CMDS**                      |
+#| ---------------------- | --------------------------------- | ---------------------------------------------------------- | --------------------------------- |
+|neo4j-srv                |                                   | NEO4J_AUTH="${NEO4J_USER}/${NEO4J_PASSWORD}"               |                                   |
+|redis-srv                |                                   |                                                            |--requirepass "${REDIS_PASSWORD}"  |
+|nacos-server-1           |                                   | ENVS_FROM_FILE=../init/my_envs/nacos.env                   |                                   |
+|nacos-server-2           |                                   | ENVS_FROM_FILE=../init/my_envs/nacos.env                   |                                   |
+|nacos-server-3           |                                   | ENVS_FROM_FILE=../init/my_envs/nacos.env                   |                                   |
+|gc-gateway               | -Xms512m -Xmx512m                 |                                                            |                                   |
+|gc-monitor               | -Xms512m -Xmx512m                 |                                                            |                                   |
+|gc-client-service        | -Xms512m -Xmx512m                 |                                                            |                                   |
+|gc-client-app-service    | -Xms512m -Xmx512m                 |                                                            |                                   |
+|gc-travel-service        | -Xms512m -Xmx512m                 |                                                            |                                   |
+```
 
 
 ### 4.4 【nginx.list---dev】

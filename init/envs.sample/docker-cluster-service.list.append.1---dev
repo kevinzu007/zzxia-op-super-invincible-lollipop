@@ -1,0 +1,51 @@
+### docker cluster 服务部署清单扩展
+###
+### 此文件【docker-cluster-service.list.append.1】是【docker-cluster-service.list】的扩展，请确保两个文件的【服务名】相匹配，否则无效，此文件是必须项
+###
+###.
+###  ---------------------------------------------------------------------------------------
+###.
+###  2【服务名：SERVICE_NAME】= [ 自定义名称 ] 
+###
+###  3【集群：CLUSTER】= [ swarm|k8s|compose|自定义 ]
+###    1 swarm       : swarm
+###    2 k8s         : k8s
+###    3 compose     : docker-compose
+###
+###  4【主机名：HOST_NAME】= [ 自定义 ]
+###    须符合主机名称规范
+###
+###  5【部署位置：DEPLOY_PLACEMENT】= [ NET:网络 , L:label键值对 | NS:命名空间, L:label键值对 | SSH:<用户@>主机名或IP <-p ssh端口> ]
+###    1 集群='swarm'      : NET:网络, L:label键值对             : NET 即network，默认在deploy.env---*中定义，这里可以省略
+###                                                              : L 即Label，指定标签，可以有多个，代表服务部署到这个标签主机节点，可以不指定
+###    2 集群='k8s'        : NS:命名空间, L:label键值对          : NS 即k8s命名空间，默认在deploy.env---*中定义，这里可以省略
+###                                                              : L 同上，即Label，指定标签，可以有多个，代表服务部署到这个标签主机节点，可以不指定
+###    3 集群='compose'    : SSH:<用户@>主机名或IP <-p ssh端口>  : 需要ssh到目标节点实现免密码登录，【用户名】及【ssh端口】可以省略
+###    若有多个参数，则用【,】分隔
+###    示例：【L:node=worker_node_2】
+###          【NET:net1, L:node=worker, L:aa=bbb】
+###          【NET:net1】
+###          【NS:demo_space, L:node=worker, L:aa=bbb】
+###          【NS:demo_space】
+###          【SSH:root@192.168.11.77 -p 22】
+###          【SSH:192.168.11.77】
+###
+###
+###   ***** 以上种种，都可以自己定义，然后调整相关脚本即可 *****
+###
+###   ***** 上文提到的变量名可以是下文表头的名字、也可以是sh中可以获得的变量名 *****
+###
+#| SERVICE_NAME           | CLUSTER  | HOST_NAME     | DEPLOY_PLACEMENT                                           |
+#| **服务名**             | **集群** | **主机名**    | **部署位置**                                               |
+#| ---------------------- | -------- | ------------- | ---------------------------------------------------------- |
+|neo4j-srv                | swarm    |               |                                                            |
+|redis-srv                | swarm    |               |                                                            |
+|nacos-server-1           | swarm    |nacos-server-a |                                                            |
+|nacos-server-2           | swarm    |nacos-server-b |                                                            |
+|nacos-server-3           | swarm    |nacos-server-c |                                                            |
+|gc-gateway               | swarm    |               |                                                            |
+|gc-monitor               | swarm    |               |                                                            |
+|gc-client-service        | k8s      |               |                                                            |
+|gc-client-app-service    | compose  |               | SSH:192.168.11.77                                          |
+|gc-travel-service        | k8s      |               |                                                            |
+
