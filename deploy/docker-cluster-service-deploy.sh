@@ -1176,7 +1176,7 @@ do
 done
 cp  ${SERVICE_LIST_FILE_TMP}.sort  ${SERVICE_LIST_FILE_TMP}
 # 加表头
-sed -i  '1i#| **服务名** | **DOCKER镜像名** | **POD副本数** | **容器PORTS** | **优先级** | **集群** | **主机名** | **部署位置** | **备注** |'  ${SERVICE_LIST_FILE_TMP}
+sed -i  '1i#| **服务名** | **DOCKER镜像名** | **POD副本数** | **容器PORTS** | **优先级** | **备注** |'  ${SERVICE_LIST_FILE_TMP}
 # 屏显
 if [[ ${SH_RUN_MODE} == 'normal' ]]; then
     echo -e "${ECHO_NORMAL}========================= 开始发布 =========================${ECHO_CLOSE}"  #--- 60 (60-50-40)

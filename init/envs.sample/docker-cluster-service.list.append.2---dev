@@ -1,4 +1,4 @@
-## docker cluster 服务部署清单扩展
+### docker cluster 服务部署清单扩展
 ###
 ### 此文件【docker-cluster-service.list.append.2】是【docker-cluster-service.list】的扩展，请确保两个文件的【服务名】相匹配，否则无效，如果某服务不需要扩展项，则可以删除该行
 ###

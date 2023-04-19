@@ -1,4 +1,4 @@
-## docker cluster 服务部署清单
+### docker cluster 服务部署清单
 ###
 ###  0 公共参数（ *** 对所有项目生效，以#开头的无效，以空格开头无效，可以是变量 *** ）：
 ###    DOCKER_LOG_PUB :      Docker通用日志参数变量。定义在【deploy.env---*】文件中，仅对【swarm】集群有效
