@@ -885,7 +885,7 @@ F_FUCK()
                 fi
                 ;;
             *)
-                echo -e "\n猪猪侠警告：未定义的集群类型\n"
+                echo -e "\n猪猪侠警告：未定义的操作类型\n"
                 return 52
                 ;;
         esac
