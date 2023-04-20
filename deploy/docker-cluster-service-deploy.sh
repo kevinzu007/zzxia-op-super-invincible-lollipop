@@ -1431,7 +1431,6 @@ do
             case "${CLUSTER}" in
                 swarm)
                     DOCKER_ARG_PUB_OK=""
-                    DOCKER_ARG_PUB_OK="--network ${NETWORK_SWARM}  ${DOCKER_ARG_PUB_OK}"
                     #
                     DOCKER_ARG_PUB_FILE=`eval echo ${DOCKER_ARG_PUB_FILE}`
                     DOCKER_ARG_PUB_FILE=${DOCKER_ARG_PUB_FILE//'~'/${HOME}}
