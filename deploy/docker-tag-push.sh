@@ -167,10 +167,6 @@ sed -i  '1i#| **类别** | **项目名** | **构建方法** | **输出方法** |
 
 
 
-# login
-echo "${DOCKER_REPO_PASSWORD}" | docker login -u "$DOCKER_REPO_USER" --password-stdin  ${DOCKER_REPO}  > /dev/null 2>&1
-
-
 # 开始
 echo ""
 i=0

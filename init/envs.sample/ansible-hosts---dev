@@ -90,4 +90,11 @@ nginx_letsencrypt
 192.168.11.84
 
 
+[docker:children]
+deploy
+swarm
+docker_compose
+efk
+repo_nexus
+
 

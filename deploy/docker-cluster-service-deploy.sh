@@ -1215,7 +1215,7 @@ do
     #
     #
     # append.1
-    SERVICE_LIST_FILE_APPEND_1_TMP="${SERVICE_LIST_FILE_APPEND_1}---${SERVICE_NAME}"
+    SERVICE_LIST_FILE_APPEND_1_TMP="${LOG_HOME}/${SH_NAME}-${SERVICE_LIST_FILE_APPEND_1##*/}---${SERVICE_NAME}"
     cat ${SERVICE_LIST_FILE_APPEND_1} | grep "${SERVICE_NAME}"  >  ${SERVICE_LIST_FILE_APPEND_1_TMP}
     GET_IT_A='NO'
     while read LINE_A
@@ -1247,7 +1247,7 @@ do
     #
     #
     # append.2
-    SERVICE_LIST_FILE_APPEND_2_TMP="${SERVICE_LIST_FILE_APPEND_2}---${SERVICE_NAME}"
+    SERVICE_LIST_FILE_APPEND_2_TMP="${LOG_HOME}/${SH_NAME}-${SERVICE_LIST_FILE_APPEND_2##*/}---${SERVICE_NAME}"
     cat ${SERVICE_LIST_FILE_APPEND_2} | grep "${SERVICE_NAME}"  >  ${SERVICE_LIST_FILE_APPEND_2_TMP}
     GET_IT_B='NO'
     while read LINE_B
@@ -1431,7 +1431,6 @@ do
             case "${CLUSTER}" in
                 swarm)
                     DOCKER_ARG_PUB_OK=""
-                    DOCKER_ARG_PUB_OK="--network ${NETWORK_SWARM}  ${DOCKER_ARG_PUB_OK}"
                     #
                     DOCKER_ARG_PUB_FILE=`eval echo ${DOCKER_ARG_PUB_FILE}`
                     DOCKER_ARG_PUB_FILE=${DOCKER_ARG_PUB_FILE//'~'/${HOME}}

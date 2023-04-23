@@ -540,7 +540,7 @@ F_DOCKER_CLUSTER_SERVICE_DEPLOY()
                 if [[ ${SERVICE_NAME} == ${F_SERVICE_NAME} ]]; then
                     #
                     # append.1
-                    GOGOGO_SERVICE_LIST_FILE_APPEND_1_TMP="${GOGOGO_SERVICE_LIST_FILE_APPEND_1}---${SERVICE_NAME}"
+                    GOGOGO_SERVICE_LIST_FILE_APPEND_1_TMP="${LOG_HOME}/${SH_NAME}-${GOGOGO_SERVICE_LIST_FILE_APPEND_1##*/}---${SERVICE_NAME}"
                     cat ${GOGOGO_SERVICE_LIST_FILE_APPEND_1} | grep "${SERVICE_NAME}"  >  ${GOGOGO_SERVICE_LIST_FILE_APPEND_1_TMP}
                     GET_IT_A='NO'
                     while read LINE_A
