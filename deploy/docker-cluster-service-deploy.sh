@@ -137,6 +137,8 @@ F_HELP()
         $0 [-s|--status]  <-V|--release-version {版本号}>  <-G|--gray>  <-a|--all-release>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
         # 详情
         $0 [-d|--detail]  <-V|--release-version {版本号}>  <-G|--gray>  <-a|--all-release>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
+        # 详情
+        $0 [-o|--logs]    <-V|--release-version {版本号}>  <-G|--gray>  <-a|--all-release>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
     参数说明：
         \$0   : 代表脚本本身
         []   : 代表是必选项
@@ -158,6 +160,7 @@ F_HELP()
         -r|--rm        ：删除服务
         -s|--status    : 获取服务运行状态
         -d|--detail    : 获取服务详细信息
+        -o|--logs      : 获取服务运行日志
         -D|--debug     : 开启开发者Debug模式，目前用于开放所有容器内部服务端口
         -t|--tag       ：模糊镜像tag版本
         -T|--TAG       ：精确镜像tag版本
@@ -214,6 +217,7 @@ F_HELP()
         $0 -S  -n 2  -G  -V yyy  服务1 服务2  -F   #--- 设置【服务1】、【服务2】的灰度服务，且版本为【yyy】的pod副本数为2
         # 删除
         $0 -r  -F                          #--- 根据服务清单删除所有服务
+        $0 -r  -F  -P                      #--- 根据服务清单删除所有服务，步进方式
         $0 -r  服务1 服务2  -F             #--- 删除【服务1】、【服务2】服务
         $0 -r  -G  服务1 服务2  -F         #--- 删除【服务1】、【服务2】的灰度服务
         $0 -r  -V yyy  服务1 服务2  -F     #--- 删除【服务1】、【服务2】，且版本为【yyy】的服务
@@ -226,6 +230,9 @@ F_HELP()
         # 运行详细信息（更多请参考【删除】）
         $0 -d  -F                          #--- 根据服务清单获服务运行取详细信息
         $0 -d  服务1 服务2  -F             #--- 获取【服务1】、【服务2】服务运行详细信息
+        # 容器运行日志（更多请参考【删除】）
+        $0 -o  -F  -P                      #--- 根据服务清单获服务运行取详细信息，步进方式
+        $0 -o  服务1 服务2  -F             #--- 获取【服务1】、【服务2】服务运行详细信息
         # 外调用★ 
         $0 -M function  -u                 服务1  -F    #--- 更新部署【服务1】，使用最新镜像
         $0 -M function  -u  -T 2020.12.11  服务1  -F    #--- 更新部署【服务1】，使用版本为【2020.12.11】的镜像
@@ -873,7 +880,7 @@ F_FUCK()
                     echo "${SERVICE_X_NAME} : 失败" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                 fi
                 ;;
-            rm|status|detail)
+            rm|status|detail|logs)
                 if [[ ${SH_ERROR_CODE} -eq 0 ]]; then
                     ERROR_CODE=50
                     echo "${SERVICE_X_NAME} : 成功"
@@ -908,7 +915,7 @@ F_FUCK()
 
 
 # 参数检查
-TEMP=`getopt -o hlL:FPcmubSrsdDt:T:n:GV:aM:  -l help,list,list-run:,fuck,by-step,create,modify,update,rollback,scale,rm,status,detail,debug,tag:,TAG:,number:,gray,release-version:,all-release,mode: -- "$@"`
+TEMP=`getopt -o hlL:FPcmubSrsdoDt:T:n:GV:aM:  -l help,list,list-run:,fuck,by-step,create,modify,update,rollback,scale,rm,status,detail,logs,debug,tag:,TAG:,number:,gray,release-version:,all-release,mode: -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
     exit 51
@@ -1028,6 +1035,15 @@ do
         -d|--detail)
             if [ -z "${SERVICE_OPERATION}" ]; then
                 SERVICE_OPERATION='detail'
+            else
+                echo -e "\n猪猪侠警告：主要参数太多^_^\n"
+                exit 51
+            fi
+            shift
+            ;;
+        -o|--logs)
+            if [ -z "${SERVICE_OPERATION}" ]; then
+                SERVICE_OPERATION='logs'
             else
                 echo -e "\n猪猪侠警告：主要参数太多^_^\n"
                 exit 51
@@ -2580,6 +2596,85 @@ do
                 esac
             done < ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
             ;;
+        logs)
+            #
+            if [[ -n ${RELEASE_VERSION} ]] && [[ ${CLUSTER} != 'compose' ]]; then
+                # 注释掉此块，可以启用正则表达式
+                #if [[ ! V_${RELEASE_VERSION} =~ ^V_[0-9a-z]+([_\.\-]?[0-9a-z]+)*$ ]]; then
+                #    echo -e "\n猪猪侠警告：在【${SERVICE_OPERATION}】操作时，发布版本号不能使用正则表达式，只能使用字符【0-9a-z._-】，且特殊字符不能出现在版本号的头部或尾部\n"
+                #    ERROR_CODE=51
+                #    exit 51
+                #else
+                #    # 替换【.】为【_】，服务名中不能有【.】
+                #    RELEASE_VERSION=${RELEASE_VERSION//./_}
+                #fi
+                #
+                if [[ ${GRAY_TAG} == 'gray' ]]; then
+                    SERVICE_X_NAME="${SERVICE_NAME}--V_${RELEASE_VERSION}-G"
+                elif [[ ${GRAY_TAG} == 'normal' ]];then
+                    SERVICE_X_NAME="${SERVICE_NAME}--V_${RELEASE_VERSION}"
+                else
+                    echo -e "\n猪猪侠警告：这是不可能的\n"
+                    ERROR_CODE=52
+                    exit 52
+                fi
+            elif [[ -z ${RELEASE_VERSION} ]] && [[ ${CLUSTER} != 'compose' ]]; then
+                if [[ ${GRAY_TAG} == 'gray' ]]; then
+                    SERVICE_X_NAME="${SERVICE_NAME}--G"
+                elif [[ ${GRAY_TAG} == 'normal' ]];then
+                    SERVICE_X_NAME="${SERVICE_NAME}"
+                else
+                    echo -e "\n猪猪侠警告：这是不可能的\n"
+                    ERROR_CODE=52
+                    exit 52
+                fi
+            else
+                SERVICE_X_NAME="${SERVICE_NAME}"
+            fi
+            #
+            # 是否运行中
+            if [[ ${ALL_RELEASE} == 'YES' ]]; then
+                SERVICE_X_NAME=${SERVICE_NAME}
+                F_ONLINE_SERVICE_SEARCH_LIKE  ${SERVICE_X_NAME}  ${CLUSTER} > ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
+                [[ $? -eq 0 ]] && SERVICE_RUN_STATUS='YES' || SERVICE_RUN_STATUS='NO'
+            else
+                F_ONLINE_SERVICE_SEARCH       ${SERVICE_X_NAME}  ${CLUSTER} > ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
+                [[ $? -eq 0 ]] && SERVICE_RUN_STATUS='YES' || SERVICE_RUN_STATUS='NO'
+            fi
+            #
+            if [[ ${SERVICE_RUN_STATUS} == 'NO' ]]; then
+                echo "${SERVICE_X_NAME} : 失败，服务不在运行中"
+                echo "${SERVICE_X_NAME} : 失败，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                ERROR_CODE=53
+                continue
+            fi
+            #
+            DOCKER_FULL_CMD="echo "
+            #
+            while read GET_LINE
+            do
+                #
+                case ${CLUSTER} in 
+                    swarm)
+                        DOCKER_FULL_CMD="${DOCKER_FULL_CMD} ;  docker service logs -f ${GET_LINE}"
+                        ;;
+                    k8s)
+                        DOCKER_FULL_CMD="${DOCKER_FULL_CMD} ;  echo '========== Deployments ==========' && kubectl logs -f deployments ${GET_LINE} ; echo ; echo '========== Services ==========' && kubectl describe services ${GET_LINE}"
+                        ;;
+                    compose)
+                        DOCKER_FULL_CMD="echo  \
+                            ; ssh -p ${COMPOSE_SSH_PORT} ${COMPOSE_SSH_HOST_OR_WITH_USER}  \
+                                \"cd ${DOCKER_COMPOSE_SERVICE_HOME}  \
+                                &&  docker-compose logs -f  \"
+                        "
+                        ;;
+                    *)
+                        echo -e "\n猪猪侠警告：未定义的集群类型\n" 
+                        exit 52
+                        ;;
+                esac
+            done < ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
+            ;;
     esac
     # 运行
     F_FUCK
@@ -2593,7 +2688,7 @@ if ! [[ ${FUCK} == YES ]]; then
     exit
 fi
 #
-if [ "${SERVICE_OPERATION}" = 'status' -o "${SERVICE_OPERATION}" = 'detail' ]; then
+if [[ ${SERVICE_OPERATION} =~ status|detail|logs ]]; then
     exit
 fi
 
