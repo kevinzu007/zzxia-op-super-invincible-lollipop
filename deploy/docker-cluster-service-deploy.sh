@@ -58,7 +58,8 @@ SERVICE_LIST_FILE_APPEND_2="${SH_PATH}/docker-cluster-service.list.append.2"
 SERVICE_LIST_FILE_TMP="${LOG_HOME}/${SH_NAME}-docker-cluster-service.list.tmp"
 SERVICE_ONLINE_LIST_FILE_TMP="${LOG_HOME}/${SH_NAME}-docker-cluster-service-online.list.tmp"
 DOCKER_IMAGE_VER='latest'
-FUCK=${FUCK:-"no"}
+FUCK=${FUCK:-"NO"}
+DEPLOY_BY_STEP=${DEPLOY_BY_STEP:-"NO"}
 #
 DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE=${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE:-"${LOG_HOME}/${SH_NAME}-OK.list"}
 #
@@ -122,20 +123,20 @@ F_HELP()
         $0 [-l|--list]                    #--- 列出配置文件中的服务清单
         $0 [-L|--list-run swarm|k8s]      #--- 列出指定集群中运行的所有服务，不支持持【docker-compose】
         # 创建、修改
-        $0 <-M|--mode [normal|function]>  [-c|--create|-m|--modify]  <-D|--debug>  <<-t|--tag {模糊镜像tag版本}> | <-T|--TAG {精确镜像tag版本}>>  <-n|--number {副本数}>  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>
+        $0 <-M|--mode [normal|function]>  [-c|--create|-m|--modify]  <-D|--debug>  <<-t|--tag {模糊镜像tag版本}> | <-T|--TAG {精确镜像tag版本}>>  <-n|--number {副本数}>  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
         # 更新
-        $0 <-M|--mode [normal|function]>  [-u|--update]  <<-t|--tag {模糊镜像tag版本}> | <-T|--TAG {精确镜像tag版本}>>  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>
+        $0 <-M|--mode [normal|function]>  [-u|--update]  <<-t|--tag {模糊镜像tag版本}> | <-T|--TAG {精确镜像tag版本}>>  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
         # 回滚
-        $0 <-M|--mode [normal|function]>  [--b|rollback]   <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>
+        $0 <-M|--mode [normal|function]>  [--b|rollback]   <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
         #
         # 扩缩容
-        $0 <-M|--mode [normal|function]>  [-S|--scale]  [-n|--number {副本数}]  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名或灰度服务名1} {服务名或灰度服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>
+        $0 <-M|--mode [normal|function]>  [-S|--scale]  [-n|--number {副本数}]  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名或灰度服务名1} {服务名或灰度服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
         # 删除
-        $0 <-M|--mode [normal|function]>  [-r|--rm]  <-V|--release-version {版本号}>  <-G|--gray>  <-a|--all-release>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>
+        $0 <-M|--mode [normal|function]>  [-r|--rm]  <-V|--release-version {版本号}>  <-G|--gray>  <-a|--all-release>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
         # 状态
-        $0 [-s|--status]  <-V|--release-version {版本号}>  <-G|--gray>  <-a|--all-release>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>
+        $0 [-s|--status]  <-V|--release-version {版本号}>  <-G|--gray>  <-a|--all-release>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
         # 详情
-        $0 [-d|--detail]  <-V|--release-version {版本号}>  <-G|--gray>  <-a|--all-release>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>
+        $0 [-d|--detail]  <-V|--release-version {版本号}>  <-G|--gray>  <-a|--all-release>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
     参数说明：
         \$0   : 代表脚本本身
         []   : 代表是必选项
@@ -148,6 +149,7 @@ F_HELP()
         -l|--list      ：列出配置文件中的服务清单
         -L|--list-run  ：列出指定集群中运行的所有服务，不支持【docker-compose】集群
         -F|--fuck      ：直接运行命令，默认：仅显示命令行
+        -P|--by-step   ：【-F|--fuck】生效时，步进执行（即：按任意键执行，或按【Ctrl+C】键退出）
         -c|--create    ：创建服务，基于服务清单参数
         -m|--modify    ：修改服务，基于服务清单参数
         -u|--update    ：更新镜像版本
@@ -176,6 +178,7 @@ F_HELP()
         $0  -u  [.]*xxx  -F                      #--- 更新服务名称正则完全匹配【^[.]*xxx$】的服务，使用最新镜像
         # 创建
         $0 -c  -F                                    #--- 根据服务清单创建所有服务
+        $0 -c  -F  -P                                #--- 根据服务清单创建所有服务，步进执行
         $0 -c  服务1 服务2  -F                       #--- 创建【服务1】、【服务2】服务
         $0 -c  -D  服务1 服务2  -F                   #--- 创建【服务1】、【服务2】服务，并开启开发者Debug模式
         $0 -c  -T 2020.12.11  服务1 服务2  -F        #--- 创建【服务1】、【服务2】服务，且使用的镜像版本为【2020.12.11】
@@ -837,7 +840,7 @@ F_PROJECT_LIST_PORT_CONFLICT()
 # 用法：F_FUCK
 F_FUCK()
 {
-    if [ "x${FUCK}" = "xyes" -o "x${FUCK}" = "xfuck" ]; then
+    if [[ ${FUCK} == YES ]]; then
         if [[ ${SERVICE_OPERATION} == 'rm' ]] && [[ ${SERVICE_OPERATION} == 'modify' ]]; then
             # 保存服务端口备用
             PORTS_RM=''
@@ -846,9 +849,14 @@ F_FUCK()
                 PORTS_RM="${PORTS_RM} $(F_SEARCH_ONLINE_SERVICE_PUBLISH_PORTS  ${P_LINE})"
             done < ${SERVICE_ONLINE_LIST_FILE_TMP}---${SERVICE_NAME}
         fi
-        #
+        # 显示命令
         echo -e '# 正在执行以下指令：\n'
         echo "${DOCKER_FULL_CMD}"
+        #
+        if [[ ${DEPLOY_BY_STEP} == YES ]]; then
+            read -p "按任意键继续，或按【Ctrl+C】键终止"
+        fi
+        # 执行命令
         echo "${DOCKER_FULL_CMD}" | bash
         SH_ERROR_CODE=$?
         case ${SERVICE_OPERATION} in
@@ -900,7 +908,7 @@ F_FUCK()
 
 
 # 参数检查
-TEMP=`getopt -o hlL:FcmubSrsdDt:T:n:GV:aM:  -l help,list,list-run:,fuck,create,modify,update,rollback,scale,rm,status,detail,debug,tag:,TAG:,number:,gray,release-version:,all-release,mode: -- "$@"`
+TEMP=`getopt -o hlL:FPcmubSrsdDt:T:n:GV:aM:  -l help,list,list-run:,fuck,by-step,create,modify,update,rollback,scale,rm,status,detail,debug,tag:,TAG:,number:,gray,release-version:,all-release,mode: -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
     exit 51
@@ -947,7 +955,11 @@ do
             exit
             ;;
         -F|--fuck)
-            FUCK='yes'
+            FUCK='YES'
+            shift
+            ;;
+        -P|--by-step)
+            DEPLOY_BY_STEP='YES'
             shift
             ;;
         -c|--create)
@@ -2577,7 +2589,7 @@ echo -e "\n${SERVICE_OPERATION} 完成！\n"
 
 
 # 退出
-if ! [ "x${FUCK}" = "xyes" -o "x${FUCK}" = "xfuck" ]; then
+if ! [[ ${FUCK} == YES ]]; then
     exit
 fi
 #
