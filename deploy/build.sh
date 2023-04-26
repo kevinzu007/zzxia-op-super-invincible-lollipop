@@ -1007,25 +1007,31 @@ F_BUILD_TIME_SEARCH()
 
 
 # 用户搜索
-# 用法：F_USER_SEARCH  用户名或用户ID
+# F_USER_SEARCH  [用户名|用户ID]
 F_USER_SEARCH()
 {
     F_USER_NAME=$1
-    while read LINE
+    USER_DB_FILE_TMP="${LOG_HOME}/${SH_NAME}-${USER_DB_FILE##*/}---${F_USER_NAME}"
+    cat ${USER_DB_FILE} | grep "${F_USER_NAME}"  >  ${USER_DB_FILE_TMP}
+    while read U_LINE
     do
-        CURRENT_USER_ID=`echo $LINE | cut -d '|' -f 2`
+        # 跳过以#开头的行或空行
+        [[ "$U_LINE" =~ ^# ]] || [[ "$U_LINE" =~ ^[\ ]*$ ]] && continue
+        #
+        CURRENT_USER_ID=`echo $U_LINE | cut -d '|' -f 2`
         CURRENT_USER_ID=`echo ${CURRENT_USER_ID}`
-        CURRENT_USER_NAME=`echo $LINE | cut -d '|' -f 3`
+        CURRENT_USER_NAME=`echo $U_LINE | cut -d '|' -f 3`
         CURRENT_USER_NAME=`echo ${CURRENT_USER_NAME}`
-        CURRENT_USER_XINGMING=`echo $LINE | cut -d '|' -f 4`
-        CURRENT_USER_XINGMING=`echo ${CURRENT_USER_XINGMING}`
-        CURRENT_USER_EMAIL=`echo $LINE | cut -d '|' -f 5`
-        CURRENT_USER_EMAIL=`echo ${CURRENT_USER_EMAIL}`
         if [ "${F_USER_NAME}" = "${CURRENT_USER_ID}"  -o  "${F_USER_NAME}" = "${CURRENT_USER_NAME}" ]; then
+            CURRENT_USER_XINGMING=`echo $U_LINE | cut -d '|' -f 4`
+            CURRENT_USER_XINGMING=`echo ${CURRENT_USER_XINGMING}`
+            CURRENT_USER_EMAIL=`echo $U_LINE | cut -d '|' -f 5`
+            CURRENT_USER_EMAIL=`echo ${CURRENT_USER_EMAIL}`
+            #
             echo "${CURRENT_USER_XINGMING} ${CURRENT_USER_EMAIL}"
             return 0
         fi
-    done < "${USER_DB_FILE}"
+    done < "${USER_DB_FILE_TMP}"
     return 3
 }
 

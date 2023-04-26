@@ -158,13 +158,15 @@ F_TimeDiff ()
 }
 
 
+
 # 用户搜索
+# F_USER_SEARCH  [用户名|姓名]
 F_USER_SEARCH()
 {
     F_USER_NAME=$1
     while read LINE
     do
-        # 跳过以#开头的行或空行
+        # 跳过以#开头的行及空行
         [[ "$LINE" =~ ^# ]] || [[ "$LINE" =~ ^[\ ]*$ ]] && continue
         #
         CURRENT_USER_ID=`echo $LINE | cut -d '|' -f 2`
