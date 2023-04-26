@@ -137,7 +137,7 @@ F_HELP()
         $0 [-s|--status]  <-V|--release-version {版本号}>  <-G|--gray>  <-a|--all-release>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
         # 详情
         $0 [-d|--detail]  <-V|--release-version {版本号}>  <-G|--gray>  <-a|--all-release>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
-        # 详情
+        # 日志
         $0 [-o|--logs]    <-V|--release-version {版本号}>  <-G|--gray>  <-a|--all-release>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
     参数说明：
         \$0   : 代表脚本本身
