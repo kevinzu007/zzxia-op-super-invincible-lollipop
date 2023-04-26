@@ -861,7 +861,9 @@ F_FUCK()
         echo "${DOCKER_FULL_CMD}"
         #
         if [[ ${DEPLOY_BY_STEP} == YES ]]; then
-            read -p "按任意键继续，或按【Ctrl+C】键终止"
+            # 在while read循环中的read命令会失效，需要加上 < /dev/tty
+            #read -p "按任意键继续，或按【Ctrl+C】键终止"
+            read -p "按任意键继续，或按【Ctrl+C】键终止"  < /dev/tty
         fi
         # 执行命令
         echo "${DOCKER_FULL_CMD}" | bash
