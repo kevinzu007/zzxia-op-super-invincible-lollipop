@@ -17,12 +17,12 @@ TIME=${TIME:-`date +%Y-%m-%dT%H:%M:%S`}
 TIME_START=${TIME}
 DATE_TIME=`date -d "${TIME}" +%Y%m%dT%H%M%S`
 #
-SERVICE_LIST='./docker-cluster-service.list'
-HEALTH_URI='/actuator/health'
-HEALTH_STATUS_JSON='./health.json'
-#
 LOG_BASE="${SH_PATH}/tmp/log"
 LOG_HOME="${LOG_BASE}/${DATE_TIME}"
+#
+SERVICE_LIST="${SH_PATH}/docker-cluster-service.list"
+HEALTH_STATUS_JSON="${LOG_HOME}/health.json"
+HEALTH_URI='/actuator/health'
 
 
 # echo颜色定义
