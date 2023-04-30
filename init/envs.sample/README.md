@@ -24,7 +24,7 @@ zzxia-om-super-invincible-lollipop/init/envs.sample$ tree
 ├── backup-center-project.list                   #--- 可选，备份项目目录清单
 ├── bash_aliases---dev                           #--- 可选，命令别名
 ├── container-hosts-pub.list---dev               #--- 可选，定义docker容器中的/etc/hosts
-├── deploy.env---dev                             #--- 必选，最关键的环境变量文件
+├── env.sh---dev                             #--- 必选，最关键的环境变量文件
 ├── dingding_conver_to_markdown_list.py          #--- 可选，将消息转换成markdown list格式发出来，你需要设置自己的token
 ├── dingding_send_markdown-login.py              #--- 可选，发送markdown格式消息，用户登录报警用，你需要设置自己的token
 ├── dingding_send_markdown.py                    #--- 可选，发送markdown格式消息，你需要设置自己的token

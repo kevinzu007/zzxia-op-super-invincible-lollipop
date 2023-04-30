@@ -16,9 +16,9 @@
 ###    须符合主机名称规范
 ###
 ###  5【部署位置：DEPLOY_PLACEMENT】= [ NET:网络 , L:label键值对 | NS:命名空间, L:label键值对 | SSH:<用户@>主机名或IP <-p ssh端口> ]
-###    1 集群='swarm'      : NET:网络, L:label键值对             : NET 即network，默认在deploy.env---*中定义，这里可以省略
+###    1 集群='swarm'      : NET:网络, L:label键值对             : NET 即network，默认在env.sh---*中定义，这里可以省略
 ###                                                              : L 即Label，指定标签，可以有多个，代表服务部署到这个标签主机节点，可以不指定
-###    2 集群='k8s'        : NS:命名空间, L:label键值对          : NS 即k8s命名空间，默认在deploy.env---*中定义，这里可以省略
+###    2 集群='k8s'        : NS:命名空间, L:label键值对          : NS 即k8s命名空间，默认在env.sh---*中定义，这里可以省略
 ###                                                              : L 同上，即Label，指定标签，可以有多个，代表服务部署到这个标签主机节点，可以不指定
 ###    3 集群='compose'    : SSH:<用户@>主机名或IP <-p ssh端口>  : 需要ssh到目标节点实现免密码登录，【用户名】及【ssh端口】可以省略
 ###    若有多个参数，则用【,】分隔

@@ -16,7 +16,7 @@ RUN_ENV=${RUN_ENV:-'dev'}
 DOMAIN=${DOMAIN:-"xxx.lan"}
 
 # 引入env
-. ${SH_PATH}/deploy.env
+. ${SH_PATH}/env.sh
 GAN_PLATFORM_NAME="${GAN_PLATFORM_NAME:-'超甜B&D系统'}"
 BUILD_LOG_WEBSITE_DOMAIN_A=${BUILD_LOG_WEBSITE_DOMAIN_A:-"build-log"}         #--- 这个需要与【nginx.list】中【项目名】为【build-log】的【域名A记录】保持一致
 DINGDING_API=${DINGDING_API:-"请定义"}
@@ -99,7 +99,7 @@ F_HELP()
     用途：以并行的方式运行构建脚本，以加快构建速度
     依赖：
         /etc/profile.d/run-env.sh
-        ${SH_PATH}/deploy.env
+        ${SH_PATH}/env.sh
         ${PARA_PROJECT_LIST_FILE}
         ${BUILD_SH}
         ${FORMAT_TABLE_SH}
@@ -123,9 +123,9 @@ F_HELP()
         -l|--list      列出可构建的项目清单
         -n|--number    并行构建项目的数量，默认为2个
         -c|--category  指定构建项目语言类别：【dockerfile|java|node|自定义】，参考：${PARA_PROJECT_LIST_FILE}
-        -b|--branch    指定代码分支，默认来自deploy.env
+        -b|--branch    指定代码分支，默认来自env.sh
         -e|--email     发送日志到指定邮件地址，如果与【-U|--user-name】同时存在，则将会被替代
-        -s|--skiptest  跳过测试，默认来自deploy.env
+        -s|--skiptest  跳过测试，默认来自env.sh
         -f|--force     强制重新构建（无论是否有更新）
     示例:
         #

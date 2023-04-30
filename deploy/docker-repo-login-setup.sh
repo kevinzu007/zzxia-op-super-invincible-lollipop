@@ -12,7 +12,7 @@ SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
 # 引入env
-. ${SH_PATH}/deploy.env
+. ${SH_PATH}/env.sh
 #DOCKER_REPO=
 #DOCKER_REPO_USER=
 #DOCKER_REPO_PASSWORD=

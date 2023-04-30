@@ -15,7 +15,7 @@ SQL_SCRIPT_BASE="${SH_PATH}/build"
 SQL_SCRIPT_PROJECT="sql-release"
 
 # env
-. ${SH_PATH}/deploy.env
+. ${SH_PATH}/env.sh
 
 
 # sql脚本版本如何管理：

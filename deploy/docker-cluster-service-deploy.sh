@@ -15,7 +15,7 @@ cd ${SH_PATH}
 RUN_ENV=${RUN_ENV:-'dev'}
 
 # 引入env
-. ${SH_PATH}/deploy.env
+. ${SH_PATH}/env.sh
 GAN_PLATFORM_NAME="${GAN_PLATFORM_NAME:-'超甜B&D系统'}"
 #DINGDING_API=
 #USER_DB_FILE=
@@ -110,7 +110,7 @@ F_HELP()
         ${DOCKER_ARG_PUB_FILE}
         ${CONTAINER_HOSTS_PUB_FILE}
         ${JAVA_OPTIONS_PUB_FILE}
-        ${SH_PATH}/deploy.env
+        ${SH_PATH}/env.sh
         ${DOCKER_IMAGE_SEARCH_SH}
         ${FORMAT_TABLE_SH}
         ${DINGDING_MARKDOWN_PY}

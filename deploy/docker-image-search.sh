@@ -12,7 +12,7 @@ SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
 # 引入env
-. ${SH_PATH}/deploy.env
+. ${SH_PATH}/env.sh
 #DOCKER_REPO=
 #DOCKER_REPO_USER=
 #DOCKER_REPO_PASSWORD=
@@ -59,7 +59,7 @@ F_HELP()
     echo "
     用途：查询服务docker镜像
     依赖：
-        ${SH_PATH}/deploy.env
+        ${SH_PATH}/env.sh
         ${SERVICE_LIST_FILE}
     注意：
         * 输入命令时，参数顺序不分先后

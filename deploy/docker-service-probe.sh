@@ -9,7 +9,7 @@ cd ${SH_PATH}
 RUN_ENV=${RUN_ENV:-'dev'}
 
 # 引入env
-. ${SH_PATH}/deploy.env
+. ${SH_PATH}/env.sh
 
 # 本地env
 GAN_WHAT_FUCK='Docker_Deploy'

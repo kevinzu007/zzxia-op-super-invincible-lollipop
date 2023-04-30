@@ -11,7 +11,7 @@
 ###  3【项目名：PJ】= [自定义名称]
 ### 
 ###  4【GIT命名空间：GIT_NAMESPACE】= [自定义名称]
-###    请参考【deploy.env】中的GIT_DEFAULT_NAMESPACE说明
+###    请参考【env.sh】中的GIT_DEFAULT_NAMESPACE说明
 ### 
 ###  5【构建方法：BUILD_METHOD】= [ NONE | docker_bulid | java:[mvn_package|gradle|自定义] | node:[original|build|自定义] ]
 ###    0 类别='*'          : NONE             : 跳过构建，用【gogogo.sh】时，也会跳过发布

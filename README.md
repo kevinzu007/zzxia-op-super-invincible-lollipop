@@ -288,7 +288,7 @@ ansible all --become -m shell -a "reboot"
 
 **密码配置文件是后面项目运行的基础，这些一般不要保存在仓库中，请放在隐秘的角落，就像小电影一样。**
 
-这些文件都会在构建或发布的时候被`deploy.env`引入。
+这些文件都会在构建或发布的时候被`env.sh`引入。
 
 如果没有特别说明，以下则皆在目录【home项目路径/init】下完成
 
@@ -366,9 +366,9 @@ ansible-playbook install-config-certbot.yml
 
 
 
-### 4.1 【deploy.env---dev】
+### 4.1 【env.sh---dev】
 
-【home项目路径/init/envs.sample/deploy.env---dev】
+【home项目路径/init/envs.sample/env.sh---dev】
 
 ```sh
 #!/bin/bash
@@ -627,9 +627,9 @@ esac
 ###    须符合主机名称规范
 ###
 ###  5【部署位置：DEPLOY_PLACEMENT】= [ NET:网络 , L:label键值对 | NS:命名空间, L:label键值对 | SSH:<用户@>主机名或IP <-p ssh端口> ]
-###    1 集群='swarm'      : NET:网络, L:label键值对             : NET 即network，默认在deploy.env---*中定义，这里可以省略
+###    1 集群='swarm'      : NET:网络, L:label键值对             : NET 即network，默认在env.sh---*中定义，这里可以省略
 ###                                                              : L 即Label，指定标签，可以有多个，代表服务部署到这个标签主机节点，可以不指定
-###    2 集群='k8s'        : NS:命名空间, L:label键值对          : NS 即k8s命名空间，默认在deploy.env---*中定义，这里可以省略
+###    2 集群='k8s'        : NS:命名空间, L:label键值对          : NS 即k8s命名空间，默认在env.sh---*中定义，这里可以省略
 ###                                                              : L 同上，即Label，指定标签，可以有多个，代表服务部署到这个标签主机节点，可以不指定
 ###    3 集群='compose'    : SSH:<用户@>主机名或IP <-p ssh端口>  : 需要ssh到目标节点实现免密码登录，【用户名】及【ssh端口】可以省略
 ###    若有多个参数，则用【,】分隔
@@ -812,7 +812,7 @@ $ ./deploy/build.sh --help
     用途：用于项目构建，生成docker镜像并push到仓库
     依赖：
         /etc/profile.d/run-env.sh
-        /root/deploy-bmp/deploy/deploy.env
+        /root/deploy-bmp/deploy/env.sh
         /root/deploy-bmp/deploy/project.list
         /root/deploy-bmp/deploy/../op/send_mail.sh
         /root/deploy-bmp/deploy/docker-tag-push.sh
@@ -837,9 +837,9 @@ $ ./deploy/build.sh --help
         -l|--list      列出可构建的项目清单
         -M|--mode      指定构建方式，二选一【normal|function】，默认为normal方式。此参数用于被外部调用
         -c|--category  指定构建项目语言类别：【dockerfile|java|node|自定义】，参考：/root/deploy-bmp/deploy/project.list
-        -b|--branch    指定代码分支，默认来自deploy.env
+        -b|--branch    指定代码分支，默认来自env.sh
         -e|--email     发送日志到指定邮件地址，如果与【-U|--user-name】同时存在，则将会被替代
-        -s|--skiptest  跳过测试，默认来自deploy.env
+        -s|--skiptest  跳过测试，默认来自env.sh
         -f|--force     强制重新构建（无论是否有更新）
         -v|--verbose   显示更多过程信息
     示例:
@@ -901,7 +901,7 @@ $ ./deploy/build-parallel.sh --help
     用途：以并行的方式运行构建脚本，以加快构建速度
     依赖：
         /etc/profile.d/run-env.sh
-        /root/deploy-bmp/deploy/deploy.env
+        /root/deploy-bmp/deploy/env.sh
         /root/deploy-bmp/deploy/project.list
         /root/deploy-bmp/deploy/build.sh
         /root/deploy-bmp/deploy/../op/format_table.sh
@@ -925,9 +925,9 @@ $ ./deploy/build-parallel.sh --help
         -l|--list      列出可构建的项目清单
         -n|--number    并行构建项目的数量，默认为2个
         -c|--category  指定构建项目语言类别：【dockerfile|java|node|自定义】，参考：/root/deploy-bmp/deploy/project.list
-        -b|--branch    指定代码分支，默认来自deploy.env
+        -b|--branch    指定代码分支，默认来自env.sh
         -e|--email     发送日志到指定邮件地址，如果与【-U|--user-name】同时存在，则将会被替代
-        -s|--skiptest  跳过测试，默认来自deploy.env
+        -s|--skiptest  跳过测试，默认来自env.sh
         -f|--force     强制重新构建（无论是否有更新）
     示例:
         #
@@ -970,7 +970,7 @@ $ ./deploy/docker-cluster-service-deploy.sh --help
         /root/deploy-bmp/deploy/docker-arg-pub.list
         /root/deploy-bmp/deploy/container-hosts-pub.list
         /root/deploy-bmp/deploy/java-options-pub.list
-        /root/deploy-bmp/deploy/deploy.env
+        /root/deploy-bmp/deploy/env.sh
         /root/deploy-bmp/deploy/docker-image-search.sh
         /root/deploy-bmp/deploy/../op/format_table.sh
         /root/deploy-bmp/deploy/../op/dingding_conver_to_markdown_list-deploy.py
@@ -1114,7 +1114,7 @@ $ ./deploy/web-release.sh --help
         /root/deploy-bmp/deploy/nginx.list
         /root/deploy-bmp/deploy/../op/format_table.sh
         /root/deploy-bmp/deploy/../op/dingding_conver_to_markdown_list-deploy.py
-        /root/deploy-bmp/deploy/deploy.env
+        /root/deploy-bmp/deploy/env.sh
         nginx上：/root/nginx-config/web-release-on-nginx.sh
     注意：运行在nginx节点上
         * 【上线（ship）】流程包含以下四个子流程【构建】、【测试（test）】、【部署（deploy）】、【发布（release）】。原地发布（即部署 == 发布）
@@ -1175,7 +1175,7 @@ $ ./deploy/gogogo.sh --help
     用途：用于项目构建并发布
     依赖脚本：
         /etc/profile.d/run-env.sh
-        /root/deploy-bmp/deploy/deploy.env
+        /root/deploy-bmp/deploy/env.sh
         /root/deploy-bmp/deploy/project.list
         /root/deploy-bmp/deploy/build.sh
         /root/deploy-bmp/deploy/docker-cluster-service.list
@@ -1199,9 +1199,9 @@ $ ./deploy/gogogo.sh --help
         -h|--help      此帮助
         -l|--list      列出可构建的项目清单
         -c|--category  指定构建项目语言类别：【dockerfile|java|node|自定义】，参考：/root/deploy-bmp/deploy/project.list
-        -b|--branch    指定代码分支，默认来自deploy.env
+        -b|--branch    指定代码分支，默认来自env.sh
         -e|--email     发送日志到指定邮件地址，如果与【-U|--user-name】同时存在，则将会被替代
-        -s|--skiptest  跳过测试，默认来自deploy.env
+        -s|--skiptest  跳过测试，默认来自env.sh
         -f|--force     强制重新构建（无论是否有更新）
         -v|--verbose   显示更多过程信息
         -G|--gray            : 设置灰度标志为：【gray】，默认：【normal】
@@ -1430,7 +1430,7 @@ $ ./deploy/docker-image-search.sh --help
 
     用途：查询docker镜像
     依赖：
-        /root/deploy-bmp/deploy/deploy.env
+        /root/deploy-bmp/deploy/env.sh
         /root/deploy-bmp/deploy/docker-cluster-service.list
     注意：
         * 输入命令时，参数顺序不分先后

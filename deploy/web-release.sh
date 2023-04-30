@@ -15,7 +15,7 @@ cd "${SH_PATH}"
 RUN_ENV=${RUN_ENV:-'dev'}
 
 # 引入env
-. ${SH_PATH}/deploy.env
+. ${SH_PATH}/env.sh
 GAN_PLATFORM_NAME="${GAN_PLATFORM_NAME:-'超甜B&D系统'}"
 DINGDING_API=${DINGDING_API:-"请定义"}
 #USER_DB_FILE=
@@ -87,7 +87,7 @@ F_HELP()
         ${WEB_PROJECT_LIST_FILE}
         ${FORMAT_TABLE_SH}
         ${DINGDING_MARKDOWN_PY}
-        ${SH_PATH}/deploy.env
+        ${SH_PATH}/env.sh
         nginx上：/root/nginx-config/web-release-on-nginx.sh
     注意：运行在nginx节点上
         * 【上线（ship）】流程包含以下四个子流程【构建】、【测试（test）】、【部署（deploy）】、【发布（release）】。原地发布（即部署 == 发布）

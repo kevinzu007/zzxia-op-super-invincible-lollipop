@@ -63,7 +63,7 @@ F_CP ()
     cp -f  ${ENVS_FILE_DIR}/project.list                             ../deploy/
     cp -f  ${ENVS_FILE_DIR}/project.list.append.1                    ../deploy/
     #
-    cp -f  ${ENVS_FILE_DIR}/deploy.env---${R_ENV}                    ../deploy/deploy.env
+    cp -f  ${ENVS_FILE_DIR}/env.sh---${R_ENV}                    ../deploy/env.sh
     cp -f  ${ENVS_FILE_DIR}/nginx.list---${R_ENV}                    ../deploy/nginx.list
     cp -f  ${ENVS_FILE_DIR}/docker-cluster-service.list---${R_ENV}   ../deploy/docker-cluster-service.list
     cp -f  ${ENVS_FILE_DIR}/docker-cluster-service.list.append.1---${R_ENV}   ../deploy/docker-cluster-service.list.append.1
@@ -109,7 +109,7 @@ F_RM ()
     rm -f  ../deploy/project.list
     rm -f  ../deploy/project.list.append.1
     #
-    rm -f  ../deploy/deploy.env
+    rm -f  ../deploy/env.sh
     rm -f  ../deploy/nginx.list
     rm -f  ../deploy/docker-cluster-service.list
     rm -f  ../deploy/docker-cluster-service.list.append.1
@@ -195,8 +195,8 @@ case ${R_MODE} in
         ;;
     F_CP)
         #
-        if [[ ! -f ${ENVS_FILE_DIR}/deploy.env---${R_ENV} ]]; then
-            echo -e "\n猪猪侠警告：请检查以【---${R_ENV}】结尾的文件是否准备好，例如：【${ENVS_FILE_DIR}/deploy.env---${R_ENV}】\n"
+        if [[ ! -f ${ENVS_FILE_DIR}/env.sh---${R_ENV} ]]; then
+            echo -e "\n猪猪侠警告：请检查以【---${R_ENV}】结尾的文件是否准备好，例如：【${ENVS_FILE_DIR}/env.sh---${R_ENV}】\n"
             exit 1
         fi
         #

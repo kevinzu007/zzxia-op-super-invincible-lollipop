@@ -12,7 +12,7 @@ SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
 # 引入env
-. ${SH_PATH}/deploy.env
+. ${SH_PATH}/env.sh
 #DOCKER_REPO=
 #DOCKER_REPO_USER=
 #DOCKER_REPO_PASSWORD=
@@ -59,7 +59,7 @@ F_HELP()
     echo "
     用途：为项目镜像打版本号，并推送到docker仓库（推送 明确版本 + latest版本）
     依赖：
-        ${SH_PATH}/deploy.env
+        ${SH_PATH}/env.sh
         ${PROJECT_LIST_FILE}
     注意:
         * 输入命令时，参数顺序不分先后
