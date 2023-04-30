@@ -1015,8 +1015,6 @@ F_BUILD_TIME_SEARCH()
 F_USER_SEARCH()
 {
     F_USER_NAME=$1
-    USER_DB_FILE_TMP="${LOG_HOME}/${SH_NAME}-${USER_DB_FILE##*/}---${F_USER_NAME}"
-    cat ${USER_DB_FILE} | grep "${F_USER_NAME}"  >  ${USER_DB_FILE_TMP}
     while read U_LINE
     do
         # 跳过以#开头的行或空行
@@ -1026,16 +1024,15 @@ F_USER_SEARCH()
         CURRENT_USER_ID=`echo ${CURRENT_USER_ID}`
         CURRENT_USER_NAME=`echo $U_LINE | cut -d '|' -f 3`
         CURRENT_USER_NAME=`echo ${CURRENT_USER_NAME}`
+        CURRENT_USER_XINGMING=`echo $U_LINE | cut -d '|' -f 4`
+        CURRENT_USER_XINGMING=`echo ${CURRENT_USER_XINGMING}`
+        CURRENT_USER_EMAIL=`echo $U_LINE | cut -d '|' -f 5`
+        CURRENT_USER_EMAIL=`echo ${CURRENT_USER_EMAIL}`
         if [ "${F_USER_NAME}" = "${CURRENT_USER_ID}"  -o  "${F_USER_NAME}" = "${CURRENT_USER_NAME}" ]; then
-            CURRENT_USER_XINGMING=`echo $U_LINE | cut -d '|' -f 4`
-            CURRENT_USER_XINGMING=`echo ${CURRENT_USER_XINGMING}`
-            CURRENT_USER_EMAIL=`echo $U_LINE | cut -d '|' -f 5`
-            CURRENT_USER_EMAIL=`echo ${CURRENT_USER_EMAIL}`
-            #
             echo "${CURRENT_USER_XINGMING} ${CURRENT_USER_EMAIL}"
             return 0
         fi
-    done < "${USER_DB_FILE_TMP}"
+    done < "${USER_DB_FILE}"
     return 3
 }
 
@@ -1138,6 +1135,13 @@ fi
 GIT_BRANCH=${GIT_BRANCH:-"${GIT_DEFAULT_BRANCH}"}
 
 
+# 建立base目录
+[ -d "${LOG_HOME}" ] || mkdir -p  "${LOG_HOME}"
+[ -d "${PROJECT_BASE}" ] || mkdir -p  ${PROJECT_BASE}
+cd  ${PROJECT_BASE}
+
+
+
 # 用户信息
 if [[ -n ${HOOK_USER} ]]; then
     MY_USER_NAME=${HOOK_USER}
@@ -1158,12 +1162,6 @@ else
     MY_XINGMING='X-Man'
 fi
 
-
-
-# 建立base目录
-[ -d "${LOG_HOME}" ] || mkdir -p  "${LOG_HOME}"
-[ -d "${PROJECT_BASE}" ] || mkdir -p  ${PROJECT_BASE}
-cd  ${PROJECT_BASE}
 
 
 # 删除build失败的项目目录，以便重试
