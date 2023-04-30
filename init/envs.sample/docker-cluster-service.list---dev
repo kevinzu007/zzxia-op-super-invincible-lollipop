@@ -32,20 +32,20 @@
 ###
 ###
 ### A.1 更多扩展项，请在文件【docker-cluster-service.list.append.1】中添加
-###    3 集群
-###    4 主机名
-###    5 部署位置
+###    3 集群：CLUSTER
+###    4 主机名：HOST_NAME
+###    5 部署位置：DEPLOY_PLACEMENT
 ###
 ###
 ### A.2 更多扩展项，请在文件【docker-cluster-service.list.append.2】中添加
-###    3 JAVA选项
-###    4 容器ENVS
-###    5 容器CMDS
+###    3 JAVA选项：JAVA_OPTIONS
+###    4 容器ENVS：CONTAINER_ENVS
+###    5 容器CMDS：CONTAINER_CMDS
 ###
 ###
-###   ***** 以上种种，都可以自己定义，然后调整相关脚本即可 *****
-###
-###   ***** 上文提到的变量名可以是下文表头的名字、也可以是sh中可以获得的变量名 *****
+###    ***** 以上种种，都可以自己定义，然后调整相关脚本即可 *****
+### 
+###    ***** 上文提到的变量名可以是下文表头的名字、也可以是sh中可以获得的变量名 *****
 ###
 #| SERVICE_NAME           | DOCKER_IMAGE_NAME       | POD_REPLICAS  | CONTAINER_PORTS    | PRIORITY   | NOTE                         |
 #| **服务名**             | **DOCKER镜像名**        | **POD副本数** | **容器PORTS**      | **优先级** | **备注**                     |

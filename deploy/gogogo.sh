@@ -802,9 +802,9 @@ if [[ -z ${THIS_LANGUAGE_CATEGORY} ]]; then
                 # 跳过以#开头的行或空行
                 [[ "$LINE" =~ ^# ]] || [[ "$LINE" =~ ^[\ ]*$ ]] && continue
                 #
-                PROJECT_NAME=`echo $LINE | awk -F '|' '{print $3}'`
-                PROJECT_NAME=`echo ${PROJECT_NAME}`
-                if [[ ${PROJECT_NAME} =~ $i ]]; then
+                PJ_NAME=`echo $LINE | awk -F '|' '{print $3}'`
+                PJ_NAME=`echo ${PJ_NAME}`
+                if [[ ${PJ_NAME} =~ $i ]]; then
                     echo $LINE >> ${GOGOGO_PROJECT_LIST_FILE_TMP}
                     # 仅匹配一次
                     #GET_IT='Y'
@@ -864,7 +864,7 @@ do
 done
 cp  ${GOGOGO_PROJECT_LIST_FILE_TMP}.sort  ${GOGOGO_PROJECT_LIST_FILE_TMP}
 # 加表头
-sed -i  '1i#| **类别** | **项目名** | **构建方法** | **输出方法** | **镜像名** | **链接node_project** | **GOGOGO发布方式** | **优先级** |'  ${GOGOGO_PROJECT_LIST_FILE_TMP}
+sed -i  '1i#| **类别** | **项目名** | **GIT命令空间** | **构建方法** | **输出方法** | **镜像名** | **GOGOGO发布方式** | **优先级** | **备注** |'  ${GOGOGO_PROJECT_LIST_FILE_TMP}
 # 屏显
 echo -e "${ECHO_NORMAL}################################ 开始构建与发布 ################################${ECHO_CLOSE}"  #--- 80 (80-70-60)
 echo -e "\n【${SH_NAME}】待构建与发布项目清单："
@@ -915,10 +915,7 @@ do
     PJ=`echo ${LINE} | cut -d \| -f 3`
     PJ=`echo ${PJ}`
     #
-    BUILD_METHOD=`echo ${LINE} | cut -d \| -f 4`
-    BUILD_METHOD=`echo ${BUILD_METHOD}`
-    #
-    DOCKER_IMAGE_NAME=`echo ${LINE} | cut -d \| -f 6`
+    DOCKER_IMAGE_NAME=`echo ${LINE} | cut -d \| -f 7`
     DOCKER_IMAGE_NAME=`eval echo ${DOCKER_IMAGE_NAME}`    #--- 用eval将配置文件中项的变量转成值，下同
     #
     GOGOGO_RELEASE_METHOD=`echo ${LINE} | cut -d \| -f 8`

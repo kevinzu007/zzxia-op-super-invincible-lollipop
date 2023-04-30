@@ -61,6 +61,7 @@ F_CP ()
 
     # cp到deploy目录
     cp -f  ${ENVS_FILE_DIR}/project.list                             ../deploy/
+    cp -f  ${ENVS_FILE_DIR}/project.list.append.1                    ../deploy/
     #
     cp -f  ${ENVS_FILE_DIR}/deploy.env---${R_ENV}                    ../deploy/deploy.env
     cp -f  ${ENVS_FILE_DIR}/nginx.list---${R_ENV}                    ../deploy/nginx.list
@@ -106,6 +107,7 @@ F_RM ()
 
     # deploy目录
     rm -f  ../deploy/project.list
+    rm -f  ../deploy/project.list.append.1
     #
     rm -f  ../deploy/deploy.env
     rm -f  ../deploy/nginx.list

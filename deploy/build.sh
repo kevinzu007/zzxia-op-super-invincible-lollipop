@@ -25,6 +25,9 @@ ERROR_EXIT=${ERROR_EXIT:-'NO'}                    #--- 出错立即退出
 BUILD_SKIP_TEST=${BUILD_SKIP_TEST:-'NO'}          #--- 跳过测试
 BUILD_CODE_VERIFY=${BUILD_CODE_VERIFY:-'NONE'}    #--- BUILD_CODE_VERIFY="sonarQube"
 NPM_BIN=${NPM_BIN:-'npm'}                         #--- 可选 npm|cnpm
+#GIT_REPO_URL_BASE=
+#GIT_DEFAULT_NAMESPACE=
+#GIT_DEFAULT_BRANCH=
 
 # 本地env
 GAN_WHAT_FUCK='Build'
@@ -53,6 +56,7 @@ HOOK_GAN_ENV=${HOOK_GAN_ENV:-''}
 HOOK_USER=${HOOK_USER:-''}
 #
 PROJECT_LIST_FILE="${SH_PATH}/project.list"
+PROJECT_LIST_FILE_APPEND_1="${SH_PATH}/project.list.append.1"
 PROJECT_LIST_RETRY_FILE="${SH_PATH}/project.list.retry"
 PROJECT_LIST_FILE_TMP=${PROJECT_LIST_FILE_TMP:-"${LOG_HOME}/${SH_NAME}-project.list.tmp"}
 PROJECT_BUILD_RESULT="${LOG_HOME}/${SH_NAME}-build.result"
@@ -309,7 +313,7 @@ GIT_CODE()
         #timeout 300 git clone  git@${GIT_SERVER}:${GIT_GROUP}/${PJ}.git   2>&1  | tee ${GIT_LOG_file}
         #git clone  git@${GIT_SERVER}:${GIT_GROUP}/${PJ}.git   2>&1  | tee ${GIT_LOG_file}
         #git clone  "git@${GIT_SERVER}:${GIT_GROUP}/${PJ}.git"   > "${GIT_LOG_file}"  2>&1
-        git clone  "${GIT_REPO_URL_BASE}/${PJ}.git"   > "${GIT_LOG_file}"  2>&1
+        git clone  "${GIT_REPO_URL_BASE}${GIT_NAMESPACE}/${PJ}.git"   > "${GIT_LOG_file}"  2>&1
         if [ $? -eq 0 ]; then
             ansible nginx_real -m copy -a "src=${GIT_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"  > "${GIT_LOG_file}"  2>&1
             cd  "${PJ}"
@@ -1130,6 +1134,9 @@ if [[ -n ${HOOK_GAN_ENV} ]] && [[ ${HOOK_GAN_ENV} != ${RUN_ENV} ]]; then
 fi
 
 
+# 默认ENV
+GIT_BRANCH=${GIT_BRANCH:-"${GIT_DEFAULT_BRANCH}"}
+
 
 # 用户信息
 if [[ -n ${HOOK_USER} ]]; then
@@ -1190,9 +1197,9 @@ if [[ -z "${THIS_LANGUAGE_CATEGORY}" ]]; then
                 # 跳过以#开头的行或空行
                 [[ "$LINE" =~ ^# ]] || [[ "$LINE" =~ ^[\ ]*$ ]] && continue
                 #
-                PROJECT_NAME=`echo $LINE | awk -F '|' '{print $3}'`
-                PROJECT_NAME=`echo ${PROJECT_NAME}`
-                if [[ ${PROJECT_NAME} =~ ^$i$ ]]; then
+                PJ_NAME=`echo $LINE | awk -F '|' '{print $3}'`
+                PJ_NAME=`echo ${PJ_NAME}`
+                if [[ ${PJ_NAME} =~ ^$i$ ]]; then
                     echo $LINE >> ${PROJECT_LIST_FILE_TMP}
                     # 仅匹配一次
                     #GET_IT='YES'
@@ -1251,7 +1258,7 @@ do
 done
 cp  ${PROJECT_LIST_FILE_TMP}.sort  ${PROJECT_LIST_FILE_TMP}
 # 加表头
-sed -i  '1i#| **类别** | **项目名** | **构建方法** | **输出方法** | **镜像名** | **链接node_project** | **GOGOGO发布方式** | **优先级** |'  ${PROJECT_LIST_FILE_TMP}
+sed -i  '1i#| **类别** | **项目名** | **GIT命令空间** | **构建方法** | **输出方法** | **镜像名** | **GOGOGO发布方式** | **优先级** | **备注** |'  ${PROJECT_LIST_FILE_TMP}
 # 屏显
 if [[ ${SH_RUN_MODE} == 'normal' ]]; then
     echo -e "${ECHO_NORMAL}========================= 开始构建 =========================${ECHO_CLOSE}"  #--- 60 (60-50-40)
@@ -1295,17 +1302,55 @@ do
     PJ=`echo ${LINE} | cut -d \| -f 3`
     PJ=`echo ${PJ}`
     #
-    BUILD_METHOD=`echo ${LINE} | cut -d \| -f 4`
+    GIT_NAMESPACE=`echo ${LINE} | cut -d \| -f 4`
+    GIT_NAMESPACE=`echo ${GIT_NAMESPACE}`
+    GIT_NAMESPACE=${GIT_NAMESPACE:-"${GIT_DEFAULT_NAMESPACE}"}
+    #
+    BUILD_METHOD=`echo ${LINE} | cut -d \| -f 5`
     BUILD_METHOD=`echo ${BUILD_METHOD}`
     #
-    OUTPUT_METHOD=`echo ${LINE} | cut -d \| -f 5`
+    OUTPUT_METHOD=`echo ${LINE} | cut -d \| -f 6`
     OUTPUT_METHOD=`echo ${OUTPUT_METHOD}`
     #
-    DOCKER_IMAGE_NAME=`echo ${LINE} | cut -d \| -f 6`
+    DOCKER_IMAGE_NAME=`echo ${LINE} | cut -d \| -f 7`
     DOCKER_IMAGE_NAME=`echo ${DOCKER_IMAGE_NAME}`
     #
-    LINK_NODE_PROJECT=`echo ${LINE} | cut -d \| -f 7`
-    LINK_NODE_PROJECT=`echo ${LINK_NODE_PROJECT}`
+    PRIORITY=`echo ${LINE} | cut -d \| -f 9`
+    PRIORITY=`echo ${PRIORITY}`
+    #
+    NOTE=`echo ${LINE} | cut -d \| -f 10`
+    NOTE=`echo ${NOTE}`
+    #
+    #
+    # append.1
+    PROJECT_LIST_FILE_APPEND_1_TMP="${LOG_HOME}/${SH_NAME}-${PROJECT_LIST_FILE_APPEND_1##*/}--${LANGUAGE_CATEGORY}-${PJ}"
+    cat ${PROJECT_LIST_FILE_APPEND_1} | grep "${PJ}"  >  ${PROJECT_LIST_FILE_APPEND_1_TMP}
+    GET_IT_A='NO'
+    while read LINE_A
+    do
+        # 跳过以#开头的行或空行
+        [[ "$LINE_A" =~ ^# ]] || [[ "$LINE_A" =~ ^[\ ]*$ ]] && continue
+        #
+        LANGUAGE_CATEGORY_A=`echo ${LINE} | cut -d \| -f 2`
+        LANGUAGE_CATEGORY_A=`echo ${LANGUAGE_CATEGORY_A}`
+        #
+        PJ_A=`echo ${LINE_A} | cut -d \| -f 3`
+        PJ_A=`echo ${PJ_A}`
+        #
+        if [[ ${PJ_A} == ${PJ} ]] && [[ ${LANGUAGE_CATEGORY_A} == ${LANGUAGE_CATEGORY} ]]; then
+            #
+            GET_IT_A='YES'
+            #
+            LINK_NODE_PROJECT=`echo ${LINE} | cut -d \| -f 4`
+            LINK_NODE_PROJECT=`echo ${LINK_NODE_PROJECT}`
+        fi
+        #
+        if [[ ${GET_IT_A} != 'YES' ]];then
+            echo -e "\n猪猪侠警告：在【${PROJECT_LIST_FILE_APPEND_1}】文件中没有找到项目【${PJ}】，请检查！\n"
+            exit 51
+        fi
+    done < ${PROJECT_LIST_FILE_APPEND_1_TMP}
+    #
     #
     GIT_LOG_file=${GIT_LOG}.${PJ}
     BUILD_LOG_file=${BUILD_LOG}.${PJ}

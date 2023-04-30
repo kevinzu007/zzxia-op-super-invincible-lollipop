@@ -22,6 +22,7 @@ BUILD_LOG_WEBSITE_DOMAIN_A=${BUILD_LOG_WEBSITE_DOMAIN_A:-"build-log"}         #-
 DINGDING_API=${DINGDING_API:-"请定义"}
 BUILD_SKIP_TEST=${BUILD_SKIP_TEST:-'NO'}  #--- 跳过测试
 #USER_DB_FILE=
+#GIT_DEFAULT_BRANCH=
 
 # 本地env
 GAN_WHAT_FUCK='P_Build'
@@ -342,6 +343,9 @@ if [[ -n ${HOOK_GAN_ENV} ]] && [[ ${HOOK_GAN_ENV} != ${RUN_ENV} ]]; then
 fi
 
 
+# 默认ENV
+GIT_BRANCH=${GIT_BRANCH:-"${GIT_DEFAULT_BRANCH}"}
+
 
 # 用户信息
 if [[ -n ${HOOK_USER} ]]; then
@@ -387,9 +391,9 @@ if [[ -z "${THIS_LANGUAGE_CATEGORY}" ]]; then
                 # 跳过以#开头的行或空行
                 [[ "$LINE" =~ ^# ]] || [[ "$LINE" =~ ^[\ ]*$ ]] && continue
                 #
-                PROJECT_NAME=`echo $LINE | awk -F '|' '{print $3}'`
-                PROJECT_NAME=`echo ${PROJECT_NAME}`
-                if [[ ${PROJECT_NAME} =~ ^$i$ ]]; then
+                PJ_NAME=`echo $LINE | awk -F '|' '{print $3}'`
+                PJ_NAME=`echo ${PJ_NAME}`
+                if [[ ${PJ_NAME} =~ ^$i$ ]]; then
                     echo $LINE >> ${PARA_PROJECT_LIST_FILE_TMP}
                     # 仅匹配一次
                     #GET_IT='YES'
@@ -447,7 +451,7 @@ do
 done
 cp  ${PARA_PROJECT_LIST_FILE_TMP}.sort  ${PARA_PROJECT_LIST_FILE_TMP}
 # 加表头
-sed -i  '1i#| **类别** | **项目名** | **构建方法** | **输出方法** | **镜像名** | **链接node_project** | **GOGOGO发布方式** | **优先级** |'  ${PARA_PROJECT_LIST_FILE_TMP}
+sed -i  '1i#| **类别** | **项目名** | **GIT命令空间** | **构建方法** | **输出方法** | **镜像名** | **GOGOGO发布方式** | **优先级** | **备注** |'  ${PARA_PROJECT_LIST_FILE_TMP}
 # 屏显
 echo -e "${ECHO_NORMAL}############################ 开始并行构建 ############################${ECHO_CLOSE}"   #--- 80 (80-70-60)
 echo -e "\n【${SH_NAME}】待并行构建项目清单："
@@ -499,9 +503,6 @@ do
     #
     PJ=`echo ${LINE} | cut -d \| -f 3`
     PJ=`echo ${PJ}`
-    #
-    BUILD_METHOD=`echo ${LINE} | cut -d \| -f 4`
-    BUILD_METHOD=`echo ${BUILD_METHOD}`
     #
     BUILD_CHECK_COUNT=`expr ${BUILD_CHECK_COUNT} + 1`
     echo -e "${ECHO_BLACK_GREEN}++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++${ECHO_CLOSE}"   #--- 70 (80-70-60)
