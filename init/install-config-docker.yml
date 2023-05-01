@@ -12,6 +12,6 @@
   become: yes
   tasks:
     - name: crontab - rm docker image and container
-      cron: name=docker backup=yes state=present minute=0 hour=0 day=*  month=* weekday=* user=root job='docker image prune -a -f ; docker container prune -f'
+      cron: name=docker backup=yes state=present minute=0 hour=0 day=*  month=* weekday=* user=root job='docker image prune -a -f > /dev/null ; docker container prune -f > /dev/null'
 
 

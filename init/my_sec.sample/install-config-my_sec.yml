@@ -25,7 +25,7 @@
         - { srcc: './user-token-update.sh', destt: '~/.my_sec/' }
         - { srcc: './user-manage.sh', destt: '~/.my_sec/' }
     - name: crontab - user-token-update
-      cron: name=user-token-update backup=yes state=present minute=0 hour=0 day=*  month=* weekday=* user=root job='~/.my_sec/user-token-update.sh --update'
+      cron: name=user-token-update backup=yes state=present minute=0 hour=0 day=*  month=* weekday=* user=root job='~/.my_sec/user-token-update.sh --update  > /dev/null'
     - name: 拷贝 - user.db
       copy: src=./{{ RUN_ENV }}/user.db    dest=~/.my_sec/ owner=root group=root mode=0600  backup=no
     - name: 拷贝 - user.env.sec

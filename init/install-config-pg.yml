@@ -17,9 +17,9 @@
     - name: 拷贝：my-pg.conf
       copy: src=./pg/setup/my-pg.conf   dest=/usr/local/pgsql/data/conf.d/my-pg.conf  owner=postgres group=postgres mode=644 backup=yes
     - name: crontab - 清理pg日志
-      cron: name=清理pg日志 backup=yes state=present minute=0 hour=0 day=*  month=* weekday=* user=postgres  job='find /usr/local/pgsql/data/log/ -maxdepth 1 -type f -mtime +30 -exec rm -f {} \;'
+      cron: name=清理pg日志 backup=yes state=present minute=0 hour=0 day=*  month=* weekday=* user=postgres  job='find /usr/local/pgsql/data/log/ -maxdepth 1 -type f -mtime +30 -exec rm -f {} \; > /dev/null'
     - name: crontab - 清理pg_wal
-      cron: name=清理pg_wal backup=yes state=present minute=0 hour=0 day=*  month=* weekday=* user=postgres  job='find /usr/local/pgsql/data/pg_wal/ -maxdepth 1 -type f -mtime +30 -exec rm -f {} \;'
+      cron: name=清理pg_wal backup=yes state=present minute=0 hour=0 day=*  month=* weekday=* user=postgres  job='find /usr/local/pgsql/data/pg_wal/ -maxdepth 1 -type f -mtime +30 -exec rm -f {} \; > /dev/null'
 
 
 - hosts: pg_m
@@ -32,7 +32,7 @@
       when: RUN_ENV == "prod"
       #when: ansible_default_ipv4.address == '10.1.1.182'
     - name: crontab - 清理备份
-      cron: name=清理备份 backup=yes state=present minute=0 hour=0 day=*  month=* weekday=* user=postgres  job='find /backup/pg/bak/ -ctime +25 -a -type d -a -name "*T*"  -exec rm -rf {} \;'
+      cron: name=清理备份 backup=yes state=present minute=0 hour=0 day=*  month=* weekday=* user=postgres  job='find /backup/pg/bak/ -ctime +25 -a -type d -a -name "*T*"  -exec rm -rf {} \; > /dev/null'
       when: RUN_ENV == "prod"
 
 
