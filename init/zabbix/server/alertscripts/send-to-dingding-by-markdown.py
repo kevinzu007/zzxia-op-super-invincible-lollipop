@@ -23,7 +23,7 @@ import time
 HOSTNAME = socket.gethostname()
 
 # 时间
-DATETIME = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+DATETIME = time.strftime("%Y-%m-%d %H:%M:%S %z", time.localtime())
 
 
 try:
