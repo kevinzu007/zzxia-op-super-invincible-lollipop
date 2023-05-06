@@ -82,8 +82,8 @@ F_HELP()
         -L|--list-tag   列出仓库tag清单
         -r|--rm-repo    删除仓库
         -R|--rm-tag     删除仓库tag
-        -n|--name       仓库(镜像)名
-        -t|--tag        版本tag
+        -n|--name       仓库(镜像)名，支持正则
+        -t|--tag        版本tag，支持正则
         -o|--output     输出搜索结果到指定【路径/文件】
     示例：
         $0  -h
@@ -97,6 +97,7 @@ F_HELP()
         $0  -r  -n imageX                  #-- 删除正则匹配【imageX】的仓库
         $0  -R  -n imageX                  #-- 删除正则匹配【imageX】的仓库的tag
         $0  -R  -n imageX  -t 2023.04      #-- 删除正则匹配【imageX】的仓库里，正则匹配【2023.04】的tag
+        $0  -R  -n ^imageX  -t 2023.04.*tt$      #-- 删除正则匹配【^imageX】的仓库里，正则匹配【2023.04.*tt$】的tag
     "
 }
 
@@ -173,7 +174,7 @@ F_GET_REPO_TAG_DIGEST_AND_BLOB()
     curl -s -v -X GET  \
         -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD}  \
         -H 'Accept: application/vnd.docker.distribution.manifest.v2+json'  \
-        https://${DOCKER_REPO}/v2/${DOCKER_REPO_USER}/${F_REPO_NAME}/manifests/${F_REPO_TAG}  > ${F_GET_REPO_TAG_BODY_FILE}  2>${F_GET_REPO_TAG_HEAD_FILE}
+        ${DOCKER_REPO_PROTOCOL}://${DOCKER_REPO}/v2/${DOCKER_REPO_USER}/${F_REPO_NAME}/manifests/${F_REPO_TAG}  > ${F_GET_REPO_TAG_BODY_FILE}  2>${F_GET_REPO_TAG_HEAD_FILE}
     if [[ $? -ne 0 ]]; then
         echo -e "\n猪猪侠警告：访问【${DOCKER_REPO}】服务器异常\n" 1>&2
         return 53
@@ -214,14 +215,14 @@ F_DELETE_REPO_TAG()
     F_REPO_NAME=$1
     F_REPO_TAG=$2
     F_GET_REPO_TAG_DIGEST_AND_BLOB_FILE='/tmp/digest-and-blob.txt'
-    F_GET_REPO_TAG_DIGEST_AND_BLOB  > ${F_GET_REPO_TAG_DIGEST_AND_BLOB_FILE}
+    F_GET_REPO_TAG_DIGEST_AND_BLOB  ${F_REPO_NAME}  ${F_REPO_TAG}  > ${F_GET_REPO_TAG_DIGEST_AND_BLOB_FILE}
     ERR_NO=$?
     if [[ ${ERR_NO} != 0 ]]; then
         return ${ERR_NO}
     fi
     #
-    F_REPO_TAG_DIGEST=$(cat ${F_GET_REPO_TAG_DIGEST_AND_BLOB_FILE=} | awk '{print $1}')
-    F_REPO_TAG_BLOB_DIGEST=$(cat ${F_GET_REPO_TAG_DIGEST_AND_BLOB_FILE=} | awk '{print $2}')
+    F_REPO_TAG_DIGEST=$(cat ${F_GET_REPO_TAG_DIGEST_AND_BLOB_FILE} | awk '{print $1}')
+    F_REPO_TAG_BLOB_DIGEST=$(cat ${F_GET_REPO_TAG_DIGEST_AND_BLOB_FILE} | awk '{print $2}')
     #if [[ -z ${F_REPO_TAG_DIGEST} ]] || [[ -z ${F_REPO_TAG_BLOB_DIGEST} ]]; then
     #    echo -e "\n猪猪侠警告：仓库tag不存在\n" 1>&2
     #    return 53
@@ -229,11 +230,11 @@ F_DELETE_REPO_TAG()
     # del blob
     curl  -s -X DELETE  \
         -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD}  \
-        https://${DOCKER_REPO}/v2/${DOCKER_REPO_USER}/${F_REPO_NAME}/blobs/${F_REPO_TAG_BLOB_DIGEST}
+        ${DOCKER_REPO_PROTOCOL}://${DOCKER_REPO}/v2/${DOCKER_REPO_USER}/${F_REPO_NAME}/blobs/${F_REPO_TAG_BLOB_DIGEST}
     # del manifest
     curl  -s -X DELETE  \
         -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD}  \
-        https://${DOCKER_REPO}/v2/${DOCKER_REPO_USER}/${F_REPO_NAME}/manifests/${F_REPO_TAG_DIGEST}
+        ${DOCKER_REPO_PROTOCOL}://${DOCKER_REPO}/v2/${DOCKER_REPO_USER}/${F_REPO_NAME}/manifests/${F_REPO_TAG_DIGEST}
     return 0
 }
 
