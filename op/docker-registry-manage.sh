@@ -262,19 +262,19 @@ do
             ;;
         -l|--list-repo)
             ACTION='list-repo'
-            shift
+            shift 2
             ;;
         -L|--list-tag)
             ACTION='list-tag'
-            shift
+            shift 2
             ;;
         -r|--rm-repo)
             ACTION='rm-repo'
-            shift
+            shift 2
             ;;
         -R|--rm-tag)
             ACTION='rm-tag'
-            shift
+            shift 2
             ;;
         -n|--name)
             LIKE_THIS_NAME=$2
