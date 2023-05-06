@@ -304,85 +304,82 @@ done
 
 case ${ACTION} in
     list-repo)
-        if [[ -z ${LIKE_THIS_NAME} ]]; then
-            curl
-        else
-            dd
+        F_GET_REPO  ${LIKE_THIS_NAME}
+        if [[ $? != 0 ]]; then
+            echo -e "\n猪猪侠警告：出错了！\n"
+            exit 1
         fi
         ;;
     list-tag)
+        REPO_LIST_TMP="/tmp/${SH_NAME}-repo.list.tmp"
+        > ${REPO_LIST_TMP}
+        #
+        F_GET_REPO  ${LIKE_THIS_NAME}  > ${REPO_LIST_TMP}
+        if [[ $? != 0 ]]; then
+            echo -e "\n猪猪侠警告：出错了！\n"
+            exit 1
+        fi
+        #
+        while read R
+        do
+            echo "=================================================="
+            echo "仓库：${R}:"
+            #
+            F_GET_REPO_TAG  ${R}  ${LIKE_THIS_TAG}
+            if [[ $? != 0 ]]; then
+                echo -e "\n猪猪侠警告：出错了！\n"
+                exit 1
+            fi
+        done < ${REPO_LIST_TMP}
+        #
         ;;
     rm-repo)
+        echo "没搞"
         ;;
     rm-tag)
+        REPO_LIST_TMP="/tmp/${SH_NAME}-repo.list.tmp"
+        > ${REPO_LIST_TMP}
+        #
+        F_GET_REPO  ${LIKE_THIS_NAME}  > ${REPO_LIST_TMP}
+        if [[ $? != 0 ]]; then
+            echo -e "\n猪猪侠警告：出错了！\n"
+            exit 1
+        fi
+        #
+        while read R
+        do
+            REPO_TAG_LIST_TMP="/tmp/${SH_NAME}-repo-tag.list.tmp"
+            #
+            echo "=================================================="
+            echo "仓库：${R}:"
+            #
+            > ${REPO_TAG_LIST_TMP}--${R}
+            F_GET_REPO_TAG  ${R}  ${LIKE_THIS_TAG}  > ${REPO_TAG_LIST_TMP}--${R}
+            if [[ $? != 0 ]]; then
+                echo -e "\n猪猪侠警告：出错了！\n"
+                exit 1
+            fi
+            #
+            while read T
+            do
+                echo "++++++++++++++++++++++++++++++++++++++++"
+                echo "删除：仓库【${R}】- tag【${T}】"
+                #
+                F_DELETE_REPO_TAG  ${R}  ${T}
+                if [[ $? != 0 ]]; then
+                    echo -e "\n猪猪侠警告：出错了！\n"
+                    exit 1
+                fi
+                echo "OK"
+            done < ${REPO_TAG_LIST_TMP}--${R}
+        done < ${REPO_LIST_TMP}
+        #
         ;;
     *)
-        echo -e "\n猪猪侠警告：缺少主要运行参数，请看帮助！\n"
+        echo -e "\n猪猪侠警告：缺少主要运行参数或参数不合法，请看帮助！\n"
         return 52
         ;;
 esac
 
 
-
-
-# 开始
-> ${SEARCH_RESULT_FILE}
-NUM=0
-while read LINE
-do
-    # 跳过以#开头的行或空行
-    [[ "$LINE" =~ ^# ]] || [[ "$LINE" =~ ^[\ ]*$ ]] && continue
-    #
-    SERVICE_NAME=`echo ${LINE} | cut -d \| -f 2`
-    SERVICE_NAME=`echo ${SERVICE_NAME}`
-    #
-    IMAGE_NAME=`echo ${LINE} | cut -d \| -f 3`
-    IMAGE_NAME=`eval echo ${IMAGE_NAME}`    #--- 用eval将配置文件中项的变量转成值，下同
-    # 跳过服务名名或镜像名为空的行
-    if [ "x${SERVICE_NAME}" = 'x' -o "x${IMAGE_NAME}" = 'x' ]; then
-        continue
-    fi
-    #
-    > ${SEARCH_RESULT_FILE}.${SERVICE_NAME}.tmp
-    # 写入文件
-    F_SEARCH ${IMAGE_NAME}  > ${SEARCH_RESULT_FILE}.${SERVICE_NAME}.tmp  2>/tmp/${SH_NAME}-error.txt
-    #if [ $? -eq 53 ]; then
-    #    echo -e "\n猪猪侠警告：项目镜像不存在\n"
-    #fi
-    # 显示输出
-    if [ -z "${OUTPUT_FILE}" ]; then
-        let NUM=${NUM}+1
-        echo -e "${ECHO_NORMAL}# ---------------------------------------------------${ECHO_CLOSE}"
-        echo -e "${ECHO_NORMAL}# ${NUM} - 服务名：${SERVICE_NAME} - 镜像名：${IMAGE_NAME} ${ECHO_CLOSE}"
-        echo -e "${ECHO_NORMAL}# ---------------------------------------------------${ECHO_CLOSE}"
-        cat  ${SEARCH_RESULT_FILE}.${SERVICE_NAME}.tmp
-        cat  /tmp/${SH_NAME}-error.txt
-        echo ''
-        echo ''
-    else
-        # 错误信息
-        cat  /tmp/${SH_NAME}-error.txt
-    fi
-    # 文件输出
-    if [ `cat ${SEARCH_RESULT_FILE}.${SERVICE_NAME}.tmp | wc -l` -ne 0 ]; then
-        R=`cat ${SEARCH_RESULT_FILE}.${SERVICE_NAME}.tmp`
-        echo ${SERVICE_NAME} ${IMAGE_NAME} $R >> ${SEARCH_RESULT_FILE}
-    fi
-done < ${SERVICE_LIST_FILE_TMP}
-
-
-
-# 输出到指定文件
-if [ ! -z "${OUTPUT_FILE}" ]; then
-    echo  ${OUTPUT_FILE} | grep -q \/
-    if [ $? -ne 0 ]; then
-        cp  ${SEARCH_RESULT_FILE}  ${OUTPUT_FILE}
-    else
-        if [ -d `echo ${OUTPUT_FILE%/*}` ]; then
-            cp  ${SEARCH_RESULT_FILE}  ${OUTPUT_FILE}
-        else
-            echo -e  "\n猪猪侠警告：文件目录【`echo ${OUTPUT_FILE%/*}`】不存在，请创建先。\n"
-        fi
-    fi
-fi
 
