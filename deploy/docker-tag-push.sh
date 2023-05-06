@@ -13,9 +13,6 @@ cd ${SH_PATH}
 
 # 引入env
 . ${SH_PATH}/env.sh
-#DOCKER_REPO=
-#DOCKER_REPO_USER=
-#DOCKER_REPO_PASSWORD=
 #DOCKER_IMAGE_BASE=
 
 # 本地env

@@ -1,8 +1,11 @@
 # Docker仓库
-export DOCKER_REPO="docker-repo:5000"
 export DOCKER_REPO_USER="ufipf"
 export DOCKER_REPO_PASSWORD="mypassword"
 export DOCKER_REPO_PROTOCOL="https"      #--- 可选：http|https
-export DOCKER_REPO_URL_BASE="${DOCKER_REPO_PROTOCOL}://${DOCKER_REPO}/v2/ufipf"   #--- 可能你的是："${DOCKER_REPO_PROTOCOL}://${DOCKER_REPO}/v2" 
-export DOCKER_IMAGE_BASE="${DOCKER_REPO}/ufipf"    #--- 可能你的是："${DOCKER_REPO}"
+export DOCKER_REPO_SERVER="docker-repo:5000"
+export DOCKER_IMAGE_PRE_NAME="xxx/${RUN_ENV}"    #-- 例如：【docker-repo:5000/{xxx/dev}/镜像名:latest】中间的部分
+# 组合
+export DOCKER_REPO_URL_BASE="${DOCKER_REPO_PROTOCOL}://${DOCKER_REPO_SERVER}/v2"
+export DOCKER_IMAGE_BASE="${DOCKER_REPO_SERVER}/${DOCKER_IMAGE_PRE_NAME}"
+
 

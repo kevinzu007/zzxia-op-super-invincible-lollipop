@@ -12,11 +12,10 @@ SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
 # 引入env
-. ${SH_PATH}/env.sh
-#DOCKER_REPO=
+. ${SH_PATH}/../deploy/env.sh
 #DOCKER_REPO_USER=
 #DOCKER_REPO_PASSWORD=
-#DOCKER_REPO_PROTOCOL=
+#DOCKER_REPO_SERVER=
 #DOCKER_REPO_URL_BASE=
 
 # 本地env
@@ -112,9 +111,9 @@ F_GET_REPO()
     F_REPO_LIST_FILE="/tmp/${SH_NAME}-F_GET_REPO-list.txt"
     F_GET_ERR_FILE="/tmp/${SH_NAME}-F_GET_REPO-err.txt"
     > ${F_REPO_LIST_FILE}
-    curl -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD} -s -X GET ${DOCKER_REPO_PROTOCOL}://${DOCKER_REPO}/v2/_catalog  > ${F_REPO_LIST_FILE}
+    curl -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD} -s -X GET ${DOCKER_REPO_URL_BASE}/_catalog  > ${F_REPO_LIST_FILE}
     if [[ $? -ne 0 ]]; then
-        echo -e "\n猪猪侠警告：访问【${DOCKER_REPO}】服务器异常\n" 1>&2
+        echo -e "\n猪猪侠警告：访问【${DOCKER_REPO_SERVER}】服务器异常\n" 1>&2
         return 53
     fi
     #
@@ -140,7 +139,7 @@ F_GET_REPO_TAG()
     > ${F_REPO_TAG_LIST_FILE}
     curl -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD} -s -X GET ${DOCKER_REPO_URL_BASE}/${F_REPO_NAME}/tags/list  > ${F_REPO_TAG_LIST_FILE}
     if [[ $? -ne 0 ]]; then
-        echo -e "\n猪猪侠警告：访问【${DOCKER_REPO}】服务器异常\n" 1>&2
+        echo -e "\n猪猪侠警告：访问【${DOCKER_REPO_SERVER}】服务器异常\n" 1>&2
         return 53
     fi
     #
@@ -174,9 +173,9 @@ F_GET_REPO_TAG_DIGEST_AND_BLOB()
     curl -s -v -X GET  \
         -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD}  \
         -H 'Accept: application/vnd.docker.distribution.manifest.v2+json'  \
-        ${DOCKER_REPO_PROTOCOL}://${DOCKER_REPO}/v2/${DOCKER_REPO_USER}/${F_REPO_NAME}/manifests/${F_REPO_TAG}  > ${F_GET_REPO_TAG_BODY_FILE}  2>${F_GET_REPO_TAG_HEAD_FILE}
+        ${DOCKER_REPO_URL_BASE}/${F_REPO_NAME}/manifests/${F_REPO_TAG}  > ${F_GET_REPO_TAG_BODY_FILE}  2>${F_GET_REPO_TAG_HEAD_FILE}
     if [[ $? -ne 0 ]]; then
-        echo -e "\n猪猪侠警告：访问【${DOCKER_REPO}】服务器异常\n" 1>&2
+        echo -e "\n猪猪侠警告：访问【${DOCKER_REPO_SERVER}】服务器异常\n" 1>&2
         return 53
     fi
     #
@@ -230,11 +229,11 @@ F_DELETE_REPO_TAG()
     # del blob
     curl  -s -X DELETE  \
         -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD}  \
-        ${DOCKER_REPO_PROTOCOL}://${DOCKER_REPO}/v2/${DOCKER_REPO_USER}/${F_REPO_NAME}/blobs/${F_REPO_TAG_BLOB_DIGEST}
+        ${DOCKER_REPO_URL_BASE}/${F_REPO_NAME}/blobs/${F_REPO_TAG_BLOB_DIGEST}
     # del manifest
     curl  -s -X DELETE  \
         -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD}  \
-        ${DOCKER_REPO_PROTOCOL}://${DOCKER_REPO}/v2/${DOCKER_REPO_USER}/${F_REPO_NAME}/manifests/${F_REPO_TAG_DIGEST}
+        ${DOCKER_REPO_URL_BASE}/${F_REPO_NAME}/manifests/${F_REPO_TAG_DIGEST}
     return 0
 }
 

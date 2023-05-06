@@ -13,11 +13,11 @@ cd ${SH_PATH}
 
 # 引入env
 . ${SH_PATH}/env.sh
-#DOCKER_REPO=
 #DOCKER_REPO_USER=
 #DOCKER_REPO_PASSWORD=
-#DOCKER_REPO_PROTOCOL=
+#DOCKER_REPO_SERVER=
 #DOCKER_REPO_URL_BASE=
+#DOCKER_IMAGE_PRE_NAME=
 
 # 本地env
 TIME=`date +%Y-%m-%dT%H:%M:%S`
@@ -113,9 +113,9 @@ F_SEARCH()
     F_SEARCH_RESULT_FILE="/tmp/${SH_NAME}-F_SEARCH-result.txt"
     F_SEARCH_RESULT_ERR_FILE="/tmp/${SH_NAME}-F_SEARCH-result-err.txt"
     F_IMAGE_NAME=$1
-    curl -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD} -s -X GET ${DOCKER_REPO_URL_BASE}/${F_IMAGE_NAME}/tags/list | jq .tags[] > ${F_SEARCH_RESULT_FILE}  2>${F_SEARCH_RESULT_ERR_FILE}
+    curl -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD} -s -X GET ${DOCKER_REPO_URL_BASE}/${DOCKER_IMAGE_PRE_NAME}/${F_IMAGE_NAME}/tags/list | jq .tags[] > ${F_SEARCH_RESULT_FILE}  2>${F_SEARCH_RESULT_ERR_FILE}
     if [[ $? -ne 0 ]] || [[ $(cat ${F_SEARCH_RESULT_ERR_FILE} | grep -q 'NAME_UNKNOWN'; echo $?) -eq 0 ]]; then
-        echo -e "\n猪猪侠警告：项目镜像不存在，或者访问【${DOCKER_REPO}】服务器异常\n" 1>&2
+        echo -e "\n猪猪侠警告：项目镜像不存在，或者访问【${DOCKER_REPO_SERVER}】服务器异常\n" 1>&2
         return 53
     fi
     sed -i 's/\"//g'    ${F_SEARCH_RESULT_FILE}
