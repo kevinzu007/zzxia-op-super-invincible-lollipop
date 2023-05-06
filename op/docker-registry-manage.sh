@@ -65,9 +65,10 @@ F_HELP()
         * 输入命令时，参数顺序不分先后
     用法:
         $0 [-h|--help]
-        $0 [-l|--list]
-        $0 [-l|--list]
-        $0  <-e|--exclude {%镜像版本%}>  <-t|--tag {%镜像版本%}>  <-n|--newest {第几新版本}>  <-o|--output {路径/文件}>  <{服务1} ... {服务2} ...>
+        $0 [-l|--list-repo]  <{%仓库名%}>                        #-- 列出仓库镜像名
+        $0 [-L|--list-tag]   [{%仓库名%}]  <-t {%镜像版本%}>     #-- 列出仓库镜像版本
+        $0 [-r|--rm-repo]  <{%仓库名%}>                          #-- 列出仓库镜像名
+        $0 [-R|--rm-tag]   [{%仓库名%}]  <-t {%镜像版本%}>       #-- 列出仓库镜像版本
     参数说明：
         \$0   : 代表脚本本身
         []   : 代表是必选项
@@ -77,96 +78,170 @@ F_HELP()
         %    : 代表通配符，非精确值，可以被包含
         #
         -h|--help       此帮助
-        -l|--list       清单
-        -e|--exclude    排除指定镜像版本，支持模糊定义，一般用于排除今天打包的镜像版本，用于部署回滚
-        -t|--tag        镜像版本(tag)。支持模糊查找
-        -n|--newest     取第几新的镜像版本，例如： -n 1 ：代表取最新的那个镜像版本，-n 2：代表第二新的镜像，有-n参数时输出格式为：【服务名  tag版本 tag版本2 ...】；无-n参数时输出为服务名 \ntag版本 \ntag版本2 \n...
-        -o|--output     输出搜索结果不为空的服务名称 到 指定【路径/文件】
+        -l|--list-repo  列出仓库清单
+        -L|--list-tag   列出仓库tag清单
+        -r|--rm-repo    删除仓库
+        -R|--rm-tag     删除仓库tag
+        -n|--name       仓库(镜像)名
+        -t|--tag        版本tag
+        -o|--output     输出搜索结果到指定【路径/文件】
     示例：
         $0  -h
-        $0  -l
-        #
-        $0                       #--- 返回所有服务所有镜像版本
-        $0  服务1                #--- 返回服务名为【服务1】的所有镜像版本
-        #
-        $0  -e 2021  服务1       #--- 返回服务名为服务1，且tag版本不包含【2021】的所有版本
-        $0  -t 2021  服务1       #--- 返回服务名为服务1，且tag版本包含【2021】的所有版本
-        $0  -n 1     服务1       #--- 返回服务名为服务1，且最新的镜像tag版本
-        $0  -n 2     服务1       #--- 返回服务名为服务1，且次新的镜像tag版本（第二新）
-        #
-        $0  -t 2021        -n 2            #--- 返回所有服务，且tag名包含【2021】，且次新的镜像tag版本
-        $0  -t 2021        -n 2   服务1    #--- 返回服务名为【服务1】，且tag版本包含【2021】，且次新的镜像tag版本
-        $0  -e 2021.01.22  -n 1   服务1    #--- 返回服务名为【服务1】，且除tag版本包含【2021.01.22】的镜像外，最新的镜像tag版本，一般用于排除今天【2021.01.22】的版本以回滚
-        $0  -e 2021.01.22  -t 20  服务1    #--- 返回服务名为【服务1】，且除tag版本包含【2021.01.22】的镜像外，且tag版本包含【20】的镜像tag版本，返回最新的是个
-        #
-        $0  -e 2021.01.22  -t 2021.01.01.01  -n 1   #--- 返回所有服务，且tag版本不包含【2021.01.22】，且包含【2021.01.01.01】，最新的tag版本
-        # 今日发布与回滚：
-        $0  -t 2021.01.22  -n 1  -o /root/1.txt     #--- 返回所有服务，且tag名称包含【2021.01.22】(今天)，最新的镜像tag版本，将服务清单输出到文件/root/1.txt，一般用于发布今天打包的服务清单
-        $0  -e 2021.01.22  -n 1  -o /root/1.txt     #--- 返回所有服务，且tag名称不包含【2021.01.22】(今天)，最新的镜像tag版本，将服务清单输出到文件/root/1.txt，一般用于今日发布失败后的回滚
+        # 列出
+        $0  -l                             #-- 列出所有仓库
+        $0  -l  -n imageX                  #-- 列出正则匹配【imageX】的仓库
+        $0  -L  -n imageX                  #-- 列出正则匹配【imageX】的仓库的tag
+        $0  -L  -n imageX  -t 2023.04      #-- 列出正则匹配【imageX】的仓库里，正则匹配【2023.04】的tag
+        # 删除
+        $0  -r                             #-- 删除所有仓库
+        $0  -r  -n imageX                  #-- 删除正则匹配【imageX】的仓库
+        $0  -R  -n imageX                  #-- 删除正则匹配【imageX】的仓库的tag
+        $0  -R  -n imageX  -t 2023.04      #-- 删除正则匹配【imageX】的仓库里，正则匹配【2023.04】的tag
     "
 }
 
 
-# 搜索
-# 用法：F_SEARCH 镜像名
-F_SEARCH()
+
+
+# 输出匹配仓库名
+# 用法：F_GET_REPO <%仓库名%>
+F_GET_REPO()
 {
-    F_SEARCH_RESULT_FILE="/tmp/${SH_NAME}-F_SEARCH-result.txt"
-    F_SEARCH_RESULT_ERR_FILE="/tmp/${SH_NAME}-F_SEARCH-result-err.txt"
-    F_IMAGE_NAME=$1
-    curl -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD} -s -X GET ${DOCKER_REPO_URL_BASE}/${F_IMAGE_NAME}/tags/list | jq .tags[] > ${F_SEARCH_RESULT_FILE}  2>${F_SEARCH_RESULT_ERR_FILE}
-    if [[ $? -ne 0 ]] || [[ $(cat ${F_SEARCH_RESULT_ERR_FILE} | grep -q 'NAME_UNKNOWN'; echo $?) -eq 0 ]]; then
-        echo -e "\n猪猪侠警告：项目镜像不存在，或者访问【${DOCKER_REPO}】服务器异常\n" 1>&2
+    F_REPO_NAME=$1
+    F_REPO_LIST_FILE="/tmp/${SH_NAME}-F_GET_REPO-list.txt"
+    F_GET_ERR_FILE="/tmp/${SH_NAME}-F_GET_REPO-err.txt"
+    > ${F_REPO_LIST_FILE}
+    curl -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD} -s -X GET ${DOCKER_REPO_PROTOCOL}://${DOCKER_REPO}/v2/_catalog  > ${F_REPO_LIST_FILE}
+    if [[ $? -ne 0 ]]; then
+        echo -e "\n猪猪侠警告：访问【${DOCKER_REPO}】服务器异常\n" 1>&2
         return 53
     fi
-    sed -i 's/\"//g'    ${F_SEARCH_RESULT_FILE}
-    # latest
-    if [[ "x${LIKE_THIS_IMAGE_TAG}" = 'xlatest' ]]; then
-        cat ${F_SEARCH_RESULT_FILE}  | grep ${LIKE_THIS_IMAGE_TAG}
-        return 0
-    fi
-    # 倒排序，数字开头的自动标记版本
-    sed -i '/latest/d'  ${F_SEARCH_RESULT_FILE}
-    cat  ${F_SEARCH_RESULT_FILE} | sort -n -r >  ${F_SEARCH_RESULT_FILE}.sort
     #
-    if [[ -z ${NUMBER_NEWEST} ]]; then
-        # 无第几新
-        if [[ -z ${LIKE_THIS_IMAGE_TAG} ]]; then
-            if [[ -z "${EXCLUDE_THIS_IMAGE_TAG}" ]]; then
-                cat ${F_SEARCH_RESULT_FILE}.sort
-            else
-                cat ${F_SEARCH_RESULT_FILE}.sort | grep -v ${EXCLUDE_THIS_IMAGE_TAG}
-            fi
-        else
-            if [[ -z "${EXCLUDE_THIS_IMAGE_TAG}" ]]; then
-                cat ${F_SEARCH_RESULT_FILE}.sort   | grep ${LIKE_THIS_IMAGE_TAG}
-            else
-                cat ${F_SEARCH_RESULT_FILE}.sort   | grep ${LIKE_THIS_IMAGE_TAG} | grep -v ${EXCLUDE_THIS_IMAGE_TAG}
-            fi
-        fi
+    cat ${F_REPO_LIST_FILE} | jq .repositories[] | sed 's/"//g' > ${F_REPO_LIST_FILE}
+    # 过滤
+    if [[ -n ${F_REPO_NAME} ]]; then
+        grep -E "${F_REPO_NAME}"  ${F_REPO_LIST_FILE}
     else
-        # 第几新
-        if [[ -z "${LIKE_THIS_IMAGE_TAG}" ]]; then
-            if [[ -z "${EXCLUDE_THIS_IMAGE_TAG}" ]]; then
-                cat ${F_SEARCH_RESULT_FILE}.sort | sed -n ${NUMBER_NEWEST}p
-            else
-                cat ${F_SEARCH_RESULT_FILE}.sort | grep -v ${EXCLUDE_THIS_IMAGE_TAG} | sed -n ${NUMBER_NEWEST}p
-            fi
-        else
-            if [[ -z "${EXCLUDE_THIS_IMAGE_TAG}" ]]; then
-                cat ${F_SEARCH_RESULT_FILE}.sort   | grep ${LIKE_THIS_IMAGE_TAG} | sed -n ${NUMBER_NEWEST}p
-            else
-                cat ${F_SEARCH_RESULT_FILE}.sort   | grep ${LIKE_THIS_IMAGE_TAG} | grep -v ${EXCLUDE_THIS_IMAGE_TAG} | sed -n ${NUMBER_NEWEST}p
-            fi
-        fi
+        cat  ${F_REPO_LIST_FILE}
+    fi
+    return 0
+}
+
+
+# 输出所有匹配的仓库tag
+# 用法：F_GET_REPO_TAG  [{仓库名}]  <{%tag%}>
+F_GET_REPO_TAG()
+{
+    F_REPO_NAME=$1
+    F_REPO_TAG=$2
+    F_REPO_TAG_LIST_FILE="/tmp/${SH_NAME}-F_GET_REPO_TAG-list.txt"
+    F_REPO_TAG_ERR_FILE="/tmp/${SH_NAME}-F_GET_REPO_TAG-err.txt"
+    > ${F_REPO_TAG_LIST_FILE}
+    curl -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD} -s -X GET ${DOCKER_REPO_URL_BASE}/${F_REPO_NAME}/tags/list  > ${F_REPO_TAG_LIST_FILE}
+    if [[ $? -ne 0 ]]; then
+        echo -e "\n猪猪侠警告：访问【${DOCKER_REPO}】服务器异常\n" 1>&2
+        return 53
+    fi
+    #
+    if [[ $(cat ${F_REPO_TAG_LIST_FILE} | grep -q '404 page not found' ; echo $?) == 0 ]]; then
+        echo -e "\n猪猪侠警告：仓库不存在\n" 1>&2
+        return 53
+    fi
+    #
+    cat ${F_REPO_TAG_LIST_FILE} | jq .tags[] | grep -v 'latest' | sed 's/"//g'  > ${F_REPO_TAG_LIST_FILE}
+    # 过滤
+    if [[ -n ${F_REPO_TAG} ]]; then
+        grep -E "${F_REPO_TAG}"  ${F_REPO_TAG_LIST_FILE}
+    else
+        cat  ${F_REPO_TAG_LIST_FILE}
     fi
     return 0
 }
 
 
 
+# 输出仓库 tag digest 及 tag blob
+# 用法：F_GET_REPO_TAG_DIGEST_AND_BLOB  [{仓库名}]  [{tag}]
+F_GET_REPO_TAG_DIGEST_AND_BLOB()
+{
+    F_REPO_NAME=$1
+    F_REPO_TAG=$2
+    F_GET_REPO_TAG_HEAD_FILE="/tmp/${SH_NAME}-F_GET_REPO_TAG_DIGEST_AND_BLOB-head.txt"
+    F_GET_REPO_TAG_BODY_FILE="/tmp/${SH_NAME}-F_GET_REPO_TAG_DIGEST_AND_BLOB-body.txt"
+    > ${F_GET_REPO_TAG_HEAD_FILE}
+    > ${F_GET_REPO_TAG_BODY_FILE}
+    curl -s -v -X GET  \
+        -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD}  \
+        -H 'Accept: application/vnd.docker.distribution.manifest.v2+json'  \
+        https://${DOCKER_REPO}/v2/${DOCKER_REPO_USER}/${F_REPO_NAME}/manifests/${F_REPO_TAG}  > ${F_GET_REPO_TAG_BODY_FILE}  2>${F_GET_REPO_TAG_HEAD_FILE}
+    if [[ $? -ne 0 ]]; then
+        echo -e "\n猪猪侠警告：访问【${DOCKER_REPO}】服务器异常\n" 1>&2
+        return 53
+    fi
+    #
+    if [[ $(cat ${F_GET_REPO_TAG_BODY_FILE} | grep -q '404 page not found' ; echo $?) == 0 ]]; then
+        echo -e "\n猪猪侠警告：仓库不存在\n" 1>&2
+        return 53
+    fi
+    #
+    if [[ $(cat ${F_GET_REPO_TAG_BODY_FILE} | grep -q 'MANIFEST_UNKNOWN' ; echo $?) == 0 ]]; then
+        echo -e "\n猪猪侠警告：仓库tag不存在\n" 1>&2
+        return 53
+    fi
+    #
+    F_REPO_TAG_BLOB_DIGEST=$(cat ${F_GET_REPO_TAG_BODY_FILE} | grep 'digest' | head -n 1 | awk '{print $2}' | sed 's/"//g')
+    F_REPO_TAG_DIGEST=$(cat ${F_GET_REPO_TAG_HEAD_FILE} | grep 'Docker-Content-Digest' | head -n 1 | awk '{print $3}')
+    #
+    echo  ${F_GET_REPO_TAG_DIGEST}  ${F_GET_REPO_TAG_BLOB_DIGEST}
+    return 0
+}
+
+
+
+# 删除仓库
+# 用法：F_DELETE_REPO  [{仓库名}]
+F_DELETE_REPO()
+{
+    F_REPO_NAME=$1
+}
+
+
+
+# 删除仓库tag
+# 用法：F_DELETE_REPO_TAG  [{仓库名}]  [{tag}]
+F_DELETE_REPO_TAG()
+{
+    F_REPO_NAME=$1
+    F_REPO_TAG=$2
+    F_GET_REPO_TAG_DIGEST_AND_BLOB_FILE='/tmp/digest-and-blob.txt'
+    F_GET_REPO_TAG_DIGEST_AND_BLOB  > ${F_GET_REPO_TAG_DIGEST_AND_BLOB_FILE}
+    ERR_NO=$?
+    if [[ ${ERR_NO} != 0 ]]; then
+        return ${ERR_NO}
+    fi
+    #
+    F_REPO_TAG_DIGEST=$(cat ${F_GET_REPO_TAG_DIGEST_AND_BLOB_FILE=} | awk '{print $1}')
+    F_REPO_TAG_BLOB_DIGEST=$(cat ${F_GET_REPO_TAG_DIGEST_AND_BLOB_FILE=} | awk '{print $2}')
+    #if [[ -z ${F_REPO_TAG_DIGEST} ]] || [[ -z ${F_REPO_TAG_BLOB_DIGEST} ]]; then
+    #    echo -e "\n猪猪侠警告：仓库tag不存在\n" 1>&2
+    #    return 53
+    #fi
+    # del blob
+    curl  -s -X DELETE  \
+        -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD}  \
+        https://${DOCKER_REPO}/v2/${DOCKER_REPO_USER}/${F_REPO_NAME}/blobs/${F_REPO_TAG_BLOB_DIGEST}
+    # del manifest
+    curl  -s -X DELETE  \
+        -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD}  \
+        https://${DOCKER_REPO}/v2/${DOCKER_REPO_USER}/${F_REPO_NAME}/manifests/${F_REPO_TAG_DIGEST}
+    return 0
+}
+
+
+
+
 # 参数检查
-TEMP=`getopt -o hle:t:n:o:  -l help,list,exclude:,tag:,newest:,output: -- "$@"`
+TEMP=`getopt -o hl::L:r::R:n:t:  -l help,list-repo::,list-tag:,rm-repo::,rm-tag:,name:,tag:  -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
     exit 51
@@ -185,29 +260,29 @@ do
             F_HELP
             exit
             ;;
-        -l|--list)
-            #awk 'BEGIN {FS="|"; printf "%2d %-32s %-s\n",0,"Docker服务名","Docker镜像名"} { if ($3 !~ /^ *$/ && $1 !~ /^#/) {sub(/^[[:blank:]]*/,"",$2); sub(/[[:blank:]]*$/,"",$2); sub(/^[[:blank:]]*/,"",$3); sub(/[[:blank:]]*$/,"",$3); printf "%2d %-32s %-s\n",NR,$2,$3} }'  ${SERVICE_LIST_FILE}
-            echo '**服务名名** | **镜像名**'  > /tmp/docker-image-search-for-list.txt
-            cat  ${SERVICE_LIST_FILE} | grep -v '^#' | awk  'BEGIN {FS="|"} {printf "%s | %s\n", $2,$3}'  >> /tmp/docker-image-search-for-list.txt
-            ${FORMAT_TABLE_SH}  --delimeter '|'  --file /tmp/docker-image-search-for-list.txt
-            exit
+        -l|--list-repo)
+            ACTION='list-repo'
+            shift
             ;;
-        -e|--exclude)
-            EXCLUDE_THIS_IMAGE_TAG=$2
+        -L|--list-tag)
+            ACTION='list-tag'
+            shift
+            ;;
+        -r|--rm-repo)
+            ACTION='rm-repo'
+            shift
+            ;;
+        -R|--rm-tag)
+            ACTION='rm-tag'
+            shift
+            ;;
+        -n|--name)
+            LIKE_THIS_NAME=$2
             shift 2
             ;;
         -t|--tag)
-            LIKE_THIS_IMAGE_TAG=$2
+            LIKE_THIS_TAG=$2
             shift 2
-            ;;
-        -n|--newest)
-            NUMBER_NEWEST=$2
-            shift 2
-            grep -q '^[[:digit:]]\+$' <<< ${NUMBER_NEWEST}
-            if [ $? -ne 0 ]; then
-                echo '参数：{第几新版本} 必须为整数！当前值为：${NUMBER_NEWEST}'
-                exit 51
-            fi
             ;;
         -o|--output)
             OUTPUT_FILE=$2
@@ -226,36 +301,26 @@ done
 
 
 
-# 待搜索的服务清单
-> ${SERVICE_LIST_FILE_TMP}
-# 参数个数为
-if [[ $# -eq 0 ]]; then
-    cp ${SERVICE_LIST_FILE}  ${SERVICE_LIST_FILE_TMP}
-else
-    for i in $@
-    do
-        #
-        GET_IT='N'
-        while read LINE
-        do
-            # 跳过以#开头的行或空行
-            [[ "$LINE" =~ ^# ]] || [[ "$LINE" =~ ^[\ ]*$ ]] && continue
-            #
-            SERVICE_NAME=`echo $LINE | awk -F '|' '{print $2}'`
-            SERVICE_NAME=`echo ${SERVICE_NAME}`
-            if [ "x${SERVICE_NAME}" = "x$i" ]; then
-                echo $LINE >> ${SERVICE_LIST_FILE_TMP}
-                GET_IT='YES'
-                break
-            fi
-        done < ${SERVICE_LIST_FILE}
-        #
-        if [[ $GET_IT != 'YES' ]]; then
-            echo -e "\n猪猪侠警告：服务【${i}】不在服务列表【${SERVICE_LIST_FILE}】中，请检查！\n"
-            exit 51
+case ${ACTION} in
+    list-repo)
+        if [[ -z ${LIKE_THIS_NAME} ]]; then
+            curl
+        else
+            dd
         fi
-    done
-fi
+        ;;
+    list-tag)
+        ;;
+    rm-repo)
+        ;;
+    rm-tag)
+        ;;
+    *)
+        echo -e "\n猪猪侠警告：缺少主要运行参数，请看帮助！\n"
+        return 52
+        ;;
+esac
+
 
 
 
