@@ -64,10 +64,10 @@ F_HELP()
         * 输入命令时，参数顺序不分先后
     用法:
         $0 [-h|--help]
-        $0 [-l|--list-repo]  <{%仓库名%}>                        #-- 列出仓库镜像名
-        $0 [-L|--list-tag]   [{%仓库名%}]  <-t {%镜像版本%}>     #-- 列出仓库镜像版本
-        $0 [-r|--rm-repo]  <{%仓库名%}>                          #-- 列出仓库镜像名
-        $0 [-R|--rm-tag]   [{%仓库名%}]  <-t {%镜像版本%}>       #-- 列出仓库镜像版本
+        $0 [-l|--list-repo]  <-n|--name {%仓库名%}>                        #-- 列出仓库
+        $0 [-L|--list-tag]   [-n|--name {%仓库名%}]  <-t {%镜像版本%}>     #-- 列出仓库tag
+        $0 [-r|--rm-repo]    <-n|--name {%仓库名%}>                        #-- 删除仓库
+        $0 [-R|--rm-tag]     [-n|--name {%仓库名%}]  <-t {%镜像版本%}>     #-- 删除仓库tag
     参数说明：
         \$0   : 代表脚本本身
         []   : 代表是必选项
@@ -241,7 +241,7 @@ F_DELETE_REPO_TAG()
 
 
 # 参数检查
-TEMP=`getopt -o hl::L:r::R:n:t:  -l help,list-repo::,list-tag:,rm-repo::,rm-tag:,name:,tag:  -- "$@"`
+TEMP=`getopt -o hlLrRn:t:  -l help,list-repo,list-tag,rm-repo,rm-tag,name:,tag:  -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
     exit 51
