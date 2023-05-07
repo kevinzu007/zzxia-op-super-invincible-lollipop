@@ -488,7 +488,8 @@ DOCKER_BUILD()
                         fi
                         #
                         ${DOCKER_TAG_PUSH_SH}  --tag ${DOCKER_IMAGE_VER}  ${PJ}  2>&1 | tee -a ${BUILD_LOG_file}
-                        if [[ $? -ne 0 ]]; then
+                        #if [[ $? -ne 0 ]]; then
+                        if [[ $(grep -q 'Error response from daemon' ${BUILD_LOG_file}; echo $?) == 0 ]]; then
                             echo -e "\n猪猪侠警告：项目镜像PUSH失败！\n"  2>&1 | tee -a ${BUILD_LOG_file}
                             echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"  2>&1 | tee -a ${BUILD_LOG_file}
                             ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no" 
@@ -584,7 +585,8 @@ JAVA_BUILD()
                         fi
                         #
                         ${DOCKER_TAG_PUSH_SH}  --tag ${DOCKER_IMAGE_VER}  ${PJ}  2>&1 | tee -a ${BUILD_LOG_file}
-                        if [[ $? -ne 0 ]]; then
+                        #if [[ $? -ne 0 ]]; then
+                        if [[ $(grep -q 'Error response from daemon' ${BUILD_LOG_file}; echo $?) == 0 ]]; then
                             echo -e "\n猪猪侠警告：项目镜像PUSH失败！\n"  2>&1 | tee -a ${BUILD_LOG_file}
                             echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"  2>&1 | tee -a ${BUILD_LOG_file}
                             # copy
@@ -762,7 +764,8 @@ NODE_BUILD()
                 fi
                 #
                 ${DOCKER_TAG_PUSH_SH}  --tag ${DOCKER_IMAGE_VER}  ${PJ}  2>&1 | tee -a ${BUILD_LOG_file}
-                if [[ $? -ne 0 ]]; then
+                #if [[ $? -ne 0 ]]; then
+                if [[ $(grep -q 'Error response from daemon' ${BUILD_LOG_file}; echo $?) == 0 ]]; then
                     echo -e "\n猪猪侠警告：项目镜像PUSH失败！\n"  2>&1 | tee -a ${BUILD_LOG_file}
                     echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"  2>&1 | tee -a ${BUILD_LOG_file}
                     # copy
@@ -886,8 +889,9 @@ HTML_BUILD()
                     return 54
                 fi
                 #
-                ${DOCKER_TAG_PUSH_SH}  --tag ${DOCKER_IMAGE_VER}  ${PJ}
-                if [[ $? -ne 0 ]]; then
+                ${DOCKER_TAG_PUSH_SH}  --tag ${DOCKER_IMAGE_VER}  ${PJ}  2>&1 | tee -a ${BUILD_LOG_file}
+                #if [[ $? -ne 0 ]]; then
+                if [[ $(grep -q 'Error response from daemon' ${BUILD_LOG_file}; echo $?) == 0 ]]; then
                     echo -e "\n猪猪侠警告：项目镜像PUSH失败！\n"  2>&1 | tee -a ${BUILD_LOG_file}
                     echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"  2>&1 | tee -a ${BUILD_LOG_file}
 		            # copy
@@ -1002,8 +1006,9 @@ PYTHON_BUILD()
                     return 54
                 fi
                 #
-                ${DOCKER_TAG_PUSH_SH}  --tag ${DOCKER_IMAGE_VER}  ${PJ}
-                if [[ $? -ne 0 ]]; then
+                ${DOCKER_TAG_PUSH_SH}  --tag ${DOCKER_IMAGE_VER}  ${PJ}  2>&1 | tee -a ${BUILD_LOG_file}
+                #if [[ $? -ne 0 ]]; then
+                if [[ $(grep -q 'Error response from daemon' ${BUILD_LOG_file}; echo $?) == 0 ]]; then
                     echo -e "\n猪猪侠警告：项目镜像PUSH失败！\n"  2>&1 | tee -a ${BUILD_LOG_file}
                     echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"  2>&1 | tee -a ${BUILD_LOG_file}
 		            # copy
