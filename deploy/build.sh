@@ -1419,19 +1419,19 @@ do
                     NOT_NEED_RETURN=50
                     ;;
                 dockerfile)
-                    DOCKER_BUILD  > /dev/null 2>&1
+                    DOCKER_BUILD  > /dev/null
                     ;;
                 java)
-                    JAVA_BUILD  > /dev/null 2>&1
+                    JAVA_BUILD  > /dev/null
                     ;;
                 node)
-                    NODE_BUILD  > /dev/null 2>&1
+                    NODE_BUILD  > /dev/null
                     ;;
                 html)
-                    HTML_BUILD  > /dev/null 2>&1
+                    HTML_BUILD  > /dev/null
                     ;;
                 python)
-                    PYTHON_BUILD  > /dev/null 2>&1
+                    PYTHON_BUILD  > /dev/null
                     ;;
                 *)
                     echo -e "\n猪猪侠警告：【${LANGUAGE_CATEGORY}】这个类别的语言是你新加的，你自己把它完善下！\n"
