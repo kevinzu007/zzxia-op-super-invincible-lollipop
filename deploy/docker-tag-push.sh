@@ -174,7 +174,7 @@ do
     #
     PJ_NAME=`echo ${LINE} | cut -d \| -f 3`
     PJ_NAME=`echo ${PJ_NAME}`
-    IMAGE_NAME=`echo ${LINE} | cut -d \| -f 6`
+    IMAGE_NAME=`echo ${LINE} | cut -d \| -f 7`
     IMAGE_NAME=`echo ${IMAGE_NAME}`
     #
     # docker tag + push
