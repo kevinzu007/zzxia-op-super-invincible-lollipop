@@ -4,8 +4,8 @@
 - hosts: pg
   become: yes
   tasks:
-    - name: 拷贝：pg/backup
-      copy: src=./pg/backup/  dest=/backup/pg/  owner=postgres group=postgres mode=644 backup=yes
+    - name: 拷贝：backup
+      copy: src=./backup/  dest=/backup/pg/  owner=postgres group=postgres mode=644 backup=yes
     #- name: sh加执行权限：/backup/pg
     #- shell: "chmod +x /backup/pg/*.sh"
     - name: 加执行权限：pg_list_backup_or_restore.sh
@@ -13,9 +13,9 @@
     - name: 加执行权限：pg_backup_or_restore.sh
       file: dest=/backup/pg/pg_backup_or_restore.sh  state=file  owner=postgres  group=postgres  mode=0755
     - name: 拷贝：pg_hba.conf
-      copy: src=./pg/setup/pg_hba.conf  dest=/usr/local/pgsql/data/pg_hba.conf        owner=postgres group=postgres mode=644 backup=yes
+      copy: src=./setup/pg_hba.conf  dest=/usr/local/pgsql/data/pg_hba.conf        owner=postgres group=postgres mode=644 backup=yes
     - name: 拷贝：my-pg.conf
-      copy: src=./pg/setup/my-pg.conf   dest=/usr/local/pgsql/data/conf.d/my-pg.conf  owner=postgres group=postgres mode=644 backup=yes
+      copy: src=./setup/my-pg.conf   dest=/usr/local/pgsql/data/conf.d/my-pg.conf  owner=postgres group=postgres mode=644 backup=yes
     - name: crontab - 清理pg日志
       cron: name=清理pg日志 backup=yes state=present minute=0 hour=0 day=*  month=* weekday=* user=postgres  job='find /usr/local/pgsql/data/log/ -maxdepth 1 -type f -mtime +30 -exec rm -f {} \; > /dev/null'
     - name: crontab - 清理pg_wal

@@ -3,9 +3,9 @@
 
 # 镜像名称与版本
 IMAGE_SERVER=''
-NAME_SPACE=apache
-IMAGE_NAME=rocketmq
-VER=4.9.3
+NAME_SPACE=nacos
+IMAGE_NAME=nacos-server
+VER=v2.1.2
 
 
 # 命名空间
@@ -24,10 +24,12 @@ if [[ -z ${VER} ]]; then
 fi
 
 
+
 # pull、tag
 docker pull  ${IMAGE_NAME}:${VER}
 docker tag   ${IMAGE_NAME}:${VER}   ${IMAGE_NAME##*/}:latest
 # push
-./../deploy/docker-tag-push.sh  --tag ${VER}  ${IMAGE_NAME##*/}
-./../deploy/docker-tag-push.sh                ${IMAGE_NAME##*/}
+../../deploy/docker-tag-push.sh  --tag ${VER}  ${IMAGE_NAME##*/}
+../../deploy/docker-tag-push.sh                ${IMAGE_NAME##*/}
+
 

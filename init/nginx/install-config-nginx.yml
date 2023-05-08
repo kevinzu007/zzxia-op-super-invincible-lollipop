@@ -2,6 +2,8 @@
 # nginx-config
 - hosts: nginx
   become: yes
+  vars:
+    - RUN_ENV: "{{ lookup('env','RUN_ENV') }}"
   tasks:
     - name: 新建目录 nginx-config
       file: path=~/nginx-config  state=directory  mode=0755

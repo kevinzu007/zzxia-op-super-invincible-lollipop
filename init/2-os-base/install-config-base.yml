@@ -1,5 +1,5 @@
 
-# base profile         
+# base profile
 - hosts: all
   become: yes
   tasks:
