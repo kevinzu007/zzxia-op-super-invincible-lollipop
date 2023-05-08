@@ -537,8 +537,8 @@ JAVA_BUILD()
             elif [ "${BUILD_METHOD}" = "mvn_package" ]; then
                 MVN_OPT=" package "
             else
-                echo -e "\n猪猪侠警告：这是你新添加的mvn构建方法，你自己搞下！\n"
-            fi  2>&1 | tee -a ${BUILD_LOG_file}
+                echo -e "\n猪猪侠警告：这是你新添加的mvn构建方法，你自己搞下！\n"  2>&1 | tee -a ${BUILD_LOG_file}
+            fi
             #
             # 跳过测试
             if [[ "${BUILD_SKIP_TEST}" == "YES" ]]; then
@@ -845,8 +845,8 @@ HTML_BUILD()
     if [ $? -eq 0 ]; then
         echo ""
         echo -e "${ECHO_ERROR}失败！请检查日志文件：${BUILD_LOG_file}  ${ECHO_CLOSE}"  2>&1 | tee -a ${BUILD_LOG_file}
-		# copy
-		ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
+        # copy
+        ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
         # mail
         if [[ ! -z "${MY_EMAIL}" ]]; then
             ${SEND_MAIL}  --subject "【${RUN_ENV}】Build Log - ${PJ}"  --content "请看附件\n"  --attach "${BUILD_LOG_file}"  "${MY_EMAIL}"
@@ -868,8 +868,8 @@ HTML_BUILD()
                 if [ -z "${DOCKER_IMAGE_NAME}" ]; then
                     echo -e "\n猪猪侠警告：输出方式为【docker_image_push】时，镜像名不能为空！\n"  2>&1 | tee -a ${BUILD_LOG_file}
                     echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"  2>&1 | tee -a ${BUILD_LOG_file}
-		            # copy
-		            ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
+                    # copy
+                    ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
                     echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
                     echo "${PJ} : 失败 : x" >> ${BUILD_OK_LIST_FILE}
                     ERR_SHOW
@@ -881,8 +881,8 @@ HTML_BUILD()
                 if [ ${DOCKER_BUILD_RETURN} -ne 0 ]; then
                     echo -e "\n猪猪侠警告：项目镜像Build失败！\n"  2>&1 | tee -a ${BUILD_LOG_file}
                     echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"  2>&1 | tee -a ${BUILD_LOG_file}
-		            # copy
-		            ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
+                    # copy
+                    ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
                     echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
                     echo "${PJ} : 失败 : x" >> ${BUILD_OK_LIST_FILE}
                     ERR_SHOW
@@ -894,8 +894,8 @@ HTML_BUILD()
                 if [[ $(grep -q 'Error response from daemon' ${BUILD_LOG_file}; echo $?) == 0 ]]; then
                     echo -e "\n猪猪侠警告：项目镜像PUSH失败！\n"  2>&1 | tee -a ${BUILD_LOG_file}
                     echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"  2>&1 | tee -a ${BUILD_LOG_file}
-		            # copy
-		            ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
+                    # copy
+                    ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
                     echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
                     echo "${PJ} : 失败 : x" >> ${BUILD_OK_LIST_FILE}
                     ERR_SHOW
@@ -904,8 +904,8 @@ HTML_BUILD()
                 #
                 # echo
                 echo 'Build and Push 成功！'  2>&1 | tee -a ${BUILD_LOG_file}
-		        # copy
-		        ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
+                # copy
+                ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
                 return 50
                 ;;
             direct_deploy)
@@ -915,21 +915,21 @@ HTML_BUILD()
                 ansible nginx_real -m synchronize -a "src=${CP_FROM_DIR}/  dest=${CP_TO_DIR}/  rsync_opts=--perms=yes,--times=yes"
                 # echo
                 echo 'Build and Deploy 成功！'  2>&1 | tee -a ${BUILD_LOG_file}
-		        # copy
-		        ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
+                # copy
+                ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
                 return 50
                 ;;
             NONE)
                 # 啥也不需要做
                 echo 'OUTPUT成功！'  2>&1 | tee -a ${BUILD_LOG_file}
-		        # copy
-		        ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
+                # copy
+                ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
                 return 50
                 ;;
             *)
                 echo -e "\n猪猪侠警告：【 ${LANGUAGE_CATEGORY} 之 ${OUTPUT_METHOD} 】这个输出方法我没弄，你自己搞下！\n"  2>&1 | tee -a ${BUILD_LOG_file}
-		        # copy
-		        ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
+                # copy
+                ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
                 return 52
                 ;;
         esac
@@ -962,8 +962,8 @@ PYTHON_BUILD()
     if [ $? -eq 0 ]; then
         echo ""
         echo -e "${ECHO_ERROR}失败！请检查日志文件：${BUILD_LOG_file}  ${ECHO_CLOSE}"  2>&1 | tee -a ${BUILD_LOG_file}
-		# copy
-		ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
+        # copy
+        ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
         # mail
         if [[ ! -z "${MY_EMAIL}" ]]; then
             ${SEND_MAIL}  --subject "【${RUN_ENV}】Build Log - ${PJ}"  --content "请看附件\n"  --attach "${BUILD_LOG_file}"  "${MY_EMAIL}"
@@ -985,8 +985,8 @@ PYTHON_BUILD()
                 if [ -z "${DOCKER_IMAGE_NAME}" ]; then
                     echo -e "\n猪猪侠警告：输出方式为【docker_image_push】时，镜像名不能为空！\n"  2>&1 | tee -a ${BUILD_LOG_file}
                     echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"  2>&1 | tee -a ${BUILD_LOG_file}
-		            # copy
-		            ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
+                    # copy
+                    ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
                     echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
                     echo "${PJ} : 失败 : x" >> ${BUILD_OK_LIST_FILE}
                     ERR_SHOW
@@ -998,8 +998,8 @@ PYTHON_BUILD()
                 if [ ${DOCKER_BUILD_RETURN} -ne 0 ]; then
                     echo -e "\n猪猪侠警告：项目镜像Build失败！\n"  2>&1 | tee -a ${BUILD_LOG_file}
                     echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"  2>&1 | tee -a ${BUILD_LOG_file}
-		            # copy
-		            ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
+                    # copy
+                    ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
                     echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
                     echo "${PJ} : 失败 : x" >> ${BUILD_OK_LIST_FILE}
                     ERR_SHOW
@@ -1011,8 +1011,8 @@ PYTHON_BUILD()
                 if [[ $(grep -q 'Error response from daemon' ${BUILD_LOG_file}; echo $?) == 0 ]]; then
                     echo -e "\n猪猪侠警告：项目镜像PUSH失败！\n"  2>&1 | tee -a ${BUILD_LOG_file}
                     echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"  2>&1 | tee -a ${BUILD_LOG_file}
-		            # copy
-		            ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
+                    # copy
+                    ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
                     echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
                     echo "${PJ} : 失败 : x" >> ${BUILD_OK_LIST_FILE}
                     ERR_SHOW
@@ -1021,8 +1021,8 @@ PYTHON_BUILD()
                 #
                 # echo
                 echo 'Build and Push 成功！'  2>&1 | tee -a ${BUILD_LOG_file}
-		        # copy
-		        ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
+                # copy
+                ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
                 return 50
                 ;;
             direct_deploy)
@@ -1032,21 +1032,21 @@ PYTHON_BUILD()
                 ansible nginx_real -m synchronize -a "src=${CP_FROM_DIR}/  dest=${CP_TO_DIR}/  rsync_opts=--perms=yes,--times=yes"
                 # echo
                 echo 'Build and Deploy 成功！'  2>&1 | tee -a ${BUILD_LOG_file}
-		        # copy
-		        ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
+                # copy
+                ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
                 return 50
                 ;;
             NONE)
                 # 啥也不需要做
                 echo 'OUTPUT成功！'  2>&1 | tee -a ${BUILD_LOG_file}
-		        # copy
-		        ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
+                # copy
+                ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
                 return 50
                 ;;
             *)
                 echo -e "\n猪猪侠警告：【 ${LANGUAGE_CATEGORY} 之 ${OUTPUT_METHOD} 】这个输出方法我没弄，你自己搞下！\n"  2>&1 | tee -a ${BUILD_LOG_file}
-		        # copy
-		        ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
+                # copy
+                ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
                 return 52
                 ;;
         esac
