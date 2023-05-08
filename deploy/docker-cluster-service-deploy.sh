@@ -57,7 +57,7 @@ SERVICE_LIST_FILE_APPEND_1="${SH_PATH}/docker-cluster-service.list.append.1"
 SERVICE_LIST_FILE_APPEND_2="${SH_PATH}/docker-cluster-service.list.append.2"
 SERVICE_LIST_FILE_TMP="${LOG_HOME}/${SH_NAME}-docker-cluster-service.list.tmp"
 SERVICE_ONLINE_LIST_FILE_TMP="${LOG_HOME}/${SH_NAME}-docker-cluster-service-online.list.tmp"
-DOCKER_IMAGE_VER='latest'
+DOCKER_IMAGE_TAG='latest'
 FUCK=${FUCK:-"NO"}
 DEPLOY_BY_STEP=${DEPLOY_BY_STEP:-"NO"}
 #
@@ -577,7 +577,7 @@ spec:
       hostAliases:
       containers:
       - name: c-${SERVICE_X_NAME}
-        image: ${DOCKER_IMAGE_BASE}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER}
+        image: ${DOCKER_IMAGE_BASE}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
         imagePullPolicy: IfNotPresent
         args:
         env:
@@ -1532,7 +1532,7 @@ do
 
 
             # 3 组装image
-            DOCKER_IMAGE_VER=${DOCKER_IMAGE_VER:-'latest'}
+            DOCKER_IMAGE_TAG=${DOCKER_IMAGE_TAG:-'latest'}
             # 命令参数指定版本
             if [ ! -z "${THIS_TAG}" ]; then
                 # 完全匹配服务镜像
@@ -1543,7 +1543,7 @@ do
                     ERROR_CODE=54
                     continue
                 fi
-                DOCKER_IMAGE_VER="${THIS_TAG}"
+                DOCKER_IMAGE_TAG="${THIS_TAG}"
                 #
             elif [ ! -z "${LIKE_THIS_TAG}" ]; then
                 # LIKE匹配镜像最新的一个
@@ -1555,20 +1555,20 @@ do
                     ERROR_CODE=54
                     continue
                 fi
-                DOCKER_IMAGE_VER=`cat ${LOG_HOME}/${SH_NAME}-image-search.${SERVICE_OPERATION} | cut -d ' ' -f 3`
+                DOCKER_IMAGE_TAG=`cat ${LOG_HOME}/${SH_NAME}-image-search.${SERVICE_OPERATION} | cut -d ' ' -f 3`
                 #
             else
                 # 默认镜像版本
-                F_SEARCH_IMAGE_TAG  ${SERVICE_NAME}  ${DOCKER_IMAGE_VER}
+                F_SEARCH_IMAGE_TAG  ${SERVICE_NAME}  ${DOCKER_IMAGE_TAG}
                 if [ $? -ne 0 ]; then
-                    echo "${SERVICE_NAME} : 失败，镜像版本【${DOCKER_IMAGE_VER}】未找到"
-                    echo "${SERVICE_NAME} : 失败，镜像版本【${DOCKER_IMAGE_VER}】未找到" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                    echo "${SERVICE_NAME} : 失败，镜像版本【${DOCKER_IMAGE_TAG}】未找到"
+                    echo "${SERVICE_NAME} : 失败，镜像版本【${DOCKER_IMAGE_TAG}】未找到" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                     ERROR_CODE=54
                     continue
                 fi
             fi
             #
-            DOCKER_IMAGE_FULL_URL="${DOCKER_IMAGE_BASE}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER}"
+            DOCKER_IMAGE_FULL_URL="${DOCKER_IMAGE_BASE}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
             #
             case ${CLUSTER} in
                 swarm)
@@ -2121,15 +2121,15 @@ do
                     continue
                 fi
                 #
-                DOCKER_IMAGE_VER_UPDATE=${THIS_TAG}
+                DOCKER_IMAGE_TAG_UPDATE=${THIS_TAG}
                 #
             elif [ ! -z "${LIKE_THIS_TAG}" ]; then
                 # 更新指定LIKE匹配镜像
-                #DOCKER_IMAGE_VER_UPDATE=$(F_SEARCH_IMAGE_LIKE_TAG  ${SERVICE_NAME}  ${LIKE_THIS_TAG})
+                #DOCKER_IMAGE_TAG_UPDATE=$(F_SEARCH_IMAGE_LIKE_TAG  ${SERVICE_NAME}  ${LIKE_THIS_TAG})
                 ${DOCKER_IMAGE_SEARCH_SH}  --tag ${LIKE_THIS_TAG}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt  ${SERVICE_NAME}
-                DOCKER_IMAGE_VER_UPDATE=$(cat ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt | cut -d " " -f 3)
+                DOCKER_IMAGE_TAG_UPDATE=$(cat ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt | cut -d " " -f 3)
                 #
-                if [[ -z ${DOCKER_IMAGE_VER_UPDATE} ]]; then
+                if [[ -z ${DOCKER_IMAGE_TAG_UPDATE} ]]; then
                     echo "${SERVICE_X_NAME} : 失败，镜像版本【%${LIKE_THIS_TAG}%】未找到"
                     echo "${SERVICE_X_NAME} : 失败，镜像版本【%${LIKE_THIS_TAG}%】未找到" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                     ERROR_CODE=54
@@ -2139,10 +2139,10 @@ do
             else
                 # 更新今日发布的服务镜像
                 TODAY=`date +%Y.%m.%d`
-                #DOCKER_IMAGE_VER_UPDATE=$(F_SEARCH_IMAGE_LIKE_TAG  ${SERVICE_NAME}  ${TODAY})
+                #DOCKER_IMAGE_TAG_UPDATE=$(F_SEARCH_IMAGE_LIKE_TAG  ${SERVICE_NAME}  ${TODAY})
                 ${DOCKER_IMAGE_SEARCH_SH}  --tag ${TODAY}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt  ${SERVICE_NAME}
-                DOCKER_IMAGE_VER_UPDATE=$(cat ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt | cut -d " " -f 3)
-                if [[ -z ${DOCKER_IMAGE_VER_UPDATE} ]]; then
+                DOCKER_IMAGE_TAG_UPDATE=$(cat ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt | cut -d " " -f 3)
+                if [[ -z ${DOCKER_IMAGE_TAG_UPDATE} ]]; then
                     echo "${SERVICE_X_NAME} : 跳过，今日无更新"
                     echo "${SERVICE_X_NAME} : 跳过，今日无更新" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                     ERROR_CODE=55
@@ -2151,7 +2151,7 @@ do
                 #
             fi
             #
-            DOCKER_IMAGE_FULL_URL="${DOCKER_IMAGE_BASE}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER_UPDATE}"
+            DOCKER_IMAGE_FULL_URL="${DOCKER_IMAGE_BASE}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG_UPDATE}"
             #
             case ${CLUSTER} in 
                 swarm)
@@ -2234,17 +2234,17 @@ do
             fi
             #
             TODAY=`date +%Y.%m.%d`
-            #DOCKER_IMAGE_VER_TODAY=$(F_SEARCH_IMAGE_LIKE_TAG  ${SERVICE_NAME}  ${TODAY})
+            #DOCKER_IMAGE_TAG_TODAY=$(F_SEARCH_IMAGE_LIKE_TAG  ${SERVICE_NAME}  ${TODAY})
             ${DOCKER_IMAGE_SEARCH_SH}  --tag ${TODAY}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt  ${SERVICE_NAME}
-            DOCKER_IMAGE_VER_TODAY=$(cat ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt | cut -d " " -f 3)
-            if [[ -z ${DOCKER_IMAGE_VER_TODAY} ]]; then
+            DOCKER_IMAGE_TAG_TODAY=$(cat ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt | cut -d " " -f 3)
+            if [[ -z ${DOCKER_IMAGE_TAG_TODAY} ]]; then
                 echo "${SERVICE_X_NAME} : 跳过，今日无更新"
                 echo "${SERVICE_X_NAME} : 跳过，今日无更新" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                 ERROR_CODE=55
                 continue
             else
-                DOCKER_IMAGE_VER_ROLLBACK=$(F_SEARCH_IMAGE_NOT_LIKE_TAG  ${SERVICE_NAME}  ${TODAY})
-                if [[ -z ${DOCKER_IMAGE_VER_ROLLBACK} ]]; then
+                DOCKER_IMAGE_TAG_ROLLBACK=$(F_SEARCH_IMAGE_NOT_LIKE_TAG  ${SERVICE_NAME}  ${TODAY})
+                if [[ -z ${DOCKER_IMAGE_TAG_ROLLBACK} ]]; then
                     echo "${SERVICE_X_NAME} : 跳过，无历史镜像"
                     echo "${SERVICE_X_NAME} : 跳过，无历史镜像" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                     ERROR_CODE=55
@@ -2252,7 +2252,7 @@ do
                 fi
             fi
             #
-            DOCKER_IMAGE_FULL_URL="${DOCKER_IMAGE_BASE}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER_ROLLBACK}"
+            DOCKER_IMAGE_FULL_URL="${DOCKER_IMAGE_BASE}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG_ROLLBACK}"
             #
             case ${CLUSTER} in
                 swarm)
@@ -2701,7 +2701,7 @@ fi
 #
 # create:
 # 53  "失败，服务已在运行中"
-# 54  "失败，镜像版本【${DOCKER_IMAGE_VER} 】未找到"
+# 54  "失败，镜像版本【${DOCKER_IMAGE_TAG} 】未找到"
 # update:
 # 53  "失败，服务不在运行中"
 # 55  "跳过，今日无更新"

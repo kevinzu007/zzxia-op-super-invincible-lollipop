@@ -33,7 +33,7 @@ DATE_TIME=`date -d "${TIME}" +%Y%m%dT%H%M%S`
 LOG_BASE="${SH_PATH}/tmp/log"
 LOG_HOME="${LOG_BASE}/${DATE_TIME}"
 #
-DOCKER_IMAGE_VER=$(date -d "${TIME}" +%Y.%m.%d.%H%M%S)
+DOCKER_IMAGE_TAG=$(date -d "${TIME}" +%Y.%m.%d.%H%M%S)
 #
 BUILD_FORCE='NO'
 # 独有
@@ -561,7 +561,7 @@ echo "造 浪 者：${MY_XINGMING}" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
 echo "开始时间：${TIME}" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
 echo "结束时间：${TIME_END}" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
 echo "代码分支：${GIT_BRANCH}" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
-echo "Docker镜像版本：${DOCKER_IMAGE_VER}" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
+echo "镜像TAG ：${DOCKER_IMAGE_TAG}" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
 echo "并行数量：${N_proc}" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
 echo "构建清单：" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
 # 输出到文件

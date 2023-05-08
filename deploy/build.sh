@@ -36,7 +36,7 @@ TIME_START=${TIME}
 DATE_TIME=`date -d "${TIME}" +%Y%m%dT%H%M%S`
 ERROR_CODE=''     #--- 程序最终返回值，一般用于【--mode=function】时
 #
-DOCKER_IMAGE_VER=$(date -d "${TIME}" +%Y.%m.%d.%H%M%S)
+DOCKER_IMAGE_TAG=$(date -d "${TIME}" +%Y.%m.%d.%H%M%S)
 #
 PROJECT_BASE="${SH_PATH}/tmp/build"
 LOG_BASE="${SH_PATH}/tmp/log"
@@ -487,7 +487,7 @@ DOCKER_BUILD()
                             return 52
                         fi
                         #
-                        ${DOCKER_TAG_PUSH_SH}  --tag ${DOCKER_IMAGE_VER}  ${PJ}  2>&1 | tee -a ${BUILD_LOG_file}
+                        ${DOCKER_TAG_PUSH_SH}  --tag ${DOCKER_IMAGE_TAG}  ${PJ}  2>&1 | tee -a ${BUILD_LOG_file}
                         #if [[ $? -ne 0 ]]; then
                         if [[ $(grep -q 'Error response from daemon' ${BUILD_LOG_file}; echo $?) == 0 ]]; then
                             echo -e "\n猪猪侠警告：项目镜像PUSH失败！\n"  2>&1 | tee -a ${BUILD_LOG_file}
@@ -584,7 +584,7 @@ JAVA_BUILD()
                             return 52
                         fi
                         #
-                        ${DOCKER_TAG_PUSH_SH}  --tag ${DOCKER_IMAGE_VER}  ${PJ}  2>&1 | tee -a ${BUILD_LOG_file}
+                        ${DOCKER_TAG_PUSH_SH}  --tag ${DOCKER_IMAGE_TAG}  ${PJ}  2>&1 | tee -a ${BUILD_LOG_file}
                         #if [[ $? -ne 0 ]]; then
                         if [[ $(grep -q 'Error response from daemon' ${BUILD_LOG_file}; echo $?) == 0 ]]; then
                             echo -e "\n猪猪侠警告：项目镜像PUSH失败！\n"  2>&1 | tee -a ${BUILD_LOG_file}
@@ -763,7 +763,7 @@ NODE_BUILD()
                     return 54
                 fi
                 #
-                ${DOCKER_TAG_PUSH_SH}  --tag ${DOCKER_IMAGE_VER}  ${PJ}  2>&1 | tee -a ${BUILD_LOG_file}
+                ${DOCKER_TAG_PUSH_SH}  --tag ${DOCKER_IMAGE_TAG}  ${PJ}  2>&1 | tee -a ${BUILD_LOG_file}
                 #if [[ $? -ne 0 ]]; then
                 if [[ $(grep -q 'Error response from daemon' ${BUILD_LOG_file}; echo $?) == 0 ]]; then
                     echo -e "\n猪猪侠警告：项目镜像PUSH失败！\n"  2>&1 | tee -a ${BUILD_LOG_file}
@@ -889,7 +889,7 @@ HTML_BUILD()
                     return 54
                 fi
                 #
-                ${DOCKER_TAG_PUSH_SH}  --tag ${DOCKER_IMAGE_VER}  ${PJ}  2>&1 | tee -a ${BUILD_LOG_file}
+                ${DOCKER_TAG_PUSH_SH}  --tag ${DOCKER_IMAGE_TAG}  ${PJ}  2>&1 | tee -a ${BUILD_LOG_file}
                 #if [[ $? -ne 0 ]]; then
                 if [[ $(grep -q 'Error response from daemon' ${BUILD_LOG_file}; echo $?) == 0 ]]; then
                     echo -e "\n猪猪侠警告：项目镜像PUSH失败！\n"  2>&1 | tee -a ${BUILD_LOG_file}
@@ -1006,7 +1006,7 @@ PYTHON_BUILD()
                     return 54
                 fi
                 #
-                ${DOCKER_TAG_PUSH_SH}  --tag ${DOCKER_IMAGE_VER}  ${PJ}  2>&1 | tee -a ${BUILD_LOG_file}
+                ${DOCKER_TAG_PUSH_SH}  --tag ${DOCKER_IMAGE_TAG}  ${PJ}  2>&1 | tee -a ${BUILD_LOG_file}
                 #if [[ $? -ne 0 ]]; then
                 if [[ $(grep -q 'Error response from daemon' ${BUILD_LOG_file}; echo $?) == 0 ]]; then
                     echo -e "\n猪猪侠警告：项目镜像PUSH失败！\n"  2>&1 | tee -a ${BUILD_LOG_file}
@@ -1642,7 +1642,7 @@ case ${SH_RUN_MODE} in
         echo "开始时间：${TIME}" | tee -a ${BUILD_HISTORY_CURRENT_FILE}
         echo "结束时间：${TIME_END}" | tee -a ${BUILD_HISTORY_CURRENT_FILE}
         echo "代码分支：${GIT_BRANCH}" | tee -a ${BUILD_HISTORY_CURRENT_FILE}
-        echo "Docker镜像版本：${DOCKER_IMAGE_VER}" | tee -a ${BUILD_HISTORY_CURRENT_FILE}
+        echo "镜像TAG ：${DOCKER_IMAGE_TAG}" | tee -a ${BUILD_HISTORY_CURRENT_FILE}
         echo "已构建清单：" | tee -a ${BUILD_HISTORY_CURRENT_FILE}
         # 输出到文件
         echo "--------------------------------------------------" >> ${BUILD_HISTORY_CURRENT_FILE}   #--- 50 (60-50-40)

@@ -19,7 +19,7 @@ cd ${SH_PATH}
 TIME=${TIME:-`date +%Y-%m-%dT%H:%M:%S`}
 TIME_START=${TIME}
 #
-IMAGE_VER=$(date -d "${TIME}" +%Y.%m.%d.%H%M%S)
+IMAGE_TAG=$(date -d "${TIME}" +%Y.%m.%d.%H%M%S)
 PROJECT_LIST_FILE="${SH_PATH}/project.list"
 PROJECT_LIST_FILE_TMP="/tmp/${SH_NAME}-project.tmp.list.$(date +%S)"
 # sh
@@ -54,7 +54,7 @@ export ECHO_REPORT=${ECHO_BLACK_CYAN}
 F_HELP()
 {
     echo "
-    用途：为项目镜像打版本号，并推送到docker仓库（推送 明确版本 + latest版本）
+    用途：为项目镜像打tag，并推送到docker仓库（推送 指定tag + latest）
     依赖：
         ${SH_PATH}/env.sh
         ${PROJECT_LIST_FILE}
@@ -63,7 +63,7 @@ F_HELP()
     用法:
         $0  [-h|--help]
         $0  [-l|--list]
-        $0  [-t|--tag {版本号}]  <{项目1}  {项目2} ... {项目n}>
+        $0  [-t|--tag {tag}]  <{项目1}  {项目2} ... {项目n}>
     参数说明：
         \$0   : 代表脚本本身
         []   : 代表是必选项
@@ -73,14 +73,14 @@ F_HELP()
         %    : 代表通配符，非精确值，可以被包含
         #
         -l|--list       项目镜像列表
-        -t|--tag        设置镜像版本号，默认版本号为：【日期+时间】
+        -t|--tag        设置镜像tag，默认tag号为：【日期+时间】
     示例：
         $0  -h
         $0  -l
         #
-        $0                            #--- 为所有项目的镜像设置默认版本号，并推送到docker仓库
-        $0  -t 1.11  项目a 项目b      #--- 设置【项目a、项目b】的版本号为【1.11】，并推送到docker仓库
-        $0           项目a 项目b      #--- 设置【项目a、项目b】的版本号为默认版本号，并推送到docker仓库
+        $0                            #--- 为所有项目的镜像设置默认tag，并推送到docker仓库
+        $0  -t 1.11  项目a 项目b      #--- 设置【项目a、项目b】的tag为【1.11】，并推送到docker仓库
+        $0           项目a 项目b      #--- 设置【项目a、项目b】的tag为默认tag，并推送到docker仓库
     "
 }
 
@@ -112,7 +112,7 @@ do
             exit
             ;;
         -t|--tag)
-            IMAGE_VER=$2
+            IMAGE_TAG=$2
             shift 2
             ;;
         --)
@@ -186,9 +186,9 @@ do
     # latest版
     docker tag   ${IMAGE_NAME}:latest  ${DOCKER_IMAGE_BASE}/${IMAGE_NAME}:latest
     docker push  ${DOCKER_IMAGE_BASE}/${IMAGE_NAME}:latest
-    # 特定版本号
-    docker tag   ${IMAGE_NAME}:latest  ${DOCKER_IMAGE_BASE}/${IMAGE_NAME}:${IMAGE_VER}
-    docker push  ${DOCKER_IMAGE_BASE}/${IMAGE_NAME}:${IMAGE_VER}
+    # 特定tag
+    docker tag   ${IMAGE_NAME}:latest  ${DOCKER_IMAGE_BASE}/${IMAGE_NAME}:${IMAGE_TAG}
+    docker push  ${DOCKER_IMAGE_BASE}/${IMAGE_NAME}:${IMAGE_TAG}
     if [[ $? -ne 0 ]]; then
         echo -e "\n猪猪侠警告：项目【${PJ_NAME}】镜像PUSH失败，请检查！\n"
         exit 54
@@ -197,5 +197,5 @@ done < ${PROJECT_LIST_FILE_TMP}
 
 
 echo -e "\nPUSH 完成！"
-echo -e "IMAGE版本号为：\n    ${IMAGE_VER}\n    latest"
+echo -e "镜像TAG为：\n    ${IMAGE_TAG}\n    latest"
 
