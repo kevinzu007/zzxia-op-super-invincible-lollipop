@@ -36,6 +36,7 @@ TIME_START=${TIME}
 DATE_TIME=`date -d "${TIME}" +%Y%m%dT%H%M%S`
 ERROR_CODE=''     #--- 程序最终返回值，一般用于【--mode=function】时
 #
+DOCKER_BUILD_DIR_NAME='./docker_bulid'          #-- 对于dockerfile类项目，Dockerfile所在目录名
 DOCKER_IMAGE_TAG=$(date -d "${TIME}" +%Y.%m.%d.%H%M%S)
 #
 PROJECT_BASE="${SH_PATH}/tmp/build"
@@ -445,6 +446,7 @@ GIT_CODE()
 DOCKER_BUILD()
 {
     echo  "Docker Build ......"
+    #
     # 构建方法
     case "${BUILD_METHOD}" in
         docker_*)
@@ -456,7 +458,7 @@ DOCKER_BUILD()
             fi
             #
             # build
-            docker ${DOCKER_BUILD_OPT} -t ${DOCKER_IMAGE_NAME}  ./  2>&1 | tee -a ${BUILD_LOG_file}
+            docker ${DOCKER_BUILD_OPT} -t ${DOCKER_IMAGE_NAME}  ${DOCKER_BUILD_DIR_NAME}  2>&1 | tee -a ${BUILD_LOG_file}
             ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no" 
             grep  'Successfully built'  ${BUILD_LOG_file}
             #
