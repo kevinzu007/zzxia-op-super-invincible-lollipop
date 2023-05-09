@@ -90,7 +90,7 @@ F_HELP()
 
 
 # 参数检查
-TEMP=`getopt -o hlt:p:  -l help,list,tag::pre-name -- "$@"`
+TEMP=`getopt -o hlt:p:  -l help,list,tag:pre-name: -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
     exit 51
