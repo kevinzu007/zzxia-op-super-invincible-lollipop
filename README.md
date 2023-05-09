@@ -84,7 +84,7 @@
 | :--: | ---------- | ------------------- | ------------------ | ------------------------------------------- |
 |  1   | product    | NONE                | NONE               |                                             |
 |  2   |            |                     | docker_image_push  | docker；docker仓库                          |
-|  3   | Dockerfile | docker_bulid        | NONE               | docker                                      |
+|  3   | Dockerfile | docker_build        | NONE               | docker                                      |
 |  4   |            |                     | docker_image_push  | docker；docker仓库                          |
 |  5   | Java       | mvn_package或gradle | NONE               | java_jdk；maven或gradle                     |
 |  6   |            |                     | deploy_war         | java_jdk；maven或gradle                     |
@@ -498,10 +498,10 @@ esac
 ###
 ### 3【项目名：PJ】= [自定义名称]
 ###
-### 4【构建方法：BUILD_METHOD】= [ NONE | docker_bulid | java:[mvn_package|gradle|自定义] | node:[original|build|自定义] ]
+### 4【构建方法：BUILD_METHOD】= [ NONE | docker_build | java:[mvn_package|gradle|自定义] | node:[original|build|自定义] ]
 ###   0 类别='*'          : NONE             : 跳过构建，用【gogogo.sh】时，也会跳过发布
 ###   1 类别='product'    : NONE             : 跳过构建，成品无需构建
-###   2 类别='dockerfile' : docker_bulid     : 即docker bulid
+###   2 类别='dockerfile' : docker_build     : 即docker build
 ###   3 类别='java'       : mvn_package      : 即mvn package
 ###                       : mvn_deploy       : 即mvn deploy
 ###                       : gradle           : 即gradle ......（没搞）
@@ -542,7 +542,7 @@ esac
 #| -------- | ------------------------------ | ------------ | ----------------- | ------------------------------ | -------------------- | ------------------ | ---------- |
 | product   | neo4j                          | NONE         | docker_image_push | neo4j                          |                      | docker_cluster     | 0          |
 | product   | fluentd                        | NONE         | docker_image_push | fluentd-gcl                    |                      | docker_cluster     | 0          |
-| dockerfile| my-oracle-java-8               | docker_bulid | docker_image_push | my-oracle-java-8               |                      | NONE               | 1          |
+| dockerfile| my-oracle-java-8               | docker_build | docker_image_push | my-oracle-java-8               |                      | NONE               | 1          |
 | java      | gc-common                      | mvn_deploy   | NONE              |                                |                      | NONE               | 5          |
 | java      | gc-gray                        | mvn_deploy   | NONE              |                                |                      | NONE               | 5          |
 | java      | gc-auth-service                | mvn_package  | docker_image_push | gc-auth-service                |                      | docker_cluster     | 10         |

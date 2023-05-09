@@ -36,7 +36,7 @@ TIME_START=${TIME}
 DATE_TIME=`date -d "${TIME}" +%Y%m%dT%H%M%S`
 ERROR_CODE=''     #--- 程序最终返回值，一般用于【--mode=function】时
 #
-DOCKER_BUILD_DIR_NAME='./docker_bulid'          #-- 对于dockerfile类项目，Dockerfile所在目录名
+DOCKER_BUILD_DIR_NAME='./docker_build'          #-- 对于dockerfile类项目，Dockerfile所在目录名
 DOCKER_IMAGE_TAG=$(date -d "${TIME}" +%Y.%m.%d.%H%M%S)
 #
 PROJECT_BASE="${SH_PATH}/tmp/build"
@@ -451,7 +451,7 @@ DOCKER_BUILD()
     case "${BUILD_METHOD}" in
         docker_*)
             DOCKER_BUILD_OPT=""
-            if [ "${BUILD_METHOD}" = "docker_bulid" ]; then
+            if [ "${BUILD_METHOD}" = "docker_build" ]; then
                 DOCKER_BUILD_OPT="build"
             else
                 echo -e "\n猪猪侠警告：这是你新添加的docker构建方法，你自己搞下！\n"  2>&1 | tee -a ${BUILD_LOG_file}
