@@ -187,7 +187,7 @@ do
         -l|--list)
             #awk 'BEGIN {FS="|"; printf "%2d %-32s %-s\n",0,"Docker服务名","Docker镜像名"} { if ($3 !~ /^ *$/ && $1 !~ /^#/) {sub(/^[[:blank:]]*/,"",$2); sub(/[[:blank:]]*$/,"",$2); sub(/^[[:blank:]]*/,"",$3); sub(/[[:blank:]]*$/,"",$3); printf "%2d %-32s %-s\n",NR,$2,$3} }'  ${SERVICE_LIST_FILE}
             echo '**服务名名** | **镜像名**'  > /tmp/docker-image-search-for-list.txt
-            cat  ${SERVICE_LIST_FILE} | grep -v '^#' | awk  'BEGIN {FS="|"} {printf "%s | %s\n", $2,$3}'  >> /tmp/docker-image-search-for-list.txt
+            cat  ${SERVICE_LIST_FILE} | grep -v '^ *$' | grep -v '^#' | awk  'BEGIN {FS="|"} {printf "%s | %s\n", $2,$3}'  >> /tmp/docker-image-search-for-list.txt
             ${FORMAT_TABLE_SH}  --delimeter '|'  --file /tmp/docker-image-search-for-list.txt
             exit
             ;;
