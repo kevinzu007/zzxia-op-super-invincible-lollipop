@@ -74,20 +74,23 @@ F_HELP()
         #
         -l|--list       项目镜像列表
         -t|--tag        设置镜像tag，默认tag号为：【日期+时间】
+        -p|--pre-name   设置镜像【DOCKER_IMAGE_PRE_NAME】名称。注：镜像完整名称："\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${IMAGE_NAME}:\${IMAGE_TAG}"
     示例：
         $0  -h
         $0  -l
-        #
+        # tag
         $0                            #--- 为所有项目的镜像设置默认tag，并推送到docker仓库
         $0  -t 1.11  项目a 项目b      #--- 设置【项目a、项目b】的tag为【1.11】，并推送到docker仓库
         $0           项目a 项目b      #--- 设置【项目a、项目b】的tag为默认tag，并推送到docker仓库
+        # 前置名称
+        $0  -p public/ccc  -t 1.11  项目a 项目b      #--- 将【项目a、项目b】的将默认DOCKER_IMAGE_PRE_NAME改为【public/ccc】，且设置tag为【1.11】，并推送到docker仓库
     "
 }
 
 
 
 # 参数检查
-TEMP=`getopt -o hlt:  -l help,list,tag: -- "$@"`
+TEMP=`getopt -o hlt:p:  -l help,list,tag::pre-name -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
     exit 51
@@ -113,6 +116,10 @@ do
             ;;
         -t|--tag)
             IMAGE_TAG=$2
+            shift 2
+            ;;
+        -p|--pre-name)
+            IMAGE_PRE_NAME=$2
             shift 2
             ;;
         --)
@@ -160,7 +167,7 @@ else
     done
 fi
 # 加表头
-sed -i  '1i#| **类别** | **项目名** | **构建方法** | **输出方法** | **镜像名** | **链接node_project** | **GOGOGO发布方式** | **优先级** |'  ${PROJECT_LIST_FILE_TMP}
+sed -i  '1i#| **类别** | **项目名** | **GIT命令空间** | **构建方法** | **输出方法** | **镜像名** | **GOGOGO发布方式** | **优先级** | **备注** |'  ${PROJECT_LIST_FILE_TMP}
 
 
 
@@ -183,6 +190,11 @@ do
     echo -e "${ECHO_NORMAL}$i - ${PJ_NAME} - ${IMAGE_NAME} :${ECHO_CLOSE}"
     echo -e "${ECHO_NORMAL}-------------------------------------------------${ECHO_CLOSE}"
     echo ""
+    #
+    # DOCKER_IMAGE_BASE
+    if [[ -z ${IMAGE_PRE_NAME} ]]; then
+        DOCKER_IMAGE_BASE="${DOCKER_REPO_SERVER}/${IMAGE_PRE_NAME}"
+    fi
     # latest版
     docker tag   ${IMAGE_NAME}:latest  ${DOCKER_IMAGE_BASE}/${IMAGE_NAME}:latest
     docker push  ${DOCKER_IMAGE_BASE}/${IMAGE_NAME}:latest
