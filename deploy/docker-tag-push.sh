@@ -192,7 +192,7 @@ do
     echo ""
     #
     # DOCKER_IMAGE_BASE
-    if [[ -z ${IMAGE_PRE_NAME} ]]; then
+    if [[ -n ${IMAGE_PRE_NAME} ]]; then
         DOCKER_IMAGE_BASE="${DOCKER_REPO_SERVER}/${IMAGE_PRE_NAME}"
     fi
     # latest版
