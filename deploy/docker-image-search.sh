@@ -17,7 +17,7 @@ cd ${SH_PATH}
 #DOCKER_REPO_PASSWORD=
 #DOCKER_REPO_SERVER=
 #DOCKER_REPO_URL_BASE=
-#DOCKER_IMAGE_PRE_NAME=
+#DEFAULT_DOCKER_IMAGE_PRE_NAME=
 
 # 本地env
 TIME=`date +%Y-%m-%dT%H:%M:%S`
@@ -25,6 +25,8 @@ TIME_START=${TIME}
 SERVICE_LIST_FILE="${SH_PATH}/docker-cluster-service.list"
 SERVICE_LIST_FILE_TMP="/tmp/${SH_NAME}-docker-cluster-service.tmp.list.$(date +%S)"
 SEARCH_RESULT_FILE="/tmp/${SH_NAME}-result.txt"
+# 来自父shell
+DOCKER_IMAGE_PRE_NAME=${IMAGE_PRE_NAME:-"${DEFAULT_DOCKER_IMAGE_PRE_NAME}"}
 # sh
 FORMAT_TABLE_SH="${SH_PATH}/../op/format_table.sh"
 
@@ -66,7 +68,7 @@ F_HELP()
     用法:
         $0 [-h|--help]
         $0 [-l|--list]
-        $0  <-e|--exclude {%镜像版本%}>  <-t|--tag {%镜像版本%}>  <-n|--newest {第几新版本}>  <-o|--output {路径/文件}>  <{服务1} ... {服务2} ...>
+        $0  <-e|--exclude {%镜像版本%}>  <-t|--tag {%镜像版本%}>  <-I|--image-pre-name {镜像前置名称}>  <-n|--newest {第几新版本}>  <-o|--output {路径/文件}>  <{服务1} ... {服务2} ...>
     参数说明：
         \$0   : 代表脚本本身
         []   : 代表是必选项
@@ -79,6 +81,7 @@ F_HELP()
         -l|--list       清单
         -e|--exclude    排除指定镜像版本，支持模糊定义，一般用于排除今天打包的镜像版本，用于部署回滚
         -t|--tag        镜像版本(tag)。支持模糊查找
+        -I|--image-pre-name  指定镜像前置名称【DOCKER_IMAGE_PRE_NAME】，默认来自env.sh。注：镜像完整名称：\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${IMAGE_NAME}:\${IMAGE_TAG}
         -n|--newest     取第几新的镜像版本，例如： -n 1 ：代表取最新的那个镜像版本，-n 2：代表第二新的镜像，有-n参数时输出格式为：【服务名  tag版本 tag版本2 ...】；无-n参数时输出为服务名 \ntag版本 \ntag版本2 \n...
         -o|--output     输出搜索结果不为空的服务名称 到 指定【路径/文件】
     示例：
@@ -87,6 +90,7 @@ F_HELP()
         #
         $0                       #--- 返回所有服务所有镜像版本
         $0  服务1                #--- 返回服务名为【服务1】的所有镜像版本
+        $0  -I aa/bb  服务1      #--- 返回服务名为【服务1】，且镜像前置名称为【aa/bb】的所有镜像版本
         #
         $0  -e 2021  服务1       #--- 返回服务名为服务1，且tag版本不包含【2021】的所有版本
         $0  -t 2021  服务1       #--- 返回服务名为服务1，且tag版本包含【2021】的所有版本
@@ -165,7 +169,7 @@ F_SEARCH()
 
 
 # 参数检查
-TEMP=`getopt -o hle:t:n:o:  -l help,list,exclude:,tag:,newest:,output: -- "$@"`
+TEMP=`getopt -o hle:t:I:n:o:  -l help,list,exclude:,tag:,image-pre-name:,newest:,output: -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
     exit 51
@@ -197,6 +201,11 @@ do
             ;;
         -t|--tag)
             LIKE_THIS_IMAGE_TAG=$2
+            shift 2
+            ;;
+        -I|--image-pre-name)
+            IMAGE_PRE_NAME=$2
+            DOCKER_IMAGE_PRE_NAME=${IMAGE_PRE_NAME}
             shift 2
             ;;
         -n|--newest)

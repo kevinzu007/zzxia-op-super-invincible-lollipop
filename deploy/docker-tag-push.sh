@@ -14,7 +14,7 @@ cd ${SH_PATH}
 # 引入env
 . ${SH_PATH}/env.sh
 #DOCKER_REPO_SERVER=
-#DOCKER_IMAGE_PRE_NAME=
+#DEFAULT_DOCKER_IMAGE_PRE_NAME=
 
 # 本地env
 TIME=${TIME:-`date +%Y-%m-%dT%H:%M:%S`}
@@ -24,7 +24,7 @@ IMAGE_TAG=$(date -d "${TIME}" +%Y.%m.%d.%H%M%S)
 PROJECT_LIST_FILE="${SH_PATH}/project.list"
 PROJECT_LIST_FILE_TMP="/tmp/${SH_NAME}-project.tmp.list.$(date +%S)"
 # 来自env.sh 或 父shell
-DOCKER_IMAGE_PRE_NAME=${IMAGE_PRE_NAME:-"${DOCKER_IMAGE_PRE_NAME}"}
+DOCKER_IMAGE_PRE_NAME=${IMAGE_PRE_NAME:-"${DEFAULT_DOCKER_IMAGE_PRE_NAME}"}
 # sh
 FORMAT_TABLE_SH="${SH_PATH}/../op/format_table.sh"
 
@@ -77,7 +77,7 @@ F_HELP()
         #
         -l|--list       项目镜像列表
         -t|--tag        指定镜像tag，默认tag号为：【日期+时间】
-        -I|--image-pre-name  指定镜像前置名称【DOCKER_IMAGE_PRE_NAME】，默认来自env.sh。注：镜像完整名称："\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${IMAGE_NAME}:\${IMAGE_TAG}"
+        -I|--image-pre-name  指定镜像前置名称【DOCKER_IMAGE_PRE_NAME】，默认来自env.sh。注：镜像完整名称：\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${IMAGE_NAME}:\${IMAGE_TAG}
     示例：
         $0  -h
         $0  -l

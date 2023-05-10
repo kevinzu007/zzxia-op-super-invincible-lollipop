@@ -28,7 +28,7 @@ GAN_PLATFORM_NAME="${GAN_PLATFORM_NAME:-'超甜B&D系统'}"
 #DEBUG_RANDOM_PORT_MIN=
 #DEBUG_RANDOM_PORT_MAX=
 #DOCKER_REPO_SERVER=
-#DOCKER_IMAGE_PRE_NAME=
+#DEFAULT_DOCKER_IMAGE_PRE_NAME=
 #DOCKER_REPO_SECRET_NAME=
 
 # 本地env
@@ -71,7 +71,7 @@ SH_RUN_MODE="normal"
 # 来自父shell
 DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE_function=${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE_function:-"${LOG_HOME}/${SH_NAME}-OK.function"}
 MY_USER_NAME=${MY_USER_NAME:-''}
-DOCKER_IMAGE_PRE_NAME=${IMAGE_PRE_NAME:-"${DOCKER_IMAGE_PRE_NAME}"}
+DOCKER_IMAGE_PRE_NAME=${IMAGE_PRE_NAME:-"${DEFAULT_DOCKER_IMAGE_PRE_NAME}"}
 MY_EMAIL=${MY_EMAIL:-''}
 # 来自webhook
 HOOK_GAN_ENV=${HOOK_GAN_ENV:-''}
@@ -166,7 +166,7 @@ F_HELP()
         -D|--debug     : 开启开发者Debug模式，目前用于开放所有容器内部服务端口
         -t|--tag       ：模糊镜像tag版本
         -T|--TAG       ：精确镜像tag版本
-        -I|--image-pre-name  指定镜像前置名称【DOCKER_IMAGE_PRE_NAME】，默认来自env.sh。注：镜像完整名称："\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${IMAGE_NAME}:\${IMAGE_TAG}"
+        -I|--image-pre-name  指定镜像前置名称【DOCKER_IMAGE_PRE_NAME】，默认来自env.sh。注：镜像完整名称：\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${IMAGE_NAME}:\${IMAGE_TAG}
         -n|--number    ：Pod副本数
         -G|--gray      : 设置灰度标志为：gray，默认：normal
         -V|--release-version : 发布版本号

@@ -29,7 +29,7 @@ NPM_BIN=${NPM_BIN:-'npm'}                         #--- 可选 npm|cnpm
 #GIT_DEFAULT_NAMESPACE=
 #GIT_DEFAULT_BRANCH=
 #DOCKER_REPO_SERVER=
-#DOCKER_IMAGE_PRE_NAME=
+#DEFAULT_DOCKER_IMAGE_PRE_NAME=
 
 # 本地env
 GAN_WHAT_FUCK='Build'
@@ -52,7 +52,7 @@ BUILD_QUIET='YES'
 BUILD_FORCE='NO'
 # 来自父shell
 BUILD_OK_LIST_FILE_function=${BUILD_OK_LIST_FILE_function:-"${LOG_HOME}/${SH_NAME}-build-OK.list.function"}
-DOCKER_IMAGE_PRE_NAME=${IMAGE_PRE_NAME:-"${DOCKER_IMAGE_PRE_NAME}"}
+DOCKER_IMAGE_PRE_NAME=${IMAGE_PRE_NAME:-"${DEFAULT_DOCKER_IMAGE_PRE_NAME}"}
 MY_USER_NAME=${MY_USER_NAME:-''}
 MY_EMAIL=${MY_EMAIL:-''}
 # 来自webhook
@@ -141,7 +141,7 @@ F_HELP()
         -M|--mode      指定构建方式，二选一【normal|function】，默认为normal方式。此参数用于被外部调用
         -c|--category  指定构建项目语言类别：【dockerfile|java|node|自定义】，参考：${PROJECT_LIST_FILE}
         -b|--branch    指定代码分支，默认来自env.sh
-        -I|--image-pre-name  指定镜像前置名称【DOCKER_IMAGE_PRE_NAME】，默认来自env.sh。注：镜像完整名称："\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${IMAGE_NAME}:\${IMAGE_TAG}"
+        -I|--image-pre-name  指定镜像前置名称【DOCKER_IMAGE_PRE_NAME】，默认来自env.sh。注：镜像完整名称：\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${IMAGE_NAME}:\${IMAGE_TAG}
         -e|--email     发送日志到指定邮件地址，如果与【-U|--user-name】同时存在，则将会被替代
         -s|--skiptest  跳过测试，默认来自env.sh
         -f|--force     强制重新构建（无论是否有更新）

@@ -131,7 +131,7 @@ F_HELP()
         -l|--list      列出可构建的项目清单
         -c|--category  指定构建项目语言类别：【dockerfile|java|node|自定义】，参考：${GOGOGO_PROJECT_LIST_FILE}
         -b|--branch    指定代码分支，默认来自env.sh
-        -I|--image-pre-name  指定镜像前置名称【DOCKER_IMAGE_PRE_NAME】，默认来自env.sh。注：镜像完整名称："\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${IMAGE_NAME}:\${IMAGE_TAG}"
+        -I|--image-pre-name  指定镜像前置名称【DOCKER_IMAGE_PRE_NAME】，默认来自env.sh。注：镜像完整名称：\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${IMAGE_NAME}:\${IMAGE_TAG}
         -e|--email     发送日志到指定邮件地址，如果与【-U|--user-name】同时存在，则将会被替代
         -s|--skiptest  跳过测试，默认来自env.sh
         -f|--force     强制重新构建（无论是否有更新）
