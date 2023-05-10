@@ -267,19 +267,21 @@ F_FIND_IMAGE_OUTPUT_SERVICENAME ()
     F_THIS_DOCKER_IMAGE_NAME=$1
     F_SERVICE_NAME_S=''
     > "${LOG_HOME}/F_FIND_IMAGE_OUTPUT_SERVICENAME-search.txt"
-    while read LINE
+    GOGOGO_SERVICE_LIST_FILE_FIND_TMP="${LOG_HOME}/${SH_NAME}-${GOGOGO_SERVICE_LIST_FILE##*/}--find-${F_THIS_DOCKER_IMAGE_NAME}"
+    cat ${GOGOGO_SERVICE_LIST_FILE} | grep "${F_THIS_DOCKER_IMAGE_NAME}"  >  ${GOGOGO_SERVICE_LIST_FILE_FIND_TMP}
+    while read LINE_F
     do
         # 跳过以#开头的行及空行
-        [[ "$LINE" =~ ^# ]] || [[ "$LINE" =~ ^[\ ]*$ ]] && continue
+        [[ "$LINE_F" =~ ^# ]] || [[ "$LINE_F" =~ ^[\ ]*$ ]] && continue
         #
-        F_SERVICE_NAME=`echo ${LINE} | cut -d \| -f 2`
+        F_SERVICE_NAME=`echo ${LINE_F} | cut -d \| -f 2`
         F_SERVICE_NAME=`echo ${F_SERVICE_NAME}`
-        F_DOCKER_IMAGE_NAME=`echo ${LINE} | cut -d \| -f 3`
+        F_DOCKER_IMAGE_NAME=`echo ${LINE_F} | cut -d \| -f 4`
         F_DOCKER_IMAGE_NAME=`eval echo ${F_DOCKER_IMAGE_NAME}`    #--- 用eval将配置文件中项的变量转成值，下同
         if [[ ${F_DOCKER_IMAGE_NAME} == ${F_THIS_DOCKER_IMAGE_NAME} ]]; then
             F_SERVICE_NAME_S="${F_SERVICE_NAME_S} ${F_SERVICE_NAME}"
         fi
-    done < ${GOGOGO_SERVICE_LIST_FILE}
+    done < ${GOGOGO_SERVICE_LIST_FILE_FIND_TMP}
     # 结果
     if [[ -z "${F_SERVICE_NAME_S}" ]]; then
         # 结果为空
