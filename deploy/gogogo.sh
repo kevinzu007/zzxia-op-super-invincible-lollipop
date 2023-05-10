@@ -939,7 +939,7 @@ do
         # 跳过以#开头的行或空行
         [[ "$LINE_A" =~ ^# ]] || [[ "$LINE_A" =~ ^[\ ]*$ ]] && continue
         #
-        LANGUAGE_CATEGORY_A=`echo ${LINE} | cut -d \| -f 2`
+        LANGUAGE_CATEGORY_A=`echo ${LINE_A} | cut -d \| -f 2`
         LANGUAGE_CATEGORY_A=`echo ${LANGUAGE_CATEGORY_A}`
         #
         PJ_A=`echo ${LINE_A} | cut -d \| -f 3`
@@ -949,7 +949,7 @@ do
             #
             GET_IT_A='YES'
             #
-            DOCKER_IMAGE_PRE_NAME=`echo ${LINE} | cut -d \| -f 4`
+            DOCKER_IMAGE_PRE_NAME=`echo ${LINE_A} | cut -d \| -f 4`
             DOCKER_IMAGE_PRE_NAME=`echo ${DOCKER_IMAGE_PRE_NAME}`
             # 命令行参数优先级最高（1 arg，2 listfile，3 env.sh）
             if [[ -n ${IMAGE_PRE_NAME} ]]; then
@@ -958,7 +958,7 @@ do
                 DOCKER_IMAGE_PRE_NAME=${DEFAULT_DOCKER_IMAGE_PRE_NAME}
             fi
             #
-            DOCKER_IMAGE_NAME=`echo ${LINE} | cut -d \| -f 5`
+            DOCKER_IMAGE_NAME=`echo ${LINE_A} | cut -d \| -f 5`
             DOCKER_IMAGE_NAME=`echo ${DOCKER_IMAGE_NAME}`
         fi
         #

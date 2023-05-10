@@ -1428,7 +1428,7 @@ do
         # 跳过以#开头的行或空行
         [[ "$LINE_A" =~ ^# ]] || [[ "$LINE_A" =~ ^[\ ]*$ ]] && continue
         #
-        LANGUAGE_CATEGORY_A=`echo ${LINE} | cut -d \| -f 2`
+        LANGUAGE_CATEGORY_A=`echo ${LINE_A} | cut -d \| -f 2`
         LANGUAGE_CATEGORY_A=`echo ${LANGUAGE_CATEGORY_A}`
         #
         PJ_A=`echo ${LINE_A} | cut -d \| -f 3`
@@ -1438,8 +1438,8 @@ do
             #
             GET_IT_A='YES'
             #
-            DOCKER_IMAGE_PRE_NAME=`echo ${LINE} | cut -d \| -f 4`
-            DOCKER_IMAGE_PRE_NAME=`echo ${DOCKER_IMAGE_PRE_NAME}`
+            DOCKER_IMAGE_PRE_NAME=`echo ${LINE_A} | cut -d \| -f 4`
+            DOCKER_IMAGE_PRE_NAME=`eval echo ${DOCKER_IMAGE_PRE_NAME}`
             # 命令行参数优先级最高（1 arg，2 listfile，3 env.sh）
             if [[ -n ${IMAGE_PRE_NAME} ]]; then
                 DOCKER_IMAGE_PRE_NAME=${IMAGE_PRE_NAME}
@@ -1447,11 +1447,11 @@ do
                 DOCKER_IMAGE_PRE_NAME=${DEFAULT_DOCKER_IMAGE_PRE_NAME}
             fi
             #
-            DOCKER_IMAGE_NAME=`echo ${LINE} | cut -d \| -f 5`
-            DOCKER_IMAGE_NAME=`echo ${DOCKER_IMAGE_NAME}`
+            DOCKER_IMAGE_NAME=`echo ${LINE_A} | cut -d \| -f 5`
+            DOCKER_IMAGE_NAME=`eval echo ${DOCKER_IMAGE_NAME}`
             #
-            LINK_NODE_PROJECT=`echo ${LINE} | cut -d \| -f 6`
-            LINK_NODE_PROJECT=`echo ${LINK_NODE_PROJECT}`
+            LINK_NODE_PROJECT=`echo ${LINE_A} | cut -d \| -f 6`
+            LINK_NODE_PROJECT=`eval echo ${LINK_NODE_PROJECT}`
         fi
         #
         if [[ ${GET_IT_A} != 'YES' ]];then
