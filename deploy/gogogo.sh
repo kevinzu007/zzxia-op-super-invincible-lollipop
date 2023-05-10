@@ -22,6 +22,7 @@ BUILD_LOG_WEBSITE_DOMAIN_A=${BUILD_LOG_WEBSITE_DOMAIN_A:-"build-log"}         #-
 DINGDING_API=${DINGDING_API:-"请定义"}
 BUILD_SKIP_TEST=${BUILD_SKIP_TEST:-'NO'}  #--- 跳过测试（YES|NO）
 #USER_DB_FILE=
+#GIT_DEFAULT_BRANCH=
 
 # 本地env
 GAN_WHAT_FUCK='Gogogo'
@@ -765,6 +766,9 @@ if [[ -n ${HOOK_GAN_ENV} ]] && [[ ${HOOK_GAN_ENV} != ${RUN_ENV} ]]; then
     exit
 fi
 
+
+# 默认ENV
+GIT_BRANCH=${GIT_BRANCH:-"${GIT_DEFAULT_BRANCH}"}
 
 
 # 建立项目base目录
