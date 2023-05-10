@@ -13,7 +13,8 @@ cd ${SH_PATH}
 
 # 引入env
 . ${SH_PATH}/env.sh
-#DOCKER_IMAGE_BASE=
+#DOCKER_REPO_SERVER=
+#DOCKER_IMAGE_PRE_NAME=
 
 # 本地env
 TIME=${TIME:-`date +%Y-%m-%dT%H:%M:%S`}
@@ -22,6 +23,8 @@ TIME_START=${TIME}
 IMAGE_TAG=$(date -d "${TIME}" +%Y.%m.%d.%H%M%S)
 PROJECT_LIST_FILE="${SH_PATH}/project.list"
 PROJECT_LIST_FILE_TMP="/tmp/${SH_NAME}-project.tmp.list.$(date +%S)"
+# 来自env.sh 或 父shell
+DOCKER_IMAGE_PRE_NAME=${IMAGE_PRE_NAME:-"${DOCKER_IMAGE_PRE_NAME}"}
 # sh
 FORMAT_TABLE_SH="${SH_PATH}/../op/format_table.sh"
 
@@ -73,8 +76,8 @@ F_HELP()
         %    : 代表通配符，非精确值，可以被包含
         #
         -l|--list       项目镜像列表
-        -t|--tag        设置镜像tag，默认tag号为：【日期+时间】
-        -p|--pre-name   设置镜像【DOCKER_IMAGE_PRE_NAME】名称。注：镜像完整名称："\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${IMAGE_NAME}:\${IMAGE_TAG}"
+        -t|--tag        指定镜像tag，默认tag号为：【日期+时间】
+        -I|--image-pre-name  指定镜像前置名称【DOCKER_IMAGE_PRE_NAME】，默认来自env.sh。注：镜像完整名称："\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${IMAGE_NAME}:\${IMAGE_TAG}"
     示例：
         $0  -h
         $0  -l
@@ -83,14 +86,14 @@ F_HELP()
         $0  -t 1.11  项目a 项目b      #--- 设置【项目a、项目b】的tag为【1.11】，并推送到docker仓库
         $0           项目a 项目b      #--- 设置【项目a、项目b】的tag为默认tag，并推送到docker仓库
         # 前置名称
-        $0  -p public/ccc  -t 1.11  项目a 项目b      #--- 将【项目a、项目b】的将默认DOCKER_IMAGE_PRE_NAME改为【public/ccc】，且设置tag为【1.11】，并推送到docker仓库
+        $0  -I public/ccc  -t 1.11  项目a 项目b      #--- 将【项目a、项目b】的将默认DOCKER_IMAGE_PRE_NAME改为【public/ccc】，且设置tag为【1.11】，并推送到docker仓库
     "
 }
 
 
 
 # 参数检查
-TEMP=`getopt -o hlt:p:  -l help,list,tag:,pre-name: -- "$@"`
+TEMP=`getopt -o hlt:I:  -l help,list,tag:,image-pre-name: -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
     exit 51
@@ -118,8 +121,9 @@ do
             IMAGE_TAG=$2
             shift 2
             ;;
-        -p|--pre-name)
+        -I|--image-pre-name)
             IMAGE_PRE_NAME=$2
+            DOCKER_IMAGE_PRE_NAME=${IMAGE_PRE_NAME}
             shift 2
             ;;
         --)
@@ -191,16 +195,12 @@ do
     echo -e "${ECHO_NORMAL}-------------------------------------------------${ECHO_CLOSE}"
     echo ""
     #
-    # DOCKER_IMAGE_BASE
-    if [[ -n ${IMAGE_PRE_NAME} ]]; then
-        DOCKER_IMAGE_BASE="${DOCKER_REPO_SERVER}/${IMAGE_PRE_NAME}"
-    fi
     # latest版
-    docker tag   ${IMAGE_NAME}:latest  ${DOCKER_IMAGE_BASE}/${IMAGE_NAME}:latest
-    docker push  ${DOCKER_IMAGE_BASE}/${IMAGE_NAME}:latest
+    docker tag   ${IMAGE_NAME}:latest  ${DOCKER_REPO_SERVER}/${DOCKER_IMAGE_PRE_NAME}/${IMAGE_NAME}:latest
+    docker push  ${DOCKER_REPO_SERVER}/${DOCKER_IMAGE_PRE_NAME}/${IMAGE_NAME}:latest
     # 特定tag
-    docker tag   ${IMAGE_NAME}:latest  ${DOCKER_IMAGE_BASE}/${IMAGE_NAME}:${IMAGE_TAG}
-    docker push  ${DOCKER_IMAGE_BASE}/${IMAGE_NAME}:${IMAGE_TAG}
+    docker tag   ${IMAGE_NAME}:latest  ${DOCKER_REPO_SERVER}/${DOCKER_IMAGE_PRE_NAME}/${IMAGE_NAME}:${IMAGE_TAG}
+    docker push  ${DOCKER_REPO_SERVER}/${DOCKER_IMAGE_PRE_NAME}/${IMAGE_NAME}:${IMAGE_TAG}
     if [[ $? -ne 0 ]]; then
         echo -e "\n猪猪侠警告：项目【${PJ_NAME}】镜像PUSH失败，请检查！\n"
         exit 54

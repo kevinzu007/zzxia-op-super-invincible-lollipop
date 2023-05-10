@@ -118,7 +118,7 @@ F_HELP()
     用法:
         $0  [-h|--help]
         $0  [-l|--list]
-        $0  <-c [dockerfile|java|node|自定义]>  <-b|--branch {代码分支}>  <-e|--email {邮件地址}>  <-s|--skiptest>  <-f|--force>  <-v|--verbose>  <-V|--release-version>  <-G|--gray>  <{项目1}  {项目2} ... {项目n}> ... {项目名称正则匹配}>
+        $0  <-c [dockerfile|java|node|自定义]>  <-b|--branch {代码分支}>  <-I|--image-pre-name {镜像前置名称}>  <-e|--email {邮件地址}>  <-s|--skiptest>  <-f|--force>  <-v|--verbose>  <-V|--release-version>  <-G|--gray>  <{项目1}  {项目2} ... {项目n}> ... {项目名称正则匹配}>
     参数说明：
         \$0   : 代表脚本本身
         []   : 代表是必选项
@@ -131,6 +131,7 @@ F_HELP()
         -l|--list      列出可构建的项目清单
         -c|--category  指定构建项目语言类别：【dockerfile|java|node|自定义】，参考：${GOGOGO_PROJECT_LIST_FILE}
         -b|--branch    指定代码分支，默认来自env.sh
+        -I|--image-pre-name  指定镜像前置名称【DOCKER_IMAGE_PRE_NAME】，默认来自env.sh。注：镜像完整名称："\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${IMAGE_NAME}:\${IMAGE_TAG}"
         -e|--email     发送日志到指定邮件地址，如果与【-U|--user-name】同时存在，则将会被替代
         -s|--skiptest  跳过测试，默认来自env.sh
         -f|--force     强制重新构建（无论是否有更新）
@@ -150,6 +151,9 @@ F_HELP()
         $0  -b 分支a                 #--- 构建发布所有项目，用【分支a】
         $0  -b 分支a  项目1  项目2   #--- 构建发布【项目1、项目2】，用【分支a】
         $0            项目1  项目2   #--- 构建发布【项目1、项目2】，用默认分支
+        # 镜像前置名称
+        $0  -I aaa/bbb  项目1  项目2            #--- 构建发布【项目1、项目2】，生成的镜像前置名称为【DOCKER_IMAGE_PRE_NAME='aaa/bbb'】，默认来自env.sh。注：镜像完整名称："\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${IMAGE_NAME}:\${IMAGE_TAG}"
+        $0  --email xm@xxx.com  项目1 项目2     #--- 构建发布【项目1、项目2】，将错误日志发送到邮箱【xm@xxx.com】
         # 邮件
         $0  --email xm@xxx.com  项目1 项目2     #--- 构建发布【项目1、项目2】，将错误日志发送到邮箱【xm@xxx.com】
         # 跳过测试
@@ -667,7 +671,7 @@ F_PYTHON_DEPLOY()
 
 
 # 参数检查
-TEMP=`getopt -o hlc:b:e:sfvGV:  -l help,list,category:,branch:,email:,skiptest,force,verbose,gray,release-version: -- "$@"`
+TEMP=`getopt -o hlc:b:I:e:sfvGV:  -l help,list,category:,branch:,image-pre-name:,email:,skiptest,force,verbose,gray,release-version: -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
     exit 51
@@ -698,6 +702,12 @@ do
             ;;
         -b|--branch)
             GIT_BRANCH=$2
+            shift 2
+            ;;
+        -I|--image-pre-name)
+            IMAGE_PRE_NAME=$2
+            # 传递给子shell
+            export IMAGE_PRE_NAME
             shift 2
             ;;
         -e|--email)

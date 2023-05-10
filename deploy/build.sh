@@ -28,6 +28,8 @@ NPM_BIN=${NPM_BIN:-'npm'}                         #--- 可选 npm|cnpm
 #GIT_REPO_URL_BASE=
 #GIT_DEFAULT_NAMESPACE=
 #GIT_DEFAULT_BRANCH=
+#DOCKER_REPO_SERVER=
+#DOCKER_IMAGE_PRE_NAME=
 
 # 本地env
 GAN_WHAT_FUCK='Build'
@@ -50,6 +52,7 @@ BUILD_QUIET='YES'
 BUILD_FORCE='NO'
 # 来自父shell
 BUILD_OK_LIST_FILE_function=${BUILD_OK_LIST_FILE_function:-"${LOG_HOME}/${SH_NAME}-build-OK.list.function"}
+DOCKER_IMAGE_PRE_NAME=${IMAGE_PRE_NAME:-"${DOCKER_IMAGE_PRE_NAME}"}
 MY_USER_NAME=${MY_USER_NAME:-''}
 MY_EMAIL=${MY_EMAIL:-''}
 # 来自webhook
@@ -124,7 +127,7 @@ F_HELP()
     用法:
         $0  [-h|--help]
         $0  [-l|--list]
-        $0  <-M|--mode [normal|function]>  <-c|--category [dockerfile|java|node|自定义]>  <-b|--branch {代码分支}>  <-e|--email {邮件地址}>  <-s|--skiptest>  <-f|--force>  <-v|--verbose>  <{项目1}  {项目2} ... {项目n} ... {项目名称正则表达式完全匹配}>
+        $0  <-M|--mode [normal|function]>  <-c|--category [dockerfile|java|node|自定义]>  <-b|--branch {代码分支}>  <-I|--image-pre-name {镜像前置名称}>  <-e|--email {邮件地址}>  <-s|--skiptest>  <-f|--force>  <-v|--verbose>  <{项目1}  {项目2} ... {项目n} ... {项目名称正则表达式完全匹配}>
     参数说明：
         \$0   : 代表脚本本身
         []   : 代表是必选项
@@ -138,6 +141,7 @@ F_HELP()
         -M|--mode      指定构建方式，二选一【normal|function】，默认为normal方式。此参数用于被外部调用
         -c|--category  指定构建项目语言类别：【dockerfile|java|node|自定义】，参考：${PROJECT_LIST_FILE}
         -b|--branch    指定代码分支，默认来自env.sh
+        -I|--image-pre-name  指定镜像前置名称【DOCKER_IMAGE_PRE_NAME】，默认来自env.sh。注：镜像完整名称："\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${IMAGE_NAME}:\${IMAGE_TAG}"
         -e|--email     发送日志到指定邮件地址，如果与【-U|--user-name】同时存在，则将会被替代
         -s|--skiptest  跳过测试，默认来自env.sh
         -f|--force     强制重新构建（无论是否有更新）
@@ -160,6 +164,8 @@ F_HELP()
         $0   [ab]*xxx       #--- 构建项目名称正则匹配【^[ab]*xxx$】的项目，用默认分支
         $0   sss.*eee       #--- 构建项目名称正则匹配【^sss.*eee$】的项目，用默认分支
         $0   sss.*          #--- 构建项目名称正则匹配【^sss.*$】的项目，用默认分支
+        # 镜像前置名称
+        $0  -I aaa/bbb  项目1  项目2          #--- 构建项目：【项目1、项目2】，生成的镜像前置名称为【DOCKER_IMAGE_PRE_NAME='aaa/bbb'】，默认来自env.sh。注：镜像完整名称："\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${IMAGE_NAME}:\${IMAGE_TAG}"
         # 发邮件
         $0  --email xm@xxx.com                #--- 构建所有项目，用默认分支，将错误日志发送到邮箱【xm@xxx.com】
         $0  --email xm@xxx.com  项目1  项目2  #--- 构建项目：【项目1、项目2】，用默认分支，将错误日志发送到邮箱【xm@xxx.com】
@@ -489,7 +495,7 @@ DOCKER_BUILD()
                             return 52
                         fi
                         #
-                        ${DOCKER_TAG_PUSH_SH}  --tag ${DOCKER_IMAGE_TAG}  ${PJ}  2>&1 | tee -a ${BUILD_LOG_file}
+                        ${DOCKER_TAG_PUSH_SH}  --image-pre-name ${DOCKER_IMAGE_PRE_NAME}  --tag ${DOCKER_IMAGE_TAG}  ${PJ}  2>&1 | tee -a ${BUILD_LOG_file}
                         #if [[ $? -ne 0 ]]; then
                         if [[ $(grep -q '猪猪侠警告' ${BUILD_LOG_file}; echo $?) == 0 ]]; then
                             echo -e "\n猪猪侠警告：项目镜像PUSH失败！\n"  2>&1 | tee -a ${BUILD_LOG_file}
@@ -586,7 +592,7 @@ JAVA_BUILD()
                             return 52
                         fi
                         #
-                        ${DOCKER_TAG_PUSH_SH}  --tag ${DOCKER_IMAGE_TAG}  ${PJ}  2>&1 | tee -a ${BUILD_LOG_file}
+                        ${DOCKER_TAG_PUSH_SH}  --image-pre-name ${DOCKER_IMAGE_PRE_NAME}  --tag ${DOCKER_IMAGE_TAG}  ${PJ}  2>&1 | tee -a ${BUILD_LOG_file}
                         #if [[ $? -ne 0 ]]; then
                         if [[ $(grep -q '猪猪侠警告' ${BUILD_LOG_file}; echo $?) == 0 ]]; then
                             echo -e "\n猪猪侠警告：项目镜像PUSH失败！\n"  2>&1 | tee -a ${BUILD_LOG_file}
@@ -765,7 +771,7 @@ NODE_BUILD()
                     return 54
                 fi
                 #
-                ${DOCKER_TAG_PUSH_SH}  --tag ${DOCKER_IMAGE_TAG}  ${PJ}  2>&1 | tee -a ${BUILD_LOG_file}
+                ${DOCKER_TAG_PUSH_SH}  --image-pre-name ${DOCKER_IMAGE_PRE_NAME}  --tag ${DOCKER_IMAGE_TAG}  ${PJ}  2>&1 | tee -a ${BUILD_LOG_file}
                 #if [[ $? -ne 0 ]]; then
                 if [[ $(grep -q '猪猪侠警告' ${BUILD_LOG_file}; echo $?) == 0 ]]; then
                     echo -e "\n猪猪侠警告：项目镜像PUSH失败！\n"  2>&1 | tee -a ${BUILD_LOG_file}
@@ -891,7 +897,7 @@ HTML_BUILD()
                     return 54
                 fi
                 #
-                ${DOCKER_TAG_PUSH_SH}  --tag ${DOCKER_IMAGE_TAG}  ${PJ}  2>&1 | tee -a ${BUILD_LOG_file}
+                ${DOCKER_TAG_PUSH_SH}  --image-pre-name ${DOCKER_IMAGE_PRE_NAME}  --tag ${DOCKER_IMAGE_TAG}  ${PJ}  2>&1 | tee -a ${BUILD_LOG_file}
                 #if [[ $? -ne 0 ]]; then
                 if [[ $(grep -q '猪猪侠警告' ${BUILD_LOG_file}; echo $?) == 0 ]]; then
                     echo -e "\n猪猪侠警告：项目镜像PUSH失败！\n"  2>&1 | tee -a ${BUILD_LOG_file}
@@ -1008,7 +1014,7 @@ PYTHON_BUILD()
                     return 54
                 fi
                 #
-                ${DOCKER_TAG_PUSH_SH}  --tag ${DOCKER_IMAGE_TAG}  ${PJ}  2>&1 | tee -a ${BUILD_LOG_file}
+                ${DOCKER_TAG_PUSH_SH}  --image-pre-name ${DOCKER_IMAGE_PRE_NAME}  --tag ${DOCKER_IMAGE_TAG}  ${PJ}  2>&1 | tee -a ${BUILD_LOG_file}
                 #if [[ $? -ne 0 ]]; then
                 if [[ $(grep -q '猪猪侠警告' ${BUILD_LOG_file}; echo $?) == 0 ]]; then
                     echo -e "\n猪猪侠警告：项目镜像PUSH失败！\n"  2>&1 | tee -a ${BUILD_LOG_file}
@@ -1129,7 +1135,7 @@ F_USER_SEARCH()
 
 
 # 参数检查
-TEMP=`getopt -o hlM:c:b:e:sfv  -l help,list,mode:,category:,branch:,email:,skiptest,force,verbose -- "$@"`
+TEMP=`getopt -o hlM:c:b:I:e:sfv  -l help,list,mode:,category:,branch:,image-pre-name:,email:,skiptest,force,verbose -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
     exit 51
@@ -1180,9 +1186,10 @@ do
             GIT_BRANCH=$2
             shift 2
             ;;
-        -s|--skiptest)
-            BUILD_SKIP_TEST="YES"
-            shift
+        -I|--image-pre-name)
+            IMAGE_PRE_NAME=$2
+            DOCKER_IMAGE_PRE_NAME=${IMAGE_PRE_NAME}
+            shift 2
             ;;
         -e|--email)
             MY_EMAIL=$2
@@ -1192,6 +1199,10 @@ do
                 echo -e "\n猪猪侠警告：【${MY_EMAIL}】邮件地址不合法\n"
                 exit 51
             fi
+            ;;
+        -s|--skiptest)
+            BUILD_SKIP_TEST="YES"
+            shift
             ;;
         -f|--force)
             BUILD_FORCE='YES'
