@@ -50,6 +50,7 @@ BUILD_QUIET='YES'
 BUILD_FORCE='NO'
 GOGOGO_PROJECT_LIST_FILE="${SH_PATH}/project.list"
 GOGOGO_PROJECT_LIST_FILE_TMP="${LOG_HOME}/${SH_NAME}-project.list.tmp"
+GOGOGO_PROJECT_LIST_FILE_APPEND_1="${SH_PATH}/project.list.append.1"
 GOGOGO_SERVICE_LIST_FILE="${SH_PATH}/docker-cluster-service.list"
 GOGOGO_SERVICE_LIST_FILE_APPEND_1="${SH_PATH}/docker-cluster-service.list.append.1"
 GOGOGO_SERVICE_LIST_FILE_APPEND_2="${SH_PATH}/docker-cluster-service.list.append.2"
@@ -106,6 +107,7 @@ F_HELP()
         /etc/profile.d/run-env.sh
         ${SH_PATH}/env.sh
         ${GOGOGO_PROJECT_LIST_FILE}
+        ${GOGOGO_PROJECT_LIST_FILE_APPEND_1}
         ${BUILD_SH}
         ${GOGOGO_SERVICE_LIST_FILE}
         ${GOGOGO_SERVICE_LIST_FILE_APPEND_1}
@@ -131,7 +133,7 @@ F_HELP()
         -l|--list      列出可构建的项目清单
         -c|--category  指定构建项目语言类别：【dockerfile|java|node|自定义】，参考：${GOGOGO_PROJECT_LIST_FILE}
         -b|--branch    指定代码分支，默认来自env.sh
-        -I|--image-pre-name  指定镜像前置名称【DOCKER_IMAGE_PRE_NAME】，默认来自env.sh。注：镜像完整名称：\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${IMAGE_NAME}:\${IMAGE_TAG}
+        -I|--image-pre-name  指定镜像前置名称【DOCKER_IMAGE_PRE_NAME】，默认来自env.sh。注：镜像完整名称：\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${DOCKER_IMAGE_NAME}:\${DOCKER_IMAGE_TAG}
         -e|--email     发送日志到指定邮件地址，如果与【-U|--user-name】同时存在，则将会被替代
         -s|--skiptest  跳过测试，默认来自env.sh
         -f|--force     强制重新构建（无论是否有更新）
@@ -152,7 +154,7 @@ F_HELP()
         $0  -b 分支a  项目1  项目2   #--- 构建发布【项目1、项目2】，用【分支a】
         $0            项目1  项目2   #--- 构建发布【项目1、项目2】，用默认分支
         # 镜像前置名称
-        $0  -I aaa/bbb  项目1  项目2            #--- 构建发布【项目1、项目2】，生成的镜像前置名称为【DOCKER_IMAGE_PRE_NAME='aaa/bbb'】，默认来自env.sh。注：镜像完整名称："\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${IMAGE_NAME}:\${IMAGE_TAG}"
+        $0  -I aaa/bbb  项目1  项目2            #--- 构建发布【项目1、项目2】，生成的镜像前置名称为【DOCKER_IMAGE_PRE_NAME='aaa/bbb'】，默认来自env.sh。注：镜像完整名称："\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${DOCKER_IMAGE_NAME}:\${DOCKER_IMAGE_TAG}"
         $0  --email xm@xxx.com  项目1 项目2     #--- 构建发布【项目1、项目2】，将错误日志发送到邮箱【xm@xxx.com】
         # 邮件
         $0  --email xm@xxx.com  项目1 项目2     #--- 构建发布【项目1、项目2】，将错误日志发送到邮箱【xm@xxx.com】
@@ -868,13 +870,13 @@ fi
 sed  -i  -E  -e '/^\s*$/d'  -e '/^#.*$/d'  ${GOGOGO_PROJECT_LIST_FILE_TMP}
 # 优先级排序
 > ${GOGOGO_PROJECT_LIST_FILE_TMP}.sort
-for i in  `awk -F '|' '{split($9,a," ");print NR,a[1]}' ${GOGOGO_PROJECT_LIST_FILE_TMP}  |  sort -n -k 2 |  awk '{print $1}'`
+for i in  `awk -F '|' '{split($8,a," ");print NR,a[1]}' ${GOGOGO_PROJECT_LIST_FILE_TMP}  |  sort -n -k 2 |  awk '{print $1}'`
 do
     awk "NR=="$i'{print}' ${GOGOGO_PROJECT_LIST_FILE_TMP}  >> ${GOGOGO_PROJECT_LIST_FILE_TMP}.sort
 done
 cp  ${GOGOGO_PROJECT_LIST_FILE_TMP}.sort  ${GOGOGO_PROJECT_LIST_FILE_TMP}
 # 加表头
-sed -i  '1i#| **类别** | **项目名** | **GIT命令空间** | **构建方法** | **输出方法** | **镜像名** | **GOGOGO发布方式** | **优先级** | **备注** |'  ${GOGOGO_PROJECT_LIST_FILE_TMP}
+sed -i  '1i#| **类别** | **项目名** | **GIT命令空间** | **构建方法** | **输出方法** | **GOGOGO发布方式** | **优先级** | **备注** |'  ${GOGOGO_PROJECT_LIST_FILE_TMP}
 # 屏显
 echo -e "${ECHO_NORMAL}################################ 开始构建与发布 ################################${ECHO_CLOSE}"  #--- 80 (80-70-60)
 echo -e "\n【${SH_NAME}】待构建与发布项目清单："
@@ -925,11 +927,46 @@ do
     PJ=`echo ${LINE} | cut -d \| -f 3`
     PJ=`echo ${PJ}`
     #
-    DOCKER_IMAGE_NAME=`echo ${LINE} | cut -d \| -f 7`
-    DOCKER_IMAGE_NAME=`eval echo ${DOCKER_IMAGE_NAME}`    #--- 用eval将配置文件中项的变量转成值，下同
-    #
-    GOGOGO_RELEASE_METHOD=`echo ${LINE} | cut -d \| -f 8`
+    GOGOGO_RELEASE_METHOD=`echo ${LINE} | cut -d \| -f 7`
     GOGOGO_RELEASE_METHOD=`echo ${GOGOGO_RELEASE_METHOD}`
+    #
+    #
+    # append.1
+    GOGOGO_PROJECT_LIST_FILE_APPEND_1_TMP="${LOG_HOME}/${SH_NAME}-${GOGOGO_PROJECT_LIST_FILE_APPEND_1##*/}--${LANGUAGE_CATEGORY}-${PJ}"
+    cat ${GOGOGO_PROJECT_LIST_FILE_APPEND_1} | grep "${PJ}"  >  ${GOGOGO_PROJECT_LIST_FILE_APPEND_1_TMP}
+    GET_IT_A='NO'
+    while read LINE_A
+    do
+        # 跳过以#开头的行或空行
+        [[ "$LINE_A" =~ ^# ]] || [[ "$LINE_A" =~ ^[\ ]*$ ]] && continue
+        #
+        LANGUAGE_CATEGORY_A=`echo ${LINE} | cut -d \| -f 2`
+        LANGUAGE_CATEGORY_A=`echo ${LANGUAGE_CATEGORY_A}`
+        #
+        PJ_A=`echo ${LINE_A} | cut -d \| -f 3`
+        PJ_A=`echo ${PJ_A}`
+        #
+        if [[ ${PJ_A} == ${PJ} ]] && [[ ${LANGUAGE_CATEGORY_A} == ${LANGUAGE_CATEGORY} ]]; then
+            #
+            GET_IT_A='YES'
+            ## 不需要，已经export或自己从list文件找
+            #DOCKER_IMAGE_PRE_NAME=`echo ${LINE} | cut -d \| -f 4`
+            #DOCKER_IMAGE_PRE_NAME=`echo ${DOCKER_IMAGE_PRE_NAME}`
+            ## 命令行参数优先级最高（1 arg，2 export传入，3 listfile，4 env.sh）
+            #if [[ -n ${IMAGE_PRE_NAME} ]]; then
+            #    DOCKER_IMAGE_PRE_NAME=${IMAGE_PRE_NAME}
+            #fi
+            #
+            DOCKER_IMAGE_NAME=`echo ${LINE} | cut -d \| -f 5`
+            DOCKER_IMAGE_NAME=`echo ${DOCKER_IMAGE_NAME}`
+        fi
+        #
+        if [[ ${GET_IT_A} != 'YES' ]];then
+            echo -e "\n猪猪侠警告：在【${PROJECT_LIST_FILE_APPEND_1}】文件中没有找到项目【${PJ}】，请检查！\n"
+            exit 51
+        fi
+    done < ${GOGOGO_PROJECT_LIST_FILE_APPEND_1_TMP}
+    #
     #
     RELEASE_CHECK_COUNT=`expr ${RELEASE_CHECK_COUNT} + 1`
     echo ""

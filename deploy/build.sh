@@ -60,9 +60,9 @@ HOOK_GAN_ENV=${HOOK_GAN_ENV:-''}
 HOOK_USER=${HOOK_USER:-''}
 #
 PROJECT_LIST_FILE="${SH_PATH}/project.list"
+PROJECT_LIST_FILE_TMP=${PROJECT_LIST_FILE_TMP:-"${LOG_HOME}/${SH_NAME}-project.list.tmp"}
 PROJECT_LIST_FILE_APPEND_1="${SH_PATH}/project.list.append.1"
 PROJECT_LIST_RETRY_FILE="${SH_PATH}/project.list.retry"
-PROJECT_LIST_FILE_TMP=${PROJECT_LIST_FILE_TMP:-"${LOG_HOME}/${SH_NAME}-project.list.tmp"}
 PROJECT_BUILD_RESULT="${LOG_HOME}/${SH_NAME}-build.result"
 PROJECT_BUILD_DURATION_FILE="${SH_PATH}/db/${SH_NAME}-duration.last.db"     #--- db目录下的文件不建议删除
 #
@@ -141,7 +141,7 @@ F_HELP()
         -M|--mode      指定构建方式，二选一【normal|function】，默认为normal方式。此参数用于被外部调用
         -c|--category  指定构建项目语言类别：【dockerfile|java|node|自定义】，参考：${PROJECT_LIST_FILE}
         -b|--branch    指定代码分支，默认来自env.sh
-        -I|--image-pre-name  指定镜像前置名称【DOCKER_IMAGE_PRE_NAME】，默认来自env.sh。注：镜像完整名称：\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${IMAGE_NAME}:\${IMAGE_TAG}
+        -I|--image-pre-name  指定镜像前置名称【DOCKER_IMAGE_PRE_NAME】，默认来自env.sh。注：镜像完整名称：\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${DOCKER_IMAGE_NAME}:\${DOCKER_IMAGE_TAG}
         -e|--email     发送日志到指定邮件地址，如果与【-U|--user-name】同时存在，则将会被替代
         -s|--skiptest  跳过测试，默认来自env.sh
         -f|--force     强制重新构建（无论是否有更新）
@@ -165,7 +165,7 @@ F_HELP()
         $0   sss.*eee       #--- 构建项目名称正则匹配【^sss.*eee$】的项目，用默认分支
         $0   sss.*          #--- 构建项目名称正则匹配【^sss.*$】的项目，用默认分支
         # 镜像前置名称
-        $0  -I aaa/bbb  项目1  项目2          #--- 构建项目：【项目1、项目2】，生成的镜像前置名称为【DOCKER_IMAGE_PRE_NAME='aaa/bbb'】，默认来自env.sh。注：镜像完整名称："\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${IMAGE_NAME}:\${IMAGE_TAG}"
+        $0  -I aaa/bbb  项目1  项目2          #--- 构建项目：【项目1、项目2】，生成的镜像前置名称为【DOCKER_IMAGE_PRE_NAME='aaa/bbb'】，默认来自env.sh。注：镜像完整名称："\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${DOCKER_IMAGE_NAME}:\${DOCKER_IMAGE_TAG}"
         # 发邮件
         $0  --email xm@xxx.com                #--- 构建所有项目，用默认分支，将错误日志发送到邮箱【xm@xxx.com】
         $0  --email xm@xxx.com  项目1  项目2  #--- 构建项目：【项目1、项目2】，用默认分支，将错误日志发送到邮箱【xm@xxx.com】
@@ -1351,13 +1351,13 @@ fi
 sed  -i  -E  -e '/^\s*$/d'  -e '/^#.*$/d'  ${PROJECT_LIST_FILE_TMP}
 # 优先级排序
 > ${PROJECT_LIST_FILE_TMP}.sort
-for i in  `awk -F '|' '{split($9,a," ");print NR,a[1]}' ${PROJECT_LIST_FILE_TMP}  |  sort -n -k 2 |  awk '{print $1}'`
+for i in  `awk -F '|' '{split($8,a," ");print NR,a[1]}' ${PROJECT_LIST_FILE_TMP}  |  sort -n -k 2 |  awk '{print $1}'`
 do
     awk "NR=="$i'{print}' ${PROJECT_LIST_FILE_TMP}  >> ${PROJECT_LIST_FILE_TMP}.sort
 done
 cp  ${PROJECT_LIST_FILE_TMP}.sort  ${PROJECT_LIST_FILE_TMP}
 # 加表头
-sed -i  '1i#| **类别** | **项目名** | **GIT命令空间** | **构建方法** | **输出方法** | **镜像名** | **GOGOGO发布方式** | **优先级** | **备注** |'  ${PROJECT_LIST_FILE_TMP}
+sed -i  '1i#| **类别** | **项目名** | **GIT命令空间** | **构建方法** | **输出方法** | **GOGOGO发布方式** | **优先级** | **备注** |'  ${PROJECT_LIST_FILE_TMP}
 # 屏显
 if [[ ${SH_RUN_MODE} == 'normal' ]]; then
     echo -e "${ECHO_NORMAL}========================= 开始构建 =========================${ECHO_CLOSE}"  #--- 60 (60-50-40)
@@ -1411,13 +1411,12 @@ do
     OUTPUT_METHOD=`echo ${LINE} | cut -d \| -f 6`
     OUTPUT_METHOD=`echo ${OUTPUT_METHOD}`
     #
-    DOCKER_IMAGE_NAME=`echo ${LINE} | cut -d \| -f 7`
-    DOCKER_IMAGE_NAME=`echo ${DOCKER_IMAGE_NAME}`
+    # 7 GOGOGO_RELEASE_METHOD
     #
-    PRIORITY=`echo ${LINE} | cut -d \| -f 9`
+    PRIORITY=`echo ${LINE} | cut -d \| -f 8`
     PRIORITY=`echo ${PRIORITY}`
     #
-    NOTE=`echo ${LINE} | cut -d \| -f 10`
+    NOTE=`echo ${LINE} | cut -d \| -f 9`
     NOTE=`echo ${NOTE}`
     #
     #
@@ -1440,7 +1439,17 @@ do
             #
             GET_IT_A='YES'
             #
-            LINK_NODE_PROJECT=`echo ${LINE} | cut -d \| -f 4`
+            DOCKER_IMAGE_PRE_NAME=`echo ${LINE} | cut -d \| -f 4`
+            DOCKER_IMAGE_PRE_NAME=`echo ${DOCKER_IMAGE_PRE_NAME}`
+            # 命令行参数优先级最高（1 arg，2 export传入，3 listfile，4 env.sh）
+            if [[ -n ${IMAGE_PRE_NAME} ]]; then
+                DOCKER_IMAGE_PRE_NAME=${IMAGE_PRE_NAME}
+            fi
+            #
+            DOCKER_IMAGE_NAME=`echo ${LINE} | cut -d \| -f 5`
+            DOCKER_IMAGE_NAME=`echo ${DOCKER_IMAGE_NAME}`
+            #
+            LINK_NODE_PROJECT=`echo ${LINE} | cut -d \| -f 6`
             LINK_NODE_PROJECT=`echo ${LINK_NODE_PROJECT}`
         fi
         #

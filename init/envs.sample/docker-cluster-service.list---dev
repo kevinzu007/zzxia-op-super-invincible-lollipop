@@ -12,22 +12,25 @@
 ###
 ###  2【服务名：SERVICE_NAME】= [ 自定义名称 ] 
 ###
-###  3【DOCKER镜像名：DOCKER_IMAGE_NAME】= [ 自定义名称 ]
+###  3【镜像前置名：DOCKER_IMAGE_PRE_NAME】= [自定义名称]
+###    当输出方法='docker_image_push'时，镜像名不能为空
 ###
-###  4【POD副本数：POD_REPLICAS】= [ 数字|${变量名} ]
+###  4【DOCKER镜像名：DOCKER_IMAGE_NAME】= [ 自定义名称 ]
+###
+###  5【POD副本数：POD_REPLICAS】= [ 数字|${变量名} ]
 ###    1 数字          : 例如：2
 ###    2 ${变量名}     : 例如：【${SERVICE_NAME}】
 ###
-###  5【容器PORTS：CONTAINER_PORTS】= [ 外部端口号1:内部端口号2, 外部端口号3:内部端口号4, ...... , ${变量名} ]
+###  6【容器PORTS：CONTAINER_PORTS】= [ 外部端口号1:内部端口号2, 外部端口号3:内部端口号4, ...... , ${变量名} ]
 ###    若有多个，则用【,】分隔
 ###    示例：【17474:7474】
 ###          【${xName}:7474】
 ###          【27474:7474,7687:7687】
 ###
-###  6【优先级：PRIORITY】= [ 数字 ]
+###  7【优先级：PRIORITY】= [ 数字 ]
 ###    数字越小越优先
 ###
-###  7【备注：NOTE】= [ 自定义 ]
+###  8【备注：NOTE】= [ 自定义 ]
 ###    说明信息
 ###
 ###
@@ -47,17 +50,17 @@
 ### 
 ###    ***** 上文提到的变量名可以是下文表头的名字、也可以是sh中可以获得的变量名 *****
 ###
-#| SERVICE_NAME           | DOCKER_IMAGE_NAME       | POD_REPLICAS  | CONTAINER_PORTS    | PRIORITY   | NOTE                         |
-#| **服务名**             | **DOCKER镜像名**        | **POD副本数** | **容器PORTS**      | **优先级** | **备注**                     |
-#| ---------------------- | ----------------------- | ------------: | ------------------ | ---------- | ---------------------------- |
-|neo4j-srv                |neo4j                    | 1             | 7474:7474,7687:7687| 0          |                              |
-|redis-srv                |redis                    | 1             | 6379:6379          | 0          |                              |
-|nacos-server-1           |nacos-server             | 1             | 8848:8848,9848:9848,9555:9555| 0|                              |
-|nacos-server-2           |nacos-server             | 1             | :8848,:9848,:9555  | 20         |                              |
-|nacos-server-3           |nacos-server             | 1             | :8848,:9848,:9555  | 20         |                              |
-|gc-gateway               |gc-gateway               | 1             | 13000:13000        | 15         |                              |
-|gc-monitor               |gc-monitor               | 1             | :13030             | 20         |                              |
-|gc-client-service        |gc-client-service        | 1             | :23000             | 20         |                              |
-|gc-client-app-service    |gc-client-app-service    | 1             | :23100             | 20         |                              |
-|gc-travel-service        |gc-travel-service        | 1             | :20201             | 20         |                              |
+#| SERVICE_NAME                  | DOCKER_IMAGE_PRE_NAME | DOCKER_IMAGE_NAME              | POD_REPLICAS  | CONTAINER_PORTS    | PRIORITY   | NOTE                         |
+#| **服务名**                    | **镜像前置名**        | **DOCKER镜像名**               | **POD副本数** | **容器PORTS**      | **优先级** | **备注**                     |
+#| ----------------------------- | --------------------- | ------------------------------ | ------------: | ------------------ | ---------- | ---------------------------- |
+| neo4j-srv                      |                       | neo4j                          | 1             | 7474:7474,7687:7687| 0          |                              |
+| redis-srv                      |                       | redis                          | 1             | 6379:6379          | 0          |                              |
+| nacos-server-1                 |                       | nacos-server                   | 1             | 8848:8848,9848:9848,9555:9555| 0|                              |
+| nacos-server-2                 |                       | nacos-server                   | 1             | :8848,:9848,:9555  | 20         |                              |
+| nacos-server-3                 |                       | nacos-server                   | 1             | :8848,:9848,:9555  | 20         |                              |
+| gc-gateway                     |                       | gc-gateway                     | 1             | 13000:13000        | 15         |                              |
+| gc-monitor                     |                       | gc-monitor                     | 1             | :13030             | 20         |                              |
+| gc-client-service              |                       | gc-client-service              | 1             | :23000             | 20         |                              |
+| gc-client-app-service          |                       | gc-client-app-service          | 1             | :23100             | 20         |                              |
+| gc-travel-service              |                       | gc-travel-service              | 1             | :20201             | 20         |                              |
 

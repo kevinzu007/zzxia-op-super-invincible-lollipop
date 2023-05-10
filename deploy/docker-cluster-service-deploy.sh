@@ -166,7 +166,7 @@ F_HELP()
         -D|--debug     : 开启开发者Debug模式，目前用于开放所有容器内部服务端口
         -t|--tag       ：模糊镜像tag版本
         -T|--TAG       ：精确镜像tag版本
-        -I|--image-pre-name  指定镜像前置名称【DOCKER_IMAGE_PRE_NAME】，默认来自env.sh。注：镜像完整名称：\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${IMAGE_NAME}:\${IMAGE_TAG}
+        -I|--image-pre-name  指定镜像前置名称【DOCKER_IMAGE_PRE_NAME】，默认来自env.sh。注：镜像完整名称：\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${DOCKER_IMAGE_NAME}:\${DOCKER_IMAGE_TAG}
         -n|--number    ：Pod副本数
         -G|--gray      : 设置灰度标志为：gray，默认：normal
         -V|--release-version : 发布版本号
@@ -1215,13 +1215,13 @@ fi
 sed  -i  -E  -e '/^\s*$/d'  -e '/^#.*$/d'  ${SERVICE_LIST_FILE_TMP}
 # 按第6列排序（PRIORITY）
 > ${SERVICE_LIST_FILE_TMP}.sort
-for i in  `awk -F '|' '{split($6,a," ");print NR,a[1]}' ${SERVICE_LIST_FILE_TMP}  |  sort -n -k 2 |  awk '{print $1}'`
+for i in  `awk -F '|' '{split($7,a," ");print NR,a[1]}' ${SERVICE_LIST_FILE_TMP}  |  sort -n -k 2 |  awk '{print $1}'`
 do
     awk "NR=="$i'{print}' ${SERVICE_LIST_FILE_TMP}  >> ${SERVICE_LIST_FILE_TMP}.sort
 done
 cp  ${SERVICE_LIST_FILE_TMP}.sort  ${SERVICE_LIST_FILE_TMP}
 # 加表头
-sed -i  '1i#| **服务名** | **DOCKER镜像名** | **POD副本数** | **容器PORTS** | **优先级** | **备注** |'  ${SERVICE_LIST_FILE_TMP}
+sed -i  '1i#| **服务名** | **镜像前置名** | **DOCKER镜像名** | **POD副本数** | **容器PORTS** | **优先级** | **备注** |'  ${SERVICE_LIST_FILE_TMP}
 # 屏显
 if [[ ${SH_RUN_MODE} == 'normal' ]]; then
     echo -e "${ECHO_NORMAL}========================= 开始发布 =========================${ECHO_CLOSE}"  #--- 60 (60-50-40)
@@ -1244,18 +1244,25 @@ do
     SERVICE_NAME=`echo ${LINE} | cut -d \| -f 2`
     SERVICE_NAME=`echo ${SERVICE_NAME}`
     #
-    DOCKER_IMAGE_NAME=`echo ${LINE} | cut -d \| -f 3`
+    DOCKER_IMAGE_PRE_NAME=`echo ${LINE} | cut -d \| -f 3`
+    DOCKER_IMAGE_PRE_NAME=`eval echo ${DOCKER_IMAGE_PRE_NAME}`    #--- 用eval将配置文件中项的变量转成值，下同
+    # 命令行参数优先级最高（1 arg，2 export传入，3 listfile，4 env.sh）
+    if [[ -n ${IMAGE_PRE_NAME} ]]; then
+        DOCKER_IMAGE_PRE_NAME=${IMAGE_PRE_NAME}
+    fi
+    #
+    DOCKER_IMAGE_NAME=`echo ${LINE} | cut -d \| -f 4`
     DOCKER_IMAGE_NAME=`eval echo ${DOCKER_IMAGE_NAME}`    #--- 用eval将配置文件中项的变量转成值，下同
     #
-    POD_REPLICAS=`echo ${LINE} | cut -d \| -f 4`
+    POD_REPLICAS=`echo ${LINE} | cut -d \| -f 5`
     POD_REPLICAS=`eval echo ${POD_REPLICAS}`
     #
-    CONTAINER_PORTS=`echo ${LINE} | cut -d \| -f 5`
+    CONTAINER_PORTS=`echo ${LINE} | cut -d \| -f 6`
     CONTAINER_PORTS=`eval echo ${CONTAINER_PORTS}`
     #
-    # 6 PRIORITY 这里无需处理
+    # 7 PRIORITY 这里无需处理
     #
-    NOTE=`echo ${LINE} | cut -d \| -f 7`
+    NOTE=`echo ${LINE} | cut -d \| -f 8`
     NOTE=`echo ${NOTE}`
     #
     #
@@ -2751,6 +2758,7 @@ case ${SH_RUN_MODE} in
         echo "造 浪 者：${MY_XINGMING}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         echo "开始时间：${TIME}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         echo "结束时间：${TIME_END}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
+        echo "镜像TAG ：${DOCKER_IMAGE_TAG}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         echo "灰度标志：${GRAY_TAG}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         echo "发布版本：${RELEASE_VERSION}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         echo "${SERVICE_OPERATION}清单：" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}

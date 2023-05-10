@@ -124,7 +124,7 @@ F_HELP()
         -n|--number    并行构建项目的数量，默认为2个
         -c|--category  指定构建项目语言类别：【dockerfile|java|node|自定义】，参考：${PARA_PROJECT_LIST_FILE}
         -b|--branch    指定代码分支，默认来自env.sh
-        -I|--image-pre-name  指定镜像前置名称【DOCKER_IMAGE_PRE_NAME】，默认来自env.sh。注：镜像完整名称：\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${IMAGE_NAME}:\${IMAGE_TAG}
+        -I|--image-pre-name  指定镜像前置名称【DOCKER_IMAGE_PRE_NAME】，默认来自env.sh。注：镜像完整名称：\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${DOCKER_IMAGE_NAME}:\${DOCKER_IMAGE_TAG}
         -e|--email     发送日志到指定邮件地址，如果与【-U|--user-name】同时存在，则将会被替代
         -s|--skiptest  跳过测试，默认来自env.sh
         -f|--force     强制重新构建（无论是否有更新）
@@ -140,7 +140,7 @@ F_HELP()
         $0  --email xm@xxx.com  项目1 项目2    #--- 构建【项目1、项目2】，用默认分支，同时构建默认个，将错误日志发送到邮箱【xm@xxx.com】
         $0  -s -f  项目1 项目2                 #--- 构建【项目1、项目2】，用默认分支，同时构建默认个，跳过测试，强制重新构建（无论是否有更新）
         $0  sss                       #--- 构建项目名称正则匹配【^sss$】的项目，用默认分支，同时构建默认个
-        $0  -I aaa/bbb  项目1  项目2  #--- 构建项目【项目1、项目2】，用默认分支，同时构建默认个，生成的镜像前置名称为【DOCKER_IMAGE_PRE_NAME='aaa/bbb'】，默认来自env.sh。注：镜像完整名称："\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${IMAGE_NAME}:\${IMAGE_TAG}"
+        $0  -I aaa/bbb  项目1  项目2  #--- 构建项目【项目1、项目2】，用默认分支，同时构建默认个，生成的镜像前置名称为【DOCKER_IMAGE_PRE_NAME='aaa/bbb'】，默认来自env.sh。注：镜像完整名称："\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${DOCKER_IMAGE_NAME}:\${DOCKER_IMAGE_TAG}"
         # 更多示例请参考【build.sh】
     "
 }
@@ -449,13 +449,13 @@ fi
 sed  -i  -E  -e '/^\s*$/d'  -e '/^#.*$/d'  ${PARA_PROJECT_LIST_FILE_TMP}
 # 优先级排序
 > ${PARA_PROJECT_LIST_FILE_TMP}.sort
-for i in  `awk -F '|' '{split($9,a," ");print NR,a[1]}' ${PARA_PROJECT_LIST_FILE_TMP}  |  sort -n -k 2 |  awk '{print $1}'`
+for i in  `awk -F '|' '{split($8,a," ");print NR,a[1]}' ${PARA_PROJECT_LIST_FILE_TMP}  |  sort -n -k 2 |  awk '{print $1}'`
 do
     awk "NR=="$i'{print}' ${PARA_PROJECT_LIST_FILE_TMP}  >> ${PARA_PROJECT_LIST_FILE_TMP}.sort
 done
 cp  ${PARA_PROJECT_LIST_FILE_TMP}.sort  ${PARA_PROJECT_LIST_FILE_TMP}
 # 加表头
-sed -i  '1i#| **类别** | **项目名** | **GIT命令空间** | **构建方法** | **输出方法** | **镜像名** | **GOGOGO发布方式** | **优先级** | **备注** |'  ${PARA_PROJECT_LIST_FILE_TMP}
+sed -i  '1i#| **类别** | **项目名** | **GIT命令空间** | **构建方法** | **输出方法** | **GOGOGO发布方式** | **优先级** | **备注** |'  ${PARA_PROJECT_LIST_FILE_TMP}
 # 屏显
 echo -e "${ECHO_NORMAL}############################ 开始并行构建 ############################${ECHO_CLOSE}"   #--- 80 (80-70-60)
 echo -e "\n【${SH_NAME}】待并行构建项目清单："
