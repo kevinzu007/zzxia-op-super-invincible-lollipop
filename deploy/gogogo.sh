@@ -612,14 +612,14 @@ F_DOCKER_CLUSTER_SERVICE_DEPLOY()
             F_ONLINE_SERVICE_SEARCH  ${F_SERVICE_X_NAME}  ${CLUSTER}
             if [ $? -eq 0 ]; then
                 # 服务运行中
-                ${DOCKER_CLUSTER_SERVICE_DEPLOY_SH}  --mode function  --update  --fuck  ${F_SERVICE_NAME}  ${DEPLOY_OPTION}
+                ${DOCKER_CLUSTER_SERVICE_DEPLOY_SH}  ${IMAGE_PRE_NAME_ARG}  --mode function  --update  --fuck  ${F_SERVICE_NAME}  ${DEPLOY_OPTION}
                 #F_DEPLOY_RETURN_CURRENT=$?
                 #let  F_DEPLOY_RETURN=${F_DEPLOY_RETURN}+${F_DEPLOY_RETURN_CURRENT}-50
                 F_DEPLOY_RETURN=$?
                 let  F_SERVICE_NUM=${F_SERVICE_NUM}+1
             else
                 # 服务不在运行中
-                ${DOCKER_CLUSTER_SERVICE_DEPLOY_SH}  --mode function  --create  --fuck  ${F_SERVICE_NAME}  ${DEPLOY_OPTION}
+                ${DOCKER_CLUSTER_SERVICE_DEPLOY_SH}  ${IMAGE_PRE_NAME_ARG}  --mode function  --create  --fuck  ${F_SERVICE_NAME}  ${DEPLOY_OPTION}
                 #F_DEPLOY_RETURN_CURRENT=$?
                 #let  F_DEPLOY_RETURN=${F_DEPLOY_RETURN}+${F_DEPLOY_RETURN_CURRENT}-50
                 F_DEPLOY_RETURN=$?
@@ -708,8 +708,7 @@ do
             ;;
         -I|--image-pre-name)
             IMAGE_PRE_NAME=$2
-            # 传递给子shell
-            export IMAGE_PRE_NAME
+            IMAGE_PRE_NAME_ARG="--image-pre-name ${IMAGE_PRE_NAME}"
             shift 2
             ;;
         -e|--email)
@@ -949,13 +948,15 @@ do
         if [[ ${PJ_A} == ${PJ} ]] && [[ ${LANGUAGE_CATEGORY_A} == ${LANGUAGE_CATEGORY} ]]; then
             #
             GET_IT_A='YES'
-            ## 不需要，已经export或自己从list文件找
-            #DOCKER_IMAGE_PRE_NAME=`echo ${LINE} | cut -d \| -f 4`
-            #DOCKER_IMAGE_PRE_NAME=`echo ${DOCKER_IMAGE_PRE_NAME}`
-            ## 命令行参数优先级最高（1 arg，2 export传入，3 listfile，4 env.sh）
-            #if [[ -n ${IMAGE_PRE_NAME} ]]; then
-            #    DOCKER_IMAGE_PRE_NAME=${IMAGE_PRE_NAME}
-            #fi
+            #
+            DOCKER_IMAGE_PRE_NAME=`echo ${LINE} | cut -d \| -f 4`
+            DOCKER_IMAGE_PRE_NAME=`echo ${DOCKER_IMAGE_PRE_NAME}`
+            # 命令行参数优先级最高（1 arg，2 listfile，3 env.sh）
+            if [[ -n ${IMAGE_PRE_NAME} ]]; then
+                DOCKER_IMAGE_PRE_NAME=${IMAGE_PRE_NAME}
+            elif [[ -z ${DOCKER_IMAGE_PRE_NAME} ]]; then
+                DOCKER_IMAGE_PRE_NAME=${DEFAULT_DOCKER_IMAGE_PRE_NAME}
+            fi
             #
             DOCKER_IMAGE_NAME=`echo ${LINE} | cut -d \| -f 5`
             DOCKER_IMAGE_NAME=`echo ${DOCKER_IMAGE_NAME}`
@@ -988,7 +989,7 @@ do
         # 静默(并行构建)
         read -u 6       # 获取令牌
         {
-            ${BUILD_SH}  --mode function  --category ${LANGUAGE_CATEGORY}  --branch ${GIT_BRANCH}  ${PJ}  ${BUILD_SKIP_TEST_OPT}  ${BUILD_FORCE_OPT}  > /dev/null 2>&1
+            ${BUILD_SH}  --mode function  --category ${LANGUAGE_CATEGORY}  --branch ${GIT_BRANCH}  ${PJ}  ${IMAGE_PRE_NAME_ARG}  ${BUILD_SKIP_TEST_OPT}  ${BUILD_FORCE_OPT}  > /dev/null 2>&1
             BUILD_RETURN=$?
             echo "ok ${BUILD_RETURN}" > "${GOGOGO_PROJECT_BUILD_RESULT}.${PJ}"
             echo >&6    # 归还令牌
@@ -1020,7 +1021,7 @@ do
         done
     else
         # 非静默
-        ${BUILD_SH}  --mode function  --category ${LANGUAGE_CATEGORY}  --branch ${GIT_BRANCH}  ${PJ}  ${BUILD_SKIP_TEST_OPT}  ${BUILD_FORCE_OPT}  --verbose
+        ${BUILD_SH}  --mode function  --category ${LANGUAGE_CATEGORY}  --branch ${GIT_BRANCH}  ${PJ}  ${IMAGE_PRE_NAME_ARG}  ${BUILD_SKIP_TEST_OPT}  ${BUILD_FORCE_OPT}  --verbose
         BUILD_RETURN=$?
         #echo "ok ${BUILD_RETURN}" > "${GOGOGO_PROJECT_BUILD_RESULT}.${PJ}"
     fi

@@ -52,7 +52,6 @@ BUILD_QUIET='YES'
 BUILD_FORCE='NO'
 # 来自父shell
 BUILD_OK_LIST_FILE_function=${BUILD_OK_LIST_FILE_function:-"${LOG_HOME}/${SH_NAME}-build-OK.list.function"}
-DOCKER_IMAGE_PRE_NAME=${IMAGE_PRE_NAME:-"${DEFAULT_DOCKER_IMAGE_PRE_NAME}"}
 MY_USER_NAME=${MY_USER_NAME:-''}
 MY_EMAIL=${MY_EMAIL:-''}
 # 来自webhook
@@ -495,7 +494,7 @@ DOCKER_BUILD()
                             return 52
                         fi
                         #
-                        ${DOCKER_TAG_PUSH_SH}  --image-pre-name ${DOCKER_IMAGE_PRE_NAME}  --tag ${DOCKER_IMAGE_TAG}  ${PJ}  2>&1 | tee -a ${BUILD_LOG_file}
+                        ${DOCKER_TAG_PUSH_SH}  ${IMAGE_PRE_NAME_ARG}  --tag ${DOCKER_IMAGE_TAG}  ${PJ}  2>&1 | tee -a ${BUILD_LOG_file}
                         #if [[ $? -ne 0 ]]; then
                         if [[ $(grep -q '猪猪侠警告' ${BUILD_LOG_file}; echo $?) == 0 ]]; then
                             echo -e "\n猪猪侠警告：项目镜像PUSH失败！\n"  2>&1 | tee -a ${BUILD_LOG_file}
@@ -592,7 +591,7 @@ JAVA_BUILD()
                             return 52
                         fi
                         #
-                        ${DOCKER_TAG_PUSH_SH}  --image-pre-name ${DOCKER_IMAGE_PRE_NAME}  --tag ${DOCKER_IMAGE_TAG}  ${PJ}  2>&1 | tee -a ${BUILD_LOG_file}
+                        ${DOCKER_TAG_PUSH_SH}  ${IMAGE_PRE_NAME_ARG}  --tag ${DOCKER_IMAGE_TAG}  ${PJ}  2>&1 | tee -a ${BUILD_LOG_file}
                         #if [[ $? -ne 0 ]]; then
                         if [[ $(grep -q '猪猪侠警告' ${BUILD_LOG_file}; echo $?) == 0 ]]; then
                             echo -e "\n猪猪侠警告：项目镜像PUSH失败！\n"  2>&1 | tee -a ${BUILD_LOG_file}
@@ -771,7 +770,7 @@ NODE_BUILD()
                     return 54
                 fi
                 #
-                ${DOCKER_TAG_PUSH_SH}  --image-pre-name ${DOCKER_IMAGE_PRE_NAME}  --tag ${DOCKER_IMAGE_TAG}  ${PJ}  2>&1 | tee -a ${BUILD_LOG_file}
+                ${DOCKER_TAG_PUSH_SH}  ${IMAGE_PRE_NAME_ARG}  --tag ${DOCKER_IMAGE_TAG}  ${PJ}  2>&1 | tee -a ${BUILD_LOG_file}
                 #if [[ $? -ne 0 ]]; then
                 if [[ $(grep -q '猪猪侠警告' ${BUILD_LOG_file}; echo $?) == 0 ]]; then
                     echo -e "\n猪猪侠警告：项目镜像PUSH失败！\n"  2>&1 | tee -a ${BUILD_LOG_file}
@@ -897,7 +896,7 @@ HTML_BUILD()
                     return 54
                 fi
                 #
-                ${DOCKER_TAG_PUSH_SH}  --image-pre-name ${DOCKER_IMAGE_PRE_NAME}  --tag ${DOCKER_IMAGE_TAG}  ${PJ}  2>&1 | tee -a ${BUILD_LOG_file}
+                ${DOCKER_TAG_PUSH_SH}  ${IMAGE_PRE_NAME_ARG}  --tag ${DOCKER_IMAGE_TAG}  ${PJ}  2>&1 | tee -a ${BUILD_LOG_file}
                 #if [[ $? -ne 0 ]]; then
                 if [[ $(grep -q '猪猪侠警告' ${BUILD_LOG_file}; echo $?) == 0 ]]; then
                     echo -e "\n猪猪侠警告：项目镜像PUSH失败！\n"  2>&1 | tee -a ${BUILD_LOG_file}
@@ -1014,7 +1013,7 @@ PYTHON_BUILD()
                     return 54
                 fi
                 #
-                ${DOCKER_TAG_PUSH_SH}  --image-pre-name ${DOCKER_IMAGE_PRE_NAME}  --tag ${DOCKER_IMAGE_TAG}  ${PJ}  2>&1 | tee -a ${BUILD_LOG_file}
+                ${DOCKER_TAG_PUSH_SH}  ${IMAGE_PRE_NAME_ARG}  --tag ${DOCKER_IMAGE_TAG}  ${PJ}  2>&1 | tee -a ${BUILD_LOG_file}
                 #if [[ $? -ne 0 ]]; then
                 if [[ $(grep -q '猪猪侠警告' ${BUILD_LOG_file}; echo $?) == 0 ]]; then
                     echo -e "\n猪猪侠警告：项目镜像PUSH失败！\n"  2>&1 | tee -a ${BUILD_LOG_file}
@@ -1188,7 +1187,7 @@ do
             ;;
         -I|--image-pre-name)
             IMAGE_PRE_NAME=$2
-            DOCKER_IMAGE_PRE_NAME=${IMAGE_PRE_NAME}
+            IMAGE_PRE_NAME_ARG="--image-pre-name ${IMAGE_PRE_NAME}"
             shift 2
             ;;
         -e|--email)
@@ -1441,9 +1440,11 @@ do
             #
             DOCKER_IMAGE_PRE_NAME=`echo ${LINE} | cut -d \| -f 4`
             DOCKER_IMAGE_PRE_NAME=`echo ${DOCKER_IMAGE_PRE_NAME}`
-            # 命令行参数优先级最高（1 arg，2 export传入，3 listfile，4 env.sh）
+            # 命令行参数优先级最高（1 arg，2 listfile，3 env.sh）
             if [[ -n ${IMAGE_PRE_NAME} ]]; then
                 DOCKER_IMAGE_PRE_NAME=${IMAGE_PRE_NAME}
+            elif [[ -z ${DOCKER_IMAGE_PRE_NAME} ]]; then
+                DOCKER_IMAGE_PRE_NAME=${DEFAULT_DOCKER_IMAGE_PRE_NAME}
             fi
             #
             DOCKER_IMAGE_NAME=`echo ${LINE} | cut -d \| -f 5`

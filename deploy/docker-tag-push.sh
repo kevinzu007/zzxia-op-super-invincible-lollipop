@@ -24,9 +24,6 @@ DOCKER_IMAGE_TAG=$(date -d "${TIME}" +%Y.%m.%d.%H%M%S)
 PROJECT_LIST_FILE="${SH_PATH}/project.list"
 PROJECT_LIST_FILE_TMP="/tmp/${SH_NAME}-project.tmp.list.$(date +%S)"
 PROJECT_LIST_FILE_APPEND_1="${SH_PATH}/project.list.append.1"
-
-# 来自env.sh 或 父shell
-DOCKER_IMAGE_PRE_NAME=${IMAGE_PRE_NAME:-"${DEFAULT_DOCKER_IMAGE_PRE_NAME}"}
 # sh
 FORMAT_TABLE_SH="${SH_PATH}/../op/format_table.sh"
 
@@ -125,7 +122,7 @@ do
             ;;
         -I|--image-pre-name)
             IMAGE_PRE_NAME=$2
-            DOCKER_IMAGE_PRE_NAME=${IMAGE_PRE_NAME}
+            IMAGE_PRE_NAME_ARG="--image-pre-name ${IMAGE_PRE_NAME}"
             shift 2
             ;;
         --)
@@ -212,9 +209,11 @@ do
             #
             DOCKER_IMAGE_PRE_NAME=`echo ${LINE} | cut -d \| -f 4`
             DOCKER_IMAGE_PRE_NAME=`echo ${DOCKER_IMAGE_PRE_NAME}`
-            # 命令行参数优先级最高（1 arg，2 export传入，3 listfile，4 env.sh）
+            # 命令行参数优先级最高（1 arg，2 listfile，3 env.sh）
             if [[ -n ${IMAGE_PRE_NAME} ]]; then
                 DOCKER_IMAGE_PRE_NAME=${IMAGE_PRE_NAME}
+            elif [[ -z ${DOCKER_IMAGE_PRE_NAME} ]]; then
+                DOCKER_IMAGE_PRE_NAME=${DEFAULT_DOCKER_IMAGE_PRE_NAME}
             fi
             #
             DOCKER_IMAGE_NAME=`echo ${LINE} | cut -d \| -f 5`

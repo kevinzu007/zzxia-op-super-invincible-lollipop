@@ -25,8 +25,6 @@ TIME_START=${TIME}
 SERVICE_LIST_FILE="${SH_PATH}/docker-cluster-service.list"
 SERVICE_LIST_FILE_TMP="/tmp/${SH_NAME}-docker-cluster-service.tmp.list.$(date +%S)"
 SEARCH_RESULT_FILE="/tmp/${SH_NAME}-result.txt"
-# 来自父shell
-DOCKER_IMAGE_PRE_NAME=${IMAGE_PRE_NAME:-"${DEFAULT_DOCKER_IMAGE_PRE_NAME}"}
 # sh
 FORMAT_TABLE_SH="${SH_PATH}/../op/format_table.sh"
 
@@ -205,7 +203,7 @@ do
             ;;
         -I|--image-pre-name)
             IMAGE_PRE_NAME=$2
-            DOCKER_IMAGE_PRE_NAME=${IMAGE_PRE_NAME}
+            IMAGE_PRE_NAME_ARG="--image-pre-name ${IMAGE_PRE_NAME}"
             shift 2
             ;;
         -n|--newest)
@@ -280,9 +278,11 @@ do
     #
     DOCKER_IMAGE_PRE_NAME=`echo ${LINE} | cut -d \| -f 3`
     DOCKER_IMAGE_PRE_NAME=`eval echo ${DOCKER_IMAGE_PRE_NAME}`    #--- 用eval将配置文件中项的变量转成值，下同
-    # 命令行参数优先级最高（1 arg，2 export传入，3 listfile，4 env.sh）
+    # 命令行参数优先级最高（1 arg，2 listfile，3 env.sh）
     if [[ -n ${IMAGE_PRE_NAME} ]]; then
         DOCKER_IMAGE_PRE_NAME=${IMAGE_PRE_NAME}
+    elif [[ -z ${DOCKER_IMAGE_PRE_NAME} ]]; then
+        DOCKER_IMAGE_PRE_NAME=${DEFAULT_DOCKER_IMAGE_PRE_NAME}
     fi
     #
     DOCKER_IMAGE_NAME=`echo ${LINE} | cut -d \| -f 4`

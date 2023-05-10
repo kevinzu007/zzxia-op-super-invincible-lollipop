@@ -71,7 +71,6 @@ SH_RUN_MODE="normal"
 # 来自父shell
 DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE_function=${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE_function:-"${LOG_HOME}/${SH_NAME}-OK.function"}
 MY_USER_NAME=${MY_USER_NAME:-''}
-DOCKER_IMAGE_PRE_NAME=${IMAGE_PRE_NAME:-"${DEFAULT_DOCKER_IMAGE_PRE_NAME}"}
 MY_EMAIL=${MY_EMAIL:-''}
 # 来自webhook
 HOOK_GAN_ENV=${HOOK_GAN_ENV:-''}
@@ -410,7 +409,7 @@ F_SEARCH_IMAGE_TAG()
 {
     F_SERVICE_NAME=$1
     F_THIS_TAG=$2
-    ${DOCKER_IMAGE_SEARCH_SH}  --tag ${F_THIS_TAG}  --output ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_TAG-result.txt  ${F_SERVICE_NAME}
+    ${DOCKER_IMAGE_SEARCH_SH}  ${IMAGE_PRE_NAME_ARG}  --tag ${F_THIS_TAG}  --output ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_TAG-result.txt  ${F_SERVICE_NAME}
     search_r=$(cat ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_TAG-result.txt | cut -d " " -f 3-)
     F_GET_IT=""
     # 这个其实不可能有多行
@@ -439,7 +438,7 @@ F_SEARCH_IMAGE_LIKE_TAG()
 {
     F_SERVICE_NAME=$1
     F_LIKE_THIS_TAG=$2
-    ${DOCKER_IMAGE_SEARCH_SH}  --tag ${F_LIKE_THIS_TAG}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_LIKE_TAG-result.txt  ${F_SERVICE_NAME}  1>/dev/null 2>/dev/null   #--- 需要关闭任何输出，方便取的结果，以结果是否为空作为成功失败的标志
+    ${DOCKER_IMAGE_SEARCH_SH}  ${IMAGE_PRE_NAME_ARG}  --tag ${F_LIKE_THIS_TAG}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_LIKE_TAG-result.txt  ${F_SERVICE_NAME}  1>/dev/null 2>/dev/null   #--- 需要关闭任何输出，方便取的结果，以结果是否为空作为成功失败的标志
     search_like_r=$(cat ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_LIKE_TAG-result.txt | cut -d " " -f 3)
     #
     if [[ ! -z ${search_like_r} ]]; then
@@ -459,7 +458,7 @@ F_SEARCH_IMAGE_NOT_LIKE_TAG()
 {
     F_SERVICE_NAME=$1
     F_NOT_LIKE_THIS_TAG=$2
-    ${DOCKER_IMAGE_SEARCH_SH}  --exclude ${F_NOT_LIKE_THIS_TAG}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_NOT_LIKE_TAG-result.txt  ${F_SERVICE_NAME}  2>/dev/null
+    ${DOCKER_IMAGE_SEARCH_SH}  ${IMAGE_PRE_NAME_ARG}  --exclude ${F_NOT_LIKE_THIS_TAG}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_NOT_LIKE_TAG-result.txt  ${F_SERVICE_NAME}  2>/dev/null
     search_not_like_r=$(cat ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_NOT_LIKE_TAG-result.txt | cut -d " " -f 3)
     # 
     if [[ ! -z ${search_not_like_r} ]]; then
@@ -1075,7 +1074,7 @@ do
             ;;
         -I|--image-pre-name)
             IMAGE_PRE_NAME=$2
-            DOCKER_IMAGE_PRE_NAME=${IMAGE_PRE_NAME}
+            IMAGE_PRE_NAME_ARG="--image-pre-name ${IMAGE_PRE_NAME}"
             shift 2
             ;;
         -n|--number)
@@ -1246,9 +1245,11 @@ do
     #
     DOCKER_IMAGE_PRE_NAME=`echo ${LINE} | cut -d \| -f 3`
     DOCKER_IMAGE_PRE_NAME=`eval echo ${DOCKER_IMAGE_PRE_NAME}`    #--- 用eval将配置文件中项的变量转成值，下同
-    # 命令行参数优先级最高（1 arg，2 export传入，3 listfile，4 env.sh）
+    # 命令行参数优先级最高（1 arg，2 listfile，3 env.sh）
     if [[ -n ${IMAGE_PRE_NAME} ]]; then
         DOCKER_IMAGE_PRE_NAME=${IMAGE_PRE_NAME}
+    elif [[ -z ${DOCKER_IMAGE_PRE_NAME} ]]; then
+        DOCKER_IMAGE_PRE_NAME=${DEFAULT_DOCKER_IMAGE_PRE_NAME}
     fi
     #
     DOCKER_IMAGE_NAME=`echo ${LINE} | cut -d \| -f 4`
@@ -1567,7 +1568,7 @@ do
                 #
             elif [ ! -z "${LIKE_THIS_TAG}" ]; then
                 # LIKE匹配镜像最新的一个
-                ${DOCKER_IMAGE_SEARCH_SH}  --tag ${LIKE_THIS_TAG}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-image-search.${SERVICE_OPERATION}  ${SERVICE_NAME}
+                ${DOCKER_IMAGE_SEARCH_SH}  ${IMAGE_PRE_NAME_ARG}  --tag ${LIKE_THIS_TAG}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-image-search.${SERVICE_OPERATION}  ${SERVICE_NAME}
                 search_r=`cat ${LOG_HOME}/${SH_NAME}-image-search.${SERVICE_OPERATION} | awk '{print $3}'`
                 if [ "x${search_r}" = "x" ]; then
                     echo "${SERVICE_NAME} : 失败，镜像版本【%${LIKE_THIS_TAG}%】未找到"
@@ -2146,7 +2147,7 @@ do
             elif [ ! -z "${LIKE_THIS_TAG}" ]; then
                 # 更新指定LIKE匹配镜像
                 #DOCKER_IMAGE_TAG_UPDATE=$(F_SEARCH_IMAGE_LIKE_TAG  ${SERVICE_NAME}  ${LIKE_THIS_TAG})
-                ${DOCKER_IMAGE_SEARCH_SH}  --tag ${LIKE_THIS_TAG}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt  ${SERVICE_NAME}
+                ${DOCKER_IMAGE_SEARCH_SH}  ${IMAGE_PRE_NAME_ARG}  --tag ${LIKE_THIS_TAG}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt  ${SERVICE_NAME}
                 DOCKER_IMAGE_TAG_UPDATE=$(cat ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt | cut -d " " -f 3)
                 #
                 if [[ -z ${DOCKER_IMAGE_TAG_UPDATE} ]]; then
@@ -2160,7 +2161,7 @@ do
                 # 更新今日发布的服务镜像
                 TODAY=`date +%Y.%m.%d`
                 #DOCKER_IMAGE_TAG_UPDATE=$(F_SEARCH_IMAGE_LIKE_TAG  ${SERVICE_NAME}  ${TODAY})
-                ${DOCKER_IMAGE_SEARCH_SH}  --tag ${TODAY}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt  ${SERVICE_NAME}
+                ${DOCKER_IMAGE_SEARCH_SH}  ${IMAGE_PRE_NAME_ARG}  --tag ${TODAY}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt  ${SERVICE_NAME}
                 DOCKER_IMAGE_TAG_UPDATE=$(cat ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt | cut -d " " -f 3)
                 if [[ -z ${DOCKER_IMAGE_TAG_UPDATE} ]]; then
                     echo "${SERVICE_X_NAME} : 跳过，今日无更新"
@@ -2255,7 +2256,7 @@ do
             #
             TODAY=`date +%Y.%m.%d`
             #DOCKER_IMAGE_TAG_TODAY=$(F_SEARCH_IMAGE_LIKE_TAG  ${SERVICE_NAME}  ${TODAY})
-            ${DOCKER_IMAGE_SEARCH_SH}  --tag ${TODAY}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt  ${SERVICE_NAME}
+            ${DOCKER_IMAGE_SEARCH_SH}  ${IMAGE_PRE_NAME_ARG}  --tag ${TODAY}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt  ${SERVICE_NAME}
             DOCKER_IMAGE_TAG_TODAY=$(cat ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt | cut -d " " -f 3)
             if [[ -z ${DOCKER_IMAGE_TAG_TODAY} ]]; then
                 echo "${SERVICE_X_NAME} : 跳过，今日无更新"

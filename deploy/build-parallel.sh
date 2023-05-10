@@ -305,8 +305,7 @@ do
             ;;
         -I|--image-pre-name)
             IMAGE_PRE_NAME=$2
-            # 传递给子shell
-            export IMAGE_PRE_NAME
+            IMAGE_PRE_NAME_ARG="--image-pre-name ${IMAGE_PRE_NAME}"
             shift 2
             ;;
         -e|--email)
@@ -520,7 +519,7 @@ do
     #
     read -u 6       # 获取令牌。从命名管道fd6中读取一行，模拟领取一个令牌。由于FIFO特殊的读写机制，若没有空余的行可以读取，则进程会等待直至有可以读取的空余行
     {
-        ${BUILD_SH}  --mode function  --category ${LANGUAGE_CATEGORY}  --branch="${GIT_BRANCH}"  ${BUILD_SKIP_TEST_OPT}  ${BUILD_FORCE_OPT}  ${PJ}  > /dev/null 2>&1
+        ${BUILD_SH}  --mode function  --category ${LANGUAGE_CATEGORY}  --branch="${GIT_BRANCH}"  ${IMAGE_PRE_NAME_ARG}  ${BUILD_SKIP_TEST_OPT}  ${BUILD_FORCE_OPT}  ${PJ}  > /dev/null 2>&1
         if [[ `cat ${BUILD_OK_LIST_FILE_function} | wc -l` -eq 1 ]]; then
             cat  ${BUILD_OK_LIST_FILE_function} >> ${PARA_BUILD_OK_LIST_FILE}
         else
