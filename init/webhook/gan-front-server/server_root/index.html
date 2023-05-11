@@ -6,255 +6,344 @@
   <meta name="viewport" content="user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
   <title>Document</title>
   <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
-  <style type="text/css">
-    @font-face {
-      font-family: 'cour';
-      font-style: normal;
-      font-weight: normal;
-      font-display: auto;
-      src: url('./cour.ttf') format('truetype');
+
+  <link rel="stylesheet" href="elementUI.css" />
+  <script src="./vue3.js"></script>
+  <script src="./elementUI.js"></script>
+  <script src="./elementUI_Icon.js"></script>
+  <script src="./vueuse_shared.js"></script>
+  <script src="./vueuse_core.js"></script>
+  <script src="./axios.js"></script>
+  <style>
+    #app {
+      padding: 20px;
     }
-    * {
-      padding: 0;
-      margin: 0;
+    .el-form {
+      margin: 100px auto;
+      background-color: rgba(255, 255, 255, 0.8);
+      max-width: 1000px;
+      border-radius: 30px;
+      padding: 30px;
     }
-    html, body {
-      width: 100%;
-      height: 100%;
-    }
-    html {
-      font-family: fangsong;
-      color: #fff;
-    }
-    body {
+    .el-form .body  {
       display: flex;
-      flex-direction: column;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      overflow: hidden;
     }
-    .meinv-bg {
-      width: 100%;
-      height: 100%;
-      background: url('../girl.jpg') no-repeat;
-      background-position: center top;
+    .el-form-item__label {
+      width: 80px;
     }
-    .text-content {
-      position: absolute;
-      left: 0;
-      right: 0;
-      width: 100%;
-      height: 100%;
-      overflow-y: auto;
-    }
-    h1 {
-      text-align: center;
-      color: rgb(191, 229, 235);
-      font-size: 50px;
-    }
-    select, input, textarea {
-      font-family: fangsong;
-      width: 250px;
-      font-size: 20px;
-      min-height: 30px;
-      box-sizing: border-box;
-      opacity: 0.9;
-      border: none;
-      outline: none;
-      padding: 0 10px;
-    }
-    textarea {
-      padding: 10px;
-      resize: none;
-    }
-    .cell {
+    .el-check-tag {
+      padding-right: 5px;
+      margin-bottom: 5px;
       display: flex;
       align-items: center;
-      margin-bottom: 20px;
     }
-    .cell label {
-      margin-right: 20px;
-      font-size: 20px;
-      width: 150px;
+    .right {
+      flex: 1;
+      display: flex;
+      margin-left: 100px;
     }
-    .require label::after {
-      content: '*';
-      color: #e9f539;
+    .right .el-form-item {
+      flex: 1
     }
-
-    .textarea-cell {
+    .right .el-form-item__content {
+      flex-direction: column;
       align-items: flex-start;
     }
-
-    .gan-btn {
-      margin: 30px auto;
-      display: block;
-      color: #fff;
-      outline: none;
-      border: none;
-      text-align: center;
-      font-family: fangsong;
-      cursor: pointer;
-      background-color: rgb(255, 255, 0, 0.7);
-      font-weight: 600;
+    .right .el-textarea {
+      margin-top: 4px;
     }
-
-    #text {
+    .right .el-form-item__content .el-input {
+      width: 300px;
+    }
+    h3 {
+      text-align: center;
       width: 100%;
-      overflow-x: auto;
-      white-space: nowrap;
-      box-sizing: border-box;
     }
     
     /* 移动端样式 */
     @media only screen and (max-width: 750px) {
-      h1 {
-        font-size: 25px;
-        margin: 30px 20px;
-      }
-      .cell-content {
-        padding: 0 20px;
-      }
-      .cell {
-        margin-bottom: 10px;
-      }
-
-      select, input, textarea {
-        font-size: 16px;
-        width: 200px;
-        min-height: 25px;
-      } 
-
-      textarea {
-        resize: none;
-        height: 100px;
-      }
-
-      .cell label {
-        font-size: 16px;
-        width: 100px;
-      }
-      .gan-btn {
-        width: 150px;
-        height: 40px;
-        border-radius: 8px;
-        font-size: 24px;
-      }
-    }
-    /* pc端样式 */
-    @media only screen and (min-width: 760px) {
-      .cell-content {
-        display: flex;
-        width: max-content;
-        margin: 0 auto;
-      }
-      h1 {
-        margin: 30px 50px 50px;
-      }
-      .left-cell {
-        margin-right: 80px;
-      }
-      .right-cell {
-        height: inherit;
-      }
-      .textarea-cell, .textarea-cell textarea {
-        height: 100%;
-      }
-      .last-child {
+      
+      .el-form {
+        padding: 30px 15px;
+        margin-top: 0;
         margin-bottom: 0;
       }
-      .gan-btn {
-        width: 300px;
-        height: 50px;
-        border-radius: 10px;
-        font-size: 26px;
+      .right {
+        margin-left: 0;
       }
-      #text {
-        padding: 20px 40px;
+      .el-check-tag {
+        line-height: 16px;
       }
     }
-    
   </style>
 </head>
 <body>
-    <div class="meinv-bg"></div>
-    <div class="text-content">
-      <h1>超级无敌棒棒糖</h1>
-      <div class="cell-content">
-        <div class="left-cell">
-          <p class="cell require">
-            <label>1、干</label>
-            <select id="do">
-              <option value="" style="display:none"></option>
-              <option value="build">build</option>
-              <option value="deploy">deploy</option>
-              <option value="gogogo">gogogo</option>
-            </select>
-          </p>
-      
-          <p class="cell require">
-            <label>2、运行环境</label>
-            <select id="env">
-              <option value="" style="display:none"></option>
-              <option value="dev">dev</option>
-              <option value="stag">stag</option>
-              <option value="prod">prod</option>
-            </select>
-          </p>
-      
-          <p class="cell">
-            <label>3、代码分支</label>
-            <input id="branch" type="text">
-          </p>
-      
-          <p class="cell">
-            <label>4、发布版本</label>
-            <input id="version" type="text">
-          </p>
-      
-          <p class="cell">
-            <label>5、灰度发布</label>
-            <select id="gray">
-              <option value="no">no</option>
-              <option value="yes">yes</option>
-            </select>
-          </p>
-      
-          <p class="cell">
-            <label>6、跳过测试</label>
-            <select id="skiptest">
-              <option value="no">no</option>
-              <option value="yes">yes</option>
-            </select>
-          </p>
-      
-          <p class="cell">
-            <label>7、强制构建</label>
-            <select id="force">
-              <option value="no">no</option>
-              <option value="yes">yes</option>
-            </select>
-          </p>
-      
-          <p class="cell last-child">
-            <label>8、项目类别</label>
-            <select id="category">
-              <option value="" style="display:none"></option>
-              <option value="java">java</option>
-              <option value="node">node</option>
-              <option value="dockerfile">dockerfile</option>
-            </select>
-          </p>
+  <div id="app">
+    <el-form>
+      <div class="body">
+        <div class="left">
+          <el-form-item label="用户名">
+            <el-input v-model="state.userName"></el-input>
+          </el-form-item>
+          <el-form-item label="密码">
+            <el-input v-model="state.password"></el-input>
+          </el-form-item>
+          <el-form-item label="运行环境">
+            <el-radio-group v-model="state.environment" class="ml-4">
+              <el-radio label="dev">dev</el-radio>
+              <el-radio label="stag">stag</el-radio>
+              <el-radio label="prod">prod</el-radio>
+            </el-radio-group>
+          </el-form-item>
+          <el-form-item label="打包方式">
+            <el-radio-group v-model="state.methods" class="ml-4">
+              <el-radio label="build">build</el-radio>
+              <el-radio label="deploy">deploy</el-radio>
+              <el-radio label="gogogo">gogogo</el-radio>
+            </el-radio-group>
+          </el-form-item>
+          <el-form-item label="代码分支">
+            <el-input v-model="state.codeBranch"></el-input>
+          </el-form-item>
+          <el-form-item label="发布版本">
+            <el-input v-model="state.releaseVersion"></el-input>
+          </el-form-item>
+          <el-form-item label="灰度发布">
+            <el-radio-group v-model="state.grayRelease" class="ml-4">
+              <el-radio label="yes">yes</el-radio>
+              <el-radio label="no">no</el-radio>
+            </el-radio-group>
+          </el-form-item>
+          <el-form-item label="跳过测试">
+            <el-radio-group v-model="state.skipTesting" class="ml-4">
+              <el-radio label="yes">yes</el-radio>
+              <el-radio label="no">no</el-radio>
+            </el-radio-group>
+          </el-form-item>
+          <el-form-item label="强制构建">
+            <el-radio-group v-model="state.forceBuild" class="ml-4">
+              <el-radio label="yes">yes</el-radio>
+              <el-radio label="no">no</el-radio>
+            </el-radio-group>
+          </el-form-item>
+          <el-form-item label="项目类别">
+            <el-radio-group v-model="state.projectCategories" class="ml-4">
+              <el-radio label="java">java</el-radio>
+              <el-radio label="node">node</el-radio>
+              <el-radio label="dockerfile">dockerfile</el-radio>
+            </el-radio-group>
+          </el-form-item>
         </div>
-        <div class="right-cell">
-          <p class="cell require textarea-cell">
-            <label>9、项目列表</label>
-            <textarea id="projects" cols="30" rows="10" placeholder="一个项目一行"></textarea>
-          </p>
+        <div class="right">
+          <el-form-item >
+            <h3>项目列表</h3>
+            <el-check-tag :checked="item.checked" @change="onChange(item)" v-for="(item, index) in state.projectList" :key="index">{{item.name}}{{item.desc && `,${item.desc}`}}<el-icon class="close" @click="handleClose(item)"><Close /></el-icon></el-check-tag>
+            <el-input v-if="inputVisible" ref="InputRef" v-model="inputValue" class="ml-1 w-20"  @keyup.enter="handleInputConfirm" @blur="handleInputConfirm"></el-input>
+            <el-button v-else class="button-new-tag"  @click="showInput">添加标签</el-button>
+            <el-input type="textarea" :autosize="{ minRows: 3 }" v-model="state.projectInput" @keyup="onkeyup"></el-input>
+          </el-form-item>
         </div>
       </div>
-      <button class="gan-btn" onclick="start()">开 干</button>
-      <div id="text"></div>
-    </div>
-    
+      <el-button @click="submit">提交</el-button>
+    </el-form>
+  
   </div>
+
+<script >
+  const { createApp, ref, watch, nextTick } = Vue
+  const { useStorage } = VueUse
+
+  const app = createApp({
+    setup() {
+      // 本地缓存
+      const defaultConfig = ref({
+        userName: '',
+        password: '',
+        environment: 'dev', // 运行环境
+        methods: 'gogogo', // 打包方式
+        codeBranch: 'dev', // 代码分支 (能不能获取到git仓库中本账号最近提交的几个分支)
+        releaseVersion: '6.0.0', // 发布版本 (能不能获取到云效账号中几个在执行任务的版本号)
+        grayRelease: 'no', // 灰度发布
+        skipTesting: 'no', // 跳过测试
+        forceBuild: 'no', // 强制构建
+        projectCategories: 'node', // 项目类别
+        projectList: [ // 项目列表
+          {name: 'gclife-apply-front', desc: '新契约前端项目'},
+          {name: 'gclife-agent-front', desc: '人管前端项目'},
+          {name: 'gclife-endorse-front', desc: '保单管理前端项目'},
+        ],
+        projectArray: [],
+        projectInput: ''
+      })
+      const state = useStorage('default-config', defaultConfig)
+
+      const inputValue = ref('')
+      const inputVisible = ref(false)
+      const InputRef = ref()
+      // 删除标签
+      const handleClose = (item) => {
+        console.log('点击')
+        state.value.projectList.splice(state.value.projectList.findIndex(t => t.name === item.name), 1)
+      }
+      
+      const showInput = () => {
+        inputVisible.value = true
+        nextTick(() => {
+          InputRef.value.input.focus()
+        })
+      }
+      // 添加新标签
+      const handleInputConfirm = () => {
+        if (inputValue.value) {
+          let arr = inputValue.value.split(',')
+          let obj = {
+            name: arr[0],
+            desc: arr[1]
+          }
+          state.value.projectList.push(obj)
+        }
+        console.log('现在列表', state.value.projectList)
+        inputVisible.value = false
+        inputValue.value = ''
+      }
+      // 点击切换标签状态
+      const onChange = (item) => {
+        item.checked = !item.checked
+        if (item.checked) state.value.projectArray.push(item.name)
+        else {
+          let index = state.value.projectArray.findIndex(t => t === item.name)
+          index > -1 && state.value.projectArray.splice(index, 1)
+        }
+        for (let i = 0; i < state.value.projectArray.length; i++) {
+          if (!state.value.projectArray[i]) continue
+          state.value.projectArray.splice(0, i)
+          break
+        }
+        state.value.projectInput = state.value.projectArray.join('\n')
+      }
+      // 手动输入项目名时
+      const onkeyup = () => {
+        const regex = /[\n\r,]/ig;
+        console.log(state.value.projectInput)
+        state.value.projectArray = state.value.projectInput.split(/[\n\r,]/)
+      }
+
+
+      function encodeUTF8(s) {
+        var i, r = [], c, x;
+        for (i = 0; i < s.length; i++)
+          if ((c = s.charCodeAt(i)) < 0x80) r.push(c);
+          else if (c < 0x800) r.push(0xC0 + (c >> 6 & 0x1F), 0x80 + (c & 0x3F));
+          else {
+            if ((x = c ^ 0xD800) >> 10 == 0) //对四字节UTF-16转换为Unicode
+              c = (x << 10) + (s.charCodeAt(++i) ^ 0xDC00) + 0x10000,
+                r.push(0xF0 + (c >> 18 & 0x7), 0x80 + (c >> 12 & 0x3F));
+            else r.push(0xE0 + (c >> 12 & 0xF));
+            r.push(0x80 + (c >> 6 & 0x3F), 0x80 + (c & 0x3F));
+          };
+        return r;
+      }
+
+      // 字符串加密成 hex 字符串
+      function sha1(s) {
+        var data = new Uint8Array(encodeUTF8(s))
+        var i, j, t;
+        var l = ((data.length + 8) >>> 6 << 4) + 16, s = new Uint8Array(l << 2);
+        s.set(new Uint8Array(data.buffer)), s = new Uint32Array(s.buffer);
+        for (t = new DataView(s.buffer), i = 0; i < l; i++)s[i] = t.getUint32(i << 2);
+        s[data.length >> 2] |= 0x80 << (24 - (data.length & 3) * 8);
+        s[l - 1] = data.length << 3;
+        var w = [], f = [
+          function () { return m[1] & m[2] | ~m[1] & m[3]; },
+          function () { return m[1] ^ m[2] ^ m[3]; },
+          function () { return m[1] & m[2] | m[1] & m[3] | m[2] & m[3]; },
+          function () { return m[1] ^ m[2] ^ m[3]; }
+        ], rol = function (n, c) { return n << c | n >>> (32 - c); },
+          k = [1518500249, 1859775393, -1894007588, -899497514],
+          m = [1732584193, -271733879, null, null, -1009589776];
+        m[2] = ~m[0], m[3] = ~m[1];
+        for (i = 0; i < s.length; i += 16) {
+          var o = m.slice(0);
+          for (j = 0; j < 80; j++)
+            w[j] = j < 16 ? s[i + j] : rol(w[j - 3] ^ w[j - 8] ^ w[j - 14] ^ w[j - 16], 1),
+              t = rol(m[0], 5) + f[j / 20 | 0]() + m[4] + w[j] + k[j / 20 | 0] | 0,
+              m[1] = rol(m[1], 30), m.pop(), m.unshift(t);
+          for (j = 0; j < 5; j++)m[j] = m[j] + o[j] | 0;
+        };
+        t = new DataView(new Uint32Array(m).buffer);
+        for (var i = 0; i < 5; i++)m[i] = t.getUint32(i << 2);
+
+        var hex = Array.prototype.map.call(new Uint8Array(new Uint32Array(m).buffer), function (e) {
+          return (e < 16 ? "0" : "") + e.toString(16);
+        }).join("");
+        return hex;
+      }
+
+      // 提交发布
+      const submit = () => {
+
+        // 先获取sec
+        let headers = {
+          user: state.value.userName,
+          sec: sha1(state.value.userName + state.value.password)
+        }
+        console.log(headers)
+        axios.get('http://192.168.11.81:9527/token', {params: headers}).then(res => {
+          console.log('res', res)
+          Object.assign(headers, {
+            'content-type': 'application/json',
+          })
+        }).catch(err => {
+          console.log('err', err)
+        })
+        let params = {
+          do: state.value.methods,
+          env: state.value.environment,
+          branch: state.value.codeBranch,
+          version: state.value.releaseVersion,
+          gray: state.value.grayRelease,
+          skiptest: state.value.skipTesting,
+          force: state.value.forceBuild,
+          category: state.value.projectCategories,
+          projects: state.value.projectArray,
+        }
+        console.log('params: ', params)
+        axios.post('http://192.168.11.81:9527/hook/hand', JSON.stringify(params), {
+          headers,
+        }).then(res => {
+          console.log('res', res)
+        }).catch(err => {
+          console.log('err', err)
+        })
+      }
+
+      return {
+        state,
+        handleClose,
+        inputValue,
+        inputVisible,
+        showInput,
+        InputRef,
+        handleInputConfirm,
+        onChange,
+        onkeyup,
+        submit,
+      }
+    }
+  })
+  
+  // 引入elementUI-Icon
+  for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+    app.component(key, component)
+  }
+
+  app.use(ElementPlus)
+  
+  app.mount('#app')
+</script>
  <script>
   
   function start() {
