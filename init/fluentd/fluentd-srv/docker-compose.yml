@@ -1,8 +1,7 @@
 version: '3'
 services:
   fluentd:
-    #image: docker-repo:5000/public/fluentd-gcl:latest
-    image: docker-repo:5000/ufipf/dev/fluentd-gcl:latest
+    image: docker-repo:5000/public/gclife-fluentd:latest
     restart: always
     volumes:
       - ./conf:/fluentd/etc
