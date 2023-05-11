@@ -4,7 +4,8 @@ version: '2'
 services:
   #Service for nameserver
   namesrv:
-    image: apache/rocketmq:4.9.3
+    #image: apache/rocketmq:4.9.3
+    image: docker-repo:5000/public/rocketmq:latest
     #container_name: rmqnamesrv
     ports:
       - 9876:9876
@@ -16,7 +17,8 @@ services:
 
   #Service for broker-a
   broker-a0:
-    image: apache/rocketmq:4.9.3
+    #image: apache/rocketmq:4.9.3
+    image: docker-repo:5000/public/rocketmq:latest
     #container_name: rmqbroker-a0
     depends_on:
       - namesrv
@@ -38,7 +40,8 @@ services:
 
 #  #Service for broker-b （另一个broker群）
 #  broker-b0:
-#    image: apache/rocketmq:4.9.3
+#    #image: apache/rocketmq:4.9.3
+#    image: docker-repo:5000/public/rocketmq:latest
 #    #container_name: rmqbroker-b0
 #    links:
 #      - namesrv
@@ -55,7 +58,8 @@ services:
 #    command: sh mqbroker -c /opt/rocketmq-4.9.3/conf/broker.conf
 
   rmq-console:
-    image: styletang/rocketmq-console-ng:1.0.0
+    #image: styletang/rocketmq-console-ng:1.0.0
+    image: docker-repo:5000/public/rocketmq-console-ng:latest
     ports: 
       - 9080:8080
     environment:
