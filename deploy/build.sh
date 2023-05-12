@@ -29,7 +29,7 @@ NPM_BIN=${NPM_BIN:-'npm'}                         #--- 可选 npm|cnpm
 #GIT_DEFAULT_NAMESPACE=
 #GIT_DEFAULT_BRANCH=
 #DOCKER_REPO_SERVER=
-#DEFAULT_DOCKER_IMAGE_PRE_NAME=
+#DOCKER_IMAGE_DEFAULT_PRE_NAME=
 
 # 本地env
 GAN_WHAT_FUCK='Build'
@@ -1444,7 +1444,7 @@ do
             if [[ -n ${IMAGE_PRE_NAME} ]]; then
                 DOCKER_IMAGE_PRE_NAME=${IMAGE_PRE_NAME}
             elif [[ -z ${DOCKER_IMAGE_PRE_NAME} ]]; then
-                DOCKER_IMAGE_PRE_NAME=${DEFAULT_DOCKER_IMAGE_PRE_NAME}
+                DOCKER_IMAGE_PRE_NAME=${DOCKER_IMAGE_DEFAULT_PRE_NAME}
             fi
             #
             DOCKER_IMAGE_NAME=`echo ${LINE_A} | cut -d \| -f 5`

@@ -961,7 +961,7 @@ do
             if [[ -n ${IMAGE_PRE_NAME} ]]; then
                 DOCKER_IMAGE_PRE_NAME=${IMAGE_PRE_NAME}
             elif [[ -z ${DOCKER_IMAGE_PRE_NAME} ]]; then
-                DOCKER_IMAGE_PRE_NAME=${DEFAULT_DOCKER_IMAGE_PRE_NAME}
+                DOCKER_IMAGE_PRE_NAME=${DOCKER_IMAGE_DEFAULT_PRE_NAME}
             fi
             #
             DOCKER_IMAGE_NAME=`echo ${LINE_A} | cut -d \| -f 5`
