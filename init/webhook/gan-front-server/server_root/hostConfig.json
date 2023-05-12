@@ -1,0 +1,11 @@
+const host = {
+  "dev": {
+    "api": "https://dev-gan-api.zjlh.lan"
+  },
+  "stag": {
+    "api": "https://stag-gan-api.gc-life.cn"
+  },
+  "prod": {
+    "api": "https://gan-api.gc-life.com"
+  }
+};
