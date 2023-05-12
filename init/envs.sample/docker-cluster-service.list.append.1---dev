@@ -15,20 +15,32 @@
 ###  4【主机名：HOST_NAME】= [ 自定义 ]
 ###    须符合主机名称规范
 ###
-###  5【部署位置：DEPLOY_PLACEMENT】= [ NET:网络 , L:label键值对 | NS:命名空间, L:label键值对 | SSH:<用户@>主机名或IP <-p ssh端口> ]
-###    1 集群='swarm'      : NET:网络, L:label键值对             : NET 即network，默认在env.sh---*中定义，这里可以省略
-###                                                              : L 即Label，指定标签，可以有多个，代表服务部署到这个标签主机节点，可以不指定
-###    2 集群='k8s'        : NS:命名空间, L:label键值对          : NS 即k8s命名空间，默认在env.sh---*中定义，这里可以省略
-###                                                              : L 同上，即Label，指定标签，可以有多个，代表服务部署到这个标签主机节点，可以不指定
-###    3 集群='compose'    : SSH:<用户@>主机名或IP <-p ssh端口>  : 需要ssh到目标节点实现免密码登录，【用户名】及【ssh端口】可以省略
-###    若有多个参数，则用【,】分隔
-###    示例：【L:node=worker_node_2】
-###          【NET:net1, L:node=worker, L:aa=bbb】
-###          【NET:net1】
-###          【NS:demo_space, L:node=worker, L:aa=bbb】
-###          【NS:demo_space】
-###          【SSH:root@192.168.11.77 -p 22】
-###          【SSH:192.168.11.77】
+###  5【部署位置：DEPLOY_PLACEMENT】= [ [C=Context配置, NS=命名空间, L=label键值对]
+###                                     | [( H="ssh://<用户@>主机名或IP<:端口号>" | H="tcp://主机名或IP<:端口号>" ) , NET=网络 , L=label键值对]
+###                                     | H="ssh://<用户@>主机名或IP<:端口号>" | H="tcp://主机名或IP<:端口号>"]
+###                                   ]
+###    参数解释：
+###      * C=Context配置         : C 即Context，k8s Context配置名称，用以实现kubectl远程管理
+###      * NS=命名空间           : NS即k8s命名空间
+###      * L=label键值对         : L 同上，即Label，指定标签，可以有多个，代表服务部署到这个标签主机节点
+###      * H="ssh://<用户@>主机名或IP<:端口号>"
+###          或 H="tcp://主机名或IP<:端口号>"    : H 即DOCKER_HOST，通过设置此变量实现远程管理`swarm`集群或`compose`集群（docker-compose简称compose）
+###      * NET=网络              : NET 即network，用于swarm集群
+###    用法（若有多个参数，则用【,】分隔）：
+###      1 集群='k8s'        : C=Context配置, NS=命名空间, L=label键值对    :【C】及【NS】的默认值在env.sh---*中定义，这里可以省略，【L】可以为空
+###      2 集群='swarm'      : H=主机, NET=网络, L=label键值对              :【H】及【NET】的默认值在env.sh---*中定义，这里可以省略，【L】可以为空
+###      3 集群='compose'    : H=主机, NET=网络                             :【H】必须提供，【NET】的默认值在env.sh---*中定义，这里可以省略
+###    示例：
+###      【L=node=worker_node_2】
+###      【C=k8s222,NS=demo_space, L:node=worker, L=aa=bbb】
+###      【NS=demo_space, L:node=worker, L=aa=bbb】
+###      【NS=demo_space】
+###      【L=node=worker_node_2】
+###      【NET=net1, L=node=worker, L=aa=bbb】
+###      【NET=net1】
+###      【H=ssh://root@192.168.11.77:22】
+###      【H=ssh://192.168.11.77】
+###      【H=tcp://192.168.11.77:2375】
 ###
 ###
 ###   ***** 以上种种，都可以自己定义，然后调整相关脚本即可 *****
@@ -46,6 +58,6 @@
 |gc-gateway               | swarm    |               |                                                            |
 |gc-monitor               | swarm    |               |                                                            |
 |gc-client-service        | k8s      |               |                                                            |
-|gc-client-app-service    | compose  |               | SSH:192.168.11.77                                          |
+|gc-client-app-service    | compose  |               | H=ssh://192.168.11.77                                      |
 |gc-travel-service        | k8s      |               |                                                            |
 
