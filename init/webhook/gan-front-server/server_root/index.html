@@ -99,17 +99,17 @@
       <el-form-item label="密码">
         <el-input v-model="state.password"></el-input>
       </el-form-item>
+      <el-form-item label="运行环境">
+        <el-radio-group v-model="state.environment" class="ml-4">
+          <el-radio label="dev">dev</el-radio>
+          <el-radio label="stag">stag</el-radio>
+          <el-radio label="prod">prod</el-radio>
+        </el-radio-group>
       <el-button @click="login">登录</el-button>
     </el-form>
     <el-form v-else>
       <div class="body">
         <div class="left">
-          <el-form-item label="运行环境">
-            <el-radio-group v-model="state.environment" class="ml-4">
-              <el-radio label="dev">dev</el-radio>
-              <el-radio label="stag">stag</el-radio>
-              <el-radio label="prod">prod</el-radio>
-            </el-radio-group>
           </el-form-item>
           <el-form-item label="打包方式">
             <el-radio-group v-model="state.methods" class="ml-4">
@@ -161,10 +161,11 @@
         </div>
       </div>
       <el-button @click="submit">提交</el-button>
+      <el-button @click="logout">退出登录</el-button>
     </el-form>
   
   </div>
-
+<script type="text/javascript" src="./hostConfig.json"></script>
 <script >
   const { createApp, ref, watch, nextTick } = Vue
   const { useStorage } = VueUse
@@ -190,7 +191,7 @@
         ],
         projectArray: [],
         projectInput: '',
-        token: ''
+        token: '',
       })
       const state = useStorage('default-config', defaultConfig)
 
@@ -207,10 +208,15 @@
             sec: sha1(state.value.userName + state.value.password)
           }
         })
-        request.post('http://192.168.11.81:9527/get/token', {}).then(res => {
+        request.post(`${host[state.value.environment].api}/get/token`, {}).then(res => {
           console.log('res', res)
           state.value.token = res.data.Token
         })
+      }
+
+      // 退出登录
+      const logout = () => {
+        state.value.token = ''
       }
 
       // 删除标签
@@ -332,7 +338,7 @@
             token: res.data.Token
           }
         })
-        request.post('http://192.168.11.81:9527/hook/hand', JSON.stringify(params)).then(res => {
+        request.post(`${host[state.value.environment].api}/hook/hand`, JSON.stringify(params)).then(res => {
           console.log('res', res)
         })
       }
@@ -340,6 +346,7 @@
       return {
         state,
         login,
+        logout,
         handleClose,
         inputValue,
         inputVisible,
