@@ -34,7 +34,7 @@ echo '########################################'
 
 # 日报，周报
 echo "开始时间：`date`"
-${PGBADGER_CMD}  -q -I  -O ${PGBADGER_REPORT_PATH}  ${PG_LOG_PATH}/postgresql-20*.csv
+${PGBADGER_CMD}  -q -I  -O ${PGBADGER_REPORT_PATH}  ${PG_LOG_PATH}/postgresql-*.csv
 echo "结束时间：`date`"
 
 
