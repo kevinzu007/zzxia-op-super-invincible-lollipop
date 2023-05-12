@@ -9,6 +9,6 @@
     - name: 加执行权限：pgbadger_generate_report.sh
       file: dest=/root/pgbadger_report/pgbadger_generate_report.sh  state=file  owner=root group=root mode=0755
     - name: crontab - 生成pg报告
-      cron: name=生成pg报告 backup=yes state=present minute=0 hour=1 day=*  month=* weekday=* user=postgres  job='/root/pgbadger_report/pgbadger_generate_report.sh >> /root/pgbadger_report/pgbadger_generate_report.sh.log 2>&1'
+      cron: name=生成pg报告 backup=yes state=present minute=0 hour=1 day=*  month=* weekday=* user=root  job='/root/pgbadger_report/pgbadger_generate_report.sh >> /root/pgbadger_report/pgbadger_generate_report.sh.log 2>&1'
 
 
