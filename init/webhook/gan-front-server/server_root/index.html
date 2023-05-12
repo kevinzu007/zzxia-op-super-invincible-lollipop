@@ -18,6 +18,16 @@
     #app {
       padding: 20px;
     }
+    .login-form {
+      width: 330px;
+    }
+    .login-form .el-button {
+      width: 100%;
+    }
+    .el-form-item__label {
+      justify-content: flex-start;
+
+    }
     .el-form {
       margin: 100px auto;
       background-color: rgba(255, 255, 255, 0.8);
@@ -82,15 +92,18 @@
 </head>
 <body>
   <div id="app">
-    <el-form>
+    <el-form v-if="!state.token" class="login-form">
+      <el-form-item label="用户名">
+        <el-input v-model="state.userName"></el-input>
+      </el-form-item>
+      <el-form-item label="密码">
+        <el-input v-model="state.password"></el-input>
+      </el-form-item>
+      <el-button @click="login">登录</el-button>
+    </el-form>
+    <el-form v-else>
       <div class="body">
         <div class="left">
-          <el-form-item label="用户名">
-            <el-input v-model="state.userName"></el-input>
-          </el-form-item>
-          <el-form-item label="密码">
-            <el-input v-model="state.password"></el-input>
-          </el-form-item>
           <el-form-item label="运行环境">
             <el-radio-group v-model="state.environment" class="ml-4">
               <el-radio label="dev">dev</el-radio>
@@ -142,7 +155,7 @@
             <h3>项目列表</h3>
             <el-check-tag :checked="item.checked" @change="onChange(item)" v-for="(item, index) in state.projectList" :key="index">{{item.name}}{{item.desc && `,${item.desc}`}}<el-icon class="close" @click="handleClose(item)"><Close /></el-icon></el-check-tag>
             <el-input v-if="inputVisible" ref="InputRef" v-model="inputValue" class="ml-1 w-20"  @keyup.enter="handleInputConfirm" @blur="handleInputConfirm"></el-input>
-            <el-button v-else class="button-new-tag"  @click="showInput">添加标签</el-button>
+            <el-button v-else class="button-new-tag" @click="showInput">添加标签</el-button>
             <el-input type="textarea" :autosize="{ minRows: 3 }" v-model="state.projectInput" @keyup="onkeyup"></el-input>
           </el-form-item>
         </div>
@@ -176,13 +189,30 @@
           {name: 'gclife-endorse-front', desc: '保单管理前端项目'},
         ],
         projectArray: [],
-        projectInput: ''
+        projectInput: '',
+        token: ''
       })
       const state = useStorage('default-config', defaultConfig)
 
       const inputValue = ref('')
       const inputVisible = ref(false)
       const InputRef = ref()
+
+      // 登录
+      const login = () => {
+        // 先获取sec
+        const request = axios.create({
+          headers: {
+            user: state.value.userName,
+            sec: sha1(state.value.userName + state.value.password)
+          }
+        })
+        request.post('http://192.168.11.81:9527/get/token', {}).then(res => {
+          console.log('res', res)
+          state.value.token = res.data.Token
+        })
+      }
+
       // 删除标签
       const handleClose = (item) => {
         console.log('点击')
@@ -284,21 +314,6 @@
 
       // 提交发布
       const submit = () => {
-
-        // 先获取sec
-        let headers = {
-          user: state.value.userName,
-          sec: sha1(state.value.userName + state.value.password)
-        }
-        console.log(headers)
-        axios.get('http://192.168.11.81:9527/token', {params: headers}).then(res => {
-          console.log('res', res)
-          Object.assign(headers, {
-            'content-type': 'application/json',
-          })
-        }).catch(err => {
-          console.log('err', err)
-        })
         let params = {
           do: state.value.methods,
           env: state.value.environment,
@@ -310,18 +325,21 @@
           category: state.value.projectCategories,
           projects: state.value.projectArray,
         }
-        console.log('params: ', params)
-        axios.post('http://192.168.11.81:9527/hook/hand', JSON.stringify(params), {
-          headers,
-        }).then(res => {
+        // 传递token
+        const request = axios.create({
+          headers: {
+            'Content-Type': 'application/json',
+            token: res.data.Token
+          }
+        })
+        request.post('http://192.168.11.81:9527/hook/hand', JSON.stringify(params)).then(res => {
           console.log('res', res)
-        }).catch(err => {
-          console.log('err', err)
         })
       }
 
       return {
         state,
+        login,
         handleClose,
         inputValue,
         inputVisible,
