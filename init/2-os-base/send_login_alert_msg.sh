@@ -60,7 +60,7 @@ F_TRUST_IP()
     F_MY_LOG
     WEEK_N=`date +%w`
     if [ ${WEEK_N} = 6 -o ${WEEK_N} = 0 ]; then
-        F_SEND_DINGDING >/dev/null 2>&1
+        F_SEND_DINGDING & >/dev/null 2>&1
     else
         F_ECHO
     fi
@@ -76,7 +76,7 @@ F_OTHER_IP()
     fi
     AREA=`echo ${AREA} | sed 's/\"//g'`
     F_MY_LOG
-    F_SEND_DINGDING >/dev/null 2>&1
+    F_SEND_DINGDING & >/dev/null 2>&1
 }
 
 
