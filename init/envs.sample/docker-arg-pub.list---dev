@@ -4,5 +4,5 @@
 --detach
 --restart-condition on-failure
 --with-registry-auth
---network ${NETWORK_SWARM}
+--network ${SWARM_NETWORK}
 

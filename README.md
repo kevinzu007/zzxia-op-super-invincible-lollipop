@@ -416,7 +416,7 @@ export SWARM_DOCKER_HOST="tcp://192.168.11.71:2375"
 
 ### 基本运行参数
 #### 网络
-export NETWORK_SWARM='onet_1'         #--- 默认值，可以在服务清单中指定其他
+export SWARM_DEFAULT_NETWORK='onet_1'         #--- 默认值，可以在服务清单中指定其他
 
 ### docker log driver
 export DOCKER_LOG_DRIVER='json-file'
