@@ -50,8 +50,8 @@ case $1 in
     -u|--up)
         PID_GAN=$(ps -ef | grep  gan-api-server.py | grep -v 'grep' | awk '{print $2}')
         if [[ -z ${PID_GAN} ]]; then
-            nohup  python3 ./gan-api-server.py &  >> ./gan-api-server.py.log 2>&1
-            echo "服务已启动，PID：${PID_GAN}"
+            nohup  python3 ./gan-api-server.py  >> ./gan-api-server.py.log 2>&1 &
+            echo "服务已启动！"
             exit
         else
             echo -e "\n猪猪侠警告：服务已在运行中，PID：${PID_GAN}\n"
@@ -73,14 +73,14 @@ case $1 in
         PID_GAN=$(ps -ef | grep  gan-api-server.py | grep -v 'grep' | awk '{print $2}')
         if [[ -z ${PID_GAN} ]]; then
             echo -e "\n猪猪侠警告：服务不在运行中！\n"
-            nohup  python3 ./gan-api-server.py &  >> ./gan-api-server.py.log 2>&1
-            echo "服务已启动，PID：${PID_GAN}"
+            nohup  python3 ./gan-api-server.py  >> ./gan-api-server.py.log 2>&1 &
+            echo "服务已启动！"
             exit
         else
             kill -9 ${PID_GAN}
             echo "服务已停止！"
-            nohup  python3 ./gan-api-server.py &  >> ./gan-api-server.py.log 2>&1
-            echo "服务已启动，PID：${PID_GAN}"
+            nohup  python3 ./gan-api-server.py  >> ./gan-api-server.py.log 2>&1 &
+            echo "服务已启动！"
             exit
         fi
         ;;
