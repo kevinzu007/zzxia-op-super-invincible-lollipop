@@ -1,19 +1,22 @@
 - hosts: all
   become: yes
   tasks:
-    - name: modify hosts mvn-repo
-      shell: sed -i '/mvn-repo/d' /etc/hosts ; echo '192.168.11.79 mvn-repo' | tee -a /etc/hosts
-    - name: modify hosts npm-repo
-      shell: sed -i '/npm-repo/d' /etc/hosts ; echo '192.168.11.79 npm-repo' | tee -a /etc/hosts
     - name: modify hosts docker-repo
       shell: sed -i '/docker-repo/d' /etc/hosts ; echo '192.168.11.79 docker-repo' | tee -a /etc/hosts
     - name: modify hosts zabbix-server
       shell: sed -i '/zabbix-server/d' /etc/hosts ; echo '192.168.11.80 zabbix-server' | tee -a /etc/hosts
+
+- hosts: deploy
+  become: yes
+  tasks:
+    - name: modify hosts mvn-repo
+      shell: sed -i '/mvn-repo/d' /etc/hosts ; echo '192.168.11.79 mvn-repo' | tee -a /etc/hosts
+    - name: modify hosts npm-repo
+      shell: sed -i '/npm-repo/d' /etc/hosts ; echo '192.168.11.79 npm-repo' | tee -a /etc/hosts
     - name: modify hosts pg-server
       shell: sed -i '/pg-server/d' /etc/hosts ; echo '192.168.11.75 pg-server' | tee -a /etc/hosts
     - name: modify hosts gc-config
       shell: sed -i '/gc-config/d' /etc/hosts ; echo '192.168.11.74 gc-config' | tee -a /etc/hosts
-
 
 - hosts: nginx_proxy
   become: yes

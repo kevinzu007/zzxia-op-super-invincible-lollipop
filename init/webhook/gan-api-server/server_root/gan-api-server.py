@@ -3,14 +3,14 @@
 
 
 
-# 使用前请先基于【webhook_var.py.sample】创建【webhook_var.py】，并修改为自己的参数
+# 使用前请先基于【gan_api_var.py.sample】创建【gan_api_var.py】，并修改为自己的参数
 #
 # 你可能需要使他与基于【init/my_sec.sample】创建的文件路径保持一致（在非独立使用的时候）
 
 
 
 # 从文件载入变量
-from webhook_var import *
+from gan_api_var import *
 
 
 # 载入
