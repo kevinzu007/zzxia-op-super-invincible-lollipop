@@ -4,7 +4,7 @@
 
 ## 1 介绍
 
-这是一套集环境搭建，项目构建、部署、发布及周边的运维工具箱。适用docker集群（k8s、swarm、docker-compose）及Web站点等项目发布，支持灰度、扩缩容与回滚。这些工具也可以独立使用，比如项目构建、部署发布、Webhook server、dns修改、服务器登录异常警报、数据库备份归档与还原、表格绘制、申请与续签（泛）域名证书等等，具体参考帮助。**写文档是挺费神的，将就看吧。如果你在使用中遇到任何问题请在Issues中提出，或留下联系方式线下沟通。**
+这是一套集环境搭建，项目构建、部署、发布及周边的运维工具箱。适用docker集群（k8s、swarm、docker-compose）及Web站点等项目发布，支持灰度、扩缩容与回滚。这些工具也可以独立使用，比如项目构建、部署发布、Webhook server、dns修改、服务器登录异常警报、数据库备份归档与还原、表格绘制、申请与续签（泛）域名证书等等，具体参考帮助。**如果你在使用中遇到任何问题请在Issues中提出，或留下联系方式线下沟通。**
 
 
 
@@ -12,7 +12,7 @@
 
 - 项目构建：可以指定构建方法、输出方法、一键发布方式等（也可以使用自带的python钩子程序或Jenkins等外部钩子程序调用脚本实现自动化构建发布）。
 
-- 发布环境：支持多种docker容器编排：k8s、swarm、docker-compose（市面主流工具只支持k8s）；支持目录式发布，例如nginx等。
+- 发布环境：支持多种docker容器编排：k8s、swarm、docker-compose（市面主流工具只支持k8s）；支持多种集群与多集群并存；支持目录式发布，例如nginx等。
 
 - 项目发布：可以指定发布相关的所有参数与变量，这个参数变量可以是全局的，也可以是某一项目专有的，这里包括但不限于服务运行参数、变量、端口、副本数、Java运行参数变量，容器变量、容器启动命令参数，命名空间 、主机名等。只需要修改项目发布清单就可以搞定所有项目，方便快捷（不同于一般系统那种每个项目都是一个独立配置文件，难以批量修改，与主流helm工具大相径庭，俗话说：不是同一个科技树）。
 
@@ -57,7 +57,7 @@
 2. 【Fork】她，为她增加新功能，修Bug，让她更加卡哇伊；
 3. 【Issue】她，告诉她有哪些小脾气，她会改的，手动小绵羊；
 4. 【打赏】她，为她买jk；
-<img src="https://img-blog.csdnimg.cn/20210429155627295.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3poZl9zeQ==,size_16,color_FFFFFF,t_70#pic_center" alt="打赏" style="zoom:50%;" />
+<img src="https://gitee.com/zhf_sy/pic-bed/raw/master/dao.png" alt="打赏" style="zoom:40%;" />
 
 
 
