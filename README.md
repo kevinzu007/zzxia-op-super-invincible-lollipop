@@ -299,17 +299,17 @@ ansible all --become -m shell -a "reboot"
 基于【home项目路径/init/my_sec_envs.sample】示例创建自己的密码配置文件
 
 ```bash
-cp -r  home项目路径/init/my_sec_envs.sample  home项目路径/init/my_sec-MyName
+cp -r  home项目路径/init/my_sec_envs.sample  home项目路径/init/my_sec_envs-MyName
 ```
 
-请参考【README.md】修改`home项目路径/init/my_sec-MyName`中的配置文件。如果增减了配置文件，也需要同时修改【install-config-my_sec.yml】ansible-playbook文件。
+请参考【README.md】修改`home项目路径/init/my_sec-MyName`中的配置文件。如果增减了配置文件，也需要同时修改【install-config-my_sec_envs.yml】ansible-playbook文件。
 
 
 
 #### 3.7.2 部署密码配置文件
 
 ```bash
-ansible-playbook  install-config-my_sec.yml
+ansible-playbook  install-config-my_sec_envs.yml
 ```
 
 
