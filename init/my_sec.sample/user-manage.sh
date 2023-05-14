@@ -12,12 +12,9 @@ SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd "${SH_PATH}"
 
-USER_DB='~/.my_sec/user.db'
-
-
+USER_DB='./user.db'
 
 
 # 我看：没有必要，使用编辑器就好了
-
 
 

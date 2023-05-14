@@ -13,31 +13,20 @@ SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd "${SH_PATH}"
 
 
-
-# 引入env
-.  ./user.env.sec
-
-
-
-if [[ ! -f ${USER_DB_FILE} ]]; then
-    echo -e  "\n猪猪侠警告：USER_DB_FILE 文件不存在，请先参考模板创建！\n"
-fi
-#
-if [[ ! -f ${USER_TOKEN_FILE} ]]; then
-    touch  ${USER_TOKEN_FILE}
-fi
+# 本地env
+USER_DB_FILE="./user.db"
 
 
 # 用法：
 F_HELP()
 {
     echo "
-    用途：用于生成并更新用户密码列。
+    用途：用于生成并更新用户密码
     依赖：
     注意：请使用编辑器手动添加用户基本信息后，再使用本程序！
     用法:
         $0  [-h|--help]
-        $0  [{用户名}]  [{用户口令}]
+        $0  [{用户名}]
     参数说明：
         \$0   : 代表脚本本身
         []   : 代表是必选项
@@ -50,24 +39,32 @@ F_HELP()
     示例:
         #
         $0  --help
-        $0  jack  jackpasswd        #--- 用生成用户密码
+        $0  jack      #--- 更新用户【jack】的密码
         #
         "
 }
 
 
-
-if [[ $# -le 1 ]] || [[ $1 == '-h' ]] || [[ $1 == '--help' ]]; then
+#
+if [[ $# == 0 ]] || [[ $1 == '-h' ]] || [[ $1 == '--help' ]]; then
     F_HELP
     echo -e "\n猪猪侠提醒：请参考帮助使用！\n"
     exit
 fi
 
 
+# db
+if [[ ! -f ${USER_DB_FILE} ]]; then
+    echo -e  "\n猪猪侠警告：USER_DB_FILE 文件不存在，请先参考模板创建！\n"
+    exit 1
+fi
+
+
 USER_NAME=$1
-USER_PASSWORD=$2
+read  -s -p '请输入用户【${USER_NAME}】新密码：'  USER_PASSWORD
 
 
+# do
 GET_IT='N'
 while read LINE
 do
@@ -91,22 +88,12 @@ do
         USER_SECRET_sha256_50=${USER_SECRET_sha256:3:50}                         #--- 与webhook-server.py保持一致，从第4位开始，取50位，即4-53
         USER_SECRET=${USER_SECRET_sha256_50}
         #
-        #sed -i -E "s/(\|[ ]*[0-9]+[ ]*\|[ ]*${USER_NAME}[ ]*\|.+\|.+\|).+\|.+\|$/\1 ${USER_SALT} \| ${USER_SECRET} \|/"  ${USER_DB_FILE}
         sed -i -E "s/(\|[ ]*[0-9]+[ ]*\|[ ]*${USER_NAME}[ ]*\|.+\|.+\|).+\|.+\|$/\1 ${USER_SALT} \| ${USER_SECRET} \|/"  ${USER_DB_FILE}
         UPDATE_1=$?
-        #
-        # token
-        #
-        USER_TOKEN=$(echo ${RANDOM} | sha1sum | awk '{print $1}')
-        #
-        #sed -i -E "s/^${USER_NAME} .*$/${USER_NAME} ${USER_TOKEN}/"  ${USER_TOKEN_FILE}
-        sed -i -E "/^${USER_NAME} .*$/d"  ${USER_TOKEN_FILE}
-        echo "${USER_NAME} ${USER_TOKEN}"  >>  ${USER_TOKEN_FILE}
-        UPDATE_2=$?
-        if [[ ${UPDATE_1} -eq 0 ]] && [[ ${UPDATE_2} -eq 0 ]]; then
-            echo -e "\n猪猪侠提醒：【${USER_DB_FILE}】和【 ${USER_TOKEN_FILE}】更新成功\n"
+        if [[ ${UPDATE_1} -eq 0 ]]; then
+            echo -e "\n猪猪侠提醒：用户【${USER_NAME}】密码更新成功\n"
         else
-            echo -e "\n猪猪侠警告：【${USER_DB_FILE}】或【${USER_TOKEN_FILE}】更新失败\n"
+            echo -e "\n猪猪侠警告：用户【${USER_NAME}】密码更新失败\n"
         fi
         GET_IT='Y'
         break
@@ -115,7 +102,7 @@ done < "${USER_DB_FILE}"
 
 
 if [[ ${GET_IT} != 'Y' ]]; then
-    echo -e "\n猪猪侠警告：【${USER_DB_FILE}】中用户不存在，请使用编辑器手动添加基本信息，然后再用此脚本添加盐和密码！\n"
+    echo -e "\n猪猪侠警告：【${USER_DB_FILE}】中用户【${USER_NAME}】不存在，请使用编辑器手动添加基本信息，然后再用此脚本添加用户盐和密码！\n"
 fi
 
 
