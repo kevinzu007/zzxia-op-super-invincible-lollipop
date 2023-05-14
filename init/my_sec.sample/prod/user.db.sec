@@ -1,4 +1,0 @@
-#export USER_DB_FILE=~/.my_sec/user.db          #--- 有【~】，则不能用【""】
-export USER_DB_FILE="${HOME}/.my_sec/user.db"
-export USER_TOKEN_FILE="${HOME}/.my_sec/user.db.token"
-

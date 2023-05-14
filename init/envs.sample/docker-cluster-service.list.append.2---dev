@@ -12,19 +12,19 @@
 ###    如果有多个，则用【,】号分隔，例如：【-Dencoding=UTF-8,-Dfile=${FILE},JAVA_OPT_FROM_FILE="/path/to/filename"】
 ###    -  指定为具体参数，例如：【-Dencoding=UTF-8】
 ###    -  指定变量参数，例如：【-Dfile=${FILE}】
-###    -  指定从文件获取，参数名需指定为【JAVA_OPT_FROM_FILE】，例如：【JAVA_OPT_FROM_FILE="/path/to/filename"】，建议放在【init/my_envs/】目录下，用git管理
+###    -  指定从文件获取，参数名需指定为【JAVA_OPT_FROM_FILE】，例如：【JAVA_OPT_FROM_FILE="/path/to/filename"】，建议放在【init/my_spec_envs/】目录下，用git管理
 ### 
 ###  4【容器ENVS：CONTAINER_ENVS】= [ 变量1=值1, 变量2=值2, 变量n=值n, ENVS_FROM_FILE="/path/to/filename"]
 ###    如果有多个，则用【,】号分隔，例如：【aa=1,bb=2,NEO4J_AUTH=${NEO4J_USER}/${NEO4J_PASSWORD},ENVS_FROM_FILE="/path/to/filename"】
 ###    - 指定为具体参数，例如：【aa=1,bb=2】
 ###    - 指定变量参数，例如：【NEO4J_AUTH=${NEO4J_USER}/${NEO4J_PASSWORD}】
-###    - 指定从文件获取，参数名需指定为【ENVS_FROM_FILE】，例如【ENVS_FROM_FILE="/path/to/filename"】，建议放在【init/my_envs/】目录下，用git管理
+###    - 指定从文件获取，参数名需指定为【ENVS_FROM_FILE】，例如【ENVS_FROM_FILE="/path/to/filename"】，建议放在【init/my_spec_envs/】目录下，用git管理
 ### 
 ###  5【容器CMDS：CONTAINER_CMDS】= [ 命令参数2, 命令参数n, CMDS_FROM_FILE="/path/to/filename" ]
 ###    如果有多个，则用【,】号分隔，例如：【--quiet,--requirepass "${REDIS_PASSWORD}",CMDS_FROM_FILE="/path/to/filename"】
 ###    - 指定为具体参数，例如：【--quiet】
 ###    - 指定变量参数，例如：【--requirepass "${REDIS_PASSWORD}"】
-###    - 指定从文件获取，参数名需指定为【CMDS_FROM_FILE】，例如【CMDS_FROM_FILE="/path/to/filename"】，建议放在【init/my_envs/】目录下，用git管理
+###    - 指定从文件获取，参数名需指定为【CMDS_FROM_FILE】，例如【CMDS_FROM_FILE="/path/to/filename"】，建议放在【init/my_spec_envs/】目录下，用git管理
 ### 
 ###
 ###   ***** 以上种种，都可以自己定义，然后调整相关脚本即可 *****
@@ -36,9 +36,9 @@
 #| ---------------------- | --------------------------------- | ---------------------------------------------------------- | --------------------------------- |
 |neo4j-srv                |                                   | NEO4J_AUTH="${NEO4J_USER}/${NEO4J_PASSWORD}"               |                                   |
 |redis-srv                |                                   |                                                            |--requirepass "${REDIS_PASSWORD}"  |
-|nacos-server-1           |                                   | ENVS_FROM_FILE=../init/my_envs/nacos.env                   |                                   |
-|nacos-server-2           |                                   | ENVS_FROM_FILE=../init/my_envs/nacos.env                   |                                   |
-|nacos-server-3           |                                   | ENVS_FROM_FILE=../init/my_envs/nacos.env                   |                                   |
+|nacos-server-1           |                                   | ENVS_FROM_FILE=../init/my_spec_envs/nacos.env                   |                                   |
+|nacos-server-2           |                                   | ENVS_FROM_FILE=../init/my_spec_envs/nacos.env                   |                                   |
+|nacos-server-3           |                                   | ENVS_FROM_FILE=../init/my_spec_envs/nacos.env                   |                                   |
 |gc-gateway               | -Xms512m -Xmx512m                 |                                                            |                                   |
 |gc-monitor               | -Xms512m -Xmx512m                 |                                                            |                                   |
 |gc-client-service        | -Xms512m -Xmx512m                 |                                                            |                                   |

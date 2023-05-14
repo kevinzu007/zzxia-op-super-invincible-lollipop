@@ -83,10 +83,9 @@ R_DOMAIN=${DOMAIN}
 
 
 # godaddy信息
-if [[ -f ~/.my_sec/godaddy.sec ]]; then
-    . ~/.my_sec/godaddy.sec
-elif [[ -f /etc/godaddy.sec ]]; then
-    . /etc/godaddy.sec
+GODADDY_SEC_ENV="/etc/godaddy.sec.env"
+if [[ -f ${GODADDY_SEC_ENV} ]]; then
+    . ${GODADDY_SEC_ENV}
 else
     echo -e "\n猪猪侠警告：没有找到sec文件\n"
     exit 1
