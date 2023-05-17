@@ -6,6 +6,7 @@ services:
   namesrv:
     #image: apache/rocketmq:4.9.3
     image: docker-repo:5000/public/rocketmq:latest
+    restart: always
     #container_name: rmqnamesrv
     ports:
       - 9876:9876
@@ -19,6 +20,7 @@ services:
   broker-a0:
     #image: apache/rocketmq:4.9.3
     image: docker-repo:5000/public/rocketmq:latest
+    restart: always
     #container_name: rmqbroker-a0
     depends_on:
       - namesrv
@@ -42,6 +44,7 @@ services:
 #  broker-b0:
 #    #image: apache/rocketmq:4.9.3
 #    image: docker-repo:5000/public/rocketmq:latest
+#    restart: always
 #    #container_name: rmqbroker-b0
 #    links:
 #      - namesrv
@@ -60,6 +63,7 @@ services:
   rmq-console:
     #image: styletang/rocketmq-console-ng:1.0.0
     image: docker-repo:5000/public/rocketmq-console-ng:latest
+    restart: always
     ports: 
       - 9080:8080
     environment:
