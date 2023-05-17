@@ -90,24 +90,24 @@ F_HTTP_REALSERVER()
 {
     echo "
 # ------------start------------
-## 80 for Letsencrypts证书申请与更新
-#server {
-#    server_name ${FQDN} ;
-#    listen 80 ;
-#    access_log /var/log/nginx/${FQDN}-access.log  main ;
-#    # Do not HTTPS redirect Let'sEncrypt ACME challenge
-#    location /.well-known/acme-challenge/ {
-#        auth_basic off;
-#        allow all;
-#        root ${WEBSITE_BASE}/${FQDN} ;
-#        try_files \$uri =404;
-#        break;
-#    }
-#    location / {
-#        return 301 https://\$host\$request_uri;
-#    }
-#}
-#
+# 80 for Letsencrypts证书申请与更新
+server {
+    server_name ${FQDN} ;
+    listen 80 ;
+    access_log /var/log/nginx/${FQDN}-access.log  main ;
+    # Do not HTTPS redirect Let'sEncrypt ACME challenge
+    location /.well-known/acme-challenge/ {
+        auth_basic off;
+        allow all;
+        root ${WEBSITE_BASE}/${FQDN} ;
+        try_files \$uri =404;
+        break;
+    }
+    location / {
+        return 301 https://\$host\$request_uri;
+    }
+}
+
 server {
     listen       ${FRONT_HTTP_PORT} ;
     server_name  ${FQDN} ;
@@ -148,23 +148,23 @@ F_HTTP_PROXYSERVER()
 {
     echo "
 # ------------start------------
-## 80 for Letsencrypts证书申请与更新
-#server {
-#    server_name ${FQDN} ;
-#    listen 80 ;
-#    access_log /var/log/nginx/${FQDN}-access.log  main ;
-#    # Do not HTTPS redirect Let'sEncrypt ACME challenge
-#    location /.well-known/acme-challenge/ {
-#        auth_basic off;
-#        allow all;
-#        root ${WEBSITE_BASE}/${FQDN} ;
-#        try_files \$uri =404;
-#        break;
-#    }
-#    location / {
-#        return 301 https://\$host\$request_uri;
-#    }
-#}
+# 80 for Letsencrypts证书申请与更新
+server {
+    server_name ${FQDN} ;
+    listen 80 ;
+    access_log /var/log/nginx/${FQDN}-access.log  main ;
+    # Do not HTTPS redirect Let'sEncrypt ACME challenge
+    location /.well-known/acme-challenge/ {
+        auth_basic off;
+        allow all;
+        root ${WEBSITE_BASE}/${FQDN} ;
+        try_files \$uri =404;
+        break;
+    }
+    location / {
+        return 301 https://\$host\$request_uri;
+    }
+}
 
 # http
 upstream ${PJ} {
