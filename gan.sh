@@ -108,13 +108,13 @@ case "${DO}" in
         bash ${SH_PATH}/deploy/web-release.sh  ${CMD_ARG}
         ;;
     "ngx-dns")
-        bash ${SH_PATH}/init/nginx-config/nginx-dns.sh  ${CMD_ARG}
+        bash ${SH_PATH}/init/nginx/nginx-config/nginx-dns.sh  ${CMD_ARG}
         ;;
     "ngx-root")
-        bash ${SH_PATH}/init/nginx-config/nginx-root.sh  ${CMD_ARG}
+        bash ${SH_PATH}/init/nginx/nginx-config/nginx-root.sh  ${CMD_ARG}
         ;;
     "ngx-conf")
-        bash ${SH_PATH}/init/nginx-config/nginx-conf.sh  ${CMD_ARG}
+        bash ${SH_PATH}/init/nginx/nginx-config/nginx-conf.sh  ${CMD_ARG}
         ;;
     "ngx-cert")
         ansible nginx_letsencrypt -m command -a "bash /root/nginx-config/nginx-cert-letsencrypt-a.sh  ${CMD_ARG}"
