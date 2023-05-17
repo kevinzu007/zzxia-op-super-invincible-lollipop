@@ -22,8 +22,8 @@ TMP_WEBSITE_BASE="${SH_PATH}/tmp/web_sites"
 [ -d ${TMP_WEBSITE_BASE} ] && rm -rf   ${TMP_WEBSITE_BASE}
 mkdir -p ${TMP_WEBSITE_BASE}
 #
-ALIYUN_DNS_SH="${SH_PATH}/../../op/aliyun-dns.sh"
-GODADDY_DNS_SH="${SH_PATH}/../../op/godaddy-dns.sh"
+ALIYUN_DNS_SH="${SH_PATH}/../../../op/aliyun-dns.sh"
+GODADDY_DNS_SH="${SH_PATH}/../../../op/godaddy-dns.sh"
 
 
 # 删除空行（以及只有tab、空格的行）
