@@ -615,12 +615,12 @@ F_DOCKER_CLUSTER_SERVICE_DEPLOY()
                             DEPLOY_PLACEMENT=`echo ${LINE_A} | cut -d \| -f 5`
                             DEPLOY_PLACEMENT=`eval echo ${DEPLOY_PLACEMENT}`
                         fi
-                        #
-                        if [[ ${GET_IT_A} != 'YES' ]];then
-                            echo -e "\n猪猪侠警告：在【${GOGOGO_SERVICE_LIST_FILE_APPEND_1}】文件中没有找到服务名【${SERVICE_NAME}】，请检查！\n"
-                            exit 51
-                        fi
                     done < ${GOGOGO_SERVICE_LIST_FILE_APPEND_1_TMP}
+                    #
+                    if [[ ${GET_IT_A} != 'YES' ]];then
+                        echo -e "\n猪猪侠警告：在【${GOGOGO_SERVICE_LIST_FILE_APPEND_1}】文件中没有找到服务名【${SERVICE_NAME}】，请检查！\n"
+                        exit 51
+                    fi
                     #
                     F_SET_RUN_ENV
                     if [[ $? -ne 0 ]]; then
@@ -1013,12 +1013,12 @@ do
             DOCKER_IMAGE_NAME=`echo ${LINE_A} | cut -d \| -f 5`
             DOCKER_IMAGE_NAME=`echo ${DOCKER_IMAGE_NAME}`
         fi
-        #
-        if [[ ${GET_IT_A} != 'YES' ]];then
-            echo -e "\n猪猪侠警告：在【${PROJECT_LIST_FILE_APPEND_1}】文件中没有找到项目【${PJ}】，请检查！\n"
-            exit 51
-        fi
     done < ${GOGOGO_PROJECT_LIST_FILE_APPEND_1_TMP}
+    #
+    if [[ ${GET_IT_A} != 'YES' ]];then
+        echo -e "\n猪猪侠警告：在【${PROJECT_LIST_FILE_APPEND_1}】文件中没有找到项目【${PJ}】，请检查！\n"
+        exit 51
+    fi
     #
     #
     RELEASE_CHECK_COUNT=`expr ${RELEASE_CHECK_COUNT} + 1`

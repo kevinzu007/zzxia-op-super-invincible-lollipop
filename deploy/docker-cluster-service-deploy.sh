@@ -1330,12 +1330,12 @@ do
             DEPLOY_PLACEMENT=`echo ${LINE_A} | cut -d \| -f 5`
             DEPLOY_PLACEMENT=`eval echo ${DEPLOY_PLACEMENT}`
         fi
-        #
-        if [[ ${GET_IT_A} != 'YES' ]];then
-            echo -e "\n猪猪侠警告：在【${SERVICE_LIST_FILE_APPEND_1}】文件中没有找到服务名【${SERVICE_NAME}】，请检查！\n"
-            exit 51
-        fi
     done < ${SERVICE_LIST_FILE_APPEND_1_TMP}
+    #
+    if [[ ${GET_IT_A} != 'YES' ]];then
+        echo -e "\n猪猪侠警告：在【${SERVICE_LIST_FILE_APPEND_1}】文件中没有找到服务名【${SERVICE_NAME}】，请检查！\n"
+        exit 51
+    fi
     #
     #
     # append.2
@@ -1365,12 +1365,12 @@ do
             CONTAINER_CMDS=`eval echo ${CONTAINER_CMDS}`
             CONTAINER_CMDS=${CONTAINER_CMDS//'~'/${HOME}}
         fi
-        #
-        #if [[ ${GET_IT_B} != 'YES' ]];then
-        #    echo -e "\n猪猪侠警告：在【${SERVICE_LIST_FILE_APPEND_2}】文件中没有找到服务名【${SERVICE_NAME}】，请检查！\n"
-        #    exit 51
-        #fi
     done < ${SERVICE_LIST_FILE_APPEND_2_TMP}
+    #
+    #if [[ ${GET_IT_B} != 'YES' ]];then
+    #    echo -e "\n猪猪侠警告：在【${SERVICE_LIST_FILE_APPEND_2}】文件中没有找到服务名【${SERVICE_NAME}】，请检查！\n"
+    #    exit 51
+    #fi
     #
     #
     # 运行环境

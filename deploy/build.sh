@@ -1453,12 +1453,12 @@ do
             LINK_NODE_PROJECT=`echo ${LINE_A} | cut -d \| -f 6`
             LINK_NODE_PROJECT=`eval echo ${LINK_NODE_PROJECT}`
         fi
-        #
-        if [[ ${GET_IT_A} != 'YES' ]];then
-            echo -e "\n猪猪侠警告：在【${PROJECT_LIST_FILE_APPEND_1}】文件中没有找到项目【${PJ}】，请检查！\n"
-            exit 51
-        fi
     done < ${PROJECT_LIST_FILE_APPEND_1_TMP}
+    #
+    if [[ ${GET_IT_A} != 'YES' ]];then
+        echo -e "\n猪猪侠警告：在【${PROJECT_LIST_FILE_APPEND_1}】文件中没有找到项目【${PJ}】，请检查！\n"
+        exit 51
+    fi
     #
     #
     GIT_LOG_file=${GIT_LOG}.${PJ}
