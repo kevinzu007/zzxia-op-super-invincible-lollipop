@@ -41,8 +41,6 @@ F_CP ()
     cp -f  ${ENVS_FILE_DIR}/dingding_send_markdown-login.py          ./2-os-base/
     cp -f  ${ENVS_FILE_DIR}/dingding_send_markdown.py                ./2-os-base/
     cp -f  ${ENVS_FILE_DIR}/dingding_conver_to_markdown_list.py      ./2-os-base/
-    cp -f  ${ENVS_FILE_DIR}/ossfs-backup.service                     ./2-os-base/
-    cp -f  ${ENVS_FILE_DIR}/ossfs-internal-backup.service            ./2-os-base/
     #
     cp -f  ${ENVS_FILE_DIR}/install-hosts.yml---${R_ENV}             ./2-os-base/install-hosts.yml
     cp -f  ${ENVS_FILE_DIR}/bash_aliases---${R_ENV}                  ./2-os-base/bash_aliases
@@ -52,6 +50,8 @@ F_CP ()
     cp -f  ${ENVS_FILE_DIR}/soft/jdk-*-linux-x64.tar.gz              ./build-envs/java/
     cp -f  ${ENVS_FILE_DIR}/soft/apache-maven-*-bin.tar.gz           ./build-envs/maven/
     cp -f  ${ENVS_FILE_DIR}/soft/node-v*-linux-x64.tar.xz            ./build-envs/node/
+    cp -f  ${ENVS_FILE_DIR}/ossfs-backup.service                     ./ossfs/
+    cp -f  ${ENVS_FILE_DIR}/ossfs-internal-backup.service            ./ossfs/
     cp -f  ${ENVS_FILE_DIR}/backup-center-project.list               ./backup-center/backup-center-project.list
     cp -f  ${ENVS_FILE_DIR}/pg_db.list                               ./pg/backup/pg_db.list
     #
@@ -88,8 +88,6 @@ F_RM ()
     rm -f  ./2-os-base/dingding_send_markdown-login.py
     rm -f  ./2-os-base/dingding_send_markdown.py
     rm -f  ./2-os-base/dingding_conver_to_markdown_list.py
-    rm -f  ./2-os-base/ossfs-internal-backup.service
-    rm -f  ./2-os-base/ossfs-backup.service
     #
     rm -f  ./2-os-base/install-hosts.yml
     rm -f  ./2-os-base/bash_aliases
@@ -99,6 +97,8 @@ F_RM ()
     rm -f  ./build-envs/java/jdk-*-linux-x64.tar.gz
     rm -f  ./build-envs/maven/apache-maven-*-bin.tar.gz
     rm -f  ./build-envs/node/node-v*-linux-x64.tar.xz
+    rm -f  ./ossfs/ossfs-internal-backup.service
+    rm -f  ./ossfs/ossfs-backup.service
     rm -f  ./backup-center/backup-center-project.list
     rm -f  ./pg/backup/pg_db.list
     #
