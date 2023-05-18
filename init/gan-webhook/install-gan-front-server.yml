@@ -4,6 +4,6 @@
   become: yes
   tasks:
     - name: 拷贝：gan-front-server
-      copy: src=./gan-front-server/server_root/  dest=/srv/web_sites/gan-api-server/  owner=root group=root mode=644 backup=yes
+      copy: src=./gan-front-server/server_root/  dest=/srv/web_sites/gan/releases/current/  owner=root group=root mode=644 backup=yes
 
 
