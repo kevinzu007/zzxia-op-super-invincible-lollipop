@@ -23,7 +23,7 @@ GAN_PLATFORM_NAME="${GAN_PLATFORM_NAME:-'超甜B&D系统'}"
 #DOCKER_IMAGE_DEFAULT_PRE_NAME=
 #DOCKER_REPO_SECRET_NAME=
 #CONTAINER_ENVS_PUB_FILE=
-#DEBUG=
+#ENABLE_DEBUG_PORT=
 #DEBUG_RANDOM_PORT_MIN=
 #DEBUG_RANDOM_PORT_MAX=
 #K8S_DEFAULT_CONTEXT=
@@ -125,7 +125,7 @@ F_HELP()
         $0 [-l|--list]                    #--- 列出配置文件中的服务清单
         $0 [-L|--list-run swarm|k8s]      #--- 列出指定集群中运行的所有服务，不支持持【docker-compose】
         # 创建、修改
-        $0 <-M|--mode [normal|function]>  [-c|--create|-m|--modify]  <-D|--debug>  <<-t|--tag {模糊镜像tag版本}> | <-T|--TAG {精确镜像tag版本}>>  <-I|--image-pre-name {镜像前置名称}>  <-n|--number {副本数}>  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
+        $0 <-M|--mode [normal|function]>  [-c|--create|-m|--modify]  <-D|--debug-port>  <<-t|--tag {模糊镜像tag版本}> | <-T|--TAG {精确镜像tag版本}>>  <-I|--image-pre-name {镜像前置名称}>  <-n|--number {副本数}>  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
         # 更新
         $0 <-M|--mode [normal|function]>  [-u|--update]  <<-t|--tag {模糊镜像tag版本}> | <-T|--TAG {精确镜像tag版本}>>  <-I|--image-pre-name {镜像前置名称}>  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
         # 回滚
@@ -163,7 +163,7 @@ F_HELP()
         -s|--status    : 获取服务运行状态
         -d|--detail    : 获取服务详细信息
         -o|--logs      : 获取服务运行日志
-        -D|--debug     : 开启开发者Debug模式，目前用于开放所有容器内部服务端口
+        -D|--debug-port: 开启开发者Debug-port模式，目前用于开放所有容器内部服务端口
         -t|--tag       ：模糊镜像tag版本
         -T|--TAG       ：精确镜像tag版本
         -I|--image-pre-name  指定镜像前置名称【DOCKER_IMAGE_PRE_NAME】，默认来自env.sh。注：镜像完整名称：\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${DOCKER_IMAGE_NAME}:\${DOCKER_IMAGE_TAG}
@@ -186,7 +186,7 @@ F_HELP()
         $0 -c  -F                                    #--- 根据服务清单创建所有服务
         $0 -c  -F  -P                                #--- 根据服务清单创建所有服务，步进执行
         $0 -c  服务1 服务2  -F                       #--- 创建【服务1】、【服务2】服务
-        $0 -c  -D  服务1 服务2  -F                   #--- 创建【服务1】、【服务2】服务，并开启开发者Debug模式
+        $0 -c  -D  服务1 服务2  -F                   #--- 创建【服务1】、【服务2】服务，并开启开发者Debug-port模式
         $0 -c  -T 2020.12.11  服务1 服务2  -F        #--- 创建【服务1】、【服务2】服务，且使用的镜像版本为【2020.12.11】
         $0 -c  -t 2020.12     服务1 服务2  -F        #--- 创建【服务1】、【服务2】服务，且使用的镜像版本包含【2020.12】的最新镜像
         $0 -c  -n 2  服务1 服务2  -F                 #--- 创建【服务1】、【服务2】服务，且副本数为【2】
@@ -964,7 +964,7 @@ F_FUCK()
 
 
 # 参数检查
-TEMP=`getopt -o hlL:FPcmubSrsdoDt:T:I:n:GV:aM:  -l help,list,list-run:,fuck,by-step,create,modify,update,rollback,scale,rm,status,detail,logs,debug,tag:,TAG:,image-pre-name:,number:,gray,release-version:,all-release,mode: -- "$@"`
+TEMP=`getopt -o hlL:FPcmubSrsdoDt:T:I:n:GV:aM:  -l help,list,list-run:,fuck,by-step,create,modify,update,rollback,scale,rm,status,detail,logs,debug-port,tag:,TAG:,image-pre-name:,number:,gray,release-version:,all-release,mode: -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
     exit 51
@@ -1099,8 +1099,8 @@ do
             fi
             shift
             ;;
-        -D|--debug)
-            DEBUG='YES'
+        -D|--debug-port)
+            ENABLE_DEBUG_PORT='YES'
             shift
             ;;
         -t|--tag)
@@ -1693,7 +1693,7 @@ do
                 fi
                 #
                 # 开放Debug端口
-                if [[ ${DEBUG} == 'YES' ]]; then
+                if [[ ${ENABLE_DEBUG_PORT} == 'YES' ]]; then
                     case ${GRAY_TAG} in
                         gray)
                             # 灰度
