@@ -61,7 +61,14 @@ fi
 
 
 USER_NAME=$1
-read  -s -p '请输入用户【${USER_NAME}】新密码：'  USER_PASSWORD
+read  -s -p "请输入用户【${USER_NAME}】新密码："  USER_PASSWORD
+echo
+read  -s -p "请再次输入新密码："  USER_PASSWORD_2
+echo
+if [[ ${USER_PASSWORD} != ${USER_PASSWORD_2} ]]; then
+    echo -e  "\n猪猪侠警告：两次输入的密码不一致！\n"
+    exit 1
+fi
 
 
 # do
