@@ -129,7 +129,7 @@ F_HELP()
     用法:
         $0  [-h|--help]
         $0  [-l|--list]
-        $0  <-c [dockerfile|java|node|自定义]>  <-b|--branch {代码分支}>  <-I|--image-pre-name {镜像前置名称}>  <-e|--email {邮件地址}>  <-s|--skiptest>  <-f|--force>  <-v|--verbose>  <-V|--release-version>  <-G|--gray>  <{项目1}  {项目2} ... {项目n}> ... {项目名称正则匹配}>
+        $0  <-c [dockerfile|java|node|自定义]>  <-D|--debug-port>  <-b|--branch {代码分支}>  <-I|--image-pre-name {镜像前置名称}>  <-e|--email {邮件地址}>  <-s|--skiptest>  <-f|--force>  <-v|--verbose>  <-V|--release-version>  <-G|--gray>  <{项目1}  {项目2} ... {项目n}> ... {项目名称正则匹配}>
     参数说明：
         \$0   : 代表脚本本身
         []   : 代表是必选项
@@ -149,6 +149,7 @@ F_HELP()
         -v|--verbose   显示更多过程信息
         -G|--gray            : 设置灰度标志为：【gray】，默认：【normal】
         -V|--release-version : 发布版本号
+        -D|--debug-port: 开启开发者Debug-port模式，目前用于开放所有容器内部服务端口
     示例:
         #
         $0  -l             #--- 列出可构建发布的项目清单
@@ -157,6 +158,8 @@ F_HELP()
         $0  -c java  -b 分支a                 #--- 构建发布所有java项目，用分支a
         $0  -c java  -b 分支a  项目1  项目2   #--- 构建发布java【项目1、项目2】，用分支a（一般可不用-c参数）
         $0  -c java            项目1  项目2   #--- 构建发布java【项目1、项目2】，用默认分支
+        # Debug-port模式
+        $0  -D  -c java        项目1  项目2   #--- 构建发布java【项目1、项目2】，用默认分支，并开启Debug-port模式
         # 一般
         $0                           #--- 构建发布所有项目，用默认分支
         $0  -b 分支a                 #--- 构建发布所有项目，用【分支a】
@@ -661,14 +664,14 @@ F_DOCKER_CLUSTER_SERVICE_DEPLOY()
             F_ONLINE_SERVICE_SEARCH  ${F_SERVICE_X_NAME}  ${CLUSTER}
             if [ $? -eq 0 ]; then
                 # 服务运行中
-                ${DOCKER_CLUSTER_SERVICE_DEPLOY_SH}  ${IMAGE_PRE_NAME_ARG}  --mode function  --update  --fuck  ${F_SERVICE_NAME}  ${DEPLOY_OPTION}
+                ${DOCKER_CLUSTER_SERVICE_DEPLOY_SH}  ${ENABLE_DEBUG_PORT_ARG}  ${IMAGE_PRE_NAME_ARG}  --mode function  --update  --fuck  ${F_SERVICE_NAME}  ${DEPLOY_OPTION}
                 #F_DEPLOY_RETURN_CURRENT=$?
                 #let  F_DEPLOY_RETURN=${F_DEPLOY_RETURN}+${F_DEPLOY_RETURN_CURRENT}-50
                 F_DEPLOY_RETURN=$?
                 let  F_SERVICE_NUM=${F_SERVICE_NUM}+1
             else
                 # 服务不在运行中
-                ${DOCKER_CLUSTER_SERVICE_DEPLOY_SH}  ${IMAGE_PRE_NAME_ARG}  --mode function  --create  --fuck  ${F_SERVICE_NAME}  ${DEPLOY_OPTION}
+                ${DOCKER_CLUSTER_SERVICE_DEPLOY_SH}  ${ENABLE_DEBUG_PORT_ARG}  ${IMAGE_PRE_NAME_ARG}  --mode function  --create  --fuck  ${F_SERVICE_NAME}  ${DEPLOY_OPTION}
                 #F_DEPLOY_RETURN_CURRENT=$?
                 #let  F_DEPLOY_RETURN=${F_DEPLOY_RETURN}+${F_DEPLOY_RETURN_CURRENT}-50
                 F_DEPLOY_RETURN=$?
@@ -722,7 +725,7 @@ F_PYTHON_DEPLOY()
 
 
 # 参数检查
-TEMP=`getopt -o hlc:b:I:e:sfvGV:  -l help,list,category:,branch:,image-pre-name:,email:,skiptest,force,verbose,gray,release-version: -- "$@"`
+TEMP=`getopt -o hlc:b:I:e:sfvGV:D  -l help,list,category:,branch:,image-pre-name:,email:,skiptest,force,verbose,gray,release-version:debug-port -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
     exit 51
@@ -794,6 +797,11 @@ do
                 ERROR_CODE=51
                 exit 51
             fi
+            ;;
+        -D|--debug-port)
+            #ENABLE_DEBUG_PORT='YES'
+            ENABLE_DEBUG_PORT_ARG='--debug-port'
+            shift
             ;;
         --)
             shift
