@@ -786,7 +786,7 @@ F_SET_RUN_ENV()
 
 # 查询某种集群管理信息，去重并输出为以空格分隔的字符串
 # 用法：F_SEARCH_CLUSTER_MANAGE_INFO  [{集群}]
-# F_SEARCH_CLUSTER_MANAGE_INFO()
+F_SEARCH_CLUSTER_MANAGE_INFO()
 {
     #
     F_CLUSTER=$1
