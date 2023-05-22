@@ -30,6 +30,7 @@ GAN_PLATFORM_NAME="${GAN_PLATFORM_NAME:-'超甜B&D系统'}"
 #K8S_DEFAULT_NAMESAPCE=
 #SWARM_DEFAULT_DOCKER_HOST=
 #SWARM_DEFAULT_NETWORK=
+#COMPOSE_DEFAULT_DOCKER_HOST=
 #COMPOSE_DEFAULT_NETWORK=
 
 # 本地env
@@ -757,9 +758,9 @@ F_SET_RUN_ENV()
                         return 52
                     fi
                 done
-            #else
-            #    echo -e "\n猪猪侠警告：配置文件错误，请检查【DEPLOY_PLACEMENT】，【CLUSTER=compose】时，此项不能为空\n"
-            #    return 52
+            else
+                echo -e "\n猪猪侠警告：配置文件错误，请检查【DEPLOY_PLACEMENT】，【CLUSTER=compose】时，此项不能为空\n"
+                return 52
             fi
             #
             # 输出
