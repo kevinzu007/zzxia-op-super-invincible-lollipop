@@ -757,9 +757,9 @@ F_SET_RUN_ENV()
                         return 52
                     fi
                 done
-            else
-                echo -e "\n猪猪侠警告：配置文件错误，请检查【DEPLOY_PLACEMENT】，【CLUSTER=compose】时，此项不能为空\n"
-                return 52
+            #else
+            #    echo -e "\n猪猪侠警告：配置文件错误，请检查【DEPLOY_PLACEMENT】，【CLUSTER=compose】时，此项不能为空\n"
+            #    return 52
             fi
             #
             # 输出
@@ -782,6 +782,96 @@ F_SET_RUN_ENV()
     return 0
 }
 
+
+
+# 查询某种集群管理信息，去重并输出为以空格分隔的字符串
+# 用法：F_SEARCH_CLUSTER_MANAGE_INFO  [{集群}]
+# F_SEARCH_CLUSTER_MANAGE_INFO()
+{
+    #
+    F_CLUSTER=$1
+    #
+    CLUSTER_MANAGE_INFO=()
+    #
+    case ${F_CLUSTER} in
+        swarm)
+            CLUSTER_MANAGE_INFO=(${SWARM_DEFAULT_DOCKER_HOST})
+            ;;
+        k8s)
+            CLUSTER_MANAGE_INFO=(${K8S_DEFAULT_CONTEXT})
+            ;;
+        compose)
+            CLUSTER_MANAGE_INFO=(${COMPOSE_DEFAULT_DOCKER_HOST})
+            ;;
+        *)
+            echo -e "\n猪猪侠警告：未定义的集群类型\n"
+            return 51
+            ;;
+    esac
+    #
+    while read LINE_A
+    do
+        # 跳过以#开头的行或空行
+        [[ "$LINE_A" =~ ^# ]] || [[ "$LINE_A" =~ ^[\ ]*$ ]] && continue
+        #
+        # 2
+        #
+        CLUSTER=`echo ${LINE_A} | cut -d \| -f 3`
+        CLUSTER=`eval echo ${CLUSTER}`
+        #
+        # 4
+        #
+        DEPLOY_PLACEMENT=`echo ${LINE_A} | cut -d \| -f 5`
+        DEPLOY_PLACEMENT=`eval echo ${DEPLOY_PLACEMENT}`
+        #
+        #
+        if [[ ! -z ${DEPLOY_PLACEMENT} ]] &&  [[ ${CLUSTER} == ${F_CLUSTER} ]]; then
+            #
+            DEPLOY_PLACEMENT=${DEPLOY_PLACEMENT// /}               #--- 删除字符串中所有的空格
+            DEPLOY_PLACEMENT_ARG_NUM=$(echo ${DEPLOY_PLACEMENT} | grep -o ',' | wc -l)
+            #
+            for ((i=DEPLOY_PLACEMENT_ARG_NUM; i>=0; i--))
+            do
+                #
+                if [[ -z ${DEPLOY_PLACEMENT} ]]; then
+                    break
+                fi
+                FIELD=$((i+1))
+                DEPLOY_PLACEMENT_SET=`echo ${DEPLOY_PLACEMENT} | cut -d ',' -f ${FIELD}`
+                # 
+                case ${F_CLUSTER} in
+                    swarm)
+                        if [[ ${DEPLOY_PLACEMENT_SET} =~ ^H ]]; then
+                            CLUSTER_MANAGE_INFO+=$(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-)
+                        fi
+                        ;;
+                    k8s)
+                        if [[ ${DEPLOY_PLACEMENT_SET} =~ ^C ]]; then
+                            CLUSTER_MANAGE_INFO+=$(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-)
+                        fi
+                        ;;
+                    compose)
+                        if [[ ${DEPLOY_PLACEMENT_SET} =~ ^H ]]; then
+                            CLUSTER_MANAGE_INFO+=$(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-)
+                        fi
+                        ;;
+                    *)
+                        echo -e "\n猪猪侠警告：未定义的集群类型\n"
+                        return 51
+                        ;;
+                esac
+            done
+        fi
+        #
+        # 去重
+        CLUSTER_MANAGE_INFO=($( awk  -v RS=' '  '!a[$1]++'  <<< ${CLUSTER_MANAGE_INFO[@]} ))
+        # 输出
+        echo ${CLUSTER_MANAGE_INFO[@]}
+        return
+        #
+    done < ${SERVICE_LIST_FILE_APPEND_1}
+    #
+}
 
 
 # 查询在线服务publish端口
@@ -990,24 +1080,45 @@ do
             exit
             ;;
         -L|--list-run)
-            case $2 in
-                swarm)
-                    export DOCKER_HOST=${SWARM_DOCKER_HOST}
-                    docker service ls
-                    ;;
-                k8s)
-                    K8S_NAMESAPCE=${K8S_NAMESAPCE:-'default'}
-                    kubectl get services --all
-                    ;;
-                compose)
-                    echo -e "\n猪猪侠警告：此集群不支持\n"
-                    exit 51
-                    ;;
-                *)
-                    echo -e "\n猪猪侠警告：未定义的集群类型\n"
-                    exit 52
-                    ;;
-            esac
+            ARG_CLUSTER=$2
+            shift 2
+            #
+            F_SEARCH_CLUSTER_MANAGE_INFO ${ARG_CLUSTER}  > /tmp/${SH_NAME}-F_SEARCH_CLUSTER_MANAGE_INFO.txt
+            if [[ $? != 0 ]]; then
+                exit 51
+            fi
+            #
+            for c in $(cat  /tmp/${SH_NAME}-F_SEARCH_CLUSTER_MANAGE_INFO.txt)
+            do
+                case ${ARG_CLUSTER} in
+                    swarm)
+                        #
+                        export DOCKER_HOST=${c}
+                        docker service ls
+                        #
+                        export DOCKER_HOST=''
+                        ;;
+                    k8s)
+                        K8S_ORIGIN_CONTEXT=$(kubectl config current-contexts)
+                        #
+                        kubectl config use-context  ${c}
+                        kubectl get services --all
+                        #
+                        kubectl config use-context  ${K8S_ORIGIN_CONTEXT}
+                        ;;
+                    compose)
+                        #
+                        export DOCKER_HOST=${c}
+                        docker ps
+                        #
+                        export DOCKER_HOST=''
+                        ;;
+                    *)
+                        echo -e "\n猪猪侠警告：未定义的集群类型\n"
+                        exit 52
+                        ;;
+                esac
+            done
             exit
             ;;
         -F|--fuck)
