@@ -863,13 +863,13 @@ F_SEARCH_CLUSTER_MANAGE_INFO()
             done
         fi
         #
-        # 去重
-        CLUSTER_MANAGE_INFO=($( awk  -v RS=' '  '!a[$1]++'  <<< ${CLUSTER_MANAGE_INFO[@]} ))
-        # 输出
-        echo ${CLUSTER_MANAGE_INFO[@]}
-        return
-        #
     done < ${SERVICE_LIST_FILE_APPEND_1}
+    #
+    # 去重
+    CLUSTER_MANAGE_INFO=($( awk  -v RS=' '  '!a[$1]++'  <<< ${CLUSTER_MANAGE_INFO[@]} ))
+    # 输出
+    echo ${CLUSTER_MANAGE_INFO[@]}
+    return
     #
 }
 
