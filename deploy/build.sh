@@ -539,10 +539,12 @@ JAVA_BUILD()
     case "${BUILD_METHOD}" in
         mvn_*)
             MVN_OPT=""
-            if [ "${BUILD_METHOD}" = "mvn_deploy" ]; then
-                MVN_OPT=" deploy "
-            elif [ "${BUILD_METHOD}" = "mvn_package" ]; then
+            if [ "${BUILD_METHOD}" = "mvn_package" ]; then
                 MVN_OPT=" package "
+            elif [ "${BUILD_METHOD}" = "mvn_install" ]; then
+                MVN_OPT=" install "
+            elif [ "${BUILD_METHOD}" = "mvn_deploy" ]; then
+                MVN_OPT=" deploy "
             else
                 echo -e "\n猪猪侠警告：这是你新添加的mvn构建方法，你自己搞下！\n"  2>&1 | tee -a ${BUILD_LOG_file}
             fi

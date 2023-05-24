@@ -13,11 +13,12 @@
 ###  4【GIT命名空间：GIT_NAMESPACE】= [自定义名称]
 ###    请参考【env.sh】中的GIT_DEFAULT_NAMESPACE说明
 ### 
-###  5【构建方法：BUILD_METHOD】= [ NONE | docker_build | java:[mvn_package|gradle|自定义] | node:[original|build|自定义] ]
+###  5【构建方法：BUILD_METHOD】= [ NONE | docker_build | java:[mvn_package|mvn_install|mvn_deploy|gradle|自定义] | node:[original|build|自定义] ]
 ###    0 类别='*'          : NONE             : 跳过构建，用【gogogo.sh】时，也会跳过发布
 ###    1 类别='product'    : NONE             : 跳过构建，成品无需构建
 ###    2 类别='dockerfile' : docker_build     : 即docker build
 ###    3 类别='java'       : mvn_package      : 即mvn package
+###                        : mvn_install      : 即mvn install
 ###                        : mvn_deploy       : 即mvn deploy
 ###                        : gradle           : 即gradle ......（没搞）
 ###    4 类别='node'       : npm_install      : npm install

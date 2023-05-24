@@ -13,9 +13,10 @@
 ###  2【服务名：SERVICE_NAME】= [ 自定义名称 ] 
 ###
 ###  3【镜像前置名：DOCKER_IMAGE_PRE_NAME】= [自定义名称]
-###    当输出方法='docker_image_push'时，镜像名不能为空
+###    请参考【env.sh】中的DOCKER_IMAGE_DEFAULT_PRE_NAME说明
 ###
 ###  4【DOCKER镜像名：DOCKER_IMAGE_NAME】= [ 自定义名称 ]
+###    当输出方法='docker_image_push'时，镜像名不能为空
 ###
 ###  5【POD副本数：POD_REPLICAS】= [ 数字|${变量名} ]
 ###    1 数字          : 例如：2

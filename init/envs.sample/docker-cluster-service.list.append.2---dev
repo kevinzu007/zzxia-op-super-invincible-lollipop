@@ -36,9 +36,9 @@
 #| ---------------------- | --------------------------------- | ---------------------------------------------------------- | --------------------------------- |
 |neo4j-srv                |                                   | NEO4J_AUTH="${NEO4J_USER}/${NEO4J_PASSWORD}"               |                                   |
 |redis-srv                |                                   |                                                            |--requirepass "${REDIS_PASSWORD}"  |
-|nacos-server-1           |                                   | ENVS_FROM_FILE=../init/my_spec_envs/nacos.env                   |                                   |
-|nacos-server-2           |                                   | ENVS_FROM_FILE=../init/my_spec_envs/nacos.env                   |                                   |
-|nacos-server-3           |                                   | ENVS_FROM_FILE=../init/my_spec_envs/nacos.env                   |                                   |
+|nacos-server-1           |                                   | ENVS_FROM_FILE=../init/my_spec_envs/nacos.env              |                                   |
+|nacos-server-2           |                                   | ENVS_FROM_FILE=../init/my_spec_envs/nacos.env              |                                   |
+|nacos-server-3           |                                   | ENVS_FROM_FILE=../init/my_spec_envs/nacos.env              |                                   |
 |gc-gateway               | -Xms512m -Xmx512m                 |                                                            |                                   |
 |gc-monitor               | -Xms512m -Xmx512m                 |                                                            |                                   |
 |gc-client-service        | -Xms512m -Xmx512m                 |                                                            |                                   |
