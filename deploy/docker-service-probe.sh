@@ -52,10 +52,10 @@ do
     # 跳过以#开头的行或空行
     [[ "$LINE" =~ ^# ]] || [[ "$LINE" =~ ^[\ ]*$ ]] && continue
     #
-    SERVICE_NAME=`echo $LINE | awk -F '|' '{print $2}'`
+    SERVICE_NAME=`echo $LINE | cut -d \| -f 2`
     SERVICE_NAME=`echo ${SERVICE_NAME}`
     #
-    CONTAINER_PORTS=`echo ${LINE} | cut -d \| -f 5`
+    CONTAINER_PORTS=`echo ${LINE} | cut -d \| -f 6`
     CONTAINER_PORTS=`eval echo ${CONTAINER_PORTS}`
     #
     echo -e "${ECHO_NORMAL}==================================================${ECHO_CLOSE}"

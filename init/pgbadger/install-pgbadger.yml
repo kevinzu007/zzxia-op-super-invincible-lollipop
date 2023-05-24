@@ -1,0 +1,11 @@
+
+
+- hosts: pg_m
+  become: yes
+  tasks:
+    - name: cp pgbadger-install.sh
+      copy: src=./setup/pgbadger-install.sh  dest=/tmp/ mode=0755
+    - name: install pgbadger
+      shell: /tmp/pgbadger-install.sh  -v
+
+
