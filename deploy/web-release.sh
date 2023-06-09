@@ -15,7 +15,7 @@ cd "${SH_PATH}"
 RUN_ENV=${RUN_ENV:-'dev'}
 
 # 引入env
-. ${SH_PATH}/deploy.env
+. ${SH_PATH}/env.sh
 GAN_PLATFORM_NAME="${GAN_PLATFORM_NAME:-'超甜B&D系统'}"
 DINGDING_API=${DINGDING_API:-"请定义"}
 #USER_DB_FILE=
@@ -87,7 +87,7 @@ F_HELP()
         ${WEB_PROJECT_LIST_FILE}
         ${FORMAT_TABLE_SH}
         ${DINGDING_MARKDOWN_PY}
-        ${SH_PATH}/deploy.env
+        ${SH_PATH}/env.sh
         nginx上：/root/nginx-config/web-release-on-nginx.sh
     注意：运行在nginx节点上
         * 【上线（ship）】流程包含以下四个子流程【构建】、【测试（test）】、【部署（deploy）】、【发布（release）】。原地发布（即部署 == 发布）
@@ -158,29 +158,31 @@ F_TimeDiff ()
 }
 
 
+
 # 用户搜索
+# F_USER_SEARCH  [用户名|姓名]
 F_USER_SEARCH()
 {
     F_USER_NAME=$1
-    while read LINE
+    while read U_LINE
     do
         # 跳过以#开头的行或空行
-        [[ "$LINE" =~ ^# ]] || [[ "$LINE" =~ ^[\ ]*$ ]] && continue
+        [[ "$U_LINE" =~ ^# ]] || [[ "$U_LINE" =~ ^[\ ]*$ ]] && continue
         #
-        CURRENT_USER_ID=`echo $LINE | cut -d '|' -f 2`
+        CURRENT_USER_ID=`echo $U_LINE | cut -d '|' -f 2`
         CURRENT_USER_ID=`echo ${CURRENT_USER_ID}`
-        CURRENT_USER_NAME=`echo $LINE | cut -d '|' -f 3`
+        CURRENT_USER_NAME=`echo $U_LINE | cut -d '|' -f 3`
         CURRENT_USER_NAME=`echo ${CURRENT_USER_NAME}`
-        CURRENT_USER_XINGMING=`echo $LINE | cut -d '|' -f 4`
+        CURRENT_USER_XINGMING=`echo $U_LINE | cut -d '|' -f 4`
         CURRENT_USER_XINGMING=`echo ${CURRENT_USER_XINGMING}`
-        CURRENT_USER_EMAIL=`echo $LINE | cut -d '|' -f 5`
+        CURRENT_USER_EMAIL=`echo $U_LINE | cut -d '|' -f 5`
         CURRENT_USER_EMAIL=`echo ${CURRENT_USER_EMAIL}`
         if [ "${F_USER_NAME}" = "${CURRENT_USER_ID}"  -o  "${F_USER_NAME}" = "${CURRENT_USER_NAME}" ]; then
             echo "${CURRENT_USER_XINGMING} ${CURRENT_USER_EMAIL}"
             return 0
         fi
     done < "${USER_DB_FILE}"
-    return 1
+    return 3
 }
 
 
@@ -254,6 +256,11 @@ fi
 
 
 
+# 建立base目录
+[ -d "${LOG_HOME}" ] || mkdir -p  ${LOG_HOME}
+
+
+
 # 用户信息
 if [[ -n ${HOOK_USER} ]]; then
     MY_USER_NAME=${HOOK_USER}
@@ -274,10 +281,6 @@ else
     MY_XINGMING='X-Man'
 fi
 
-
-
-# 建立base目录
-[ -d "${LOG_HOME}" ] || mkdir -p  ${LOG_HOME}
 
 
 # 待搜索的WEB项目清单

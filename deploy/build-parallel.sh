@@ -16,12 +16,13 @@ RUN_ENV=${RUN_ENV:-'dev'}
 DOMAIN=${DOMAIN:-"xxx.lan"}
 
 # 引入env
-. ${SH_PATH}/deploy.env
+. ${SH_PATH}/env.sh
 GAN_PLATFORM_NAME="${GAN_PLATFORM_NAME:-'超甜B&D系统'}"
 BUILD_LOG_WEBSITE_DOMAIN_A=${BUILD_LOG_WEBSITE_DOMAIN_A:-"build-log"}         #--- 这个需要与【nginx.list】中【项目名】为【build-log】的【域名A记录】保持一致
 DINGDING_API=${DINGDING_API:-"请定义"}
 BUILD_SKIP_TEST=${BUILD_SKIP_TEST:-'NO'}  #--- 跳过测试
 #USER_DB_FILE=
+#GIT_DEFAULT_BRANCH=
 
 # 本地env
 GAN_WHAT_FUCK='P_Build'
@@ -32,7 +33,7 @@ DATE_TIME=`date -d "${TIME}" +%Y%m%dT%H%M%S`
 LOG_BASE="${SH_PATH}/tmp/log"
 LOG_HOME="${LOG_BASE}/${DATE_TIME}"
 #
-DOCKER_IMAGE_VER=$(date -d "${TIME}" +%Y.%m.%d.%H%M%S)
+DOCKER_IMAGE_TAG=$(date -d "${TIME}" +%Y.%m.%d.%H%M%S)
 #
 BUILD_FORCE='NO'
 # 独有
@@ -98,7 +99,7 @@ F_HELP()
     用途：以并行的方式运行构建脚本，以加快构建速度
     依赖：
         /etc/profile.d/run-env.sh
-        ${SH_PATH}/deploy.env
+        ${SH_PATH}/env.sh
         ${PARA_PROJECT_LIST_FILE}
         ${BUILD_SH}
         ${FORMAT_TABLE_SH}
@@ -109,7 +110,7 @@ F_HELP()
     用法:
         $0  [-h|--help]
         $0  [-l|--list]
-        $0  <-n|--number>  <-c [dockerfile|java|node|自定义]>  <-b {代码分支}>  <-e|--email {邮件地址}>  <-s|--skiptest>  <-f|--force>  <{项目1}  {项目2} ... {项目n}> ... {项目名称正则表达式完全匹配}>
+        $0  <-n|--number>  <-c [dockerfile|java|node|自定义]>  <-b {代码分支}>  <-I|--image-pre-name {镜像前置名称}>  <-e|--email {邮件地址}>  <-s|--skiptest>  <-f|--force>  <{项目1}  {项目2} ... {项目n}> ... {项目名称正则表达式完全匹配}>
     参数说明：
         \$0   : 代表脚本本身
         []   : 代表是必选项
@@ -122,9 +123,10 @@ F_HELP()
         -l|--list      列出可构建的项目清单
         -n|--number    并行构建项目的数量，默认为2个
         -c|--category  指定构建项目语言类别：【dockerfile|java|node|自定义】，参考：${PARA_PROJECT_LIST_FILE}
-        -b|--branch    指定代码分支，默认来自deploy.env
+        -b|--branch    指定代码分支，默认来自env.sh
+        -I|--image-pre-name  指定镜像前置名称【DOCKER_IMAGE_PRE_NAME】，默认来自env.sh。注：镜像完整名称：\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${DOCKER_IMAGE_NAME}:\${DOCKER_IMAGE_TAG}
         -e|--email     发送日志到指定邮件地址，如果与【-U|--user-name】同时存在，则将会被替代
-        -s|--skiptest  跳过测试，默认来自deploy.env
+        -s|--skiptest  跳过测试，默认来自env.sh
         -f|--force     强制重新构建（无论是否有更新）
     示例:
         #
@@ -138,6 +140,7 @@ F_HELP()
         $0  --email xm@xxx.com  项目1 项目2    #--- 构建【项目1、项目2】，用默认分支，同时构建默认个，将错误日志发送到邮箱【xm@xxx.com】
         $0  -s -f  项目1 项目2                 #--- 构建【项目1、项目2】，用默认分支，同时构建默认个，跳过测试，强制重新构建（无论是否有更新）
         $0  sss                       #--- 构建项目名称正则匹配【^sss$】的项目，用默认分支，同时构建默认个
+        $0  -I aaa/bbb  项目1  项目2  #--- 构建项目【项目1、项目2】，用默认分支，同时构建默认个，生成的镜像前置名称为【DOCKER_IMAGE_PRE_NAME='aaa/bbb'】，默认来自env.sh。注：镜像完整名称："\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${DOCKER_IMAGE_NAME}:\${DOCKER_IMAGE_TAG}"
         # 更多示例请参考【build.sh】
     "
 }
@@ -230,31 +233,35 @@ F_FIND_PROJECT ()
 
 
 # 用户搜索
+# F_USER_SEARCH  [用户名|用户ID]
 F_USER_SEARCH()
 {
     F_USER_NAME=$1
-    while read LINE
+    while read U_LINE
     do
-        CURRENT_USER_ID=`echo $LINE | cut -d '|' -f 2`
+        # 跳过以#开头的行或空行
+        [[ "$U_LINE" =~ ^# ]] || [[ "$U_LINE" =~ ^[\ ]*$ ]] && continue
+        #
+        CURRENT_USER_ID=`echo $U_LINE | cut -d '|' -f 2`
         CURRENT_USER_ID=`echo ${CURRENT_USER_ID}`
-        CURRENT_USER_NAME=`echo $LINE | cut -d '|' -f 3`
+        CURRENT_USER_NAME=`echo $U_LINE | cut -d '|' -f 3`
         CURRENT_USER_NAME=`echo ${CURRENT_USER_NAME}`
-        CURRENT_USER_XINGMING=`echo $LINE | cut -d '|' -f 4`
+        CURRENT_USER_XINGMING=`echo $U_LINE | cut -d '|' -f 4`
         CURRENT_USER_XINGMING=`echo ${CURRENT_USER_XINGMING}`
-        CURRENT_USER_EMAIL=`echo $LINE | cut -d '|' -f 5`
+        CURRENT_USER_EMAIL=`echo $U_LINE | cut -d '|' -f 5`
         CURRENT_USER_EMAIL=`echo ${CURRENT_USER_EMAIL}`
         if [ "${F_USER_NAME}" = "${CURRENT_USER_ID}"  -o  "${F_USER_NAME}" = "${CURRENT_USER_NAME}" ]; then
             echo "${CURRENT_USER_XINGMING} ${CURRENT_USER_EMAIL}"
             return 0
         fi
     done < "${USER_DB_FILE}"
-    return 1
+    return 3
 }
 
 
 
 # 参数检查
-TEMP=`getopt -o hln:c:b:e:sf  -l help,list,number:,category:,branch:,email:,skiptest,force -- "$@"`
+TEMP=`getopt -o hln:c:b:I:e:sf  -l help,list,number:,category:,branch:,image-pre-name:,email:,skiptest,force -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
     exit 51
@@ -296,6 +303,11 @@ do
             GIT_BRANCH=$2
             shift 2
             ;;
+        -I|--image-pre-name)
+            IMAGE_PRE_NAME=$2
+            IMAGE_PRE_NAME_ARG="--image-pre-name ${IMAGE_PRE_NAME}"
+            shift 2
+            ;;
         -e|--email)
             MY_EMAIL=$2
             shift 2
@@ -334,6 +346,14 @@ if [[ -n ${HOOK_GAN_ENV} ]] && [[ ${HOOK_GAN_ENV} != ${RUN_ENV} ]]; then
 fi
 
 
+# 默认ENV
+GIT_BRANCH=${GIT_BRANCH:-"${GIT_DEFAULT_BRANCH}"}
+
+
+# 建立base目录
+[ -d "${LOG_HOME}" ] || mkdir -p  ${LOG_HOME}
+
+
 
 # 用户信息
 if [[ -n ${HOOK_USER} ]]; then
@@ -356,12 +376,7 @@ fi
 
 
 
-# 建立base目录
-[ -d "${LOG_HOME}" ] || mkdir -p  ${LOG_HOME}
-
-
-
-# 待搜索的服务清单
+# 待搜索的项目清单
 > ${PARA_PROJECT_LIST_FILE_TMP}
 ## 类别
 if [[ -z "${THIS_LANGUAGE_CATEGORY}" ]]; then
@@ -379,9 +394,9 @@ if [[ -z "${THIS_LANGUAGE_CATEGORY}" ]]; then
                 # 跳过以#开头的行或空行
                 [[ "$LINE" =~ ^# ]] || [[ "$LINE" =~ ^[\ ]*$ ]] && continue
                 #
-                PROJECT_NAME=`echo $LINE | awk -F '|' '{print $3}'`
-                PROJECT_NAME=`echo ${PROJECT_NAME}`
-                if [[ ${PROJECT_NAME} =~ ^$i$ ]]; then
+                PJ_NAME=`echo $LINE | awk -F '|' '{print $3}'`
+                PJ_NAME=`echo ${PJ_NAME}`
+                if [[ ${PJ_NAME} =~ ^$i$ ]]; then
                     echo $LINE >> ${PARA_PROJECT_LIST_FILE_TMP}
                     # 仅匹配一次
                     #GET_IT='YES'
@@ -433,13 +448,13 @@ fi
 sed  -i  -E  -e '/^\s*$/d'  -e '/^#.*$/d'  ${PARA_PROJECT_LIST_FILE_TMP}
 # 优先级排序
 > ${PARA_PROJECT_LIST_FILE_TMP}.sort
-for i in  `awk -F '|' '{split($9,a," ");print NR,a[1]}' ${PARA_PROJECT_LIST_FILE_TMP}  |  sort -n -k 2 |  awk '{print $1}'`
+for i in  `awk -F '|' '{split($8,a," ");print NR,a[1]}' ${PARA_PROJECT_LIST_FILE_TMP}  |  sort -n -k 2 |  awk '{print $1}'`
 do
     awk "NR=="$i'{print}' ${PARA_PROJECT_LIST_FILE_TMP}  >> ${PARA_PROJECT_LIST_FILE_TMP}.sort
 done
 cp  ${PARA_PROJECT_LIST_FILE_TMP}.sort  ${PARA_PROJECT_LIST_FILE_TMP}
 # 加表头
-sed -i  '1i#| **类别** | **项目名** | **构建方法** | **输出方法** | **镜像名** | **链接node_project** | **GOGOGO发布方式** | **优先级** |'  ${PARA_PROJECT_LIST_FILE_TMP}
+sed -i  '1i#| **类别** | **项目名** | **GIT命令空间** | **构建方法** | **输出方法** | **GOGOGO发布方式** | **优先级** | **备注** |'  ${PARA_PROJECT_LIST_FILE_TMP}
 # 屏显
 echo -e "${ECHO_NORMAL}############################ 开始并行构建 ############################${ECHO_CLOSE}"   #--- 80 (80-70-60)
 echo -e "\n【${SH_NAME}】待并行构建项目清单："
@@ -492,9 +507,6 @@ do
     PJ=`echo ${LINE} | cut -d \| -f 3`
     PJ=`echo ${PJ}`
     #
-    BUILD_METHOD=`echo ${LINE} | cut -d \| -f 4`
-    BUILD_METHOD=`echo ${BUILD_METHOD}`
-    #
     BUILD_CHECK_COUNT=`expr ${BUILD_CHECK_COUNT} + 1`
     echo -e "${ECHO_BLACK_GREEN}++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++${ECHO_CLOSE}"   #--- 70 (80-70-60)
     echo -e "${ECHO_NORMAL}${BUILD_CHECK_COUNT} - ${PJ} :${ECHO_CLOSE}"
@@ -507,7 +519,7 @@ do
     #
     read -u 6       # 获取令牌。从命名管道fd6中读取一行，模拟领取一个令牌。由于FIFO特殊的读写机制，若没有空余的行可以读取，则进程会等待直至有可以读取的空余行
     {
-        ${BUILD_SH}  --mode function  --category ${LANGUAGE_CATEGORY}  --branch="${GIT_BRANCH}"  ${BUILD_SKIP_TEST_OPT}  ${BUILD_FORCE_OPT}  ${PJ}  > /dev/null 2>&1
+        ${BUILD_SH}  --mode function  --category ${LANGUAGE_CATEGORY}  --branch="${GIT_BRANCH}"  ${IMAGE_PRE_NAME_ARG}  ${BUILD_SKIP_TEST_OPT}  ${BUILD_FORCE_OPT}  ${PJ}  > /dev/null 2>&1
         if [[ `cat ${BUILD_OK_LIST_FILE_function} | wc -l` -eq 1 ]]; then
             cat  ${BUILD_OK_LIST_FILE_function} >> ${PARA_BUILD_OK_LIST_FILE}
         else
@@ -556,7 +568,7 @@ echo "造 浪 者：${MY_XINGMING}" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
 echo "开始时间：${TIME}" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
 echo "结束时间：${TIME_END}" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
 echo "代码分支：${GIT_BRANCH}" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
-echo "Docker镜像版本：${DOCKER_IMAGE_VER}" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
+echo "镜像TAG ：${DOCKER_IMAGE_TAG}" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
 echo "并行数量：${N_proc}" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
 echo "构建清单：" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
 # 输出到文件

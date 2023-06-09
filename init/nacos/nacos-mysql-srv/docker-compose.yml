@@ -2,7 +2,8 @@ version: "3"
 services:
   mysql:
     # https://dev.mysql.com/doc/refman/5.7/en/docker-mysql-more-topics.html
-    image: mysql:5.7
+    #image: mysql:5.7
+    image: docker-repo:5000/public/mysql:latest
     restart: always
     ports:
       - 3306:3306

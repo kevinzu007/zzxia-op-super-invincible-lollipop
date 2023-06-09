@@ -13,7 +13,7 @@ SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
 # 引入env
-. ${SH_PATH}/deploy.env
+. ${SH_PATH}/env.sh
 
 # 本地env
 TIME=`date +%Y-%m-%dT%H:%M:%S`

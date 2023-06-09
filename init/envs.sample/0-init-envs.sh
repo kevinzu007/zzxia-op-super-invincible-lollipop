@@ -34,35 +34,37 @@ F_HELP()
 F_CP ()
 {
     #set -e
-    # cp到init目录
-    cp -rf ${ENVS_FILE_DIR}/3rd_jar                               ./
-    cp -f  ${ENVS_FILE_DIR}/dingding_send_markdown-login.py       ./
-    cp -f  ${ENVS_FILE_DIR}/dingding_send_markdown.py             ./
-    cp -f  ${ENVS_FILE_DIR}/dingding_conver_to_markdown_list.py   ./
-    cp -f  ${ENVS_FILE_DIR}/ossfs-backup.service                  ./
-    cp -f  ${ENVS_FILE_DIR}/ossfs-internal-backup.service         ./
+    # cp到init/目录
+    cp -f  ${ENVS_FILE_DIR}/host-ip.list---${R_ENV}                  ./host-ip.list
+    # cp到init/2-os-base/目录
+    cp -rf ${ENVS_FILE_DIR}/3rd_jar                                  ./2-os-base/
+    cp -f  ${ENVS_FILE_DIR}/dingding_send_markdown-login.py          ./2-os-base/
+    cp -f  ${ENVS_FILE_DIR}/dingding_send_markdown.py                ./2-os-base/
+    cp -f  ${ENVS_FILE_DIR}/dingding_conver_to_markdown_list.py      ./2-os-base/
     #
-    cp -f  ${ENVS_FILE_DIR}/install-hosts.yml---${R_ENV}          ./install-hosts.yml
-    cp -f  ${ENVS_FILE_DIR}/host-ip.list---${R_ENV}               ./host-ip.list
-    cp -f  ${ENVS_FILE_DIR}/bash_aliases---${R_ENV}               ./bash_aliases
-    cp -f  ${ENVS_FILE_DIR}/run-env.sh---${R_ENV}                 ./run-env.sh
-    cp -f  ${ENVS_FILE_DIR}/mailrc---${R_ENV}                     ./mailrc
-    # cp到init子目录
-    cp -f  ${ENVS_FILE_DIR}/soft/jdk-*-linux-x64.tar.gz           ./build-envs/java/
-    cp -f  ${ENVS_FILE_DIR}/soft/apache-maven-*-bin.tar.gz        ./build-envs/maven/
-    cp -f  ${ENVS_FILE_DIR}/soft/node-v*-linux-x64.tar.xz         ./build-envs/node/
-    cp -f  ${ENVS_FILE_DIR}/backup-center-project.list            ./backup-center/backup-center-project.list
-    cp -f  ${ENVS_FILE_DIR}/pg_db.list                            ./pg/backup/pg_db.list
+    cp -f  ${ENVS_FILE_DIR}/install-hosts.yml---${R_ENV}             ./2-os-base/install-hosts.yml
+    cp -f  ${ENVS_FILE_DIR}/bash_aliases---${R_ENV}                  ./2-os-base/bash_aliases
+    cp -f  ${ENVS_FILE_DIR}/run-env.sh---${R_ENV}                    ./2-os-base/run-env.sh
+    cp -f  ${ENVS_FILE_DIR}/mailrc---${R_ENV}                        ./2-os-base/mailrc
+    # cp到init/其他子目录
+    cp -f  ${ENVS_FILE_DIR}/soft/jdk-*-linux-x64.tar.gz              ./build-envs/java/
+    cp -f  ${ENVS_FILE_DIR}/soft/apache-maven-*-bin.tar.gz           ./build-envs/maven/
+    cp -f  ${ENVS_FILE_DIR}/soft/node-v*-linux-x64.tar.xz            ./build-envs/node/
+    cp -f  ${ENVS_FILE_DIR}/ossfs-backup.service                     ./ossfs/
+    cp -f  ${ENVS_FILE_DIR}/ossfs-internal-backup.service            ./ossfs/
+    cp -f  ${ENVS_FILE_DIR}/backup-center-project.list               ./backup-center/backup-center-project.list
+    cp -f  ${ENVS_FILE_DIR}/pg_db.list                               ./pg/backup/pg_db.list
     #
-    cp -f  ${ENVS_FILE_DIR}/nginx.list---${R_ENV}                 ./nginx-config/nginx.list
-    cp -f  ${ENVS_FILE_DIR}/fluent.conf---${R_ENV}                ./fluentd-srv/conf/fluent.conf
-    cp -f  ${ENVS_FILE_DIR}/kibana-srv-env---${R_ENV}             ./kibana-srv/.env
-    cp -f  ${ENVS_FILE_DIR}/elasticsearch-srv-env---${R_ENV}      ./elasticsearch-srv/.env
+    cp -f  ${ENVS_FILE_DIR}/nginx.list---${R_ENV}                    ./nginx/nginx-config/nginx.list
+    cp -f  ${ENVS_FILE_DIR}/fluent.conf---${R_ENV}                   ./fluentd/fluentd-srv/conf/fluent.conf
+    cp -f  ${ENVS_FILE_DIR}/kibana-srv-env---${R_ENV}                ./kibana/kibana-srv/.env
+    cp -f  ${ENVS_FILE_DIR}/elasticsearch-srv-env---${R_ENV}         ./elasticsearch/elasticsearch-srv/.env
 
     # cp到deploy目录
     cp -f  ${ENVS_FILE_DIR}/project.list                             ../deploy/
+    cp -f  ${ENVS_FILE_DIR}/project.list.append.1                    ../deploy/
     #
-    cp -f  ${ENVS_FILE_DIR}/deploy.env---${R_ENV}                    ../deploy/deploy.env
+    cp -f  ${ENVS_FILE_DIR}/env.sh---${R_ENV}                        ../deploy/env.sh
     cp -f  ${ENVS_FILE_DIR}/nginx.list---${R_ENV}                    ../deploy/nginx.list
     cp -f  ${ENVS_FILE_DIR}/docker-cluster-service.list---${R_ENV}   ../deploy/docker-cluster-service.list
     cp -f  ${ENVS_FILE_DIR}/docker-cluster-service.list.append.1---${R_ENV}   ../deploy/docker-cluster-service.list.append.1
@@ -79,35 +81,37 @@ F_CP ()
 
 F_RM ()
 {
-    # init目录
-    rm -rf ./3rd_jar
-    rm -f  ./dingding_send_markdown-login.py
-    rm -f  ./dingding_send_markdown.py
-    rm -f  ./dingding_conver_to_markdown_list.py 
-    rm -f  ./ossfs-internal-backup.service
-    rm -f  ./ossfs-backup.service
-    #
-    rm -f  ./install-hosts.yml
+    # init/目录
     rm -f  ./host-ip.list
-    rm -f  ./bash_aliases
-    rm -f  ./run-env.sh
-    rm -f  ./mailrc
+    # init/2-os-base/目录
+    rm -rf ./2-os-base/3rd_jar
+    rm -f  ./2-os-base/dingding_send_markdown-login.py
+    rm -f  ./2-os-base/dingding_send_markdown.py
+    rm -f  ./2-os-base/dingding_conver_to_markdown_list.py
+    #
+    rm -f  ./2-os-base/install-hosts.yml
+    rm -f  ./2-os-base/bash_aliases
+    rm -f  ./2-os-base/run-env.sh
+    rm -f  ./2-os-base/mailrc
     # init子目录
     rm -f  ./build-envs/java/jdk-*-linux-x64.tar.gz
     rm -f  ./build-envs/maven/apache-maven-*-bin.tar.gz
     rm -f  ./build-envs/node/node-v*-linux-x64.tar.xz
+    rm -f  ./ossfs/ossfs-internal-backup.service
+    rm -f  ./ossfs/ossfs-backup.service
     rm -f  ./backup-center/backup-center-project.list
     rm -f  ./pg/backup/pg_db.list
     #
-    rm -f  ./nginx-config/nginx.list
-    rm -f  ./fluentd-srv/conf/fluent.conf
-    rm -f  ./kibana-srv/.env
-    rm -f  ./elasticsearch-srv/.env
+    rm -f  ./nginx/nginx-config/nginx.list
+    rm -f  ./fluentd/fluentd-srv/conf/fluent.conf
+    rm -f  ./kibana/kibana-srv/.env
+    rm -f  ./elasticsearch/elasticsearch-srv/.env
 
     # deploy目录
     rm -f  ../deploy/project.list
+    rm -f  ../deploy/project.list.append.1
     #
-    rm -f  ../deploy/deploy.env
+    rm -f  ../deploy/env.sh
     rm -f  ../deploy/nginx.list
     rm -f  ../deploy/docker-cluster-service.list
     rm -f  ../deploy/docker-cluster-service.list.append.1
@@ -193,8 +197,8 @@ case ${R_MODE} in
         ;;
     F_CP)
         #
-        if [[ ! -f ${ENVS_FILE_DIR}/deploy.env---${R_ENV} ]]; then
-            echo -e "\n猪猪侠警告：请检查以【---${R_ENV}】结尾的文件是否准备好，例如：【${ENVS_FILE_DIR}/deploy.env---${R_ENV}】\n"
+        if [[ ! -f ${ENVS_FILE_DIR}/env.sh---${R_ENV} ]]; then
+            echo -e "\n猪猪侠警告：请检查以【---${R_ENV}】结尾的文件是否准备好，例如：【${ENVS_FILE_DIR}/env.sh---${R_ENV}】\n"
             exit 1
         fi
         #

@@ -16,12 +16,21 @@ RUN_ENV=${RUN_ENV:-'dev'}
 DOMAIN=${DOMAIN:-"xxx.lan"}
 
 # 引入env
-. ${SH_PATH}/deploy.env
+. ${SH_PATH}/env.sh
 GAN_PLATFORM_NAME="${GAN_PLATFORM_NAME:-'超甜B&D系统'}"
 BUILD_LOG_WEBSITE_DOMAIN_A=${BUILD_LOG_WEBSITE_DOMAIN_A:-"build-log"}         #--- 这个需要与【nginx.list】中【项目名】为【build-log】的【域名A记录】保持一致
 DINGDING_API=${DINGDING_API:-"请定义"}
 BUILD_SKIP_TEST=${BUILD_SKIP_TEST:-'NO'}  #--- 跳过测试（YES|NO）
 #USER_DB_FILE=
+#GIT_DEFAULT_BRANCH=
+#DOCKER_REPO_SERVER=
+#DOCKER_IMAGE_DEFAULT_PRE_NAME=
+#DEBUG=
+#K8S_DEFAULT_CONTEXT=
+#K8S_DEFAULT_NAMESAPCE=
+#SWARM_DEFAULT_DOCKER_HOST=
+#SWARM_DEFAULT_NETWORK=
+#COMPOSE_DEFAULT_NETWORK=
 
 # 本地env
 GAN_WHAT_FUCK='Gogogo'
@@ -36,7 +45,7 @@ GRAY_TAG="normal"
 LOG_BASE="${SH_PATH}/tmp/log"
 LOG_HOME="${LOG_BASE}/${DATE_TIME}"
 #
-DOCKER_IMAGE_VER=$(date -d "${TIME}" +%Y.%m.%d.%H%M%S)
+DOCKER_IMAGE_TAG=$(date -d "${TIME}" +%Y.%m.%d.%H%M%S)
 # 子脚本参数
 export BUILD_OK_LIST_FILE_function="${LOG_HOME}/${SH_NAME}-export-build-OK.list.function"
 export DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE_function="${LOG_HOME}/${SH_NAME}-export-docker_deploy-OK.list.function"
@@ -50,6 +59,7 @@ BUILD_QUIET='YES'
 BUILD_FORCE='NO'
 GOGOGO_PROJECT_LIST_FILE="${SH_PATH}/project.list"
 GOGOGO_PROJECT_LIST_FILE_TMP="${LOG_HOME}/${SH_NAME}-project.list.tmp"
+GOGOGO_PROJECT_LIST_FILE_APPEND_1="${SH_PATH}/project.list.append.1"
 GOGOGO_SERVICE_LIST_FILE="${SH_PATH}/docker-cluster-service.list"
 GOGOGO_SERVICE_LIST_FILE_APPEND_1="${SH_PATH}/docker-cluster-service.list.append.1"
 GOGOGO_SERVICE_LIST_FILE_APPEND_2="${SH_PATH}/docker-cluster-service.list.append.2"
@@ -104,8 +114,9 @@ F_HELP()
     用途：用于项目构建并发布
     依赖脚本：
         /etc/profile.d/run-env.sh
-        ${SH_PATH}/deploy.env
+        ${SH_PATH}/env.sh
         ${GOGOGO_PROJECT_LIST_FILE}
+        ${GOGOGO_PROJECT_LIST_FILE_APPEND_1}
         ${BUILD_SH}
         ${GOGOGO_SERVICE_LIST_FILE}
         ${GOGOGO_SERVICE_LIST_FILE_APPEND_1}
@@ -118,7 +129,7 @@ F_HELP()
     用法:
         $0  [-h|--help]
         $0  [-l|--list]
-        $0  <-c [dockerfile|java|node|自定义]>  <-b|--branch {代码分支}>  <-e|--email {邮件地址}>  <-s|--skiptest>  <-f|--force>  <-v|--verbose>  <-V|--release-version>  <-G|--gray>  <{项目1}  {项目2} ... {项目n}> ... {项目名称正则匹配}>
+        $0  <-c [dockerfile|java|node|自定义]>  <-D|--debug-port>  <-b|--branch {代码分支}>  <-I|--image-pre-name {镜像前置名称}>  <-e|--email {邮件地址}>  <-s|--skiptest>  <-f|--force>  <-v|--verbose>  <-V|--release-version>  <-G|--gray>  <{项目1}  {项目2} ... {项目n}> ... {项目名称正则匹配}>
     参数说明：
         \$0   : 代表脚本本身
         []   : 代表是必选项
@@ -130,13 +141,15 @@ F_HELP()
         -h|--help      此帮助
         -l|--list      列出可构建的项目清单
         -c|--category  指定构建项目语言类别：【dockerfile|java|node|自定义】，参考：${GOGOGO_PROJECT_LIST_FILE}
-        -b|--branch    指定代码分支，默认来自deploy.env
+        -b|--branch    指定代码分支，默认来自env.sh
+        -I|--image-pre-name  指定镜像前置名称【DOCKER_IMAGE_PRE_NAME】，默认来自env.sh。注：镜像完整名称：\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${DOCKER_IMAGE_NAME}:\${DOCKER_IMAGE_TAG}
         -e|--email     发送日志到指定邮件地址，如果与【-U|--user-name】同时存在，则将会被替代
-        -s|--skiptest  跳过测试，默认来自deploy.env
+        -s|--skiptest  跳过测试，默认来自env.sh
         -f|--force     强制重新构建（无论是否有更新）
         -v|--verbose   显示更多过程信息
         -G|--gray            : 设置灰度标志为：【gray】，默认：【normal】
         -V|--release-version : 发布版本号
+        -D|--debug-port: 开启开发者Debug-port模式，目前用于开放所有容器内部服务端口
     示例:
         #
         $0  -l             #--- 列出可构建发布的项目清单
@@ -145,11 +158,16 @@ F_HELP()
         $0  -c java  -b 分支a                 #--- 构建发布所有java项目，用分支a
         $0  -c java  -b 分支a  项目1  项目2   #--- 构建发布java【项目1、项目2】，用分支a（一般可不用-c参数）
         $0  -c java            项目1  项目2   #--- 构建发布java【项目1、项目2】，用默认分支
+        # Debug-port模式
+        $0  -D  -c java        项目1  项目2   #--- 构建发布java【项目1、项目2】，用默认分支，并开启Debug-port模式
         # 一般
         $0                           #--- 构建发布所有项目，用默认分支
         $0  -b 分支a                 #--- 构建发布所有项目，用【分支a】
         $0  -b 分支a  项目1  项目2   #--- 构建发布【项目1、项目2】，用【分支a】
         $0            项目1  项目2   #--- 构建发布【项目1、项目2】，用默认分支
+        # 镜像前置名称
+        $0  -I aaa/bbb  项目1  项目2            #--- 构建发布【项目1、项目2】，生成的镜像前置名称为【DOCKER_IMAGE_PRE_NAME='aaa/bbb'】，默认来自env.sh。注：镜像完整名称："\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${DOCKER_IMAGE_NAME}:\${DOCKER_IMAGE_TAG}"
+        $0  --email xm@xxx.com  项目1 项目2     #--- 构建发布【项目1、项目2】，将错误日志发送到邮箱【xm@xxx.com】
         # 邮件
         $0  --email xm@xxx.com  项目1 项目2     #--- 构建发布【项目1、项目2】，将错误日志发送到邮箱【xm@xxx.com】
         # 跳过测试
@@ -260,19 +278,21 @@ F_FIND_IMAGE_OUTPUT_SERVICENAME ()
     F_THIS_DOCKER_IMAGE_NAME=$1
     F_SERVICE_NAME_S=''
     > "${LOG_HOME}/F_FIND_IMAGE_OUTPUT_SERVICENAME-search.txt"
-    while read LINE
+    GOGOGO_SERVICE_LIST_FILE_FIND_TMP="${LOG_HOME}/${SH_NAME}-${GOGOGO_SERVICE_LIST_FILE##*/}--find-${F_THIS_DOCKER_IMAGE_NAME}"
+    cat ${GOGOGO_SERVICE_LIST_FILE} | grep "${F_THIS_DOCKER_IMAGE_NAME}"  >  ${GOGOGO_SERVICE_LIST_FILE_FIND_TMP}
+    while read LINE_F
     do
         # 跳过以#开头的行及空行
-        [[ "$LINE" =~ ^# ]] || [[ "$LINE" =~ ^[\ ]*$ ]] && continue
+        [[ "$LINE_F" =~ ^# ]] || [[ "$LINE_F" =~ ^[\ ]*$ ]] && continue
         #
-        F_SERVICE_NAME=`echo ${LINE} | cut -d \| -f 2`
+        F_SERVICE_NAME=`echo ${LINE_F} | cut -d \| -f 2`
         F_SERVICE_NAME=`echo ${F_SERVICE_NAME}`
-        F_DOCKER_IMAGE_NAME=`echo ${LINE} | cut -d \| -f 3`
+        F_DOCKER_IMAGE_NAME=`echo ${LINE_F} | cut -d \| -f 4`
         F_DOCKER_IMAGE_NAME=`eval echo ${F_DOCKER_IMAGE_NAME}`    #--- 用eval将配置文件中项的变量转成值，下同
         if [[ ${F_DOCKER_IMAGE_NAME} == ${F_THIS_DOCKER_IMAGE_NAME} ]]; then
             F_SERVICE_NAME_S="${F_SERVICE_NAME_S} ${F_SERVICE_NAME}"
         fi
-    done < ${GOGOGO_SERVICE_LIST_FILE}
+    done < ${GOGOGO_SERVICE_LIST_FILE_FIND_TMP}
     # 结果
     if [[ -z "${F_SERVICE_NAME_S}" ]]; then
         # 结果为空
@@ -335,25 +355,25 @@ F_BUILD_TIME_SEARCH()
 F_USER_SEARCH()
 {
     F_USER_NAME=$1
-    while read LINE
+    while read U_LINE
     do
-        # 跳过以#开头的行及空行
-        [[ "$LINE" =~ ^# ]] || [[ "$LINE" =~ ^[\ ]*$ ]] && continue
+        # 跳过以#开头的行或空行
+        [[ "$U_LINE" =~ ^# ]] || [[ "$U_LINE" =~ ^[\ ]*$ ]] && continue
         #
-        CURRENT_USER_ID=`echo $LINE | cut -d '|' -f 2`
+        CURRENT_USER_ID=`echo $U_LINE | cut -d '|' -f 2`
         CURRENT_USER_ID=`echo ${CURRENT_USER_ID}`
-        CURRENT_USER_NAME=`echo $LINE | cut -d '|' -f 3`
+        CURRENT_USER_NAME=`echo $U_LINE | cut -d '|' -f 3`
         CURRENT_USER_NAME=`echo ${CURRENT_USER_NAME}`
-        CURRENT_USER_XINGMING=`echo $LINE | cut -d '|' -f 4`
+        CURRENT_USER_XINGMING=`echo $U_LINE | cut -d '|' -f 4`
         CURRENT_USER_XINGMING=`echo ${CURRENT_USER_XINGMING}`
-        CURRENT_USER_EMAIL=`echo $LINE | cut -d '|' -f 5`
+        CURRENT_USER_EMAIL=`echo $U_LINE | cut -d '|' -f 5`
         CURRENT_USER_EMAIL=`echo ${CURRENT_USER_EMAIL}`
         if [ "${F_USER_NAME}" = "${CURRENT_USER_ID}"  -o  "${F_USER_NAME}" = "${CURRENT_USER_NAME}" ]; then
             echo "${CURRENT_USER_XINGMING} ${CURRENT_USER_EMAIL}"
             return 0
         fi
     done < "${USER_DB_FILE}"
-    return 1
+    return 3
 }
 
 
@@ -424,24 +444,38 @@ F_ONLINE_SERVICE_SEARCH()
 # 用法：
 F_SET_RUN_ENV()
 {
+    K8S_CONTEXT=''
+    K8S_NAMESAPCE=''
+    #
+    SWARM_DOCKER_HOST=''
+    SWARM_NETWORK=''
+    #
+    COMPOSE_DOCKER_HOST=''
+    COMPOSE_NETWORK=''
+    DOCKER_COMPOSE_SERVICE_HOME=''
+    #
+    DEPLOY_PLACEMENT_LABELS=''
+    #
     case ${CLUSTER} in
         swarm)
             if [[ ! -z ${DEPLOY_PLACEMENT} ]]; then
                 DEPLOY_PLACEMENT=${DEPLOY_PLACEMENT// /}               #--- 删除字符串中所有的空格
-                DEPLOY_PLACEMENT_ARG_NUM=$(echo ${DEPLOY_PLACEMENT} | grep -o , | wc -l)
+                DEPLOY_PLACEMENT_ARG_NUM=$(echo ${DEPLOY_PLACEMENT} | grep -o ',' | wc -l)
                 DEPLOY_PLACEMENT_LABELS=''
                 for ((i=DEPLOY_PLACEMENT_ARG_NUM; i>=0; i--))
                 do
-                    if [ "x${DEPLOY_PLACEMENT}" = 'x' ]; then
+                    if [[ -z ${DEPLOY_PLACEMENT} ]]; then
                         break
                     fi
                     FIELD=$((i+1))
-                    DEPLOY_PLACEMENT_SET=`echo ${DEPLOY_PLACEMENT} | cut -d , -f ${FIELD}`
+                    DEPLOY_PLACEMENT_SET=`echo ${DEPLOY_PLACEMENT} | cut -d ',' -f ${FIELD}`
                     # 
-                    if [[ ${DEPLOY_PLACEMENT_SET} =~ ^NET ]]; then
-                        NETWORK_SWARM=$(echo ${DEPLOY_PLACEMENT_SET} | awk -F ':' '{print $2}')
+                    if [[ ${DEPLOY_PLACEMENT_SET} =~ ^H ]]; then
+                        SWARM_DOCKER_HOST=$(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-)
+                    elif [[ ${DEPLOY_PLACEMENT_SET} =~ ^NET ]]; then
+                        SWARM_NETWORK=$(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-)
                     elif [[ ${DEPLOY_PLACEMENT_SET} =~ ^L ]]; then
-                        DEPLOY_PLACEMENT_LABELS="$(echo ${DEPLOY_PLACEMENT_SET} | awk -F ':' '{print $2}') ${DEPLOY_PLACEMENT_LABELS}"
+                        DEPLOY_PLACEMENT_LABELS="$(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-) ${DEPLOY_PLACEMENT_LABELS}"
                     else
                         echo -e "\n猪猪侠警告：配置文件错误，请检查【DEPLOY_PLACEMENT】\n"
                         return 52
@@ -449,12 +483,16 @@ F_SET_RUN_ENV()
                 done
             fi
             #
-            export DOCKER_HOST=${SWARM_DOCKER_HOST}     #--- 用完需要置空
+            # 输出
+            SWARM_DOCKER_HOST=${SWARM_DOCKER_HOST:-"${SWARM_DEFAULT_DOCKER_HOST}"}
+            SWARM_NETWORK=${SWARM_NETWORK:-"${SWARM_DEFAULT_NETWORK}"}
+            # DEPLOY_PLACEMENT_LABELS
+            export DOCKER_HOST=${SWARM_DOCKER_HOST}
             ;;
         k8s)
             if [[ ! -z ${DEPLOY_PLACEMENT} ]]; then
                 DEPLOY_PLACEMENT=${DEPLOY_PLACEMENT// /}               #--- 删除字符串中所有的空格
-                DEPLOY_PLACEMENT_ARG_NUM=$(echo ${DEPLOY_PLACEMENT} | grep -o , | wc -l)
+                DEPLOY_PLACEMENT_ARG_NUM=$(echo ${DEPLOY_PLACEMENT} | grep -o ',' | wc -l)
                 DEPLOY_PLACEMENT_LABELS=''
                 for ((i=DEPLOY_PLACEMENT_ARG_NUM; i>=0; i--))
                 do
@@ -462,12 +500,14 @@ F_SET_RUN_ENV()
                         break
                     fi
                     FIELD=$((i+1))
-                    DEPLOY_PLACEMENT_SET=`echo ${DEPLOY_PLACEMENT} | cut -d , -f ${FIELD}`
+                    DEPLOY_PLACEMENT_SET=`echo ${DEPLOY_PLACEMENT} | cut -d ',' -f ${FIELD}`
                     # 假设只有一个Label
-                    if [[ ${DEPLOY_PLACEMENT_SET} =~ ^NS ]]; then
-                        K8S_NAMESAPCE=$(echo ${DEPLOY_PLACEMENT_SET} | awk -F ':' '{print $2}')
+                    if [[ ${DEPLOY_PLACEMENT_SET} =~ ^C ]]; then
+                        K8S_CONTEXT=$(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-)
+                    elif [[ ${DEPLOY_PLACEMENT_SET} =~ ^NS ]]; then
+                        K8S_NAMESAPCE=$(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-)
                     elif [[ ${DEPLOY_PLACEMENT_SET} =~ ^L ]]; then
-                        DEPLOY_PLACEMENT_LABELS="$(echo ${DEPLOY_PLACEMENT_SET} | awk -F ':' '{print $2}') ${DEPLOY_PLACEMENT_LABELS}"
+                        DEPLOY_PLACEMENT_LABELS="$(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-) ${DEPLOY_PLACEMENT_LABELS}"
                     else
                         echo -e "\n猪猪侠警告：配置文件错误，请检查【DEPLOY_PLACEMENT】\n"
                         return 52
@@ -475,40 +515,58 @@ F_SET_RUN_ENV()
                 done
             fi
             #
-            K8S_NAMESAPCE=${K8S_NAMESAPCE:-'default'}
+            # 输出
+            K8S_CONTEXT=${K8S_CONTEXT:-"K8S_DEFAULT_CONTEXT"}
+            K8S_NAMESAPCE=${K8S_NAMESAPCE:-"K8S_DEFAULT_NAMESAPCE"}
+            # DEPLOY_PLACEMENT_LABELS
             ;;
         compose)
             if [[ ! -z ${DEPLOY_PLACEMENT} ]]; then
-                if [[ ${DEPLOY_PLACEMENT} =~ ^SSH ]]; then
-                    # awk会自动去掉【""】引号
-                    COMPOSE_SSH_HOST_OR_WITH_USER=$(echo ${DEPLOY_PLACEMENT} | awk '{print $1}' | awk -F ':' '{print $2}')
-                    COMPOSE_SSH_PORT=$(echo ${DEPLOY_PLACEMENT} | awk '{print $3}')
-                    if [[ -z ${COMPOSE_SSH_PORT} ]]; then
-                        COMPOSE_SSH_PORT=22
+                DEPLOY_PLACEMENT=${DEPLOY_PLACEMENT// /}               #--- 删除字符串中所有的空格
+                DEPLOY_PLACEMENT_ARG_NUM=$(echo ${DEPLOY_PLACEMENT} | grep -o ',' | wc -l)
+                DEPLOY_PLACEMENT_LABELS=''
+                for ((i=DEPLOY_PLACEMENT_ARG_NUM; i>=0; i--))
+                do
+                    if [[ -z ${DEPLOY_PLACEMENT} ]]; then
+                        break
                     fi
-                else
-                    echo -e "\n猪猪侠警告：配置文件错误，请检查【DEPLOY_PLACEMENT】\n"
-                    return 52
-                fi
-                COMPOSE_DOCKER_HOST="ssh://${COMPOSE_SSH_HOST_OR_WITH_USER}:${COMPOSE_SSH_PORT}"
+                    FIELD=$((i+1))
+                    DEPLOY_PLACEMENT_SET=`echo ${DEPLOY_PLACEMENT} | cut -d ',' -f ${FIELD}`
+                    # 
+                    if [[ ${DEPLOY_PLACEMENT_SET} =~ ^H ]]; then
+                        COMPOSE_DOCKER_HOST=$(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-)
+                    elif [[ ${DEPLOY_PLACEMENT_SET} =~ ^NET ]]; then
+                        COMPOSE_NETWORK=$(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-)
+                    elif [[ ${DEPLOY_PLACEMENT_SET} =~ ^L ]]; then
+                        DEPLOY_PLACEMENT_LABELS="$(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-) ${DEPLOY_PLACEMENT_LABELS}"
+                    else
+                        echo -e "\n猪猪侠警告：配置文件错误，请检查【DEPLOY_PLACEMENT】\n"
+                        return 52
+                    fi
+                done
             else
                 echo -e "\n猪猪侠警告：配置文件错误，请检查【DEPLOY_PLACEMENT】，【CLUSTER=compose】时，此项不能为空\n"
                 return 52
             fi
             #
-            export DOCKER_HOST=${COMPOSE_DOCKER_HOST}     #--- 用完需要置空
+            # 输出
+            COMPOSE_DOCKER_HOST=${COMPOSE_DOCKER_HOST:-"${COMPOSE_DEFAULT_DOCKER_HOST}"}
+            COMPOSE_NETWORK=${COMPOSE_NETWORK:-"${COMPOSE_DEFAULT_NETWORK}"}
+            DOCKER_COMPOSE_SERVICE_HOME=${DOCKER_COMPOSE_BASE}/${SERVICE_NAME}
+            export DOCKER_HOST=${COMPOSE_DOCKER_HOST}
+            #
             # test
             if [[ $(docker image ls >/dev/null 2>&1; echo $?) != 0 ]]; then
                 echo -e "\n猪猪侠警告：连接测试异常，请检查【DEPLOY_PLACEMENT】或目标主机，Docker daemon无法正常连接\n"
                 return 52
             fi
-            DOCKER_COMPOSE_SERVICE_HOME=${DOCKER_COMPOSE_BASE}/${SERVICE_NAME}
             ;;
         *)
             echo -e "\n猪猪侠警告：未定义的集群类型\n"
             return 52
             ;;
     esac
+    return 0
 }
 
 
@@ -560,12 +618,12 @@ F_DOCKER_CLUSTER_SERVICE_DEPLOY()
                             DEPLOY_PLACEMENT=`echo ${LINE_A} | cut -d \| -f 5`
                             DEPLOY_PLACEMENT=`eval echo ${DEPLOY_PLACEMENT}`
                         fi
-                        #
-                        if [[ ${GET_IT_A} != 'YES' ]];then
-                            echo -e "\n猪猪侠警告：在【${GOGOGO_SERVICE_LIST_FILE_APPEND_1}】文件中没有找到服务名【${SERVICE_NAME}】，请检查！\n"
-                            exit 51
-                        fi
                     done < ${GOGOGO_SERVICE_LIST_FILE_APPEND_1_TMP}
+                    #
+                    if [[ ${GET_IT_A} != 'YES' ]];then
+                        echo -e "\n猪猪侠警告：在【${GOGOGO_SERVICE_LIST_FILE_APPEND_1}】文件中没有找到服务名【${SERVICE_NAME}】，请检查！\n"
+                        exit 51
+                    fi
                     #
                     F_SET_RUN_ENV
                     if [[ $? -ne 0 ]]; then
@@ -606,14 +664,14 @@ F_DOCKER_CLUSTER_SERVICE_DEPLOY()
             F_ONLINE_SERVICE_SEARCH  ${F_SERVICE_X_NAME}  ${CLUSTER}
             if [ $? -eq 0 ]; then
                 # 服务运行中
-                ${DOCKER_CLUSTER_SERVICE_DEPLOY_SH}  --mode function  --update  --fuck  ${F_SERVICE_NAME}  ${DEPLOY_OPTION}
+                ${DOCKER_CLUSTER_SERVICE_DEPLOY_SH}  ${ENABLE_DEBUG_PORT_ARG}  ${IMAGE_PRE_NAME_ARG}  --mode function  --update  --fuck  ${F_SERVICE_NAME}  ${DEPLOY_OPTION}
                 #F_DEPLOY_RETURN_CURRENT=$?
                 #let  F_DEPLOY_RETURN=${F_DEPLOY_RETURN}+${F_DEPLOY_RETURN_CURRENT}-50
                 F_DEPLOY_RETURN=$?
                 let  F_SERVICE_NUM=${F_SERVICE_NUM}+1
             else
                 # 服务不在运行中
-                ${DOCKER_CLUSTER_SERVICE_DEPLOY_SH}  --mode function  --create  --fuck  ${F_SERVICE_NAME}  ${DEPLOY_OPTION}
+                ${DOCKER_CLUSTER_SERVICE_DEPLOY_SH}  ${ENABLE_DEBUG_PORT_ARG}  ${IMAGE_PRE_NAME_ARG}  --mode function  --create  --fuck  ${F_SERVICE_NAME}  ${DEPLOY_OPTION}
                 #F_DEPLOY_RETURN_CURRENT=$?
                 #let  F_DEPLOY_RETURN=${F_DEPLOY_RETURN}+${F_DEPLOY_RETURN_CURRENT}-50
                 F_DEPLOY_RETURN=$?
@@ -667,7 +725,7 @@ F_PYTHON_DEPLOY()
 
 
 # 参数检查
-TEMP=`getopt -o hlc:b:e:sfvGV:  -l help,list,category:,branch:,email:,skiptest,force,verbose,gray,release-version: -- "$@"`
+TEMP=`getopt -o hlc:b:I:e:sfvGV:D  -l help,list,category:,branch:,image-pre-name:,email:,skiptest,force,verbose,gray,release-version:debug-port -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
     exit 51
@@ -698,6 +756,11 @@ do
             ;;
         -b|--branch)
             GIT_BRANCH=$2
+            shift 2
+            ;;
+        -I|--image-pre-name)
+            IMAGE_PRE_NAME=$2
+            IMAGE_PRE_NAME_ARG="--image-pre-name ${IMAGE_PRE_NAME}"
             shift 2
             ;;
         -e|--email)
@@ -735,6 +798,11 @@ do
                 exit 51
             fi
             ;;
+        -D|--debug-port)
+            #ENABLE_DEBUG_PORT='YES'
+            ENABLE_DEBUG_PORT_ARG='--debug-port'
+            shift
+            ;;
         --)
             shift
             break
@@ -753,6 +821,14 @@ if [[ -n ${HOOK_GAN_ENV} ]] && [[ ${HOOK_GAN_ENV} != ${RUN_ENV} ]]; then
     echo -e "\n猪猪侠警告：运行环境不匹配，跳过（这是正常情况）\n"
     exit
 fi
+
+
+# 默认ENV
+GIT_BRANCH=${GIT_BRANCH:-"${GIT_DEFAULT_BRANCH}"}
+
+
+# 建立项目base目录
+[ -d "${LOG_HOME}" ] || mkdir -p  ${LOG_HOME}
 
 
 
@@ -777,11 +853,6 @@ fi
 
 
 
-# 建立项目base目录
-[ -d "${LOG_HOME}" ] || mkdir -p  ${LOG_HOME}
-
-
-
 # 待搜索的项目清单
 > ${GOGOGO_PROJECT_LIST_FILE_TMP}
 ## 类别
@@ -802,9 +873,9 @@ if [[ -z ${THIS_LANGUAGE_CATEGORY} ]]; then
                 # 跳过以#开头的行或空行
                 [[ "$LINE" =~ ^# ]] || [[ "$LINE" =~ ^[\ ]*$ ]] && continue
                 #
-                PROJECT_NAME=`echo $LINE | awk -F '|' '{print $3}'`
-                PROJECT_NAME=`echo ${PROJECT_NAME}`
-                if [[ ${PROJECT_NAME} =~ $i ]]; then
+                PJ_NAME=`echo $LINE | awk -F '|' '{print $3}'`
+                PJ_NAME=`echo ${PJ_NAME}`
+                if [[ ${PJ_NAME} =~ $i ]]; then
                     echo $LINE >> ${GOGOGO_PROJECT_LIST_FILE_TMP}
                     # 仅匹配一次
                     #GET_IT='Y'
@@ -858,13 +929,13 @@ fi
 sed  -i  -E  -e '/^\s*$/d'  -e '/^#.*$/d'  ${GOGOGO_PROJECT_LIST_FILE_TMP}
 # 优先级排序
 > ${GOGOGO_PROJECT_LIST_FILE_TMP}.sort
-for i in  `awk -F '|' '{split($9,a," ");print NR,a[1]}' ${GOGOGO_PROJECT_LIST_FILE_TMP}  |  sort -n -k 2 |  awk '{print $1}'`
+for i in  `awk -F '|' '{split($8,a," ");print NR,a[1]}' ${GOGOGO_PROJECT_LIST_FILE_TMP}  |  sort -n -k 2 |  awk '{print $1}'`
 do
     awk "NR=="$i'{print}' ${GOGOGO_PROJECT_LIST_FILE_TMP}  >> ${GOGOGO_PROJECT_LIST_FILE_TMP}.sort
 done
 cp  ${GOGOGO_PROJECT_LIST_FILE_TMP}.sort  ${GOGOGO_PROJECT_LIST_FILE_TMP}
 # 加表头
-sed -i  '1i#| **类别** | **项目名** | **构建方法** | **输出方法** | **镜像名** | **链接node_project** | **GOGOGO发布方式** | **优先级** |'  ${GOGOGO_PROJECT_LIST_FILE_TMP}
+sed -i  '1i#| **类别** | **项目名** | **GIT命令空间** | **构建方法** | **输出方法** | **GOGOGO发布方式** | **优先级** | **备注** |'  ${GOGOGO_PROJECT_LIST_FILE_TMP}
 # 屏显
 echo -e "${ECHO_NORMAL}################################ 开始构建与发布 ################################${ECHO_CLOSE}"  #--- 80 (80-70-60)
 echo -e "\n【${SH_NAME}】待构建与发布项目清单："
@@ -915,14 +986,48 @@ do
     PJ=`echo ${LINE} | cut -d \| -f 3`
     PJ=`echo ${PJ}`
     #
-    BUILD_METHOD=`echo ${LINE} | cut -d \| -f 4`
-    BUILD_METHOD=`echo ${BUILD_METHOD}`
-    #
-    DOCKER_IMAGE_NAME=`echo ${LINE} | cut -d \| -f 6`
-    DOCKER_IMAGE_NAME=`eval echo ${DOCKER_IMAGE_NAME}`    #--- 用eval将配置文件中项的变量转成值，下同
-    #
-    GOGOGO_RELEASE_METHOD=`echo ${LINE} | cut -d \| -f 8`
+    GOGOGO_RELEASE_METHOD=`echo ${LINE} | cut -d \| -f 7`
     GOGOGO_RELEASE_METHOD=`echo ${GOGOGO_RELEASE_METHOD}`
+    #
+    #
+    # append.1
+    GOGOGO_PROJECT_LIST_FILE_APPEND_1_TMP="${LOG_HOME}/${SH_NAME}-${GOGOGO_PROJECT_LIST_FILE_APPEND_1##*/}--${LANGUAGE_CATEGORY}-${PJ}"
+    cat ${GOGOGO_PROJECT_LIST_FILE_APPEND_1} | grep "${PJ}"  >  ${GOGOGO_PROJECT_LIST_FILE_APPEND_1_TMP}
+    GET_IT_A='NO'
+    while read LINE_A
+    do
+        # 跳过以#开头的行或空行
+        [[ "$LINE_A" =~ ^# ]] || [[ "$LINE_A" =~ ^[\ ]*$ ]] && continue
+        #
+        LANGUAGE_CATEGORY_A=`echo ${LINE_A} | cut -d \| -f 2`
+        LANGUAGE_CATEGORY_A=`echo ${LANGUAGE_CATEGORY_A}`
+        #
+        PJ_A=`echo ${LINE_A} | cut -d \| -f 3`
+        PJ_A=`echo ${PJ_A}`
+        #
+        if [[ ${PJ_A} == ${PJ} ]] && [[ ${LANGUAGE_CATEGORY_A} == ${LANGUAGE_CATEGORY} ]]; then
+            #
+            GET_IT_A='YES'
+            #
+            DOCKER_IMAGE_PRE_NAME=`echo ${LINE_A} | cut -d \| -f 4`
+            DOCKER_IMAGE_PRE_NAME=`echo ${DOCKER_IMAGE_PRE_NAME}`
+            # 命令行参数优先级最高（1 arg，2 listfile，3 env.sh）
+            if [[ -n ${IMAGE_PRE_NAME} ]]; then
+                DOCKER_IMAGE_PRE_NAME=${IMAGE_PRE_NAME}
+            elif [[ -z ${DOCKER_IMAGE_PRE_NAME} ]]; then
+                DOCKER_IMAGE_PRE_NAME=${DOCKER_IMAGE_DEFAULT_PRE_NAME}
+            fi
+            #
+            DOCKER_IMAGE_NAME=`echo ${LINE_A} | cut -d \| -f 5`
+            DOCKER_IMAGE_NAME=`echo ${DOCKER_IMAGE_NAME}`
+        fi
+    done < ${GOGOGO_PROJECT_LIST_FILE_APPEND_1_TMP}
+    #
+    if [[ ${GET_IT_A} != 'YES' ]];then
+        echo -e "\n猪猪侠警告：在【${PROJECT_LIST_FILE_APPEND_1}】文件中没有找到项目【${PJ}】，请检查！\n"
+        exit 51
+    fi
+    #
     #
     RELEASE_CHECK_COUNT=`expr ${RELEASE_CHECK_COUNT} + 1`
     echo ""
@@ -944,7 +1049,7 @@ do
         # 静默(并行构建)
         read -u 6       # 获取令牌
         {
-            ${BUILD_SH}  --mode function  --category ${LANGUAGE_CATEGORY}  --branch ${GIT_BRANCH}  ${PJ}  ${BUILD_SKIP_TEST_OPT}  ${BUILD_FORCE_OPT}  > /dev/null 2>&1
+            ${BUILD_SH}  --mode function  --category ${LANGUAGE_CATEGORY}  --branch ${GIT_BRANCH}  ${PJ}  ${IMAGE_PRE_NAME_ARG}  ${BUILD_SKIP_TEST_OPT}  ${BUILD_FORCE_OPT}  > /dev/null 2>&1
             BUILD_RETURN=$?
             echo "ok ${BUILD_RETURN}" > "${GOGOGO_PROJECT_BUILD_RESULT}.${PJ}"
             echo >&6    # 归还令牌
@@ -976,7 +1081,7 @@ do
         done
     else
         # 非静默
-        ${BUILD_SH}  --mode function  --category ${LANGUAGE_CATEGORY}  --branch ${GIT_BRANCH}  ${PJ}  ${BUILD_SKIP_TEST_OPT}  ${BUILD_FORCE_OPT}  --verbose
+        ${BUILD_SH}  --mode function  --category ${LANGUAGE_CATEGORY}  --branch ${GIT_BRANCH}  ${PJ}  ${IMAGE_PRE_NAME_ARG}  ${BUILD_SKIP_TEST_OPT}  ${BUILD_FORCE_OPT}  --verbose
         BUILD_RETURN=$?
         #echo "ok ${BUILD_RETURN}" > "${GOGOGO_PROJECT_BUILD_RESULT}.${PJ}"
     fi
@@ -1073,7 +1178,7 @@ echo "造 浪 者：${MY_XINGMING}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_
 echo "开始时间：${TIME}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 echo "结束时间：${TIME_END}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 echo "代码分支：${GIT_BRANCH}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
-echo "Docker镜像版本：${DOCKER_IMAGE_VER}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
+echo "镜像TAG ：${DOCKER_IMAGE_TAG}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 echo "灰度标志：${GRAY_TAG}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 echo "发布版本：${RELEASE_VERSION}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 echo "构建与发布清单：" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}

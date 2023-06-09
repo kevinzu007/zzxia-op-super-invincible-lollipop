@@ -1,0 +1,14 @@
+
+- hosts: gitlab
+  become: yes
+  tasks:
+    - name: cp gitlab-backup.sh
+      copy: src=./gitlab-srv/gitlab-backup.sh  dest=/srv/docker/gitlab-srv/   owner=root  group=root  mode=755 backup=yes
+    - name: cp gitlab-backup.sh.env
+      copy: src=./gitlab-srv/gitlab-backup.sh.env  dest=/srv/docker/gitlab-srv/   owner=root  group=root  mode=644 backup=yes
+    - name: crontab - 备份gitlab
+      cron: name=备份gitlab backup=yes state=present minute=0 hour=2 day=*  month=* weekday=* user=root  job='/srv/docker/gitlab-srv/gitlab-backup.sh  >> /srv/docker/gitlab-srv/gitlab-backup.sh.log 2>&1'
+      #    - name: crontab - 清理gitlab备份
+      #      cron: name=清理gitlab备份 backup=yes state=present minute=0 hour=1 day=*  month=* weekday=* user=root  job='find /srv/docker/gitlab-srv/data/gitlab/data/backups  -size +1G -ctime +1 -exec rm -f {} \;'
+
+

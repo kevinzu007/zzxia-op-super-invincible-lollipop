@@ -12,8 +12,8 @@ SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
 # 引入env
-. ${SH_PATH}/deploy.env
-#DOCKER_REPO=
+. ${SH_PATH}/env.sh
+#DOCKER_REPO_SERVER=
 #DOCKER_REPO_USER=
 #DOCKER_REPO_PASSWORD=
 
@@ -23,8 +23,8 @@ TIME_START=${TIME}
 
 
 # login
-#echo "${DOCKER_REPO_PASSWORD}" | docker login -u "$DOCKER_REPO_USER" --password-stdin  ${DOCKER_REPO}
-ansible  docker  -m shell  -a "echo ${DOCKER_REPO_PASSWORD} | docker login -u $DOCKER_REPO_USER --password-stdin  ${DOCKER_REPO}"
+#echo "${DOCKER_REPO_PASSWORD}" | docker login -u "$DOCKER_REPO_USER" --password-stdin  ${DOCKER_REPO_SERVER}
+ansible  docker  -m shell  -a "echo ${DOCKER_REPO_PASSWORD} | docker login -u ${DOCKER_REPO_USER} --password-stdin  ${DOCKER_REPO_SERVER}"
 
 
 

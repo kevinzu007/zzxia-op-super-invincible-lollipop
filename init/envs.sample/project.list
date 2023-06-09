@@ -1,77 +1,84 @@
 ### 项目清单
+### 
+###  2【类别：LANGUAGE_CATEGORY】= [ product|dockerfile|java|node|html|python|自定义 ]
+###    1 product   ：成品
+###    2 dockerfile：Dockerfile
+###    3 java      ：Java
+###    4 node      ：Node
+###    5 html      ：html
+###    6 python    ：python
+### 
+###  3【项目名：PJ】= [自定义名称]
+### 
+###  4【GIT命名空间：GIT_NAMESPACE】= [自定义名称]
+###    请参考【env.sh】中的GIT_DEFAULT_NAMESPACE说明
+### 
+###  5【构建方法：BUILD_METHOD】= [ NONE | docker_build | java:[mvn_package|mvn_install|mvn_deploy|gradle|自定义] | node:[original|build|自定义] ]
+###    0 类别='*'          : NONE             : 跳过构建，用【gogogo.sh】时，也会跳过发布
+###    1 类别='product'    : NONE             : 跳过构建，成品无需构建
+###    2 类别='dockerfile' : docker_build     : 即docker build
+###    3 类别='java'       : mvn_package      : 即mvn package
+###                        : mvn_install      : 即mvn install
+###                        : mvn_deploy       : 即mvn deploy
+###                        : gradle           : 即gradle ......（没搞）
+###    4 类别='node'       : npm_install      : npm install
+###                        : npm_build        : npm install && npm build
+###    5 类别='html'       : NONE             : 纯静态，啥也不用做
+###    6 类别='python'     : NONE             : 啥也不用做
+### 
+###  6【输出方法：OUTPUT_METHOD】= [ dockerfile:[docker_image_push|NONE] | java:[deploy_war|deploy_jar_to_repo|docker_image_push|NONE] | node:[direct_deploy|docker_image_push|NONE] | html[direct_deploy|docker_image_push] | python[direct_deploy|docker_image_push] ]
+###    1 类别='product'    : docker_image_push    : 仅用于推送docker镜像到docker仓库
+###    2 类别='dockerfile' : docker_image_push    : 推送docker镜像到仓库
+###                        : NONE                 : 无需输出
+###    3 类别='java'       : deploy_war           : 输出war包（没搞）
+###                        : deploy_jar_to_repo   : 推送jar包到maven仓库
+###                        : docker_image_push    : 推送docker镜像到仓库
+###                        : NONE                 : 无需输出，比如已经deploy到仓库等
+###    4 类别='node'       : direct_deploy        : 拷贝输出文件到nginx_real服务器
+###                        : docker_image_push    : 推送docker镜像到仓库
+###                        : NONE                 : 无需输出，一般用于前端公共组件项目，供其他项目链接用
+###    5 类别='html'       : direct_deploy        : 拷贝文件到nginx_real服务器
+###                        : docker_image_push    : 推送docker镜像到仓库
+###    6 类别='python'     : direct_deploy        : 拷贝文件到服务器
+###                        : docker_image_push    : 推送docker镜像到仓库
+### 
+###  7【GOGOGO发布方式：GOGOGO_RELEASE_METHOD】= [ NONE | docker_cluster | web_release | python_deploy | 自定义 ]
+###    注：用【gogogo.sh】脚本自动构建与发布时使用的参数
+###    1 NONE            : 无需发布
+###    2 docker_cluster  : 用【docker-cluster-service-deploy.sh】发布
+###    3 web_release     : 用【web-release.sh】发布
+###    4 python_deploy   : 用【python-deploy.sh】发布
+### 
+###  8【优先级：PRIORITY】= [ 数字 ]
+###    数字越小越优先
 ###
-### 2【类别：LANGUAGE_CATEGORY】= [ product|dockerfile|java|node|html|python|自定义 ]
-###   1 product   ：成品
-###   2 dockerfile：Dockerfile
-###   3 java      ：Java
-###   4 node      ：Node
-###   5 html      ：html
-###   6 python    ：python
+###  9【备注：NOTE】= [ 自定义 ]
+###    说明信息
+### 
+### A.1 更多扩展项，请在文件【project.list.append.1】中添加
+###    4 镜像前置名：DOCKER_IMAGE_PRE_NAME
+###    5 镜像名：DOCKER_IMAGE_NAME
+###    6 链接node_project：LINK_NODE_PROJECT
+### 
+###    ***** 以上种种，都可以自己定义，然后调整相关脚本即可 *****
 ###
-### 3【项目名：PJ】= [自定义名称]
+###    ***** 上文提到的变量名可以是下文表头的名字、也可以是sh中可以获得的变量名 *****
 ###
-### 4【构建方法：BUILD_METHOD】= [ NONE | docker_bulid | java:[mvn_package|gradle|自定义] | node:[original|build|自定义] ]
-###   0 类别='*'          : NONE             : 跳过构建，用【gogogo.sh】时，也会跳过发布
-###   1 类别='product'    : NONE             : 跳过构建，成品无需构建
-###   2 类别='dockerfile' : docker_bulid     : 即docker bulid
-###   3 类别='java'       : mvn_package      : 即mvn package
-###                       : mvn_deploy       : 即mvn deploy
-###                       : gradle           : 即gradle ......（没搞）
-###   4 类别='node'       : npm_install      : npm install
-###                       : npm_build        : npm install && npm build
-###   5 类别='html'       : NONE             : 纯静态，啥也不用做
-###   6 类别='python'     : NONE             : 啥也不用做
-###
-### 5【输出方法：OUTPUT_METHOD】= [ dockerfile:[docker_image_push|NONE] | java:[deploy_war|deploy_jar_to_repo|docker_image_push|NONE] | node:[direct_deploy|docker_image_push|NONE] | html[direct_deploy|docker_image_push] | python[direct_deploy|docker_image_push] ]
-###   1 类别='product'    : docker_image_push    : 仅用于推送docker镜像到docker仓库
-###   2 类别='dockerfile' : docker_image_push    : 推送docker镜像到仓库
-###                       : NONE                 : 无需输出
-###   3 类别='java'       : deploy_war           : 输出war包（没搞）
-###                       : deploy_jar_to_repo   : 推送jar包到maven仓库
-###                       : docker_image_push    : 推送docker镜像到仓库
-###                       : NONE                 : 无需输出，比如已经deploy到仓库等
-###   4 类别='node'       : direct_deploy        : 拷贝输出文件到nginx_real服务器
-###                       : docker_image_push    : 推送docker镜像到仓库
-###                       : NONE                 : 无需输出，一般用于前端公共组件项目，供其他项目链接用
-###   5 类别='html'       : direct_deploy        : 拷贝文件到nginx_real服务器
-###                       : docker_image_push    : 推送docker镜像到仓库
-###   6 类别='python'     : direct_deploy        : 拷贝文件到服务器
-###                       : docker_image_push    : 推送docker镜像到仓库
-###
-### 6【镜像名：DOCKER_IMAGE_NAME】= [自定义名称]
-###   当输出方法='docker_image_push'时，镜像名不能为空
-###
-### 7【链接node_project：LINK_NODE_PROJECT】= [node_module来源项目名称]
-###   将此node项目中的node_module软链接到当前项目，用以避免重复编码与重复下载node_module
-###
-### 8【GOGOGO发布方式：GOGOGO_RELEASE_METHOD】= [ NONE | docker_cluster | web_release | python_deploy | 自定义 ]
-###   注：用【gogogo.sh】脚本自动构建与发布时使用的参数
-###   1 NONE            : 无需发布
-###   2 docker_cluster  : 用【docker-cluster-service-deploy.sh】发布
-###   3 web_release     : 用【web-release.sh】发布
-###   4 python_deploy   : 用【python-deploy.sh】发布
-###
-### 9【优先级：PRIORITY】= [ 数字 ]
-###   数字越小越优先
-###
-###   ***** 以上种种，都可以自己定义，然后调整相关脚本即可 *****
-###
-#| LANGUAGE_CATEGORY | PJ                  | BUILD_METHOD | OUTPUT_METHOD     | DOCKER_IMAGE_NAME              | LINK_NODE_PROJECT    |GOGOGO_RELEASE_METHOD | PRIORITY | NOTE            |
-#| **类别** | **项目名**                   | **构建方法** | **输出方法**      | **镜像名**                     | **链接node_project** | **GOGOGO发布方式** | **优先级** | **备注**        |
-#| -------- | ---------------------------- | ------------ | ----------------- | ------------------------------ | -------------------- | ------------------ | ---------- | --------------- |
-#| html     | gan                          | NONE         | direct_deploy     | gan                            |                      | web_release        | 0          |                 |
-#| python   | gan-api                      | NONE         | direct_deploy     | gan-api                        |                      | python_deploy      | 0          |                 |
-| product   | neo4j                        | NONE         | docker_image_push | neo4j                          |                      | docker_cluster     | 0          |                 |
-| product   | fluentd                      | NONE         | docker_image_push | fluentd-gcl                    |                      | docker_cluster     | 0          |                 |
-| dockerfile| my-oracle-java-8             | docker_bulid | docker_image_push | my-oracle-java-8               |                      | NONE               | 1          |                 |
-| java      | gc-common                    | mvn_deploy   | NONE              |                                |                      | NONE               | 5          |                 |
-| java      | gc-gray                      | mvn_deploy   | NONE              |                                |                      | NONE               | 5          |                 |
-| java      | gc-auth-service              | mvn_package  | docker_image_push | gc-auth-service                |                      | docker_cluster     | 10         |                 |
-| java      | gc-monitor                   | mvn_package  | docker_image_push | gc-monitor                     |                      | docker_cluster     | 20         |                 |
-| node      | gc-common-front              | npm_install  | NONE              |                                |                      | NONE               | 100        |                 |
-| node      | gc-platform-node             | npm_install  | docker_image_push | gc-platform-node               |                      | docker_cluster     | 110        |                 |
-| node      | gc-agent-front               | npm_build    | direct_deploy     |                                | gc-common-front      | web_release        | 110        |                 |
-| node      | gc-fastprotect-front         | npm_build    | direct_deploy     |                                |                      | web_release        | 110        |                 |
-| product   | nacos-server                 | NONE         | docker_image_push | nacos-server                   |                      | docker_cluster     | 0          |                 |
-
+#| LANGUAGE_CATEGORY | PJ                    | GIT_NAMESPACE   | BUILD_METHOD | OUTPUT_METHOD     |GOGOGO_RELEASE_METHOD| PRIORITY   | NOTE               |
+#| **类别** | **项目名**                     | **GIT命令空间** | **构建方法** | **输出方法**      | **GOGOGO发布方式**  | **优先级** | **备注**           |
+#| -------- | ------------------------------ | --------------- | ------------ | ----------------- | ------------------- | ---------- | ------------------ |
+#| html     | gan                            |                 | NONE         | direct_deploy     | web_release         | 0          |                    |
+#| python   | gan-api                        |                 | NONE         | direct_deploy     | python_deploy       | 0          |                    |
+| product   | nacos-server                   |                 | NONE         | docker_image_push | docker_cluster      | 0          |                    |
+| product   | neo4j                          |                 | NONE         | docker_image_push | docker_cluster      | 0          |                    |
+| product   | fluentd                        | ccc             | NONE         | docker_image_push | docker_cluster      | 0          |                    |
+| dockerfile| my-oracle-java-8               | yyy             | docker_build | docker_image_push | NONE                | 1          |                    |
+| java      | gc-common                      |                 | mvn_deploy   | NONE              | NONE                | 5          |                    |
+| java      | gc-gray                        |                 | mvn_deploy   | NONE              | NONE                | 5          |                    |
+| java      | gc-auth-service                |                 | mvn_package  | docker_image_push | docker_cluster      | 10         |                    |
+| java      | gc-monitor                     |                 | mvn_package  | docker_image_push | docker_cluster      | 20         |                    |
+| node      | gc-common-front                |                 | npm_install  | NONE              | NONE                | 100        |                    |
+| node      | gc-platform-node               |                 | npm_install  | docker_image_push | docker_cluster      | 110        |                    |
+| node      | gc-agent-front                 |                 | npm_build    | direct_deploy     | web_release         | 110        |                    |
+| node      | gc-fastprotect-front           |                 | npm_build    | direct_deploy     | web_release         | 110        |                    |
 

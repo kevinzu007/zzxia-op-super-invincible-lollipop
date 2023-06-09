@@ -1,0 +1,12 @@
+version: '3'
+services:
+  fluentd:
+    image: docker-repo:5000/public/gclife-fluentd:latest
+    restart: always
+    volumes:
+      - ./conf:/fluentd/etc
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+
+

@@ -1,0 +1,43 @@
+### 项目清单扩展
+### 
+###  2【类别：LANGUAGE_CATEGORY】= [ product|dockerfile|java|node|html|python|自定义 ]
+###    1 product   ：成品
+###    2 dockerfile：Dockerfile
+###    3 java      ：Java
+###    4 node      ：Node
+###    5 html      ：html
+###    6 python    ：python
+### 
+###  3【项目名：PJ】= [自定义名称]
+### 
+###  4【镜像前置名：DOCKER_IMAGE_PRE_NAME】= [自定义名称]
+###    当输出方法='docker_image_push'时，镜像名不能为空
+###.
+###  5【镜像名：DOCKER_IMAGE_NAME】= [自定义名称]
+###    当输出方法='docker_image_push'时，镜像名不能为空
+###.
+###  6【链接node_project：LINK_NODE_PROJECT】= [node_module来源项目名称]
+###    将此node项目中的node_module软链接到当前项目，用以避免重复编码与重复下载node_module
+### 
+###    ***** 以上种种，都可以自己定义，然后调整相关脚本即可 *****
+###
+###    ***** 上文提到的变量名可以是下文表头的名字、也可以是sh中可以获得的变量名 *****
+###
+#| LANGUAGE_CATEGORY | PJ                    | DOCKER_IMAGE_PRE_NAME | DOCKER_IMAGE_NAME              | LINK_NODE_PROJECT    |
+#| **类别** | **项目名**                     | **镜像前置名**        | **镜像名**                     | **链接node_project** |
+#| -------- | ------------------------------ | --------------------- | ------------------------------ | -------------------- |
+#| html     | gan                            |                       | gan                            |                      |
+#| python   | gan-api                        |                       | gan-api                        |                      |
+| product   | nacos-server                   |                       | nacos-server                   |                      |
+| product   | neo4j                          |                       | neo4j                          |                      |
+| product   | fluentd                        |                       | fluentd-gcl                    |                      |
+| dockerfile| my-oracle-java-8               |                       | my-oracle-java-8               |                      |
+| java      | gc-common                      |                       |                                |                      |
+| java      | gc-gray                        |                       |                                |                      |
+| java      | gc-auth-service                |                       | gc-auth-service                |                      |
+| java      | gc-monitor                     |                       | gc-monitor                     |                      |
+| node      | gc-common-front                |                       |                                |                      |
+| node      | gc-platform-node               |                       | gc-platform-node               |                      |
+| node      | gc-agent-front                 |                       |                                | gc-common-front      |
+| node      | gc-fastprotect-front           |                       |                                |                      |
+

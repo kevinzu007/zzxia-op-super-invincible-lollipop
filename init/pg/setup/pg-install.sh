@@ -13,6 +13,14 @@ F_HELP()
 }
 
 
+#
+if [[ $# == 0 ]]; then
+    echo -e "\n猪猪侠警告：请提供运行参数，请查看帮助【$0 --help】\n"
+    F_HELP
+    exit 1
+fi
+
+
 case "$1" in
     "-h"|"--help")
         F_HELP
@@ -23,7 +31,7 @@ case "$1" in
         ;;
     *)
         F_HELP
-        echo -e '\n骚年，请输入正确的脚本命令参数！\n'
+        echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
         exit 1
         ;;
 esac

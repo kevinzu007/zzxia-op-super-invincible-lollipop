@@ -1,0 +1,25 @@
+### 用户信息及安全码清单
+### 
+###  2 【用户ID：USER_ID】= [自定义]
+###    只能是数字，不能重复，等同于【用户名】 
+### 
+###  3 【USER_NAME】= [自定义]
+###    不能重复，也不能与【用户ID】重复 
+### 
+###  4 【姓名：USER_XINGMING】= [自定义]
+### 
+###  5 【E-MAIL：USER_EMAIL】= [自定义]
+### 
+###  6 【盐：USER_SALT】= [自动生成]
+###    用【user-secret-update.sh】工具生成
+### 
+###  7 【密码：USER_SECRET】= [根据用户密码生成]
+###    用【user-secret-update.sh】工具生成
+### 
+### 
+#| USER_ID | USER_NAME     | USER_XINGMING | USER_EMAIL               | USER_SALT  | USER_SECRET                                        |
+#| 用户ID  | 用户名        | 姓名          | E-MAIL                   | 盐         | 密码                                               |
+#| ------- | ------------- | ------------- | ------------------------ | ---------- | -------------------------------------------------- |
+| 1        | kevin         | 猪猪侠        | zhu@gc.com               | de6dfccccd | de6227a2e0e83e05ce7503f2d1110c86b5857bf790343b6a92 |
+| 2        | wang          | 王            | wang@gc.com              | de6dw33fff | 33333332e0e83e05ce7503f2d1110c86b5857bf790343b6a92 |
+

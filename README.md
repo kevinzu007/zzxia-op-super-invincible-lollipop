@@ -4,7 +4,7 @@
 
 ## 1 介绍
 
-这是一套集环境搭建，项目构建、部署、发布及周边的运维工具箱。适用docker集群（k8s、swarm、docker-compose）及Web站点等项目发布，支持灰度、扩缩容与回滚。这些工具也可以独立使用，比如项目构建、部署发布、Webhook server、dns修改、服务器登录异常警报、数据库备份归档与还原、表格绘制、申请与续签（泛）域名证书等等，具体参考帮助。**写文档是挺费神的，将就看吧。如果你在使用中遇到任何问题请在Issues中提出，或留下联系方式线下沟通。**
+这是一套集环境搭建，项目构建、部署、发布及周边的运维工具箱。适用docker集群（k8s、swarm、docker-compose）及Web站点等项目发布，支持灰度、扩缩容与回滚。这些工具也可以独立使用，比如项目构建、部署发布、Webhook server、dns修改、服务器登录异常警报、数据库备份归档与还原、表格绘制、申请与续签（泛）域名证书等等，具体参考帮助。**如果你在使用中遇到任何问题请在Issues中提出，或留下联系方式线下沟通。**
 
 
 
@@ -12,7 +12,7 @@
 
 - 项目构建：可以指定构建方法、输出方法、一键发布方式等（也可以使用自带的python钩子程序或Jenkins等外部钩子程序调用脚本实现自动化构建发布）。
 
-- 发布环境：支持多种docker容器编排：k8s、swarm、docker-compose（市面主流工具只支持k8s）；支持目录式发布，例如nginx等。
+- 发布环境：支持多种docker容器编排：k8s、swarm、docker-compose（市面主流工具只支持k8s）；支持多种集群与多集群并存；支持目录式发布，例如nginx等。
 
 - 项目发布：可以指定发布相关的所有参数与变量，这个参数变量可以是全局的，也可以是某一项目专有的，这里包括但不限于服务运行参数、变量、端口、副本数、Java运行参数变量，容器变量、容器启动命令参数，命名空间 、主机名等。只需要修改项目发布清单就可以搞定所有项目，方便快捷（不同于一般系统那种每个项目都是一个独立配置文件，难以批量修改，与主流helm工具大相径庭，俗话说：不是同一个科技树）。
 
@@ -57,7 +57,7 @@
 2. 【Fork】她，为她增加新功能，修Bug，让她更加卡哇伊；
 3. 【Issue】她，告诉她有哪些小脾气，她会改的，手动小绵羊；
 4. 【打赏】她，为她买jk；
-<img src="https://img-blog.csdnimg.cn/20210429155627295.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3poZl9zeQ==,size_16,color_FFFFFF,t_70#pic_center" alt="打赏" style="zoom:50%;" />
+<img src="https://gitee.com/zhf_sy/pic-bed/raw/master/dao.png" alt="打赏" style="zoom:40%;" />
 
 
 
@@ -84,7 +84,7 @@
 | :--: | ---------- | ------------------- | ------------------ | ------------------------------------------- |
 |  1   | product    | NONE                | NONE               |                                             |
 |  2   |            |                     | docker_image_push  | docker；docker仓库                          |
-|  3   | Dockerfile | docker_bulid        | NONE               | docker                                      |
+|  3   | Dockerfile | docker_build        | NONE               | docker                                      |
 |  4   |            |                     | docker_image_push  | docker；docker仓库                          |
 |  5   | Java       | mvn_package或gradle | NONE               | java_jdk；maven或gradle                     |
 |  6   |            |                     | deploy_war         | java_jdk；maven或gradle                     |
@@ -288,7 +288,7 @@ ansible all --become -m shell -a "reboot"
 
 **密码配置文件是后面项目运行的基础，这些一般不要保存在仓库中，请放在隐秘的角落，就像小电影一样。**
 
-这些文件都会在构建或发布的时候被`deploy.env`引入。
+这些文件都会在构建或发布的时候被`env.sh`引入。
 
 如果没有特别说明，以下则皆在目录【home项目路径/init】下完成
 
@@ -296,20 +296,20 @@ ansible all --become -m shell -a "reboot"
 
 #### 3.7.1创建专属密码配置文件
 
-基于【home项目路径/init/my_sec.sample】示例创建自己的密码配置文件
+基于【home项目路径/init/my_sec_envs.sample】示例创建自己的密码配置文件
 
 ```bash
-cp -r  home项目路径/init/my_sec.sample  home项目路径/init/my_sec-MyName
+cp -r  home项目路径/init/my_sec_envs.sample  home项目路径/init/my_sec_envs-MyName
 ```
 
-请参考【README.md】修改`home项目路径/init/my_sec-MyName`中的配置文件。如果增减了配置文件，也需要同时修改【install-config-my_sec.yml】ansible-playbook文件。
+请参考【README.md】修改`home项目路径/init/my_sec-MyName`中的配置文件。如果增减了配置文件，也需要同时修改【install-config-my_sec_envs.yml】ansible-playbook文件。
 
 
 
 #### 3.7.2 部署密码配置文件
 
 ```bash
-ansible-playbook  install-config-my_sec.yml
+ansible-playbook  install-config-my_sec_envs.yml
 ```
 
 
@@ -366,9 +366,9 @@ ansible-playbook install-config-certbot.yml
 
 
 
-### 4.1 【deploy.env---dev】
+### 4.1 【env.sh---dev】
 
-【home项目路径/init/envs.sample/deploy.env---dev】
+【home项目路径/init/envs.sample/env.sh---dev】
 
 ```sh
 #!/bin/bash
@@ -416,7 +416,7 @@ export SWARM_DOCKER_HOST="tcp://192.168.11.71:2375"
 
 ### 基本运行参数
 #### 网络
-export NETWORK_SWARM='onet_1'         #--- 默认值，可以在服务清单中指定其他
+export SWARM_DEFAULT_NETWORK='onet_1'         #--- 默认值，可以在服务清单中指定其他
 
 ### docker log driver
 export DOCKER_LOG_DRIVER='json-file'
@@ -498,10 +498,10 @@ esac
 ###
 ### 3【项目名：PJ】= [自定义名称]
 ###
-### 4【构建方法：BUILD_METHOD】= [ NONE | docker_bulid | java:[mvn_package|gradle|自定义] | node:[original|build|自定义] ]
+### 4【构建方法：BUILD_METHOD】= [ NONE | docker_build | java:[mvn_package|gradle|自定义] | node:[original|build|自定义] ]
 ###   0 类别='*'          : NONE             : 跳过构建，用【gogogo.sh】时，也会跳过发布
 ###   1 类别='product'    : NONE             : 跳过构建，成品无需构建
-###   2 类别='dockerfile' : docker_bulid     : 即docker bulid
+###   2 类别='dockerfile' : docker_build     : 即docker build
 ###   3 类别='java'       : mvn_package      : 即mvn package
 ###                       : mvn_deploy       : 即mvn deploy
 ###                       : gradle           : 即gradle ......（没搞）
@@ -542,7 +542,7 @@ esac
 #| -------- | ------------------------------ | ------------ | ----------------- | ------------------------------ | -------------------- | ------------------ | ---------- |
 | product   | neo4j                          | NONE         | docker_image_push | neo4j                          |                      | docker_cluster     | 0          |
 | product   | fluentd                        | NONE         | docker_image_push | fluentd-gcl                    |                      | docker_cluster     | 0          |
-| dockerfile| my-oracle-java-8               | docker_bulid | docker_image_push | my-oracle-java-8               |                      | NONE               | 1          |
+| dockerfile| my-oracle-java-8               | docker_build | docker_image_push | my-oracle-java-8               |                      | NONE               | 1          |
 | java      | gc-common                      | mvn_deploy   | NONE              |                                |                      | NONE               | 5          |
 | java      | gc-gray                        | mvn_deploy   | NONE              |                                |                      | NONE               | 5          |
 | java      | gc-auth-service                | mvn_package  | docker_image_push | gc-auth-service                |                      | docker_cluster     | 10         |
@@ -627,9 +627,9 @@ esac
 ###    须符合主机名称规范
 ###
 ###  5【部署位置：DEPLOY_PLACEMENT】= [ NET:网络 , L:label键值对 | NS:命名空间, L:label键值对 | SSH:<用户@>主机名或IP <-p ssh端口> ]
-###    1 集群='swarm'      : NET:网络, L:label键值对             : NET 即network，默认在deploy.env---*中定义，这里可以省略
+###    1 集群='swarm'      : NET:网络, L:label键值对             : NET 即network，默认在env.sh---*中定义，这里可以省略
 ###                                                              : L 即Label，指定标签，可以有多个，代表服务部署到这个标签主机节点，可以不指定
-###    2 集群='k8s'        : NS:命名空间, L:label键值对          : NS 即k8s命名空间，默认在deploy.env---*中定义，这里可以省略
+###    2 集群='k8s'        : NS:命名空间, L:label键值对          : NS 即k8s命名空间，默认在env.sh---*中定义，这里可以省略
 ###                                                              : L 同上，即Label，指定标签，可以有多个，代表服务部署到这个标签主机节点，可以不指定
 ###    3 集群='compose'    : SSH:<用户@>主机名或IP <-p ssh端口>  : 需要ssh到目标节点实现免密码登录，【用户名】及【ssh端口】可以省略
 ###    若有多个参数，则用【,】分隔
@@ -679,19 +679,19 @@ esac
 ###    如果有多个，则用【,】号分隔，例如：【-Dencoding=UTF-8,-Dfile=${FILE},JAVA_OPT_FROM_FILE="/path/to/filename"】
 ###    -  指定为具体参数，例如：【-Dencoding=UTF-8】
 ###    -  指定变量参数，例如：【-Dfile=${FILE}】
-###    -  指定从文件获取，参数名需指定为【JAVA_OPT_FROM_FILE】，例如：【JAVA_OPT_FROM_FILE="/path/to/filename"】，建议放在【init/my_envs/】目录下，用git管理
+###    -  指定从文件获取，参数名需指定为【JAVA_OPT_FROM_FILE】，例如：【JAVA_OPT_FROM_FILE="/path/to/filename"】，建议放在【init/my_spec_envs/】目录下，用git管理
 ###.
 ###  4【容器ENVS：CONTAINER_ENVS】= [ 变量1=值1, 变量2=值2, 变量n=值n, ENVS_FROM_FILE="/path/to/filename"]
 ###    如果有多个，则用【,】号分隔，例如：【aa=1,bb=2,NEO4J_AUTH=${NEO4J_USER}/${NEO4J_PASSWORD},ENVS_FROM_FILE="/path/to/filename"】
 ###    - 指定为具体参数，例如：【aa=1,bb=2】
 ###    - 指定变量参数，例如：【NEO4J_AUTH=${NEO4J_USER}/${NEO4J_PASSWORD}】
-###    - 指定从文件获取，参数名需指定为【ENVS_FROM_FILE】，例如【ENVS_FROM_FILE="/path/to/filename"】，建议放在【init/my_envs/】目录下，用git管理
+###    - 指定从文件获取，参数名需指定为【ENVS_FROM_FILE】，例如【ENVS_FROM_FILE="/path/to/filename"】，建议放在【init/my_spec_envs/】目录下，用git管理
 ###.
 ###  5【容器CMDS：CONTAINER_CMDS】= [ 命令参数2, 命令参数n, CMDS_FROM_FILE="/path/to/filename" ]
 ###    如果有多个，则用【,】号分隔，例如：【--quiet,--requirepass "${REDIS_PASSWORD}",CMDS_FROM_FILE="/path/to/filename"】
 ###    - 指定为具体参数，例如：【--quiet】
 ###    - 指定变量参数，例如：【--requirepass "${REDIS_PASSWORD}"】
-###    - 指定从文件获取，参数名需指定为【CMDS_FROM_FILE】，例如【CMDS_FROM_FILE="/path/to/filename"】，建议放在【init/my_envs/】目录下，用git管理
+###    - 指定从文件获取，参数名需指定为【CMDS_FROM_FILE】，例如【CMDS_FROM_FILE="/path/to/filename"】，建议放在【init/my_spec_envs/】目录下，用git管理
 ###.
 ###
 ###   ***** 以上种种，都可以自己定义，然后调整相关脚本即可 *****
@@ -703,9 +703,9 @@ esac
 #| ---------------------- | --------------------------------- | ---------------------------------------------------------- | --------------------------------- |
 |neo4j-srv                |                                   | NEO4J_AUTH="${NEO4J_USER}/${NEO4J_PASSWORD}"               |                                   |
 |redis-srv                |                                   |                                                            |--requirepass "${REDIS_PASSWORD}"  |
-|nacos-server-1           |                                   | ENVS_FROM_FILE=../init/my_envs/nacos.env                   |                                   |
-|nacos-server-2           |                                   | ENVS_FROM_FILE=../init/my_envs/nacos.env                   |                                   |
-|nacos-server-3           |                                   | ENVS_FROM_FILE=../init/my_envs/nacos.env                   |                                   |
+|nacos-server-1           |                                   | ENVS_FROM_FILE=../init/my_spec_envs/nacos.env                   |                                   |
+|nacos-server-2           |                                   | ENVS_FROM_FILE=../init/my_spec_envs/nacos.env                   |                                   |
+|nacos-server-3           |                                   | ENVS_FROM_FILE=../init/my_spec_envs/nacos.env                   |                                   |
 |gc-gateway               | -Xms512m -Xmx512m                 |                                                            |                                   |
 |gc-monitor               | -Xms512m -Xmx512m                 |                                                            |                                   |
 |gc-client-service        | -Xms512m -Xmx512m                 |                                                            |                                   |
@@ -812,7 +812,7 @@ $ ./deploy/build.sh --help
     用途：用于项目构建，生成docker镜像并push到仓库
     依赖：
         /etc/profile.d/run-env.sh
-        /root/deploy-bmp/deploy/deploy.env
+        /root/deploy-bmp/deploy/env.sh
         /root/deploy-bmp/deploy/project.list
         /root/deploy-bmp/deploy/../op/send_mail.sh
         /root/deploy-bmp/deploy/docker-tag-push.sh
@@ -837,9 +837,9 @@ $ ./deploy/build.sh --help
         -l|--list      列出可构建的项目清单
         -M|--mode      指定构建方式，二选一【normal|function】，默认为normal方式。此参数用于被外部调用
         -c|--category  指定构建项目语言类别：【dockerfile|java|node|自定义】，参考：/root/deploy-bmp/deploy/project.list
-        -b|--branch    指定代码分支，默认来自deploy.env
+        -b|--branch    指定代码分支，默认来自env.sh
         -e|--email     发送日志到指定邮件地址，如果与【-U|--user-name】同时存在，则将会被替代
-        -s|--skiptest  跳过测试，默认来自deploy.env
+        -s|--skiptest  跳过测试，默认来自env.sh
         -f|--force     强制重新构建（无论是否有更新）
         -v|--verbose   显示更多过程信息
     示例:
@@ -901,7 +901,7 @@ $ ./deploy/build-parallel.sh --help
     用途：以并行的方式运行构建脚本，以加快构建速度
     依赖：
         /etc/profile.d/run-env.sh
-        /root/deploy-bmp/deploy/deploy.env
+        /root/deploy-bmp/deploy/env.sh
         /root/deploy-bmp/deploy/project.list
         /root/deploy-bmp/deploy/build.sh
         /root/deploy-bmp/deploy/../op/format_table.sh
@@ -925,9 +925,9 @@ $ ./deploy/build-parallel.sh --help
         -l|--list      列出可构建的项目清单
         -n|--number    并行构建项目的数量，默认为2个
         -c|--category  指定构建项目语言类别：【dockerfile|java|node|自定义】，参考：/root/deploy-bmp/deploy/project.list
-        -b|--branch    指定代码分支，默认来自deploy.env
+        -b|--branch    指定代码分支，默认来自env.sh
         -e|--email     发送日志到指定邮件地址，如果与【-U|--user-name】同时存在，则将会被替代
-        -s|--skiptest  跳过测试，默认来自deploy.env
+        -s|--skiptest  跳过测试，默认来自env.sh
         -f|--force     强制重新构建（无论是否有更新）
     示例:
         #
@@ -970,7 +970,7 @@ $ ./deploy/docker-cluster-service-deploy.sh --help
         /root/deploy-bmp/deploy/docker-arg-pub.list
         /root/deploy-bmp/deploy/container-hosts-pub.list
         /root/deploy-bmp/deploy/java-options-pub.list
-        /root/deploy-bmp/deploy/deploy.env
+        /root/deploy-bmp/deploy/env.sh
         /root/deploy-bmp/deploy/docker-image-search.sh
         /root/deploy-bmp/deploy/../op/format_table.sh
         /root/deploy-bmp/deploy/../op/dingding_conver_to_markdown_list-deploy.py
@@ -1114,7 +1114,7 @@ $ ./deploy/web-release.sh --help
         /root/deploy-bmp/deploy/nginx.list
         /root/deploy-bmp/deploy/../op/format_table.sh
         /root/deploy-bmp/deploy/../op/dingding_conver_to_markdown_list-deploy.py
-        /root/deploy-bmp/deploy/deploy.env
+        /root/deploy-bmp/deploy/env.sh
         nginx上：/root/nginx-config/web-release-on-nginx.sh
     注意：运行在nginx节点上
         * 【上线（ship）】流程包含以下四个子流程【构建】、【测试（test）】、【部署（deploy）】、【发布（release）】。原地发布（即部署 == 发布）
@@ -1175,7 +1175,7 @@ $ ./deploy/gogogo.sh --help
     用途：用于项目构建并发布
     依赖脚本：
         /etc/profile.d/run-env.sh
-        /root/deploy-bmp/deploy/deploy.env
+        /root/deploy-bmp/deploy/env.sh
         /root/deploy-bmp/deploy/project.list
         /root/deploy-bmp/deploy/build.sh
         /root/deploy-bmp/deploy/docker-cluster-service.list
@@ -1199,9 +1199,9 @@ $ ./deploy/gogogo.sh --help
         -h|--help      此帮助
         -l|--list      列出可构建的项目清单
         -c|--category  指定构建项目语言类别：【dockerfile|java|node|自定义】，参考：/root/deploy-bmp/deploy/project.list
-        -b|--branch    指定代码分支，默认来自deploy.env
+        -b|--branch    指定代码分支，默认来自env.sh
         -e|--email     发送日志到指定邮件地址，如果与【-U|--user-name】同时存在，则将会被替代
-        -s|--skiptest  跳过测试，默认来自deploy.env
+        -s|--skiptest  跳过测试，默认来自env.sh
         -f|--force     强制重新构建（无论是否有更新）
         -v|--verbose   显示更多过程信息
         -G|--gray            : 设置灰度标志为：【gray】，默认：【normal】
@@ -1430,7 +1430,7 @@ $ ./deploy/docker-image-search.sh --help
 
     用途：查询docker镜像
     依赖：
-        /root/deploy-bmp/deploy/deploy.env
+        /root/deploy-bmp/deploy/env.sh
         /root/deploy-bmp/deploy/docker-cluster-service.list
     注意：
         * 输入命令时，参数顺序不分先后

@@ -1,0 +1,8 @@
+# Docker仓库
+export DOCKER_REPO_USER="ufipf"
+export DOCKER_REPO_PASSWORD="mypassword"
+export DOCKER_REPO_PROTOCOL="https"      #--- 可选：http|https
+export DOCKER_REPO_SERVER="docker-repo:5000"
+# 组合
+export DOCKER_REPO_URL_BASE="${DOCKER_REPO_PROTOCOL}://${DOCKER_REPO_SERVER}/v2"
+

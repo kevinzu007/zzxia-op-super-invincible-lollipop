@@ -12,19 +12,18 @@ SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
 # 引入env
-. ${SH_PATH}/deploy.env
-#DOCKER_REPO=
-#DOCKER_REPO_USER=
-#DOCKER_REPO_PASSWORD=
-#DOCKER_IMAGE_BASE=
+. ${SH_PATH}/env.sh
+#DOCKER_REPO_SERVER=
+#DOCKER_IMAGE_DEFAULT_PRE_NAME=
 
 # 本地env
 TIME=${TIME:-`date +%Y-%m-%dT%H:%M:%S`}
 TIME_START=${TIME}
 #
-IMAGE_VER=$(date -d "${TIME}" +%Y.%m.%d.%H%M%S)
+DOCKER_IMAGE_TAG=$(date -d "${TIME}" +%Y.%m.%d.%H%M%S)
 PROJECT_LIST_FILE="${SH_PATH}/project.list"
 PROJECT_LIST_FILE_TMP="/tmp/${SH_NAME}-project.tmp.list.$(date +%S)"
+PROJECT_LIST_FILE_APPEND_1="${SH_PATH}/project.list.append.1"
 # sh
 FORMAT_TABLE_SH="${SH_PATH}/../op/format_table.sh"
 
@@ -57,16 +56,16 @@ export ECHO_REPORT=${ECHO_BLACK_CYAN}
 F_HELP()
 {
     echo "
-    用途：为项目镜像打版本号，并推送到docker仓库（推送 明确版本 + latest版本）
+    用途：为项目镜像打tag，并推送到docker仓库（推送 指定tag + latest）
     依赖：
-        ${SH_PATH}/deploy.env
+        ${SH_PATH}/env.sh
         ${PROJECT_LIST_FILE}
     注意:
         * 输入命令时，参数顺序不分先后
     用法:
         $0  [-h|--help]
         $0  [-l|--list]
-        $0  [-t|--tag {版本号}]  <{项目1}  {项目2} ... {项目n}>
+        $0  [-t|--tag {tag}]  <{项目1}  {项目2} ... {项目n}>
     参数说明：
         \$0   : 代表脚本本身
         []   : 代表是必选项
@@ -76,21 +75,24 @@ F_HELP()
         %    : 代表通配符，非精确值，可以被包含
         #
         -l|--list       项目镜像列表
-        -t|--tag        设置镜像版本号，默认版本号为：【日期+时间】
+        -t|--tag        指定镜像tag，默认tag号为：【日期+时间】
+        -I|--image-pre-name  指定镜像前置名称【DOCKER_IMAGE_PRE_NAME】，默认来自env.sh。注：镜像完整名称：\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${DOCKER_IMAGE_NAME}:\${DOCKER_IMAGE_TAG}
     示例：
         $0  -h
         $0  -l
-        #
-        $0                            #--- 为所有项目的镜像设置默认版本号，并推送到docker仓库
-        $0  -t 1.11  项目a 项目b      #--- 设置【项目a、项目b】的版本号为【1.11】，并推送到docker仓库
-        $0           项目a 项目b      #--- 设置【项目a、项目b】的版本号为默认版本号，并推送到docker仓库
+        # tag
+        $0                            #--- 为所有项目的镜像设置默认tag，并推送到docker仓库
+        $0  -t 1.11  项目a 项目b      #--- 设置【项目a、项目b】的tag为【1.11】，并推送到docker仓库
+        $0           项目a 项目b      #--- 设置【项目a、项目b】的tag为默认tag，并推送到docker仓库
+        # 前置名称
+        $0  -I public/ccc  -t 1.11  项目a 项目b      #--- 将【项目a、项目b】的将默认DOCKER_IMAGE_PRE_NAME改为【public/ccc】，且设置tag为【1.11】，并推送到docker仓库
     "
 }
 
 
 
 # 参数检查
-TEMP=`getopt -o hlt:  -l help,list,tag: -- "$@"`
+TEMP=`getopt -o hlt:I:  -l help,list,tag:,image-pre-name: -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
     exit 51
@@ -115,7 +117,12 @@ do
             exit
             ;;
         -t|--tag)
-            IMAGE_VER=$2
+            DOCKER_IMAGE_TAG=$2
+            shift 2
+            ;;
+        -I|--image-pre-name)
+            IMAGE_PRE_NAME=$2
+            IMAGE_PRE_NAME_ARG="--image-pre-name ${IMAGE_PRE_NAME}"
             shift 2
             ;;
         --)
@@ -163,7 +170,7 @@ else
     done
 fi
 # 加表头
-sed -i  '1i#| **类别** | **项目名** | **构建方法** | **输出方法** | **镜像名** | **链接node_project** | **GOGOGO发布方式** | **优先级** |'  ${PROJECT_LIST_FILE_TMP}
+sed -i  '1i#| **类别** | **项目名** | **GIT命令空间** | **构建方法** | **输出方法** | **镜像名** | **GOGOGO发布方式** | **优先级** | **备注** |'  ${PROJECT_LIST_FILE_TMP}
 
 
 
@@ -175,30 +182,70 @@ do
     # 跳过以#开头的行或空行
     [[ "$LINE" =~ ^# ]] || [[ "$LINE" =~ ^[\ ]*$ ]] && continue
     #
-    PJ_NAME=`echo ${LINE} | cut -d \| -f 3`
-    PJ_NAME=`echo ${PJ_NAME}`
-    IMAGE_NAME=`echo ${LINE} | cut -d \| -f 6`
-    IMAGE_NAME=`echo ${IMAGE_NAME}`
+    LANGUAGE_CATEGORY=`echo ${LINE} | cut -d \| -f 2`
+    LANGUAGE_CATEGORY=`echo ${LANGUAGE_CATEGORY}`
+    #
+    PJ=`echo ${LINE} | cut -d \| -f 3`
+    PJ=`echo ${PJ}`
+    #
+    # append.1
+    PROJECT_LIST_FILE_APPEND_1_TMP="${LOG_HOME}/${SH_NAME}-${PROJECT_LIST_FILE_APPEND_1##*/}--${LANGUAGE_CATEGORY}-${PJ}"
+    cat ${PROJECT_LIST_FILE_APPEND_1} | grep "${PJ}"  >  ${PROJECT_LIST_FILE_APPEND_1_TMP}
+    GET_IT_A='NO'
+    while read LINE_A
+    do
+        # 跳过以#开头的行或空行
+        [[ "$LINE_A" =~ ^# ]] || [[ "$LINE_A" =~ ^[\ ]*$ ]] && continue
+        #
+        LANGUAGE_CATEGORY_A=`echo ${LINE_A} | cut -d \| -f 2`
+        LANGUAGE_CATEGORY_A=`echo ${LANGUAGE_CATEGORY_A}`
+        #
+        PJ_A=`echo ${LINE_A} | cut -d \| -f 3`
+        PJ_A=`echo ${PJ_A}`
+        #
+        if [[ ${PJ_A} == ${PJ} ]] && [[ ${LANGUAGE_CATEGORY_A} == ${LANGUAGE_CATEGORY} ]]; then
+            #
+            GET_IT_A='YES'
+            #
+            DOCKER_IMAGE_PRE_NAME=`echo ${LINE_A} | cut -d \| -f 4`
+            DOCKER_IMAGE_PRE_NAME=`eval echo ${DOCKER_IMAGE_PRE_NAME}`
+            # 命令行参数优先级最高（1 arg，2 listfile，3 env.sh）
+            if [[ -n ${IMAGE_PRE_NAME} ]]; then
+                DOCKER_IMAGE_PRE_NAME=${IMAGE_PRE_NAME}
+            elif [[ -z ${DOCKER_IMAGE_PRE_NAME} ]]; then
+                DOCKER_IMAGE_PRE_NAME=${DOCKER_IMAGE_DEFAULT_PRE_NAME}
+            fi
+            #
+            DOCKER_IMAGE_NAME=`echo ${LINE_A} | cut -d \| -f 5`
+            DOCKER_IMAGE_NAME=`eval echo ${DOCKER_IMAGE_NAME}`
+        fi
+        #
+        if [[ ${GET_IT_A} != 'YES' ]];then
+            echo -e "\n猪猪侠警告：在【${PROJECT_LIST_FILE_APPEND_1}】文件中没有找到项目【${PJ}】，请检查！\n"
+            exit 51
+        fi
+    done < ${PROJECT_LIST_FILE_APPEND_1_TMP}
     #
     # docker tag + push
     i=`expr $i + 1`
     echo -e "${ECHO_NORMAL}-------------------------------------------------${ECHO_CLOSE}"
-    echo -e "${ECHO_NORMAL}$i - ${PJ_NAME} - ${IMAGE_NAME} :${ECHO_CLOSE}"
+    echo -e "${ECHO_NORMAL}$i - ${PJ} - ${DOCKER_IMAGE_NAME} :${ECHO_CLOSE}"
     echo -e "${ECHO_NORMAL}-------------------------------------------------${ECHO_CLOSE}"
     echo ""
+    #
     # latest版
-    docker tag   ${IMAGE_NAME}:latest  ${DOCKER_IMAGE_BASE}/${IMAGE_NAME}:latest
-    docker push  ${DOCKER_IMAGE_BASE}/${IMAGE_NAME}:latest
-    # 特定版本号
-    docker tag   ${IMAGE_NAME}:latest  ${DOCKER_IMAGE_BASE}/${IMAGE_NAME}:${IMAGE_VER}
-    docker push  ${DOCKER_IMAGE_BASE}/${IMAGE_NAME}:${IMAGE_VER}
+    docker tag   ${DOCKER_IMAGE_NAME}:latest  ${DOCKER_REPO_SERVER}/${DOCKER_IMAGE_PRE_NAME}/${DOCKER_IMAGE_NAME}:latest
+    docker push  ${DOCKER_REPO_SERVER}/${DOCKER_IMAGE_PRE_NAME}/${DOCKER_IMAGE_NAME}:latest
+    # 特定tag
+    docker tag   ${DOCKER_IMAGE_NAME}:latest  ${DOCKER_REPO_SERVER}/${DOCKER_IMAGE_PRE_NAME}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
+    docker push  ${DOCKER_REPO_SERVER}/${DOCKER_IMAGE_PRE_NAME}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
     if [[ $? -ne 0 ]]; then
-        echo -e "\n猪猪侠警告：项目【${PJ_NAME}】镜像PUSH失败，请检查！\n"
+        echo -e "\n猪猪侠警告：项目【${PJ}】镜像PUSH失败，请检查！\n"
         exit 54
     fi
 done < ${PROJECT_LIST_FILE_TMP}
 
 
 echo -e "\nPUSH 完成！"
-echo -e "IMAGE版本号为：\n    ${IMAGE_VER}\n    latest"
+echo -e "镜像TAG为：\n    ${DOCKER_IMAGE_TAG}\n    latest"
 

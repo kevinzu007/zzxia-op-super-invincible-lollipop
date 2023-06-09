@@ -47,10 +47,10 @@ def msg(a):
 
     #json_text = {"msgtype": "markdown", "markdown": {"title": t1, "text": "### 天龙盖地虎\n" + "@18620021887" + "\n\n" + "- " + t2 + "\n\n" + "- " + t3}, "at": {"atMobiles":  ["18620021887"], "isAtAll": False}}
 
-    #print 'a: ', a
+    #print('a: ', a)
     # 删除数组a[0]的值，这里a[0]是脚本本身的名字：dingding_markdown-array-deploy.py
     del a[0]
-    #print 'a del: ', a
+    #print('a del: ', a)
 
     json_text = '{"msgtype": "markdown", "markdown": {"title": '
     j = 0

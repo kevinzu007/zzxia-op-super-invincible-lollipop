@@ -1,0 +1,13 @@
+
+# docker
+- hosts: docker
+  become: yes
+  tasks:
+    - name: docker install
+      shell: yum install -y yum-utils  device-mapper-persistent-data  lvm2;  yum-config-manager --add-repo  https://download.docker.com/linux/centos/docker-ce.repo;  yum install -y docker-ce docker-compose
+    - name: docker config
+      copy: src=./etc/daemon.json dest=/etc/docker/   owner=root group=root mode=644 backup=yes
+    - name: docker run
+      shell: systemctl enable docker;  systemctl restart docker
+
+

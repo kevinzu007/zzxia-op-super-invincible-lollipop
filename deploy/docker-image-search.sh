@@ -12,12 +12,12 @@ SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
 # 引入env
-. ${SH_PATH}/deploy.env
-#DOCKER_REPO=
+. ${SH_PATH}/env.sh
 #DOCKER_REPO_USER=
 #DOCKER_REPO_PASSWORD=
-#DOCKER_REPO_PROTOCOL=
+#DOCKER_REPO_SERVER=
 #DOCKER_REPO_URL_BASE=
+#DOCKER_IMAGE_DEFAULT_PRE_NAME=
 
 # 本地env
 TIME=`date +%Y-%m-%dT%H:%M:%S`
@@ -59,14 +59,14 @@ F_HELP()
     echo "
     用途：查询服务docker镜像
     依赖：
-        ${SH_PATH}/deploy.env
+        ${SH_PATH}/env.sh
         ${SERVICE_LIST_FILE}
     注意：
         * 输入命令时，参数顺序不分先后
     用法:
         $0 [-h|--help]
         $0 [-l|--list]
-        $0  <-e|--exclude {%镜像版本%}>  <-t|--tag {%镜像版本%}>  <-n|--newest {第几新版本}>  <-o|--output {路径/文件}>  <{服务1} ... {服务2} ...>
+        $0  <-e|--exclude {%镜像版本%}>  <-t|--tag {%镜像版本%}>  <-I|--image-pre-name {镜像前置名称}>  <-n|--newest {第几新版本}>  <-o|--output {路径/文件}>  <{服务1} ... {服务2} ...>
     参数说明：
         \$0   : 代表脚本本身
         []   : 代表是必选项
@@ -79,6 +79,7 @@ F_HELP()
         -l|--list       清单
         -e|--exclude    排除指定镜像版本，支持模糊定义，一般用于排除今天打包的镜像版本，用于部署回滚
         -t|--tag        镜像版本(tag)。支持模糊查找
+        -I|--image-pre-name  指定镜像前置名称【DOCKER_IMAGE_PRE_NAME】，默认来自env.sh。注：镜像完整名称：\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${DOCKER_IMAGE_NAME}:\${DOCKER_IMAGE_TAG}
         -n|--newest     取第几新的镜像版本，例如： -n 1 ：代表取最新的那个镜像版本，-n 2：代表第二新的镜像，有-n参数时输出格式为：【服务名  tag版本 tag版本2 ...】；无-n参数时输出为服务名 \ntag版本 \ntag版本2 \n...
         -o|--output     输出搜索结果不为空的服务名称 到 指定【路径/文件】
     示例：
@@ -87,6 +88,7 @@ F_HELP()
         #
         $0                       #--- 返回所有服务所有镜像版本
         $0  服务1                #--- 返回服务名为【服务1】的所有镜像版本
+        $0  -I aa/bb  服务1      #--- 返回服务名为【服务1】，且镜像前置名称为【aa/bb】的所有镜像版本
         #
         $0  -e 2021  服务1       #--- 返回服务名为服务1，且tag版本不包含【2021】的所有版本
         $0  -t 2021  服务1       #--- 返回服务名为服务1，且tag版本包含【2021】的所有版本
@@ -112,16 +114,16 @@ F_SEARCH()
 {
     F_SEARCH_RESULT_FILE="/tmp/${SH_NAME}-F_SEARCH-result.txt"
     F_SEARCH_RESULT_ERR_FILE="/tmp/${SH_NAME}-F_SEARCH-result-err.txt"
-    F_IMAGE_NAME=$1
-    curl -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD} -s -X GET ${DOCKER_REPO_URL_BASE}/${F_IMAGE_NAME}/tags/list | jq .tags[] > ${F_SEARCH_RESULT_FILE}  2>${F_SEARCH_RESULT_ERR_FILE}
+    F_DOCKER_IMAGE_NAME=$1
+    curl -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD} -s -X GET ${DOCKER_REPO_URL_BASE}/${DOCKER_IMAGE_PRE_NAME}/${F_DOCKER_IMAGE_NAME}/tags/list | jq .tags[] > ${F_SEARCH_RESULT_FILE}  2>${F_SEARCH_RESULT_ERR_FILE}
     if [[ $? -ne 0 ]] || [[ $(cat ${F_SEARCH_RESULT_ERR_FILE} | grep -q 'NAME_UNKNOWN'; echo $?) -eq 0 ]]; then
-        echo -e "\n猪猪侠警告：项目镜像不存在，或者访问【${DOCKER_REPO}】服务器异常\n" 1>&2
+        echo -e "\n猪猪侠警告：项目镜像不存在，或者访问【${DOCKER_REPO_SERVER}】服务器异常\n" 1>&2
         return 53
     fi
     sed -i 's/\"//g'    ${F_SEARCH_RESULT_FILE}
     # latest
-    if [[ "x${LIKE_THIS_IMAGE_TAG}" = 'xlatest' ]]; then
-        cat ${F_SEARCH_RESULT_FILE}  | grep ${LIKE_THIS_IMAGE_TAG}
+    if [[ "x${LIKE_THIS_DOCKER_IMAGE_TAG}" = 'xlatest' ]]; then
+        cat ${F_SEARCH_RESULT_FILE}  | grep ${LIKE_THIS_DOCKER_IMAGE_TAG}
         return 0
     fi
     # 倒排序，数字开头的自动标记版本
@@ -130,32 +132,32 @@ F_SEARCH()
     #
     if [[ -z ${NUMBER_NEWEST} ]]; then
         # 无第几新
-        if [[ -z ${LIKE_THIS_IMAGE_TAG} ]]; then
-            if [[ -z "${EXCLUDE_THIS_IMAGE_TAG}" ]]; then
+        if [[ -z ${LIKE_THIS_DOCKER_IMAGE_TAG} ]]; then
+            if [[ -z "${EXCLUDE_THIS_DOCKER_IMAGE_TAG}" ]]; then
                 cat ${F_SEARCH_RESULT_FILE}.sort
             else
-                cat ${F_SEARCH_RESULT_FILE}.sort | grep -v ${EXCLUDE_THIS_IMAGE_TAG}
+                cat ${F_SEARCH_RESULT_FILE}.sort | grep -v ${EXCLUDE_THIS_DOCKER_IMAGE_TAG}
             fi
         else
-            if [[ -z "${EXCLUDE_THIS_IMAGE_TAG}" ]]; then
-                cat ${F_SEARCH_RESULT_FILE}.sort   | grep ${LIKE_THIS_IMAGE_TAG}
+            if [[ -z "${EXCLUDE_THIS_DOCKER_IMAGE_TAG}" ]]; then
+                cat ${F_SEARCH_RESULT_FILE}.sort   | grep ${LIKE_THIS_DOCKER_IMAGE_TAG}
             else
-                cat ${F_SEARCH_RESULT_FILE}.sort   | grep ${LIKE_THIS_IMAGE_TAG} | grep -v ${EXCLUDE_THIS_IMAGE_TAG}
+                cat ${F_SEARCH_RESULT_FILE}.sort   | grep ${LIKE_THIS_DOCKER_IMAGE_TAG} | grep -v ${EXCLUDE_THIS_DOCKER_IMAGE_TAG}
             fi
         fi
     else
         # 第几新
-        if [[ -z "${LIKE_THIS_IMAGE_TAG}" ]]; then
-            if [[ -z "${EXCLUDE_THIS_IMAGE_TAG}" ]]; then
+        if [[ -z "${LIKE_THIS_DOCKER_IMAGE_TAG}" ]]; then
+            if [[ -z "${EXCLUDE_THIS_DOCKER_IMAGE_TAG}" ]]; then
                 cat ${F_SEARCH_RESULT_FILE}.sort | sed -n ${NUMBER_NEWEST}p
             else
-                cat ${F_SEARCH_RESULT_FILE}.sort | grep -v ${EXCLUDE_THIS_IMAGE_TAG} | sed -n ${NUMBER_NEWEST}p
+                cat ${F_SEARCH_RESULT_FILE}.sort | grep -v ${EXCLUDE_THIS_DOCKER_IMAGE_TAG} | sed -n ${NUMBER_NEWEST}p
             fi
         else
-            if [[ -z "${EXCLUDE_THIS_IMAGE_TAG}" ]]; then
-                cat ${F_SEARCH_RESULT_FILE}.sort   | grep ${LIKE_THIS_IMAGE_TAG} | sed -n ${NUMBER_NEWEST}p
+            if [[ -z "${EXCLUDE_THIS_DOCKER_IMAGE_TAG}" ]]; then
+                cat ${F_SEARCH_RESULT_FILE}.sort   | grep ${LIKE_THIS_DOCKER_IMAGE_TAG} | sed -n ${NUMBER_NEWEST}p
             else
-                cat ${F_SEARCH_RESULT_FILE}.sort   | grep ${LIKE_THIS_IMAGE_TAG} | grep -v ${EXCLUDE_THIS_IMAGE_TAG} | sed -n ${NUMBER_NEWEST}p
+                cat ${F_SEARCH_RESULT_FILE}.sort   | grep ${LIKE_THIS_DOCKER_IMAGE_TAG} | grep -v ${EXCLUDE_THIS_DOCKER_IMAGE_TAG} | sed -n ${NUMBER_NEWEST}p
             fi
         fi
     fi
@@ -165,7 +167,7 @@ F_SEARCH()
 
 
 # 参数检查
-TEMP=`getopt -o hle:t:n:o:  -l help,list,exclude:,tag:,newest:,output: -- "$@"`
+TEMP=`getopt -o hle:t:I:n:o:  -l help,list,exclude:,tag:,image-pre-name:,newest:,output: -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
     exit 51
@@ -187,16 +189,21 @@ do
         -l|--list)
             #awk 'BEGIN {FS="|"; printf "%2d %-32s %-s\n",0,"Docker服务名","Docker镜像名"} { if ($3 !~ /^ *$/ && $1 !~ /^#/) {sub(/^[[:blank:]]*/,"",$2); sub(/[[:blank:]]*$/,"",$2); sub(/^[[:blank:]]*/,"",$3); sub(/[[:blank:]]*$/,"",$3); printf "%2d %-32s %-s\n",NR,$2,$3} }'  ${SERVICE_LIST_FILE}
             echo '**服务名名** | **镜像名**'  > /tmp/docker-image-search-for-list.txt
-            cat  ${SERVICE_LIST_FILE} | grep -v '^#' | awk  'BEGIN {FS="|"} {printf "%s | %s\n", $2,$3}'  >> /tmp/docker-image-search-for-list.txt
+            cat  ${SERVICE_LIST_FILE} | grep -v '^ *$' | grep -v '^#' | awk  'BEGIN {FS="|"} {printf "%s | %s\n", $2,$3}'  >> /tmp/docker-image-search-for-list.txt
             ${FORMAT_TABLE_SH}  --delimeter '|'  --file /tmp/docker-image-search-for-list.txt
             exit
             ;;
         -e|--exclude)
-            EXCLUDE_THIS_IMAGE_TAG=$2
+            EXCLUDE_THIS_DOCKER_IMAGE_TAG=$2
             shift 2
             ;;
         -t|--tag)
-            LIKE_THIS_IMAGE_TAG=$2
+            LIKE_THIS_DOCKER_IMAGE_TAG=$2
+            shift 2
+            ;;
+        -I|--image-pre-name)
+            IMAGE_PRE_NAME=$2
+            IMAGE_PRE_NAME_ARG="--image-pre-name ${IMAGE_PRE_NAME}"
             shift 2
             ;;
         -n|--newest)
@@ -269,16 +276,25 @@ do
     SERVICE_NAME=`echo ${LINE} | cut -d \| -f 2`
     SERVICE_NAME=`echo ${SERVICE_NAME}`
     #
-    IMAGE_NAME=`echo ${LINE} | cut -d \| -f 3`
-    IMAGE_NAME=`eval echo ${IMAGE_NAME}`    #--- 用eval将配置文件中项的变量转成值，下同
+    DOCKER_IMAGE_PRE_NAME=`echo ${LINE} | cut -d \| -f 3`
+    DOCKER_IMAGE_PRE_NAME=`eval echo ${DOCKER_IMAGE_PRE_NAME}`    #--- 用eval将配置文件中项的变量转成值，下同
+    # 命令行参数优先级最高（1 arg，2 listfile，3 env.sh）
+    if [[ -n ${IMAGE_PRE_NAME} ]]; then
+        DOCKER_IMAGE_PRE_NAME=${IMAGE_PRE_NAME}
+    elif [[ -z ${DOCKER_IMAGE_PRE_NAME} ]]; then
+        DOCKER_IMAGE_PRE_NAME=${DOCKER_IMAGE_DEFAULT_PRE_NAME}
+    fi
+    #
+    DOCKER_IMAGE_NAME=`echo ${LINE} | cut -d \| -f 4`
+    DOCKER_IMAGE_NAME=`eval echo ${DOCKER_IMAGE_NAME}`    #--- 用eval将配置文件中项的变量转成值，下同
     # 跳过服务名名或镜像名为空的行
-    if [ "x${SERVICE_NAME}" = 'x' -o "x${IMAGE_NAME}" = 'x' ]; then
+    if [ "x${SERVICE_NAME}" = 'x' -o "x${DOCKER_IMAGE_NAME}" = 'x' ]; then
         continue
     fi
     #
     > ${SEARCH_RESULT_FILE}.${SERVICE_NAME}.tmp
     # 写入文件
-    F_SEARCH ${IMAGE_NAME}  > ${SEARCH_RESULT_FILE}.${SERVICE_NAME}.tmp  2>/tmp/${SH_NAME}-error.txt
+    F_SEARCH ${DOCKER_IMAGE_NAME}  > ${SEARCH_RESULT_FILE}.${SERVICE_NAME}.tmp  2>/tmp/${SH_NAME}-error.txt
     #if [ $? -eq 53 ]; then
     #    echo -e "\n猪猪侠警告：项目镜像不存在\n"
     #fi
@@ -286,7 +302,7 @@ do
     if [ -z "${OUTPUT_FILE}" ]; then
         let NUM=${NUM}+1
         echo -e "${ECHO_NORMAL}# ---------------------------------------------------${ECHO_CLOSE}"
-        echo -e "${ECHO_NORMAL}# ${NUM} - 服务名：${SERVICE_NAME} - 镜像名：${IMAGE_NAME} ${ECHO_CLOSE}"
+        echo -e "${ECHO_NORMAL}# ${NUM} - 服务名：${SERVICE_NAME} - 镜像名：${DOCKER_IMAGE_NAME} ${ECHO_CLOSE}"
         echo -e "${ECHO_NORMAL}# ---------------------------------------------------${ECHO_CLOSE}"
         cat  ${SEARCH_RESULT_FILE}.${SERVICE_NAME}.tmp
         cat  /tmp/${SH_NAME}-error.txt
@@ -299,7 +315,7 @@ do
     # 文件输出
     if [ `cat ${SEARCH_RESULT_FILE}.${SERVICE_NAME}.tmp | wc -l` -ne 0 ]; then
         R=`cat ${SEARCH_RESULT_FILE}.${SERVICE_NAME}.tmp`
-        echo ${SERVICE_NAME} ${IMAGE_NAME} $R >> ${SEARCH_RESULT_FILE}
+        echo ${SERVICE_NAME} ${DOCKER_IMAGE_NAME} $R >> ${SEARCH_RESULT_FILE}
     fi
 done < ${SERVICE_LIST_FILE_TMP}
 

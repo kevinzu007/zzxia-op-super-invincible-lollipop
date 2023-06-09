@@ -1,0 +1,69 @@
+# 须带环境变量运行：
+# ansible-playbook  install-config-my_sec-ENV.yml  -e "RUN_ENV=${RUN_ENV}"
+#
+#
+# 拷贝密码文件
+#
+# 请根据自己的需要修改此文件（主机与运行环境）
+#
+#
+- hosts: deploy
+  become: yes
+  vars:
+    - RUN_ENV: "{{ lookup('env','RUN_ENV') }}"
+  tasks:
+    - name: 拷贝 - my_sec
+      copy: src=./{{ RUN_ENV }}/my_sec/   dest=~/.my_sec/ owner=root group=root mode=0600  backup=no
+    - name: 拷贝 - 用户密码工具
+      copy:
+          src: '{{ item.srcc }}'
+          dest: '{{ item.destt }}'
+          owner: root
+          group: root
+          mode: 0700
+          backup: yes
+      with_items:
+        - { srcc: './user-secret-update.sh', destt: '~/.my_sec/' }
+        - { srcc: './user-token-update.sh', destt: '~/.my_sec/' }
+        - { srcc: './user-manage.sh', destt: '~/.my_sec/' }
+    - name: crontab - user-token-update
+      cron: name=user-token-update backup=yes state=present minute=0 hour=0 day=*  month=* weekday=* user=root job='~/.my_sec/user-token-update.sh --update >/dev/null'
+    - name: 拷贝 - maven-settings.xml
+      copy: src=./{{ RUN_ENV }}/maven-settings.xml dest=~/.m2/settings.xml owner=root group=root mode=0644  backup=no
+    - name: 拷贝 - godaddy.sec.env
+      copy: src=./{{ RUN_ENV }}/godaddy.sec.env dest=/etc/godaddy.sec.env  owner=root group=root mode=0600  backup=no
+      when: RUN_ENV == "prod"
+    - name: 拷贝 - aliyun-config.json
+      copy: src=./{{ RUN_ENV }}/aliyun-config.json dest=~/.aliyun/config.json owner=root group=root mode=0600  backup=no
+      when: RUN_ENV == "stag"
+
+
+- hosts: all
+  become: yes
+  vars:
+    - RUN_ENV: "{{ lookup('env','RUN_ENV') }}"
+  tasks:
+    - name: 拷贝 - zzxia-ca.crt.pem
+      copy: src=./{{ RUN_ENV }}/zzxia-ca.crt.pem   dest=/etc/pki/ca-trust/source/anchors/zzxia-ca.crt.pem  owner=root group=root mode=0600  backup=no
+    - name: 更新os证书
+      shell: update-ca-trust
+
+- hosts: nginx
+  become: yes
+  vars:
+    - RUN_ENV: "{{ lookup('env','RUN_ENV') }}"
+  tasks:
+    - name: 拷贝 - 证书
+      copy: src=./{{ RUN_ENV }}/zjlh.lan/   dest=/srv/cert/zjlh.lan/  owner=root group=root mode=0644  backup=no
+      when: RUN_ENV == "dev"
+
+- hosts: pg_m,gitlab
+  become: yes
+  vars:
+    - RUN_ENV: "{{ lookup('env','RUN_ENV') }}"
+  tasks:
+    - name: 拷贝 - passwd-ossfs
+      copy: src=./{{ RUN_ENV }}/passwd-ossfs   dest=/etc/passwd-ossfs  owner=root group=root mode=0640  backup=no
+      when: RUN_ENV == "stag" or RUN_ENV == "prod"
+
+

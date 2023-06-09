@@ -1,7 +1,7 @@
 ### docker cluster 服务部署清单
 ###
 ###  0 公共参数（ *** 对所有项目生效，以#开头的无效，以空格开头无效，可以是变量 *** ）：
-###    DOCKER_LOG_PUB :      Docker通用日志参数变量。定义在【deploy.env---*】文件中，仅对【swarm】集群有效
+###    DOCKER_LOG_PUB :      Docker通用日志参数变量。定义在【env.sh---*】文件中，仅对【swarm】集群有效
 ###    DOCKER_ARG_PUB :      Docker通用运行参数文件。文件名【docker-arg-pub.list---*】，仅对【swarm】集群有效
 ###    CONTAINER_HOSTS_PUB : 所有容器中的hosts定义文件。文件名【container-hosts-pub.list---*】
 ###
@@ -12,52 +12,56 @@
 ###
 ###  2【服务名：SERVICE_NAME】= [ 自定义名称 ] 
 ###
-###  3【DOCKER镜像名：DOCKER_IMAGE_NAME】= [ 自定义名称 ]
+###  3【镜像前置名：DOCKER_IMAGE_PRE_NAME】= [自定义名称]
+###    请参考【env.sh】中的DOCKER_IMAGE_DEFAULT_PRE_NAME说明
 ###
-###  4【POD副本数：POD_REPLICAS】= [ 数字|${变量名} ]
+###  4【DOCKER镜像名：DOCKER_IMAGE_NAME】= [ 自定义名称 ]
+###    当输出方法='docker_image_push'时，镜像名不能为空
+###
+###  5【POD副本数：POD_REPLICAS】= [ 数字|${变量名} ]
 ###    1 数字          : 例如：2
 ###    2 ${变量名}     : 例如：【${SERVICE_NAME}】
 ###
-###  5【容器PORTS：CONTAINER_PORTS】= [ 外部端口号1:内部端口号2, 外部端口号3:内部端口号4, ...... , ${变量名} ]
+###  6【容器PORTS：CONTAINER_PORTS】= [ 外部端口号1:内部端口号2, 外部端口号3:内部端口号4, ...... , ${变量名} ]
 ###    若有多个，则用【,】分隔
 ###    示例：【17474:7474】
 ###          【${xName}:7474】
 ###          【27474:7474,7687:7687】
 ###
-###  6【优先级：PRIORITY】= [ 数字 ]
+###  7【优先级：PRIORITY】= [ 数字 ]
 ###    数字越小越优先
 ###
-###  7【备注：NOTE】= [ 自定义 ]
+###  8【备注：NOTE】= [ 自定义 ]
 ###    说明信息
 ###
 ###
 ### A.1 更多扩展项，请在文件【docker-cluster-service.list.append.1】中添加
-###    3 集群
-###    4 主机名
-###    5 部署位置
+###    3 集群：CLUSTER
+###    4 主机名：HOST_NAME
+###    5 部署位置：DEPLOY_PLACEMENT
 ###
 ###
 ### A.2 更多扩展项，请在文件【docker-cluster-service.list.append.2】中添加
-###    3 JAVA选项
-###    4 容器ENVS
-###    5 容器CMDS
+###    3 JAVA选项：JAVA_OPTIONS
+###    4 容器ENVS：CONTAINER_ENVS
+###    5 容器CMDS：CONTAINER_CMDS
 ###
 ###
-###   ***** 以上种种，都可以自己定义，然后调整相关脚本即可 *****
+###    ***** 以上种种，都可以自己定义，然后调整相关脚本即可 *****
+### 
+###    ***** 上文提到的变量名可以是下文表头的名字、也可以是sh中可以获得的变量名 *****
 ###
-###   ***** 上文提到的变量名可以是下文表头的名字、也可以是sh中可以获得的变量名 *****
-###
-#| SERVICE_NAME           | DOCKER_IMAGE_NAME       | POD_REPLICAS  | CONTAINER_PORTS    | PRIORITY   | NOTE                         |
-#| **服务名**             | **DOCKER镜像名**        | **POD副本数** | **容器PORTS**      | **优先级** | **备注**                     |
-#| ---------------------- | ----------------------- | ------------: | ------------------ | ---------- | ---------------------------- |
-|neo4j-srv                |neo4j                    | 1             | 7474:7474,7687:7687| 0          |                              |
-|redis-srv                |redis                    | 1             | 6379:6379          | 0          |                              |
-|nacos-server-1           |nacos-server             | 1             | 8848:8848,9848:9848,9555:9555| 0|                              |
-|nacos-server-2           |nacos-server             | 1             | :8848,:9848,:9555  | 20         |                              |
-|nacos-server-3           |nacos-server             | 1             | :8848,:9848,:9555  | 20         |                              |
-|gc-gateway               |gc-gateway               | 1             | 13000:13000        | 15         |                              |
-|gc-monitor               |gc-monitor               | 1             | :13030             | 20         |                              |
-|gc-client-service        |gc-client-service        | 1             | :23000             | 20         |                              |
-|gc-client-app-service    |gc-client-app-service    | 1             | :23100             | 20         |                              |
-|gc-travel-service        |gc-travel-service        | 1             | :20201             | 20         |                              |
+#| SERVICE_NAME                  | DOCKER_IMAGE_PRE_NAME | DOCKER_IMAGE_NAME              | POD_REPLICAS  | CONTAINER_PORTS    | PRIORITY   | NOTE                         |
+#| **服务名**                    | **镜像前置名**        | **DOCKER镜像名**               | **POD副本数** | **容器PORTS**      | **优先级** | **备注**                     |
+#| ----------------------------- | --------------------- | ------------------------------ | ------------: | ------------------ | ---------- | ---------------------------- |
+| neo4j-srv                      |                       | neo4j                          | 1             | 7474:7474,7687:7687| 0          |                              |
+| redis-srv                      |                       | redis                          | 1             | 6379:6379          | 0          |                              |
+| nacos-server-1                 |                       | nacos-server                   | 1             | 8848:8848,9848:9848,9555:9555| 0|                              |
+| nacos-server-2                 |                       | nacos-server                   | 1             | :8848,:9848,:9555  | 20         |                              |
+| nacos-server-3                 |                       | nacos-server                   | 1             | :8848,:9848,:9555  | 20         |                              |
+| gc-gateway                     |                       | gc-gateway                     | 1             | 13000:13000        | 15         |                              |
+| gc-monitor                     |                       | gc-monitor                     | 1             | :13030             | 20         |                              |
+| gc-client-service              |                       | gc-client-service              | 1             | :23000             | 20         |                              |
+| gc-client-app-service          |                       | gc-client-app-service          | 1             | :23100             | 20         |                              |
+| gc-travel-service              |                       | gc-travel-service              | 1             | :20201             | 20         |                              |
 

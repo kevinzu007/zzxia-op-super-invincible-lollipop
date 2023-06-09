@@ -15,20 +15,23 @@ cd ${SH_PATH}
 RUN_ENV=${RUN_ENV:-'dev'}
 
 # 引入env
-. ${SH_PATH}/deploy.env
+. ${SH_PATH}/env.sh
 GAN_PLATFORM_NAME="${GAN_PLATFORM_NAME:-'超甜B&D系统'}"
 #DINGDING_API=
 #USER_DB_FILE=
+#DOCKER_REPO_SERVER=
+#DOCKER_IMAGE_DEFAULT_PRE_NAME=
+#DOCKER_REPO_SECRET_NAME=
 #CONTAINER_ENVS_PUB_FILE=
-#NETWORK_SWARM=
-#NETWORK_COMPOSE=
-#SWARM_DOCKER_HOST=
-#K8S_NAMESAPCE=
-#DEBUG=
+#ENABLE_DEBUG_PORT=
 #DEBUG_RANDOM_PORT_MIN=
 #DEBUG_RANDOM_PORT_MAX=
-#DOCKER_IMAGE_BASE=
-#DOCKER_REPO_SECRET_NAME=
+#K8S_DEFAULT_CONTEXT=
+#K8S_DEFAULT_NAMESAPCE=
+#SWARM_DEFAULT_DOCKER_HOST=
+#SWARM_DEFAULT_NETWORK=
+#COMPOSE_DEFAULT_DOCKER_HOST=
+#COMPOSE_DEFAULT_NETWORK=
 
 # 本地env
 GAN_WHAT_FUCK='Docker_Deploy'
@@ -57,7 +60,7 @@ SERVICE_LIST_FILE_APPEND_1="${SH_PATH}/docker-cluster-service.list.append.1"
 SERVICE_LIST_FILE_APPEND_2="${SH_PATH}/docker-cluster-service.list.append.2"
 SERVICE_LIST_FILE_TMP="${LOG_HOME}/${SH_NAME}-docker-cluster-service.list.tmp"
 SERVICE_ONLINE_LIST_FILE_TMP="${LOG_HOME}/${SH_NAME}-docker-cluster-service-online.list.tmp"
-DOCKER_IMAGE_VER='latest'
+DOCKER_IMAGE_TAG='latest'
 FUCK=${FUCK:-"NO"}
 DEPLOY_BY_STEP=${DEPLOY_BY_STEP:-"NO"}
 #
@@ -110,7 +113,7 @@ F_HELP()
         ${DOCKER_ARG_PUB_FILE}
         ${CONTAINER_HOSTS_PUB_FILE}
         ${JAVA_OPTIONS_PUB_FILE}
-        ${SH_PATH}/deploy.env
+        ${SH_PATH}/env.sh
         ${DOCKER_IMAGE_SEARCH_SH}
         ${FORMAT_TABLE_SH}
         ${DINGDING_MARKDOWN_PY}
@@ -123,11 +126,11 @@ F_HELP()
         $0 [-l|--list]                    #--- 列出配置文件中的服务清单
         $0 [-L|--list-run swarm|k8s]      #--- 列出指定集群中运行的所有服务，不支持持【docker-compose】
         # 创建、修改
-        $0 <-M|--mode [normal|function]>  [-c|--create|-m|--modify]  <-D|--debug>  <<-t|--tag {模糊镜像tag版本}> | <-T|--TAG {精确镜像tag版本}>>  <-n|--number {副本数}>  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
+        $0 <-M|--mode [normal|function]>  [-c|--create|-m|--modify]  <-D|--debug-port>  <<-t|--tag {模糊镜像tag版本}> | <-T|--TAG {精确镜像tag版本}>>  <-I|--image-pre-name {镜像前置名称}>  <-n|--number {副本数}>  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
         # 更新
-        $0 <-M|--mode [normal|function]>  [-u|--update]  <<-t|--tag {模糊镜像tag版本}> | <-T|--TAG {精确镜像tag版本}>>  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
+        $0 <-M|--mode [normal|function]>  [-u|--update]  <<-t|--tag {模糊镜像tag版本}> | <-T|--TAG {精确镜像tag版本}>>  <-I|--image-pre-name {镜像前置名称}>  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
         # 回滚
-        $0 <-M|--mode [normal|function]>  [--b|rollback]   <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
+        $0 <-M|--mode [normal|function]>  [--b|rollback]   <-V|--release-version {版本号}>  <-G|--gray>  <-I|--image-pre-name {镜像前置名称}>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
         #
         # 扩缩容
         $0 <-M|--mode [normal|function]>  [-S|--scale]  [-n|--number {副本数}]  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名或灰度服务名1} {服务名或灰度服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
@@ -161,9 +164,10 @@ F_HELP()
         -s|--status    : 获取服务运行状态
         -d|--detail    : 获取服务详细信息
         -o|--logs      : 获取服务运行日志
-        -D|--debug     : 开启开发者Debug模式，目前用于开放所有容器内部服务端口
+        -D|--debug-port: 开启开发者Debug-port模式，目前用于开放所有容器内部服务端口
         -t|--tag       ：模糊镜像tag版本
         -T|--TAG       ：精确镜像tag版本
+        -I|--image-pre-name  指定镜像前置名称【DOCKER_IMAGE_PRE_NAME】，默认来自env.sh。注：镜像完整名称：\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${DOCKER_IMAGE_NAME}:\${DOCKER_IMAGE_TAG}
         -n|--number    ：Pod副本数
         -G|--gray      : 设置灰度标志为：gray，默认：normal
         -V|--release-version : 发布版本号
@@ -183,7 +187,7 @@ F_HELP()
         $0 -c  -F                                    #--- 根据服务清单创建所有服务
         $0 -c  -F  -P                                #--- 根据服务清单创建所有服务，步进执行
         $0 -c  服务1 服务2  -F                       #--- 创建【服务1】、【服务2】服务
-        $0 -c  -D  服务1 服务2  -F                   #--- 创建【服务1】、【服务2】服务，并开启开发者Debug模式
+        $0 -c  -D  服务1 服务2  -F                   #--- 创建【服务1】、【服务2】服务，并开启开发者Debug-port模式
         $0 -c  -T 2020.12.11  服务1 服务2  -F        #--- 创建【服务1】、【服务2】服务，且使用的镜像版本为【2020.12.11】
         $0 -c  -t 2020.12     服务1 服务2  -F        #--- 创建【服务1】、【服务2】服务，且使用的镜像版本包含【2020.12】的最新镜像
         $0 -c  -n 2  服务1 服务2  -F                 #--- 创建【服务1】、【服务2】服务，且副本数为【2】
@@ -191,6 +195,7 @@ F_HELP()
         $0 -c  -V yyy       服务1 服务2  -F          #--- 创建【服务1】、【服务2】，版本号为【yyy】
         $0 -c  -G           服务1 服务2  -F          #--- 创建【服务1】、【服务2】的灰度服务
         $0 -c  -G  -V yyy   服务1 服务2  -F          #--- 创建【服务1】、【服务2】的灰度服务，版本号为【yyy】
+        $0 -c  -G  -I aa/bb  服务1 服务2  -F         #--- 创建【服务1】、【服务2】的灰度服务，镜像前置名称为【aa/bb】
         # 修改
         $0 -m  服务1 服务2  -F                       #--- 修改【服务1】、【服务2】服务
         $0 -m  服务1 服务2  -V yyy  -F               #--- 根据服务清单修改所有版本号为【yyy】的服务
@@ -198,6 +203,7 @@ F_HELP()
         $0 -m  -t 2020.12     服务1 服务2  -F        #--- 修改【服务1】、【服务2】服务，且使用的镜像版本包含【2020.12】的最新镜像
         $0 -m  -n 2  服务1 服务2  -F                 #--- 修改【服务1】、【服务2】服务，且副本数为【2】
         $0 -m  -T 2020.12.11  -n 2  服务1 服务2  -F  #--- 修改【服务1】、【服务2】服务，且使用的镜像版本为【2020.12.11】，副本数为【2】
+        $0 -m  -G  -I aa/bb  服务1 服务2  -F         #--- 修改【服务1】、【服务2】的灰度服务，镜像前置名称为【aa/bb】
         # 更新镜像
         $0 -u  -F                                    #--- 根据服务清单更新设置所有服务的最新镜像tag版本（如果今天构建过）
         $0 -u  服务1 服务2  -F                       #--- 设置【服务1】、【服务2】服务的最新镜像tag版本（如果今天构建过）
@@ -205,10 +211,13 @@ F_HELP()
         $0 -u  -t 2020.12     服务1 服务2  -F        #--- 更新【服务1】、【服务2】有服务，且镜像tag版本包含【2020.12】的最新镜像
         $0 -u  -T 2020.12.11  -F                     #--- 根据服务清单更新设置所有服务，且镜像tag版本为【2020.12.11】的镜像
         $0 -u  -T 2020.12.11  服务1 服务2  -F        #--- 更新【服务1】、【服务2】有服务，且镜像tag版本为【2020.12.11】的镜像
+        $0 -u  -T 2020.12.11  -I aa/bb  服务1 服务2  -F   #--- 更新【服务1】、【服务2】服务，且镜像tag版本为【2020.12.11】，镜像前置名称为【aa/bb】的镜像
         # 回滚
         $0 -b  -F                          #--- 根据服务清单回滚所有服务（如果今天构建过）
         $0 -b  服务1 服务2  -F             #--- 回滚【服务1】、【服务2】服务（如果今天构建过）
         $0 -b  服务1 服务2  -V yyy  -F     #--- 回滚【服务1】、【服务2】服务，且版本号为【yyy】（如果今天构建过）
+        $0 -b  -I aa/bb  服务1 服务2  -F   #--- 更新【服务1】、【服务2】服务（如果今天构建过），搜索镜像前置名称为【aa/bb】
+        #
         #
         # 扩缩容
         $0 -S  -n 2  -F                    #--- 根据服务清单设置所有服务的pod副本数为2
@@ -281,7 +290,7 @@ F_ONLINE_SERVICE_SEARCH()
         swarm)
             GET_IT=''
             #docker service ls  --format "{{.Name}}"  --filter name=${F_SEARCH_NAME} | while read S_LINE
-            for S_LINE in $(docker service ls  --format "{{.Name}}")
+            for S_LINE in $(docker service ls  --format "{{.Name}}" | grep "${F_SEARCH_NAME}")
             do
                 if [[ ${S_LINE} =~ ^${F_SEARCH_NAME}$ ]]; then
                     echo  ${S_LINE}
@@ -343,7 +352,7 @@ F_ONLINE_SERVICE_SEARCH_LIKE()
         swarm)
             GET_IT=''
             #docker service ls  --format "{{.Name}}"  --filter name=${F_SEARCH_NAME} | while read S_LINE
-            for S_LINE in $(docker service ls  --format "{{.Name}}")
+            for S_LINE in $(docker service ls  --format "{{.Name}}" | grep "${F_SEARCH_NAME}")
             do
                 if [[ ${S_LINE} =~ ${F_SEARCH_NAME} ]]; then
                     echo  ${S_LINE}
@@ -402,7 +411,7 @@ F_SEARCH_IMAGE_TAG()
 {
     F_SERVICE_NAME=$1
     F_THIS_TAG=$2
-    ${DOCKER_IMAGE_SEARCH_SH}  --tag ${F_THIS_TAG}  --output ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_TAG-result.txt  ${F_SERVICE_NAME}
+    ${DOCKER_IMAGE_SEARCH_SH}  ${IMAGE_PRE_NAME_ARG}  --tag ${F_THIS_TAG}  --output ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_TAG-result.txt  ${F_SERVICE_NAME}
     search_r=$(cat ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_TAG-result.txt | cut -d " " -f 3-)
     F_GET_IT=""
     # 这个其实不可能有多行
@@ -431,7 +440,7 @@ F_SEARCH_IMAGE_LIKE_TAG()
 {
     F_SERVICE_NAME=$1
     F_LIKE_THIS_TAG=$2
-    ${DOCKER_IMAGE_SEARCH_SH}  --tag ${F_LIKE_THIS_TAG}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_LIKE_TAG-result.txt  ${F_SERVICE_NAME}  1>/dev/null 2>/dev/null   #--- 需要关闭任何输出，方便取的结果，以结果是否为空作为成功失败的标志
+    ${DOCKER_IMAGE_SEARCH_SH}  ${IMAGE_PRE_NAME_ARG}  --tag ${F_LIKE_THIS_TAG}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_LIKE_TAG-result.txt  ${F_SERVICE_NAME}  1>/dev/null 2>/dev/null   #--- 需要关闭任何输出，方便取的结果，以结果是否为空作为成功失败的标志
     search_like_r=$(cat ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_LIKE_TAG-result.txt | cut -d " " -f 3)
     #
     if [[ ! -z ${search_like_r} ]]; then
@@ -451,7 +460,7 @@ F_SEARCH_IMAGE_NOT_LIKE_TAG()
 {
     F_SERVICE_NAME=$1
     F_NOT_LIKE_THIS_TAG=$2
-    ${DOCKER_IMAGE_SEARCH_SH}  --exclude ${F_NOT_LIKE_THIS_TAG}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_NOT_LIKE_TAG-result.txt  ${F_SERVICE_NAME}  2>/dev/null
+    ${DOCKER_IMAGE_SEARCH_SH}  ${IMAGE_PRE_NAME_ARG}  --exclude ${F_NOT_LIKE_THIS_TAG}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_NOT_LIKE_TAG-result.txt  ${F_SERVICE_NAME}  2>/dev/null
     search_not_like_r=$(cat ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_NOT_LIKE_TAG-result.txt | cut -d " " -f 3)
     # 
     if [[ ! -z ${search_not_like_r} ]]; then
@@ -465,7 +474,7 @@ F_SEARCH_IMAGE_NOT_LIKE_TAG()
 
 
 # 用户搜索
-# F_USER_SEARCH  [用户名|姓名]
+# F_USER_SEARCH  [用户名|用户ID]
 F_USER_SEARCH()
 {
     F_USER_NAME=$1
@@ -577,7 +586,7 @@ spec:
       hostAliases:
       containers:
       - name: c-${SERVICE_X_NAME}
-        image: ${DOCKER_IMAGE_BASE}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER}
+        image: ${DOCKER_REPO_SERVER}/${DOCKER_IMAGE_PRE_NAME}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
         imagePullPolicy: IfNotPresent
         args:
         env:
@@ -624,7 +633,7 @@ services:
     # 必须有
     ports:
     networks:
-      - ${NETWORK_COMPOSE}
+      - ${COMPOSE_NETWORK}
     extra_hosts:
       - somehost:1.1.1.1
     #depends_on:
@@ -639,7 +648,7 @@ services:
     #mem_limit: 1000000000
     #privileged: true
 networks:
-  ${NETWORK_COMPOSE}:
+  ${COMPOSE_NETWORK}:
     "
 }
 
@@ -649,6 +658,18 @@ networks:
 # 用法：
 F_SET_RUN_ENV()
 {
+    K8S_CONTEXT=''
+    K8S_NAMESAPCE=''
+    #
+    SWARM_DOCKER_HOST=''
+    SWARM_NETWORK=''
+    #
+    COMPOSE_DOCKER_HOST=''
+    COMPOSE_NETWORK=''
+    DOCKER_COMPOSE_SERVICE_HOME=''
+    #
+    DEPLOY_PLACEMENT_LABELS=''
+    #
     case ${CLUSTER} in
         swarm)
             if [[ ! -z ${DEPLOY_PLACEMENT} ]]; then
@@ -657,16 +678,18 @@ F_SET_RUN_ENV()
                 DEPLOY_PLACEMENT_LABELS=''
                 for ((i=DEPLOY_PLACEMENT_ARG_NUM; i>=0; i--))
                 do
-                    if [ "x${DEPLOY_PLACEMENT}" = 'x' ]; then
+                    if [[ -z ${DEPLOY_PLACEMENT} ]]; then
                         break
                     fi
                     FIELD=$((i+1))
                     DEPLOY_PLACEMENT_SET=`echo ${DEPLOY_PLACEMENT} | cut -d ',' -f ${FIELD}`
                     # 
-                    if [[ ${DEPLOY_PLACEMENT_SET} =~ ^NET ]]; then
-                        NETWORK_SWARM=$(echo ${DEPLOY_PLACEMENT_SET} | awk -F ':' '{print $2}')
+                    if [[ ${DEPLOY_PLACEMENT_SET} =~ ^H ]]; then
+                        SWARM_DOCKER_HOST=$(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-)
+                    elif [[ ${DEPLOY_PLACEMENT_SET} =~ ^NET ]]; then
+                        SWARM_NETWORK=$(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-)
                     elif [[ ${DEPLOY_PLACEMENT_SET} =~ ^L ]]; then
-                        DEPLOY_PLACEMENT_LABELS="$(echo ${DEPLOY_PLACEMENT_SET} | awk -F ':' '{print $2}') ${DEPLOY_PLACEMENT_LABELS}"
+                        DEPLOY_PLACEMENT_LABELS="$(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-) ${DEPLOY_PLACEMENT_LABELS}"
                     else
                         echo -e "\n猪猪侠警告：配置文件错误，请检查【DEPLOY_PLACEMENT】\n"
                         return 52
@@ -674,6 +697,10 @@ F_SET_RUN_ENV()
                 done
             fi
             #
+            # 输出
+            SWARM_DOCKER_HOST=${SWARM_DOCKER_HOST:-"${SWARM_DEFAULT_DOCKER_HOST}"}
+            SWARM_NETWORK=${SWARM_NETWORK:-"${SWARM_DEFAULT_NETWORK}"}
+            # DEPLOY_PLACEMENT_LABELS
             export DOCKER_HOST=${SWARM_DOCKER_HOST}
             ;;
         k8s)
@@ -689,10 +716,12 @@ F_SET_RUN_ENV()
                     FIELD=$((i+1))
                     DEPLOY_PLACEMENT_SET=`echo ${DEPLOY_PLACEMENT} | cut -d ',' -f ${FIELD}`
                     # 假设只有一个Label
-                    if [[ ${DEPLOY_PLACEMENT_SET} =~ ^NS ]]; then
-                        K8S_NAMESAPCE=$(echo ${DEPLOY_PLACEMENT_SET} | awk -F ':' '{print $2}')
+                    if [[ ${DEPLOY_PLACEMENT_SET} =~ ^C ]]; then
+                        K8S_CONTEXT=$(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-)
+                    elif [[ ${DEPLOY_PLACEMENT_SET} =~ ^NS ]]; then
+                        K8S_NAMESAPCE=$(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-)
                     elif [[ ${DEPLOY_PLACEMENT_SET} =~ ^L ]]; then
-                        DEPLOY_PLACEMENT_LABELS="$(echo ${DEPLOY_PLACEMENT_SET} | awk -F ':' '{print $2}') ${DEPLOY_PLACEMENT_LABELS}"
+                        DEPLOY_PLACEMENT_LABELS="$(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-) ${DEPLOY_PLACEMENT_LABELS}"
                     else
                         echo -e "\n猪猪侠警告：配置文件错误，请检查【DEPLOY_PLACEMENT】\n"
                         return 52
@@ -700,42 +729,150 @@ F_SET_RUN_ENV()
                 done
             fi
             #
-            K8S_NAMESAPCE=${K8S_NAMESAPCE:-'default'}
+            # 输出
+            K8S_CONTEXT=${K8S_CONTEXT:-"K8S_DEFAULT_CONTEXT"}
+            K8S_NAMESAPCE=${K8S_NAMESAPCE:-"K8S_DEFAULT_NAMESAPCE"}
+            # DEPLOY_PLACEMENT_LABELS
             ;;
         compose)
             if [[ ! -z ${DEPLOY_PLACEMENT} ]]; then
-                if [[ ${DEPLOY_PLACEMENT} =~ ^SSH ]]; then
-                    # awk会自动去掉【""】引号
-                    COMPOSE_SSH_HOST_OR_WITH_USER=$(echo ${DEPLOY_PLACEMENT} | awk '{print $1}' | awk -F ':' '{print $2}')
-                    COMPOSE_SSH_PORT=$(echo ${DEPLOY_PLACEMENT} | awk '{print $3}')
-                    if [[ -z ${COMPOSE_SSH_PORT} ]]; then
-                        COMPOSE_SSH_PORT=22
+                DEPLOY_PLACEMENT=${DEPLOY_PLACEMENT// /}               #--- 删除字符串中所有的空格
+                DEPLOY_PLACEMENT_ARG_NUM=$(echo ${DEPLOY_PLACEMENT} | grep -o ',' | wc -l)
+                DEPLOY_PLACEMENT_LABELS=''
+                for ((i=DEPLOY_PLACEMENT_ARG_NUM; i>=0; i--))
+                do
+                    if [[ -z ${DEPLOY_PLACEMENT} ]]; then
+                        break
                     fi
-                else
-                    echo -e "\n猪猪侠警告：配置文件错误，请检查【DEPLOY_PLACEMENT】\n"
-                    return 52
-                fi
-                COMPOSE_DOCKER_HOST="ssh://${COMPOSE_SSH_HOST_OR_WITH_USER}:${COMPOSE_SSH_PORT}"
+                    FIELD=$((i+1))
+                    DEPLOY_PLACEMENT_SET=`echo ${DEPLOY_PLACEMENT} | cut -d ',' -f ${FIELD}`
+                    # 
+                    if [[ ${DEPLOY_PLACEMENT_SET} =~ ^H ]]; then
+                        COMPOSE_DOCKER_HOST=$(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-)
+                    elif [[ ${DEPLOY_PLACEMENT_SET} =~ ^NET ]]; then
+                        COMPOSE_NETWORK=$(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-)
+                    elif [[ ${DEPLOY_PLACEMENT_SET} =~ ^L ]]; then
+                        DEPLOY_PLACEMENT_LABELS="$(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-) ${DEPLOY_PLACEMENT_LABELS}"
+                    else
+                        echo -e "\n猪猪侠警告：配置文件错误，请检查【DEPLOY_PLACEMENT】\n"
+                        return 52
+                    fi
+                done
             else
                 echo -e "\n猪猪侠警告：配置文件错误，请检查【DEPLOY_PLACEMENT】，【CLUSTER=compose】时，此项不能为空\n"
                 return 52
             fi
             #
+            # 输出
+            COMPOSE_DOCKER_HOST=${COMPOSE_DOCKER_HOST:-"${COMPOSE_DEFAULT_DOCKER_HOST}"}
+            COMPOSE_NETWORK=${COMPOSE_NETWORK:-"${COMPOSE_DEFAULT_NETWORK}"}
+            DOCKER_COMPOSE_SERVICE_HOME=${DOCKER_COMPOSE_BASE}/${SERVICE_NAME}
             export DOCKER_HOST=${COMPOSE_DOCKER_HOST}
+            #
             # test
             if [[ $(docker image ls >/dev/null 2>&1; echo $?) != 0 ]]; then
                 echo -e "\n猪猪侠警告：连接测试异常，请检查【DEPLOY_PLACEMENT】或目标主机，Docker daemon无法正常连接\n"
                 return 52
             fi
-            DOCKER_COMPOSE_SERVICE_HOME=${DOCKER_COMPOSE_BASE}/${SERVICE_NAME}
             ;;
         *)
             echo -e "\n猪猪侠警告：未定义的集群类型\n"
             return 52
             ;;
     esac
+    return 0
 }
 
+
+
+# 查询某种集群管理信息，去重并输出为以空格分隔的字符串
+# 用法：F_SEARCH_CLUSTER_MANAGE_INFO  [{集群}]
+F_SEARCH_CLUSTER_MANAGE_INFO()
+{
+    #
+    F_CLUSTER=$1
+    #
+    CLUSTER_MANAGE_INFO=()
+    #
+    case ${F_CLUSTER} in
+        swarm)
+            CLUSTER_MANAGE_INFO=(${SWARM_DEFAULT_DOCKER_HOST})
+            ;;
+        k8s)
+            CLUSTER_MANAGE_INFO=(${K8S_DEFAULT_CONTEXT})
+            ;;
+        compose)
+            CLUSTER_MANAGE_INFO=(${COMPOSE_DEFAULT_DOCKER_HOST})
+            ;;
+        *)
+            echo -e "\n猪猪侠警告：未定义的集群类型\n"
+            return 51
+            ;;
+    esac
+    #
+    while read LINE_A
+    do
+        # 跳过以#开头的行或空行
+        [[ "$LINE_A" =~ ^# ]] || [[ "$LINE_A" =~ ^[\ ]*$ ]] && continue
+        #
+        # 2
+        #
+        CLUSTER=`echo ${LINE_A} | cut -d \| -f 3`
+        CLUSTER=`eval echo ${CLUSTER}`
+        #
+        # 4
+        #
+        DEPLOY_PLACEMENT=`echo ${LINE_A} | cut -d \| -f 5`
+        DEPLOY_PLACEMENT=`eval echo ${DEPLOY_PLACEMENT}`
+        #
+        #
+        if [[ ! -z ${DEPLOY_PLACEMENT} ]] &&  [[ ${CLUSTER} == ${F_CLUSTER} ]]; then
+            #
+            DEPLOY_PLACEMENT=${DEPLOY_PLACEMENT// /}               #--- 删除字符串中所有的空格
+            DEPLOY_PLACEMENT_ARG_NUM=$(echo ${DEPLOY_PLACEMENT} | grep -o ',' | wc -l)
+            #
+            for ((i=DEPLOY_PLACEMENT_ARG_NUM; i>=0; i--))
+            do
+                #
+                if [[ -z ${DEPLOY_PLACEMENT} ]]; then
+                    break
+                fi
+                FIELD=$((i+1))
+                DEPLOY_PLACEMENT_SET=`echo ${DEPLOY_PLACEMENT} | cut -d ',' -f ${FIELD}`
+                # 
+                case ${F_CLUSTER} in
+                    swarm)
+                        if [[ ${DEPLOY_PLACEMENT_SET} =~ ^H ]]; then
+                            CLUSTER_MANAGE_INFO+=$(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-)
+                        fi
+                        ;;
+                    k8s)
+                        if [[ ${DEPLOY_PLACEMENT_SET} =~ ^C ]]; then
+                            CLUSTER_MANAGE_INFO+=$(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-)
+                        fi
+                        ;;
+                    compose)
+                        if [[ ${DEPLOY_PLACEMENT_SET} =~ ^H ]]; then
+                            CLUSTER_MANAGE_INFO+=$(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-)
+                        fi
+                        ;;
+                    *)
+                        echo -e "\n猪猪侠警告：未定义的集群类型\n"
+                        return 51
+                        ;;
+                esac
+            done
+        fi
+        #
+    done < ${SERVICE_LIST_FILE_APPEND_1}
+    #
+    # 去重
+    CLUSTER_MANAGE_INFO=($( awk  -v RS=' '  '!a[$1]++'  <<< ${CLUSTER_MANAGE_INFO[@]} ))
+    # 输出
+    echo ${CLUSTER_MANAGE_INFO[@]}
+    return
+    #
+}
 
 
 # 查询在线服务publish端口
@@ -918,7 +1055,7 @@ F_FUCK()
 
 
 # 参数检查
-TEMP=`getopt -o hlL:FPcmubSrsdoDt:T:n:GV:aM:  -l help,list,list-run:,fuck,by-step,create,modify,update,rollback,scale,rm,status,detail,logs,debug,tag:,TAG:,number:,gray,release-version:,all-release,mode: -- "$@"`
+TEMP=`getopt -o hlL:FPcmubSrsdoDt:T:I:n:GV:aM:  -l help,list,list-run:,fuck,by-step,create,modify,update,rollback,scale,rm,status,detail,logs,debug-port,tag:,TAG:,image-pre-name:,number:,gray,release-version:,all-release,mode: -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
     exit 51
@@ -944,24 +1081,45 @@ do
             exit
             ;;
         -L|--list-run)
-            case $2 in
-                swarm)
-                    export DOCKER_HOST=${SWARM_DOCKER_HOST}
-                    docker service ls
-                    ;;
-                k8s)
-                    K8S_NAMESAPCE=${K8S_NAMESAPCE:-'default'}
-                    kubectl get services --all
-                    ;;
-                compose)
-                    echo -e "\n猪猪侠警告：此集群不支持\n"
-                    exit 51
-                    ;;
-                *)
-                    echo -e "\n猪猪侠警告：未定义的集群类型\n"
-                    exit 52
-                    ;;
-            esac
+            ARG_CLUSTER=$2
+            shift 2
+            #
+            F_SEARCH_CLUSTER_MANAGE_INFO ${ARG_CLUSTER}  > /tmp/${SH_NAME}-F_SEARCH_CLUSTER_MANAGE_INFO.txt
+            if [[ $? != 0 ]]; then
+                exit 51
+            fi
+            #
+            for c in $(cat  /tmp/${SH_NAME}-F_SEARCH_CLUSTER_MANAGE_INFO.txt)
+            do
+                case ${ARG_CLUSTER} in
+                    swarm)
+                        #
+                        export DOCKER_HOST=${c}
+                        docker service ls
+                        #
+                        export DOCKER_HOST=''
+                        ;;
+                    k8s)
+                        K8S_ORIGIN_CONTEXT=$(kubectl config current-contexts)
+                        #
+                        kubectl config use-context  ${c}
+                        kubectl get services --all
+                        #
+                        kubectl config use-context  ${K8S_ORIGIN_CONTEXT}
+                        ;;
+                    compose)
+                        #
+                        export DOCKER_HOST=${c}
+                        docker ps
+                        #
+                        export DOCKER_HOST=''
+                        ;;
+                    *)
+                        echo -e "\n猪猪侠警告：未定义的集群类型\n"
+                        exit 52
+                        ;;
+                esac
+            done
             exit
             ;;
         -F|--fuck)
@@ -1053,8 +1211,8 @@ do
             fi
             shift
             ;;
-        -D|--debug)
-            DEBUG='YES'
+        -D|--debug-port)
+            ENABLE_DEBUG_PORT='YES'
             shift
             ;;
         -t|--tag)
@@ -1063,6 +1221,11 @@ do
             ;;
         -T|--TAG)
             THIS_TAG=$2
+            shift 2
+            ;;
+        -I|--image-pre-name)
+            IMAGE_PRE_NAME=$2
+            IMAGE_PRE_NAME_ARG="--image-pre-name ${IMAGE_PRE_NAME}"
             shift 2
             ;;
         -n|--number)
@@ -1128,6 +1291,18 @@ fi
 
 
 
+# 建立base目录
+[ -d "${LOG_HOME}" ] || mkdir -p "${LOG_HOME}"
+[ -d "${YAML_BASE}" ] || mkdir -p "${YAML_BASE}"
+
+
+# 删除空行
+#sed -i '/^\s*$/d' ${SERVICE_LIST_FILE}
+## 删除行中的空格,markdown文件不要这样
+#sed -i 's/[ \t]*//g'  ${SERVICE_LIST_FILE}
+
+
+
 # 用户信息
 if [[ -n ${HOOK_USER} ]]; then
     MY_USER_NAME=${HOOK_USER}
@@ -1147,17 +1322,6 @@ if [ $? -eq 0 ]; then
 else
     MY_XINGMING='X-Man'
 fi
-
-
-# 建立base目录
-[ -d "${LOG_HOME}" ] || mkdir -p "${LOG_HOME}"
-[ -d "${YAML_BASE}" ] || mkdir -p "${YAML_BASE}"
-
-
-# 删除空行
-#sed -i '/^\s*$/d' ${SERVICE_LIST_FILE}
-## 删除行中的空格,markdown文件不要这样
-#sed -i 's/[ \t]*//g'  ${SERVICE_LIST_FILE}
 
 
 
@@ -1201,13 +1365,13 @@ fi
 sed  -i  -E  -e '/^\s*$/d'  -e '/^#.*$/d'  ${SERVICE_LIST_FILE_TMP}
 # 按第6列排序（PRIORITY）
 > ${SERVICE_LIST_FILE_TMP}.sort
-for i in  `awk -F '|' '{split($6,a," ");print NR,a[1]}' ${SERVICE_LIST_FILE_TMP}  |  sort -n -k 2 |  awk '{print $1}'`
+for i in  `awk -F '|' '{split($7,a," ");print NR,a[1]}' ${SERVICE_LIST_FILE_TMP}  |  sort -n -k 2 |  awk '{print $1}'`
 do
     awk "NR=="$i'{print}' ${SERVICE_LIST_FILE_TMP}  >> ${SERVICE_LIST_FILE_TMP}.sort
 done
 cp  ${SERVICE_LIST_FILE_TMP}.sort  ${SERVICE_LIST_FILE_TMP}
 # 加表头
-sed -i  '1i#| **服务名** | **DOCKER镜像名** | **POD副本数** | **容器PORTS** | **优先级** | **备注** |'  ${SERVICE_LIST_FILE_TMP}
+sed -i  '1i#| **服务名** | **镜像前置名** | **DOCKER镜像名** | **POD副本数** | **容器PORTS** | **优先级** | **备注** |'  ${SERVICE_LIST_FILE_TMP}
 # 屏显
 if [[ ${SH_RUN_MODE} == 'normal' ]]; then
     echo -e "${ECHO_NORMAL}========================= 开始发布 =========================${ECHO_CLOSE}"  #--- 60 (60-50-40)
@@ -1230,18 +1394,27 @@ do
     SERVICE_NAME=`echo ${LINE} | cut -d \| -f 2`
     SERVICE_NAME=`echo ${SERVICE_NAME}`
     #
-    DOCKER_IMAGE_NAME=`echo ${LINE} | cut -d \| -f 3`
+    DOCKER_IMAGE_PRE_NAME=`echo ${LINE} | cut -d \| -f 3`
+    DOCKER_IMAGE_PRE_NAME=`eval echo ${DOCKER_IMAGE_PRE_NAME}`    #--- 用eval将配置文件中项的变量转成值，下同
+    # 命令行参数优先级最高（1 arg，2 listfile，3 env.sh）
+    if [[ -n ${IMAGE_PRE_NAME} ]]; then
+        DOCKER_IMAGE_PRE_NAME=${IMAGE_PRE_NAME}
+    elif [[ -z ${DOCKER_IMAGE_PRE_NAME} ]]; then
+        DOCKER_IMAGE_PRE_NAME=${DOCKER_IMAGE_DEFAULT_PRE_NAME}
+    fi
+    #
+    DOCKER_IMAGE_NAME=`echo ${LINE} | cut -d \| -f 4`
     DOCKER_IMAGE_NAME=`eval echo ${DOCKER_IMAGE_NAME}`    #--- 用eval将配置文件中项的变量转成值，下同
     #
-    POD_REPLICAS=`echo ${LINE} | cut -d \| -f 4`
+    POD_REPLICAS=`echo ${LINE} | cut -d \| -f 5`
     POD_REPLICAS=`eval echo ${POD_REPLICAS}`
     #
-    CONTAINER_PORTS=`echo ${LINE} | cut -d \| -f 5`
+    CONTAINER_PORTS=`echo ${LINE} | cut -d \| -f 6`
     CONTAINER_PORTS=`eval echo ${CONTAINER_PORTS}`
     #
-    # 6 PRIORITY 这里无需处理
+    # 7 PRIORITY 这里无需处理
     #
-    NOTE=`echo ${LINE} | cut -d \| -f 7`
+    NOTE=`echo ${LINE} | cut -d \| -f 8`
     NOTE=`echo ${NOTE}`
     #
     #
@@ -1269,12 +1442,12 @@ do
             DEPLOY_PLACEMENT=`echo ${LINE_A} | cut -d \| -f 5`
             DEPLOY_PLACEMENT=`eval echo ${DEPLOY_PLACEMENT}`
         fi
-        #
-        if [[ ${GET_IT_A} != 'YES' ]];then
-            echo -e "\n猪猪侠警告：在【${SERVICE_LIST_FILE_APPEND_1}】文件中没有找到服务名【${SERVICE_NAME}】，请检查！\n"
-            exit 51
-        fi
     done < ${SERVICE_LIST_FILE_APPEND_1_TMP}
+    #
+    if [[ ${GET_IT_A} != 'YES' ]];then
+        echo -e "\n猪猪侠警告：在【${SERVICE_LIST_FILE_APPEND_1}】文件中没有找到服务名【${SERVICE_NAME}】，请检查！\n"
+        exit 51
+    fi
     #
     #
     # append.2
@@ -1304,12 +1477,12 @@ do
             CONTAINER_CMDS=`eval echo ${CONTAINER_CMDS}`
             CONTAINER_CMDS=${CONTAINER_CMDS//'~'/${HOME}}
         fi
-        #
-        #if [[ ${GET_IT_B} != 'YES' ]];then
-        #    echo -e "\n猪猪侠警告：在【${SERVICE_LIST_FILE_APPEND_2}】文件中没有找到服务名【${SERVICE_NAME}】，请检查！\n"
-        #    exit 51
-        #fi
     done < ${SERVICE_LIST_FILE_APPEND_2_TMP}
+    #
+    #if [[ ${GET_IT_B} != 'YES' ]];then
+    #    echo -e "\n猪猪侠警告：在【${SERVICE_LIST_FILE_APPEND_2}】文件中没有找到服务名【${SERVICE_NAME}】，请检查！\n"
+    #    exit 51
+    #fi
     #
     #
     # 运行环境
@@ -1531,7 +1704,7 @@ do
 
 
             # 3 组装image
-            DOCKER_IMAGE_VER=${DOCKER_IMAGE_VER:-'latest'}
+            DOCKER_IMAGE_TAG=${DOCKER_IMAGE_TAG:-'latest'}
             # 命令参数指定版本
             if [ ! -z "${THIS_TAG}" ]; then
                 # 完全匹配服务镜像
@@ -1542,11 +1715,11 @@ do
                     ERROR_CODE=54
                     continue
                 fi
-                DOCKER_IMAGE_VER="${THIS_TAG}"
+                DOCKER_IMAGE_TAG="${THIS_TAG}"
                 #
             elif [ ! -z "${LIKE_THIS_TAG}" ]; then
                 # LIKE匹配镜像最新的一个
-                ${DOCKER_IMAGE_SEARCH_SH}  --tag ${LIKE_THIS_TAG}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-image-search.${SERVICE_OPERATION}  ${SERVICE_NAME}
+                ${DOCKER_IMAGE_SEARCH_SH}  ${IMAGE_PRE_NAME_ARG}  --tag ${LIKE_THIS_TAG}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-image-search.${SERVICE_OPERATION}  ${SERVICE_NAME}
                 search_r=`cat ${LOG_HOME}/${SH_NAME}-image-search.${SERVICE_OPERATION} | awk '{print $3}'`
                 if [ "x${search_r}" = "x" ]; then
                     echo "${SERVICE_NAME} : 失败，镜像版本【%${LIKE_THIS_TAG}%】未找到"
@@ -1554,20 +1727,20 @@ do
                     ERROR_CODE=54
                     continue
                 fi
-                DOCKER_IMAGE_VER=`cat ${LOG_HOME}/${SH_NAME}-image-search.${SERVICE_OPERATION} | cut -d ' ' -f 3`
+                DOCKER_IMAGE_TAG=`cat ${LOG_HOME}/${SH_NAME}-image-search.${SERVICE_OPERATION} | cut -d ' ' -f 3`
                 #
             else
                 # 默认镜像版本
-                F_SEARCH_IMAGE_TAG  ${SERVICE_NAME}  ${DOCKER_IMAGE_VER}
+                F_SEARCH_IMAGE_TAG  ${SERVICE_NAME}  ${DOCKER_IMAGE_TAG}
                 if [ $? -ne 0 ]; then
-                    echo "${SERVICE_NAME} : 失败，镜像版本【${DOCKER_IMAGE_VER}】未找到"
-                    echo "${SERVICE_NAME} : 失败，镜像版本【${DOCKER_IMAGE_VER}】未找到" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                    echo "${SERVICE_NAME} : 失败，镜像版本【${DOCKER_IMAGE_TAG}】未找到"
+                    echo "${SERVICE_NAME} : 失败，镜像版本【${DOCKER_IMAGE_TAG}】未找到" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                     ERROR_CODE=54
                     continue
                 fi
             fi
             #
-            DOCKER_IMAGE_FULL_URL="${DOCKER_IMAGE_BASE}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER}"
+            DOCKER_IMAGE_FULL_URL="${DOCKER_REPO_SERVER}/${DOCKER_IMAGE_PRE_NAME}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
             #
             case ${CLUSTER} in
                 swarm)
@@ -1632,7 +1805,7 @@ do
                 fi
                 #
                 # 开放Debug端口
-                if [[ ${DEBUG} == 'YES' ]]; then
+                if [[ ${ENABLE_DEBUG_PORT} == 'YES' ]]; then
                     case ${GRAY_TAG} in
                         gray)
                             # 灰度
@@ -2120,15 +2293,15 @@ do
                     continue
                 fi
                 #
-                DOCKER_IMAGE_VER_UPDATE=${THIS_TAG}
+                DOCKER_IMAGE_TAG_UPDATE=${THIS_TAG}
                 #
             elif [ ! -z "${LIKE_THIS_TAG}" ]; then
                 # 更新指定LIKE匹配镜像
-                #DOCKER_IMAGE_VER_UPDATE=$(F_SEARCH_IMAGE_LIKE_TAG  ${SERVICE_NAME}  ${LIKE_THIS_TAG})
-                ${DOCKER_IMAGE_SEARCH_SH}  --tag ${LIKE_THIS_TAG}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt  ${SERVICE_NAME}
-                DOCKER_IMAGE_VER_UPDATE=$(cat ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt | cut -d " " -f 3)
+                #DOCKER_IMAGE_TAG_UPDATE=$(F_SEARCH_IMAGE_LIKE_TAG  ${SERVICE_NAME}  ${LIKE_THIS_TAG})
+                ${DOCKER_IMAGE_SEARCH_SH}  ${IMAGE_PRE_NAME_ARG}  --tag ${LIKE_THIS_TAG}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt  ${SERVICE_NAME}
+                DOCKER_IMAGE_TAG_UPDATE=$(cat ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt | cut -d " " -f 3)
                 #
-                if [[ -z ${DOCKER_IMAGE_VER_UPDATE} ]]; then
+                if [[ -z ${DOCKER_IMAGE_TAG_UPDATE} ]]; then
                     echo "${SERVICE_X_NAME} : 失败，镜像版本【%${LIKE_THIS_TAG}%】未找到"
                     echo "${SERVICE_X_NAME} : 失败，镜像版本【%${LIKE_THIS_TAG}%】未找到" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                     ERROR_CODE=54
@@ -2138,10 +2311,10 @@ do
             else
                 # 更新今日发布的服务镜像
                 TODAY=`date +%Y.%m.%d`
-                #DOCKER_IMAGE_VER_UPDATE=$(F_SEARCH_IMAGE_LIKE_TAG  ${SERVICE_NAME}  ${TODAY})
-                ${DOCKER_IMAGE_SEARCH_SH}  --tag ${TODAY}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt  ${SERVICE_NAME}
-                DOCKER_IMAGE_VER_UPDATE=$(cat ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt | cut -d " " -f 3)
-                if [[ -z ${DOCKER_IMAGE_VER_UPDATE} ]]; then
+                #DOCKER_IMAGE_TAG_UPDATE=$(F_SEARCH_IMAGE_LIKE_TAG  ${SERVICE_NAME}  ${TODAY})
+                ${DOCKER_IMAGE_SEARCH_SH}  ${IMAGE_PRE_NAME_ARG}  --tag ${TODAY}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt  ${SERVICE_NAME}
+                DOCKER_IMAGE_TAG_UPDATE=$(cat ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt | cut -d " " -f 3)
+                if [[ -z ${DOCKER_IMAGE_TAG_UPDATE} ]]; then
                     echo "${SERVICE_X_NAME} : 跳过，今日无更新"
                     echo "${SERVICE_X_NAME} : 跳过，今日无更新" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                     ERROR_CODE=55
@@ -2150,7 +2323,7 @@ do
                 #
             fi
             #
-            DOCKER_IMAGE_FULL_URL="${DOCKER_IMAGE_BASE}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER_UPDATE}"
+            DOCKER_IMAGE_FULL_URL="${DOCKER_REPO_SERVER}/${DOCKER_IMAGE_PRE_NAME}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG_UPDATE}"
             #
             case ${CLUSTER} in 
                 swarm)
@@ -2233,17 +2406,17 @@ do
             fi
             #
             TODAY=`date +%Y.%m.%d`
-            #DOCKER_IMAGE_VER_TODAY=$(F_SEARCH_IMAGE_LIKE_TAG  ${SERVICE_NAME}  ${TODAY})
-            ${DOCKER_IMAGE_SEARCH_SH}  --tag ${TODAY}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt  ${SERVICE_NAME}
-            DOCKER_IMAGE_VER_TODAY=$(cat ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt | cut -d " " -f 3)
-            if [[ -z ${DOCKER_IMAGE_VER_TODAY} ]]; then
+            #DOCKER_IMAGE_TAG_TODAY=$(F_SEARCH_IMAGE_LIKE_TAG  ${SERVICE_NAME}  ${TODAY})
+            ${DOCKER_IMAGE_SEARCH_SH}  ${IMAGE_PRE_NAME_ARG}  --tag ${TODAY}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt  ${SERVICE_NAME}
+            DOCKER_IMAGE_TAG_TODAY=$(cat ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt | cut -d " " -f 3)
+            if [[ -z ${DOCKER_IMAGE_TAG_TODAY} ]]; then
                 echo "${SERVICE_X_NAME} : 跳过，今日无更新"
                 echo "${SERVICE_X_NAME} : 跳过，今日无更新" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                 ERROR_CODE=55
                 continue
             else
-                DOCKER_IMAGE_VER_ROLLBACK=$(F_SEARCH_IMAGE_NOT_LIKE_TAG  ${SERVICE_NAME}  ${TODAY})
-                if [[ -z ${DOCKER_IMAGE_VER_ROLLBACK} ]]; then
+                DOCKER_IMAGE_TAG_ROLLBACK=$(F_SEARCH_IMAGE_NOT_LIKE_TAG  ${SERVICE_NAME}  ${TODAY})
+                if [[ -z ${DOCKER_IMAGE_TAG_ROLLBACK} ]]; then
                     echo "${SERVICE_X_NAME} : 跳过，无历史镜像"
                     echo "${SERVICE_X_NAME} : 跳过，无历史镜像" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                     ERROR_CODE=55
@@ -2251,7 +2424,7 @@ do
                 fi
             fi
             #
-            DOCKER_IMAGE_FULL_URL="${DOCKER_IMAGE_BASE}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VER_ROLLBACK}"
+            DOCKER_IMAGE_FULL_URL="${DOCKER_REPO_SERVER}/${DOCKER_IMAGE_PRE_NAME}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG_ROLLBACK}"
             #
             case ${CLUSTER} in
                 swarm)
@@ -2700,7 +2873,7 @@ fi
 #
 # create:
 # 53  "失败，服务已在运行中"
-# 54  "失败，镜像版本【${DOCKER_IMAGE_VER} 】未找到"
+# 54  "失败，镜像版本【${DOCKER_IMAGE_TAG} 】未找到"
 # update:
 # 53  "失败，服务不在运行中"
 # 55  "跳过，今日无更新"
@@ -2737,6 +2910,7 @@ case ${SH_RUN_MODE} in
         echo "造 浪 者：${MY_XINGMING}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         echo "开始时间：${TIME}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         echo "结束时间：${TIME_END}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
+        echo "镜像TAG ：${DOCKER_IMAGE_TAG}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         echo "灰度标志：${GRAY_TAG}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         echo "发布版本：${RELEASE_VERSION}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         echo "${SERVICE_OPERATION}清单：" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
