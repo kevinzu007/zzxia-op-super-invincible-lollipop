@@ -968,6 +968,7 @@ if [[ ${BUILD_SKIP_TEST} == 'YES' ]]; then
     BUILD_SKIP_TEST_OPT="--skiptest"
 fi
 #
+TOTAL_PJS=$(cat ${GOGOGO_PROJECT_LIST_FILE_TMP} | grep '^|' | wc -l)
 RELEASE_CHECK_COUNT=0
 RELEASE_SUCCESS_COUNT=0
 RELEASE_ERROR_COUNT=0
@@ -1032,7 +1033,7 @@ do
     RELEASE_CHECK_COUNT=`expr ${RELEASE_CHECK_COUNT} + 1`
     echo ""
     echo -e "${ECHO_BLACK_GREEN}++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++${ECHO_CLOSE}"  #--- 70 (80-70-60)
-    echo -e "${ECHO_NORMAL}${RELEASE_CHECK_COUNT} - ${PJ} :${ECHO_CLOSE}"
+    echo -e "${ECHO_NORMAL}${RELEASE_CHECK_COUNT}/${TOTAL_PJS} - ${PJ} :${ECHO_CLOSE}"
     #echo -e "${ECHO_BLACK_GREEN}++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++${ECHO_CLOSE}"  #--- 70 (80-70-60)
     echo ""
     #
@@ -1165,8 +1166,9 @@ RELEASE_SUCCESS_COUNT=`cat ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE} | grep -o '�
 RELEASE_ERROR_COUNT=`cat ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE} | grep -o '发布失败' | wc -l`
 RELEASE_SKIP_COUNT=`cat ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE} | grep -o '发布跳过' | wc -l`
 BUILD_ERROR_COUNT=`cat ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE} | grep -o '构建失败' | wc -l`
+let  NOT_BUILD_RELEASE_COUNT=${TOTAL_PJS}-${RELEASE_CHECK_COUNT}
 TIME_END=`date +%Y-%m-%dT%H:%M:%S`
-MESSAGE_END="项目构建已完成！ 共企图构建发布${RELEASE_CHECK_COUNT}个项目，成功构建发布${RELEASE_SUCCESS_COUNT}个项目，成功构建但失败发布${RELEASE_ERROR_COUNT}个项目，跳过发布${RELEASE_SKIP_COUNT}个项目，失败构建${BUILD_ERROR_COUNT}个项目。"
+MESSAGE_END="项目构建已完成！ 共企图构建发布${TOTAL_PJS}个项目，成功构建发布${RELEASE_SUCCESS_COUNT}个项目，成功构建但失败发布${RELEASE_ERROR_COUNT}个项目，跳过发布${RELEASE_SKIP_COUNT}个项目，失败构建${BUILD_ERROR_COUNT}个项目，${NOT_BUILD_RELEASE_COUNT}个项目因外部干预退出构建发布。"
 # 消息回显拼接
 > ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 echo "干：**${GAN_WHAT_FUCK}**" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}

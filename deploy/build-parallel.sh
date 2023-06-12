@@ -490,6 +490,7 @@ if [[ ${BUILD_SKIP_TEST} == 'YES' ]]; then
     BUILD_SKIP_TEST_OPT="--skiptest"
 fi
 #
+TOTAL_PARA_PJS=$(cat ${PARA_PROJECT_LIST_FILE_TMP} | grep '^|' | wc -l)
 BUILD_CHECK_COUNT=0
 BUILD_SUCCESS_COUNT=0
 BUILD_NOCHANGE_COUNT=0
@@ -509,7 +510,7 @@ do
     #
     BUILD_CHECK_COUNT=`expr ${BUILD_CHECK_COUNT} + 1`
     echo -e "${ECHO_BLACK_GREEN}++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++${ECHO_CLOSE}"   #--- 70 (80-70-60)
-    echo -e "${ECHO_NORMAL}${BUILD_CHECK_COUNT} - ${PJ} :${ECHO_CLOSE}"
+    echo -e "${ECHO_NORMAL}${BUILD_CHECK_COUNT}/${TOTAL_PARA_PJS} - ${PJ} :${ECHO_CLOSE}"
     echo ""
     # build
     export PROJECT_LIST_FILE_TMP="${BASE_PROJECT_LIST_FILE_TMP}.${PJ}"
@@ -554,9 +555,10 @@ BUILD_SUCCESS_COUNT=`cat ${PARA_BUILD_OK_LIST_FILE} | grep -o '成功' | wc -l`
 BUILD_ERROR_COUNT=`cat ${PARA_BUILD_OK_LIST_FILE} | grep -o '失败' | wc -l`
 BUILD_NOCHANGE_COUNT=`cat ${PARA_BUILD_OK_LIST_FILE} | grep -o '跳过，Git 分支无更新' | wc -l`
 BUILD_NOTNEED_COUNT=`cat ${BUILD_OK_LIST_FILE} | grep -o '跳过，无需构建' | wc -l`
+let NOT_BUILD_COUNT=${TOTAL_PARA_PJS}-${BUILD_CHECK_COUNT}
 #
 TIME_END=`date +%Y-%m-%dT%H:%M:%S`
-MESSAGE_END="项目构建已完成！ 共企图构建${BUILD_CHECK_COUNT}个项目，成功构建${BUILD_SUCCESS_COUNT}个项目，${BUILD_NOCHANGE_COUNT}个项目无更新，${BUILD_NOTNEED_COUNT}个项目无需构建，${BUILD_ERROR_COUNT}个项目出错。"
+MESSAGE_END="项目构建已完成！ 共企图构建${TOTAL_PARA_PJS}个项目，成功构建${BUILD_SUCCESS_COUNT}个项目，${BUILD_NOCHANGE_COUNT}个项目无更新，${BUILD_NOTNEED_COUNT}个项目无需构建，${BUILD_ERROR_COUNT}个项目出错，${NOT_BUILD_COUNT}各项目因外部干预退出构建。"
 # 消息回显拼接
 >  ${PARA_BUILD_HISTORY_CURRENT_FILE}
 echo "干：**${GAN_WHAT_FUCK}**" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
