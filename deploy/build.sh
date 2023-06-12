@@ -463,11 +463,16 @@ DOCKER_BUILD()
             fi
             #
             # build
-            docker ${DOCKER_BUILD_OPT} -t ${DOCKER_IMAGE_NAME}  ${DOCKER_BUILD_DIR_NAME}  2>&1 | tee -a ${BUILD_LOG_file}
-            ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no" 
-            grep  'Successfully built'  ${BUILD_LOG_file}
+            #docker ${DOCKER_BUILD_OPT} -t ${DOCKER_IMAGE_NAME}  ${DOCKER_BUILD_DIR_NAME}  2>&1 | tee -a ${BUILD_LOG_file}
+            docker ${DOCKER_BUILD_OPT} -t ${DOCKER_IMAGE_NAME}  ${DOCKER_BUILD_DIR_NAME}  > ${LOG_HOME}/DOCKER_BUILD-${PJ}.log  2>&1
+            RETURN_r=$?
+            cat  ${LOG_HOME}/DOCKER_BUILD-${PJ}.log  | tee -a ${BUILD_LOG_file}
             #
-            if [ $? -ne 0 ]; then
+            echo  "ansible copy log ..."
+            ansible nginx_real -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no" 
+            #grep  'Successfully built'  ${BUILD_LOG_file}
+            #
+            if [ ${RETURN_r} -ne 0 ]; then
                 echo ""
                 echo -e "${ECHO_ERROR} 失败！请检查日志文件：${BUILD_LOG_file}  ${ECHO_CLOSE}"  2>&1 | tee -a ${BUILD_LOG_file}
                 echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"  2>&1 | tee -a ${BUILD_LOG_file}
