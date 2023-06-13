@@ -452,7 +452,9 @@ F_SET_RUN_ENV()
     #
     COMPOSE_DOCKER_HOST=''
     COMPOSE_NETWORK=''
-    DOCKER_COMPOSE_SERVICE_HOME=''
+    COMPOSE_SERVICE_HOME=''
+    COMPOSE_SSH_HOST_OR_WITH_USER=''
+    COMPOSE_SSH_PORT=''
     #
     DEPLOY_PLACEMENT_LABELS=''
     #
@@ -552,7 +554,21 @@ F_SET_RUN_ENV()
             # 输出
             COMPOSE_DOCKER_HOST=${COMPOSE_DOCKER_HOST:-"${COMPOSE_DEFAULT_DOCKER_HOST}"}
             COMPOSE_NETWORK=${COMPOSE_NETWORK:-"${COMPOSE_DEFAULT_NETWORK}"}
-            DOCKER_COMPOSE_SERVICE_HOME=${DOCKER_COMPOSE_BASE}/${SERVICE_NAME}
+            COMPOSE_SERVICE_HOME=${DOCKER_COMPOSE_BASE}/${SERVICE_NAME}
+            #
+            # ssh://<用户@>主机名或IP<:端口号>
+            if [[ ${COMPOSE_DOCKER_HOST} =~ ^ssh ]]; then
+                # awk会自动去掉【""】引号
+                COMPOSE_SSH_HOST_OR_WITH_USER=$(echo ${COMPOSE_DOCKER_HOST} | awk -F '//' '{print $2}' | awk -F ':' '{print $1}')
+                COMPOSE_SSH_PORT=$(echo ${COMPOSE_DOCKER_HOST} | awk -F '//' '{print $2}' | awk -F ':' '{print $2}')
+                if [[ -z ${COMPOSE_SSH_PORT} ]]; then
+                    COMPOSE_SSH_PORT='22'
+                fi
+            else
+                echo -e "\n猪猪侠警告：配置文件错误，请检查【DEPLOY_PLACEMENT】，Compose集群仅支持【ssh://<用户@>主机名或IP<:端口号>】格式\n"
+                return 52
+            fi
+            #
             export DOCKER_HOST=${COMPOSE_DOCKER_HOST}
             #
             # test

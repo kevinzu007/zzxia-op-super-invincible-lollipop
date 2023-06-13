@@ -666,7 +666,9 @@ F_SET_RUN_ENV()
     #
     COMPOSE_DOCKER_HOST=''
     COMPOSE_NETWORK=''
-    DOCKER_COMPOSE_SERVICE_HOME=''
+    COMPOSE_SERVICE_HOME=''
+    COMPOSE_SSH_HOST_OR_WITH_USER=''
+    COMPOSE_SSH_PORT=''
     #
     DEPLOY_PLACEMENT_LABELS=''
     #
@@ -766,7 +768,21 @@ F_SET_RUN_ENV()
             # 输出
             COMPOSE_DOCKER_HOST=${COMPOSE_DOCKER_HOST:-"${COMPOSE_DEFAULT_DOCKER_HOST}"}
             COMPOSE_NETWORK=${COMPOSE_NETWORK:-"${COMPOSE_DEFAULT_NETWORK}"}
-            DOCKER_COMPOSE_SERVICE_HOME=${DOCKER_COMPOSE_BASE}/${SERVICE_NAME}
+            COMPOSE_SERVICE_HOME=${DOCKER_COMPOSE_BASE}/${SERVICE_NAME}
+            #
+            # ssh://<用户@>主机名或IP<:端口号>
+            if [[ ${COMPOSE_DOCKER_HOST} =~ ^ssh ]]; then
+                # awk会自动去掉【""】引号
+                COMPOSE_SSH_HOST_OR_WITH_USER=$(echo ${COMPOSE_DOCKER_HOST} | awk -F '//' '{print $2}' | awk -F ':' '{print $1}')
+                COMPOSE_SSH_PORT=$(echo ${COMPOSE_DOCKER_HOST} | awk -F '//' '{print $2}' | awk -F ':' '{print $2}')
+                if [[ -z ${COMPOSE_SSH_PORT} ]]; then
+                    COMPOSE_SSH_PORT='22'
+                fi
+            else
+                echo -e "\n猪猪侠警告：配置文件错误，请检查【DEPLOY_PLACEMENT】，Compose集群仅支持【ssh://<用户@>主机名或IP<:端口号>】格式\n"
+                return 52
+            fi
+            #
             export DOCKER_HOST=${COMPOSE_DOCKER_HOST}
             #
             # test
@@ -2220,12 +2236,12 @@ do
                 compose)
                     DOCKER_FULL_CMD="echo  \
                         ; ssh -p ${COMPOSE_SSH_PORT} ${COMPOSE_SSH_HOST_OR_WITH_USER}  \
-                            \"[ ! -d ${DOCKER_COMPOSE_SERVICE_HOME} ] && mkdir -p ${DOCKER_COMPOSE_SERVICE_HOME}\"  \
+                            \"[ ! -d ${COMPOSE_SERVICE_HOME} ] && mkdir -p ${COMPOSE_SERVICE_HOME}\"  \
                         ; rsync -r  -e \"ssh -p ${COMPOSE_SSH_PORT}\"  \
                             ${YAML_HOME}/docker-compose.yaml  \
-                            ${COMPOSE_SSH_HOST_OR_WITH_USER}:${DOCKER_COMPOSE_SERVICE_HOME}/  \
+                            ${COMPOSE_SSH_HOST_OR_WITH_USER}:${COMPOSE_SERVICE_HOME}/  \
                         && ssh -p ${COMPOSE_SSH_PORT} ${COMPOSE_SSH_HOST_OR_WITH_USER}  \
-                            \"cd ${DOCKER_COMPOSE_SERVICE_HOME}  \
+                            \"cd ${COMPOSE_SERVICE_HOME}  \
                             &&  docker-compose pull  \
                             &&  ${DOCKER_SERVICE_RM}  \
                             &&  docker-compose up -d\"
@@ -2341,9 +2357,9 @@ do
                     SED_IMAGE='sed -i "s%^    image:.*$%    image: ${DOCKER_IMAGE_FULL_URL}%"  docker-compose.yaml'
                     echo ${SED_IMAGE}  > ${LOG_HOME}/${SERVICE_X_NAME}-update.sh
                     DOCKER_FULL_CMD="echo  \
-                        ; scp -P ${COMPOSE_SSH_PORT}  ${LOG_HOME}/${SERVICE_X_NAME}-update.sh  ${COMPOSE_SSH_HOST_OR_WITH_USER}:${DOCKER_COMPOSE_SERVICE_HOME}/  \
+                        ; scp -P ${COMPOSE_SSH_PORT}  ${LOG_HOME}/${SERVICE_X_NAME}-update.sh  ${COMPOSE_SSH_HOST_OR_WITH_USER}:${COMPOSE_SERVICE_HOME}/  \
                         ; ssh -p ${COMPOSE_SSH_PORT} ${COMPOSE_SSH_HOST_OR_WITH_USER}  \
-                            \"cd ${DOCKER_COMPOSE_SERVICE_HOME}  \
+                            \"cd ${COMPOSE_SERVICE_HOME}  \
                               &&  sh ./${SERVICE_X_NAME}-update.sh  \
                               &&  docker-compose pull  \
                               &&  docker-compose down  \
@@ -2443,9 +2459,9 @@ do
                     SED_IMAGE='sed -i "s%^    image:.*$%    image: ${DOCKER_IMAGE_FULL_URL}%"  docker-compose.yaml'
                     echo ${SED_IMAGE}  > ${LOG_HOME}/${SERVICE_X_NAME}-update.sh
                     DOCKER_FULL_CMD="echo  \
-                        ; scp -P ${COMPOSE_SSH_PORT}  ${LOG_HOME}/${SERVICE_X_NAME}-update.sh  ${COMPOSE_SSH_HOST_OR_WITH_USER}:${DOCKER_COMPOSE_SERVICE_HOME}/  \
+                        ; scp -P ${COMPOSE_SSH_PORT}  ${LOG_HOME}/${SERVICE_X_NAME}-update.sh  ${COMPOSE_SSH_HOST_OR_WITH_USER}:${COMPOSE_SERVICE_HOME}/  \
                         ; ssh -p ${COMPOSE_SSH_PORT} ${COMPOSE_SSH_HOST_OR_WITH_USER}  \
-                            \"cd ${DOCKER_COMPOSE_SERVICE_HOME}  \
+                            \"cd ${COMPOSE_SERVICE_HOME}  \
                               &&  sh ./${SERVICE_X_NAME}-update.sh  \
                               &&  docker-compose pull  \
                               &&  docker-compose down  \
@@ -2603,7 +2619,7 @@ do
                     compose)
                         DOCKER_FULL_CMD="echo  \
                             ; ssh -p ${COMPOSE_SSH_PORT} ${COMPOSE_SSH_HOST_OR_WITH_USER}  \
-                                \"cd ${DOCKER_COMPOSE_SERVICE_HOME}  \
+                                \"cd ${COMPOSE_SERVICE_HOME}  \
                                 &&  docker-compose down\"
                             "
                         ;;
@@ -2683,7 +2699,7 @@ do
                     compose)
                         DOCKER_FULL_CMD="echo  \
                             ; ssh -p ${COMPOSE_SSH_PORT} ${COMPOSE_SSH_HOST_OR_WITH_USER}  \
-                                \"cd ${DOCKER_COMPOSE_SERVICE_HOME}  \
+                                \"cd ${COMPOSE_SERVICE_HOME}  \
                                 &&  docker-compose ps\"
                             "
                         ;;
@@ -2762,7 +2778,7 @@ do
                     compose)
                         DOCKER_FULL_CMD="echo  \
                             ; ssh -p ${COMPOSE_SSH_PORT} ${COMPOSE_SSH_HOST_OR_WITH_USER}  \
-                                \"cd ${DOCKER_COMPOSE_SERVICE_HOME}  \
+                                \"cd ${COMPOSE_SERVICE_HOME}  \
                                 &&  docker-compose ps\"
                         "
                         ;;
@@ -2841,7 +2857,7 @@ do
                     compose)
                         DOCKER_FULL_CMD="echo  \
                             ; ssh -p ${COMPOSE_SSH_PORT} ${COMPOSE_SSH_HOST_OR_WITH_USER}  \
-                                \"cd ${DOCKER_COMPOSE_SERVICE_HOME}  \
+                                \"cd ${COMPOSE_SERVICE_HOME}  \
                                 &&  docker-compose logs -f  \"
                         "
                         ;;
