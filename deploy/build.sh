@@ -1387,6 +1387,7 @@ done >&6           # 写入文件标识符fd为6的命名管道，初始化命�
 
 
 # 开始
+TOTAL_PJS=$(cat ${PROJECT_LIST_FILE_TMP} | grep '^|' | wc -l)
 BUILD_CHECK_COUNT=0
 BUILD_SUCCESS_COUNT=0
 BUILD_NOCHANGE_COUNT=0
@@ -1475,7 +1476,7 @@ do
     cd  ${PROJECT_BASE}
     echo ""
     echo -e "${ECHO_NORMAL}--------------------------------------------------${ECHO_CLOSE}"   #--- 50 (60-50-40)
-    echo -e "${ECHO_NORMAL}${BUILD_CHECK_COUNT} - ${PJ} :${ECHO_CLOSE}"
+    echo -e "${ECHO_NORMAL}${BUILD_CHECK_COUNT}/${TOTAL_PJS} - ${PJ} :${ECHO_CLOSE}"
     echo -e "${ECHO_NORMAL}--------------------------------------------------${ECHO_CLOSE}"   #--- 50 (60-50-40)
     echo ""
     #
@@ -1656,11 +1657,12 @@ BUILD_SUCCESS_COUNT=`cat ${BUILD_OK_LIST_FILE} | grep -o '成功' | wc -l`
 BUILD_ERROR_COUNT=`cat ${BUILD_OK_LIST_FILE} | grep -o '失败' | wc -l`
 BUILD_NOCHANGE_COUNT=`cat ${BUILD_OK_LIST_FILE} | grep -o '跳过，Git 分支无更新' | wc -l`
 BUILD_NOTNEED_COUNT=`cat ${BUILD_OK_LIST_FILE} | grep -o '跳过，无需构建' | wc -l`
+let  NOT_BUILD_COUNT=${TOTAL_PJS}-${BUILD_CHECK_COUNT}
 TIME_END=`date +%Y-%m-%dT%H:%M:%S`
 case ${SH_RUN_MODE} in
     normal)
         #
-        MESSAGE_END="项目构建已完成！共企图构建${BUILD_CHECK_COUNT}个项目，成功构建${BUILD_SUCCESS_COUNT}个项目，${BUILD_NOCHANGE_COUNT}个项目无更新，${BUILD_NOTNEED_COUNT}个项目无需构建，${BUILD_ERROR_COUNT}个项目出错。"
+        MESSAGE_END="项目构建已完成！共企图构建${TOTAL_PJS}个项目，成功构建${BUILD_SUCCESS_COUNT}个项目，${BUILD_NOCHANGE_COUNT}个项目无更新，${BUILD_NOTNEED_COUNT}个项目无需构建，${BUILD_ERROR_COUNT}个项目出错，${NOT_BUILD_COUNT}个项目因外部干预退出构建。"
         # 消息回显拼接
         > ${BUILD_HISTORY_CURRENT_FILE}
         echo "干：**${GAN_WHAT_FUCK}**" | tee -a ${BUILD_HISTORY_CURRENT_FILE}

@@ -666,7 +666,9 @@ F_SET_RUN_ENV()
     #
     COMPOSE_DOCKER_HOST=''
     COMPOSE_NETWORK=''
-    DOCKER_COMPOSE_SERVICE_HOME=''
+    COMPOSE_SERVICE_HOME=''
+    COMPOSE_SSH_HOST_OR_WITH_USER=''
+    COMPOSE_SSH_PORT=''
     #
     DEPLOY_PLACEMENT_LABELS=''
     #
@@ -766,7 +768,21 @@ F_SET_RUN_ENV()
             # 输出
             COMPOSE_DOCKER_HOST=${COMPOSE_DOCKER_HOST:-"${COMPOSE_DEFAULT_DOCKER_HOST}"}
             COMPOSE_NETWORK=${COMPOSE_NETWORK:-"${COMPOSE_DEFAULT_NETWORK}"}
-            DOCKER_COMPOSE_SERVICE_HOME=${DOCKER_COMPOSE_BASE}/${SERVICE_NAME}
+            COMPOSE_SERVICE_HOME=${DOCKER_COMPOSE_BASE}/${SERVICE_NAME}
+            #
+            # ssh://<用户@>主机名或IP<:端口号>
+            if [[ ${COMPOSE_DOCKER_HOST} =~ ^ssh ]]; then
+                # awk会自动去掉【""】引号
+                COMPOSE_SSH_HOST_OR_WITH_USER=$(echo ${COMPOSE_DOCKER_HOST} | awk -F '//' '{print $2}' | awk -F ':' '{print $1}')
+                COMPOSE_SSH_PORT=$(echo ${COMPOSE_DOCKER_HOST} | awk -F '//' '{print $2}' | awk -F ':' '{print $2}')
+                if [[ -z ${COMPOSE_SSH_PORT} ]]; then
+                    COMPOSE_SSH_PORT='22'
+                fi
+            else
+                echo -e "\n猪猪侠警告：配置文件错误，请检查【DEPLOY_PLACEMENT】，Compose集群仅支持【ssh://<用户@>主机名或IP<:端口号>】格式\n"
+                return 52
+            fi
+            #
             export DOCKER_HOST=${COMPOSE_DOCKER_HOST}
             #
             # test
@@ -1384,6 +1400,7 @@ fi
 
 # 干
 > ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+TOTAL_SERVICES=$(cat ${SERVICE_LIST_FILE_TMP} | grep '^|' | wc -l)
 NUM=0
 #
 while read LINE
@@ -1517,7 +1534,7 @@ do
     let NUM=${NUM}+1
     echo ''
     echo -e "${ECHO_NORMAL}# ----------------------------------------------------------${ECHO_CLOSE}"
-    echo -e "${ECHO_NORMAL}# ${NUM}: ${LINE}${ECHO_CLOSE}"
+    echo -e "${ECHO_NORMAL}# ${NUM}/${TOTAL_SERVICES}: ${LINE}${ECHO_CLOSE}"
     echo -e "${ECHO_NORMAL}# ----------------------------------------------------------${ECHO_CLOSE}"
     #
     # operation
@@ -2219,12 +2236,12 @@ do
                 compose)
                     DOCKER_FULL_CMD="echo  \
                         ; ssh -p ${COMPOSE_SSH_PORT} ${COMPOSE_SSH_HOST_OR_WITH_USER}  \
-                            \"[ ! -d ${DOCKER_COMPOSE_SERVICE_HOME} ] && mkdir -p ${DOCKER_COMPOSE_SERVICE_HOME}\"  \
+                            \"[ ! -d ${COMPOSE_SERVICE_HOME} ] && mkdir -p ${COMPOSE_SERVICE_HOME}\"  \
                         ; rsync -r  -e \"ssh -p ${COMPOSE_SSH_PORT}\"  \
                             ${YAML_HOME}/docker-compose.yaml  \
-                            ${COMPOSE_SSH_HOST_OR_WITH_USER}:${DOCKER_COMPOSE_SERVICE_HOME}/  \
+                            ${COMPOSE_SSH_HOST_OR_WITH_USER}:${COMPOSE_SERVICE_HOME}/  \
                         && ssh -p ${COMPOSE_SSH_PORT} ${COMPOSE_SSH_HOST_OR_WITH_USER}  \
-                            \"cd ${DOCKER_COMPOSE_SERVICE_HOME}  \
+                            \"cd ${COMPOSE_SERVICE_HOME}  \
                             &&  docker-compose pull  \
                             &&  ${DOCKER_SERVICE_RM}  \
                             &&  docker-compose up -d\"
@@ -2340,9 +2357,9 @@ do
                     SED_IMAGE='sed -i "s%^    image:.*$%    image: ${DOCKER_IMAGE_FULL_URL}%"  docker-compose.yaml'
                     echo ${SED_IMAGE}  > ${LOG_HOME}/${SERVICE_X_NAME}-update.sh
                     DOCKER_FULL_CMD="echo  \
-                        ; scp -P ${COMPOSE_SSH_PORT}  ${LOG_HOME}/${SERVICE_X_NAME}-update.sh  ${COMPOSE_SSH_HOST_OR_WITH_USER}:${DOCKER_COMPOSE_SERVICE_HOME}/  \
+                        ; scp -P ${COMPOSE_SSH_PORT}  ${LOG_HOME}/${SERVICE_X_NAME}-update.sh  ${COMPOSE_SSH_HOST_OR_WITH_USER}:${COMPOSE_SERVICE_HOME}/  \
                         ; ssh -p ${COMPOSE_SSH_PORT} ${COMPOSE_SSH_HOST_OR_WITH_USER}  \
-                            \"cd ${DOCKER_COMPOSE_SERVICE_HOME}  \
+                            \"cd ${COMPOSE_SERVICE_HOME}  \
                               &&  sh ./${SERVICE_X_NAME}-update.sh  \
                               &&  docker-compose pull  \
                               &&  docker-compose down  \
@@ -2442,9 +2459,9 @@ do
                     SED_IMAGE='sed -i "s%^    image:.*$%    image: ${DOCKER_IMAGE_FULL_URL}%"  docker-compose.yaml'
                     echo ${SED_IMAGE}  > ${LOG_HOME}/${SERVICE_X_NAME}-update.sh
                     DOCKER_FULL_CMD="echo  \
-                        ; scp -P ${COMPOSE_SSH_PORT}  ${LOG_HOME}/${SERVICE_X_NAME}-update.sh  ${COMPOSE_SSH_HOST_OR_WITH_USER}:${DOCKER_COMPOSE_SERVICE_HOME}/  \
+                        ; scp -P ${COMPOSE_SSH_PORT}  ${LOG_HOME}/${SERVICE_X_NAME}-update.sh  ${COMPOSE_SSH_HOST_OR_WITH_USER}:${COMPOSE_SERVICE_HOME}/  \
                         ; ssh -p ${COMPOSE_SSH_PORT} ${COMPOSE_SSH_HOST_OR_WITH_USER}  \
-                            \"cd ${DOCKER_COMPOSE_SERVICE_HOME}  \
+                            \"cd ${COMPOSE_SERVICE_HOME}  \
                               &&  sh ./${SERVICE_X_NAME}-update.sh  \
                               &&  docker-compose pull  \
                               &&  docker-compose down  \
@@ -2602,7 +2619,7 @@ do
                     compose)
                         DOCKER_FULL_CMD="echo  \
                             ; ssh -p ${COMPOSE_SSH_PORT} ${COMPOSE_SSH_HOST_OR_WITH_USER}  \
-                                \"cd ${DOCKER_COMPOSE_SERVICE_HOME}  \
+                                \"cd ${COMPOSE_SERVICE_HOME}  \
                                 &&  docker-compose down\"
                             "
                         ;;
@@ -2682,7 +2699,7 @@ do
                     compose)
                         DOCKER_FULL_CMD="echo  \
                             ; ssh -p ${COMPOSE_SSH_PORT} ${COMPOSE_SSH_HOST_OR_WITH_USER}  \
-                                \"cd ${DOCKER_COMPOSE_SERVICE_HOME}  \
+                                \"cd ${COMPOSE_SERVICE_HOME}  \
                                 &&  docker-compose ps\"
                             "
                         ;;
@@ -2761,7 +2778,7 @@ do
                     compose)
                         DOCKER_FULL_CMD="echo  \
                             ; ssh -p ${COMPOSE_SSH_PORT} ${COMPOSE_SSH_HOST_OR_WITH_USER}  \
-                                \"cd ${DOCKER_COMPOSE_SERVICE_HOME}  \
+                                \"cd ${COMPOSE_SERVICE_HOME}  \
                                 &&  docker-compose ps\"
                         "
                         ;;
@@ -2840,7 +2857,7 @@ do
                     compose)
                         DOCKER_FULL_CMD="echo  \
                             ; ssh -p ${COMPOSE_SSH_PORT} ${COMPOSE_SSH_HOST_OR_WITH_USER}  \
-                                \"cd ${DOCKER_COMPOSE_SERVICE_HOME}  \
+                                \"cd ${COMPOSE_SERVICE_HOME}  \
                                 &&  docker-compose logs -f  \"
                         "
                         ;;
@@ -2891,15 +2908,16 @@ fi
 # 50  "成功"
 # 54  "失败"
 #
-CHECK_COUNT=${NUM}
-SUCCESS_COUNT=`cat ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE} | grep -o '成功' | wc -l`
-NONEED_COUNT=`cat ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE} | grep -o '跳过' | wc -l`
-ERROR_COUNT=`cat ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE} | grep -o '失败' | wc -l`
+CHECK_DO_COUNT=${NUM}
+SUCCESS_DO_COUNT=`cat ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE} | grep -o '成功' | wc -l`
+NOTNEED_DO_COUNT=`cat ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE} | grep -o '跳过' | wc -l`
+ERROR_DO_COUNT=`cat ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE} | grep -o '失败' | wc -l`
+let NOT_DO_COUNT=${TOTAL_SERVICES}-${CHECK_DO_COUNT}
 TIME_END=`date +%Y-%m-%dT%H:%M:%S`
 case ${SH_RUN_MODE} in
     normal)
         #
-        MESSAGE_END="DOCKER SERVICE ${SERVICE_OPERATION} 已完成！ 共企图 ${SERVICE_OPERATION} ${CHECK_COUNT} 个项目，成功 ${SERVICE_OPERATION} ${SUCCESS_COUNT} 个项目，跳过 ${NONEED_COUNT} 个项目，${ERROR_COUNT} 个项目失败。"
+        MESSAGE_END="DOCKER SERVICE ${SERVICE_OPERATION} 已完成！ 共企图 ${SERVICE_OPERATION} ${TOTAL_SERVICES} 个项目，成功 ${SERVICE_OPERATION} ${SUCCESS_DO_COUNT} 个项目，跳过 ${NOTNEED_DO_COUNT} 个项目，${ERROR_DO_COUNT} 个项目失败，因外部干预未执行 ${SERVICE_OPERATION} ${NOT_DO_COUNT} 个项目。"
         # 消息回显拼接
         > ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         echo "干：**${GAN_WHAT_FUCK}**" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
