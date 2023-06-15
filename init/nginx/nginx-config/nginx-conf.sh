@@ -11,15 +11,15 @@ cd ${SH_PATH}
 #RUN_ENV=
 #DOMAIN=
 #WEBSITE_BASE=
+#NGINX_CONF_DEFAULT_DIR=
 
 # 本地env
 TIME=`date +%Y-%m-%dT%H:%M:%S`
 TIME_START=${TIME}
 WEB_PROJECT_LIST_FILE="${SH_PATH}/nginx.list"
 WEB_PROJECT_LIST_FILE_TMP="/tmp/${SH_NAME}-nginx.tmp.list"
-TMP_CONF_DIR="${SH_PATH}/tmp/conf.d"
-DST_CONF_DIR="/etc/nginx/conf.d"
-
+DST_CONF_DIR=${NGINX_CONF_DEFAULT_DIR:-"/etc/nginx/conf.d"}
+TMP_CONF_DIR="/tmp/${SH_NAME}-conf.d"
 [ -d ${TMP_CONF_DIR} ] && rm -rf   ${TMP_CONF_DIR}
 mkdir -p ${TMP_CONF_DIR}
 
