@@ -12,7 +12,7 @@ SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd "${SH_PATH}"
 
 # 自动从/etc/profile.d/run-env.sh引入以下变量
-RUN_ENV=${RUN_ENV:-'dev'}
+#RUN_ENV=
 
 # 引入env
 . ${SH_PATH}/env.sh
