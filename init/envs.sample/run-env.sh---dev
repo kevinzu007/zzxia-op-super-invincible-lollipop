@@ -4,6 +4,13 @@ export RUN_ENV='dev'
 # 此项目克隆路径
 export DEPLOY_HOME_BASE='/root/zzxia-op-super-invincible-lollipop'
 
+# 静态网站base目录
+export WEBSITE_BASE='/srv/web_sites'
+
+# PYTHON网站base目录
+export PYTHON_SERVICES_BASE='/srv/python_services'
+
+
 ## 部署域名
 export DOMAIN="zjlh.lan"
 

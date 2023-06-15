@@ -7,6 +7,8 @@ SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd "${SH_PATH}"
 
 # 引入env
+# 自动从/etc/profile.d/run-env.sh引入以下变量
+#WEBSITE_BASE=
 
 # 本地env
 TIME=`date +%Y-%m-%dT%H:%M:%S`
@@ -14,7 +16,6 @@ TIME_START=${TIME}
 TODAY=$(date +%Y%m%d)
 WEB_PROJECT_LIST_FILE="${SH_PATH}/nginx.list"
 WEB_PROJECT_LIST_FILE_TMP="/tmp/${SH_NAME}-nginx.tmp.list"
-WEBSITE_BASE='/srv/web_sites'
 HISTORY_RELEASE_NUM=4     #---保留历史版本数
 ERROR_CODE=''     #--- 程序最终返回值
 

@@ -8,15 +8,15 @@ cd ${SH_PATH}
 
 # 引入env
 # 自动从/etc/profile.d/run-env.sh引入以下变量
-RUN_ENV=${RUN_ENV:-'dev'}
-DOMAIN=${DOMAIN:-"xxx.lan"}
+#RUN_ENV=
+#DOMAIN=
+#WEBSITE_BASE=
 
 # 本地env
 TIME=`date +%Y-%m-%dT%H:%M:%S`
 TIME_START=${TIME}
 WEB_PROJECT_LIST_FILE="${SH_PATH}/nginx.list"
 WEB_PROJECT_LIST_FILE_TMP="/tmp/${SH_NAME}-nginx.tmp.list"
-WEBSITE_BASE="/srv/web_sites"
 TMP_WEBSITE_BASE="${SH_PATH}/tmp/web_sites"
 [ -d ${TMP_WEBSITE_BASE} ] && rm -rf   ${TMP_WEBSITE_BASE}
 mkdir -p ${TMP_WEBSITE_BASE}

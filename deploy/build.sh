@@ -12,8 +12,10 @@ SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd "${SH_PATH}"
 
 # 自动从/etc/profile.d/run-env.sh引入以下变量
-RUN_ENV=${RUN_ENV:-'dev'}
-DOMAIN=${DOMAIN:-"xxx.lan"}
+#RUN_ENV=
+#DOMAIN=
+#WEBSITE_BASE=
+#PYTHON_SERVICES_BASE=
 
 # 引入env
 . "${SH_PATH}/env.sh"
@@ -44,8 +46,6 @@ DOCKER_IMAGE_TAG=$(date -d "${TIME}" +%Y.%m.%d.%H%M%S)
 PROJECT_BASE="${SH_PATH}/tmp/build"
 LOG_BASE="${SH_PATH}/tmp/log"
 LOG_HOME="${LOG_BASE}/${DATE_TIME}"
-WEBSITE_BASE='/srv/web_sites'
-PYTHON_SERVICES_BASE='/srv/python_services'
 # 方式
 SH_RUN_MODE="normal"
 BUILD_QUIET='YES'
