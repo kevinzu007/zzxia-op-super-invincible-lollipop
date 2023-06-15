@@ -17,10 +17,6 @@ TIME_START=${TIME}
 #
 WEB_PROJECT_LIST_FILE="${SH_PATH}/nginx.list"
 WEB_PROJECT_LIST_FILE_TMP="/tmp/${SH_NAME}-nginx.tmp.list"
-WEBSITE_BASE="/srv/web_sites"
-TMP_WEBSITE_BASE="${SH_PATH}/tmp/web_sites"
-[ -d ${TMP_WEBSITE_BASE} ] && rm -rf   ${TMP_WEBSITE_BASE}
-mkdir -p ${TMP_WEBSITE_BASE}
 #
 ALIYUN_DNS_SH="${SH_PATH}/../../../op/aliyun-dns.sh"
 GODADDY_DNS_SH="${SH_PATH}/../../../op/godaddy-dns.sh"
@@ -183,7 +179,6 @@ fi
 
 
 # go
-cd  ${TMP_WEBSITE_BASE}
 while read LINE
 do
     # 跳过以#开头的行或空行
