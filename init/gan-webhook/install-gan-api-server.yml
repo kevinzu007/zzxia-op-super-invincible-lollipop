@@ -4,12 +4,13 @@
   become: yes
   vars:
     - RUN_ENV: "{{ lookup('env','RUN_ENV') }}"
+    - PYTHON_SERVICES_BASE: "{{ lookup('env','PYTHON_SERVICES_BASE') }}"
   tasks:
     - name: 拷贝：gan-api-server
-      copy: src=./gan-api-server/server_root/  dest=/srv/pythons/gan-api-server/  owner=root group=root mode=644 backup=yes
+      copy: src=./gan-api-server/server_root/  dest={{ PYTHON_SERVICES_BASE }}/gan-api-server/  owner=root group=root mode=644 backup=yes
     - name: 安装python
       shell: pip3 install --quiet  flask
     - name: 拷贝：重启服务
-      shell: cd /srv/pythons/gan-api-server/  &&  [[ ! -f ./gan_api_var.py ]]  &&  cp gan_api_var.py.sample gan_api_var.py  || echo "gan_api_var.py已存在"  &&  pip3 install  flask flask_cors &&  bash ./service-ctl.sh --restart
+      shell: cd {{ PYTHON_SERVICES_BASE }}/gan-api-server/  &&  [[ ! -f ./gan_api_var.py ]]  &&  cp gan_api_var.py.sample gan_api_var.py  || echo "gan_api_var.py已存在"  &&  pip3 install  flask flask_cors &&  bash ./service-ctl.sh --restart
 
 
