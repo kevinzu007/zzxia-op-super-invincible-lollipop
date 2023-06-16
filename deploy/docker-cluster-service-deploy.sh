@@ -13,6 +13,7 @@ cd ${SH_PATH}
 
 # 自动从/etc/profile.d/run-env.sh引入以下变量
 #RUN_ENV=
+#DOCKER_COMPOSE_BASE=
 
 # 引入env
 . ${SH_PATH}/env.sh
@@ -47,7 +48,6 @@ DEBUG_X_PORTS_FILE="${SH_PATH}/db/deploy-debug-x-ports.db"    #--- db目录下�
 LOG_BASE="${SH_PATH}/tmp/log"
 LOG_HOME="${LOG_BASE}/${DATE_TIME}"
 YAML_BASE="${SH_PATH}/tmp/yaml"
-DOCKER_COMPOSE_BASE='/srv/docker'
 #
 ERROR_CODE=''     #--- 程序最终返回值，一般用于【--mode=function】时
 #
