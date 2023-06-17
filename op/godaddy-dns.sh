@@ -43,20 +43,20 @@
 
 ## 查询
 ## 查询域名
-#curl -X GET "${godaddy_env}/v1/domains/${R_DOMAIN}"  -H "Authorization: sso-key $GODADDY_KEY:$GODADDY_TOKEN"  | jq
+#curl -X GET "${godaddy_env}/v1/domains/${MASTER_DOMAIN}"  -H "Authorization: sso-key $GODADDY_KEY:$GODADDY_TOKEN"  | jq
 #
 ## 查询dns记录
-#curl -X GET "${godaddy_env}/v1/domains/${R_DOMAIN}/records"  -H "Authorization: sso-key $GODADDY_KEY:$GODADDY_TOKEN"  | jq
+#curl -X GET "${godaddy_env}/v1/domains/${MASTER_DOMAIN}/records"  -H "Authorization: sso-key $GODADDY_KEY:$GODADDY_TOKEN"  | jq
 #
 ## 查询dns某类型记录
-#curl -X GET "${godaddy_env}/v1/domains/${R_DOMAIN}/records/${R_TYPE}"  -H "Authorization: sso-key $GODADDY_KEY:$GODADDY_TOKEN"  | jq
+#curl -X GET "${godaddy_env}/v1/domains/${MASTER_DOMAIN}/records/${R_TYPE}"  -H "Authorization: sso-key $GODADDY_KEY:$GODADDY_TOKEN"  | jq
 #
 ## 查询dns某类型某名称记录
-#curl -X GET "${godaddy_env}/v1/domains/${R_DOMAIN}/records/${R_TYPE}/${R_NAME}"  -H "Authorization: sso-key $GODADDY_KEY:$GODADDY_TOKEN"  | jq
+#curl -X GET "${godaddy_env}/v1/domains/${MASTER_DOMAIN}/records/${R_TYPE}/${R_NAME}"  -H "Authorization: sso-key $GODADDY_KEY:$GODADDY_TOKEN"  | jq
 #
 ## 修改添加
 ## 添加修改dns某类型某名称记录
-#curl -X PUT "${godaddy_env}/v1/domains/${R_DOMAIN}/records/${R_TYPE}/${R_NAME}"  -H "Authorization: sso-key $GODADDY_KEY:$GODADDY_TOKEN"  -H 'Content-Type: application/json'  --data '[{"type": "'"${R_TYPE}"'", "name": "'"$R_NAME"'", "data": "'"$R_VALUE"'", "ttl": 3600}]'
+#curl -X PUT "${godaddy_env}/v1/domains/${MASTER_DOMAIN}/records/${R_TYPE}/${R_NAME}"  -H "Authorization: sso-key $GODADDY_KEY:$GODADDY_TOKEN"  -H 'Content-Type: application/json'  --data '[{"type": "'"${R_TYPE}"'", "name": "'"$R_NAME"'", "data": "'"$R_VALUE"'", "ttl": 3600}]'
 
 
 
@@ -99,28 +99,39 @@ fi
 F_HELP()
 {
     echo "
-    用途：用于查询修改dns信息
+    用途：用于查询修改Godaddy dns信息
     依赖：
     注意：
         * 输入命令时，参数顺序不分先后
     用法:
-          $0 [-h|--help]
-          $0 -A [replace|append|delete|query_domain|query_record]  <-d {域名}>  <-t [A|TXT|RNAME|...]>  <-n {dns记录名}>  <-v {dns记录值}>
+        $0 -h|--help
+        $0 [-A query_domain]  [-d {主域名}]                                                                    #-- 查询域信息
+        $0 [-A query_record]  [-d {主域名}]  <-t [A|TXT|RNAME|...]>  <-n {dns记录名}>                          #-- 查询域记录
+        $0 [-A delete]        [-d {主域名}]  <-t [A|TXT|RNAME|...]>  <-n {dns记录名}>                          #-- 删除记录，未实现
+        $0 [-A replace|append]  [-d {主域名}]  <-t [A|TXT|RNAME|...]>  <-n {dns记录名}>  <-v {dns记录值}>      #-- 替换或追加域名记录
     参数说明：
-          -h|--help    此帮助
-          -A|--Action  指定操作类型replace|append|delete|query_domain|query_record
-          -d|--domain  指定域名，默认为/etc/profile.d/run.env.sh中定义的\${DOMAIN}
-          -t|--type    指定dns记录类型A|TXT|RNAME|...
-          -n|--name    指定dns记录名称
-          -v|--value   指定dns记录值
+        \$0   : 代表脚本本身
+        []   : 代表是一个整体，是必选项，默认是必选项（即没有括号【[]、<>】时也是必选项），一般用于表示参数对，此时不可乱序，单个参数也可以使用括号
+        <>   : 代表是一个整体，是可选项，默认是必选项
+        |    : 代表左右选其一
+        {}   : 代表参数值，请替换为具体参数值
+        %    : 代表通配符，非精确值，可以被包含
+        #
+        -h|--help    此帮助
+        -A|--Action  指定操作类型replace|append|delete|query_domain|query_record，注：replace是删除所有现有匹配的，然后新增
+        -d|--domain  指定主域名
+        -t|--type    指定dns记录类型A|TXT|RNAME|...
+        -n|--name    指定dns记录名称
+        -v|--value   指定dns记录值
     示例:
-          # 增加与修改：
-          $0 -A [replace|append]  <-d 域名>  [-t [A|TXT|RNAME|...]]  [-n dns记录名]  [-v dns记录值]     #--- replace：删除现有后新增； append：增加多一条
-          # 查询：
-          $0 -A query_domain  <-d 域名>                                          #--- 查询域名信息
-          $0 -A query_record  <-d 域名>                                          #--- 查询域名下所有记录
-          $0 -A query_record  <-d 域名>  [-t [A|TXT|RNAME|...]]                  #--- 查询域名下该类型所有的记录
-          $0 -A query_record  <-d 域名>  [-t [A|TXT|RNAME|...]]  [-n dns记录名]  #--- 查询域名下该类型该名称所有的记录
+        # 增加与修改：
+        $0 -A [replace|append]  <-d 域名>  [-t [A|TXT|RNAME|...]]  [-n dns记录名]  [-v dns记录值]     #--- replace：删除现有后新增； append：增加多一条
+        # 查询：
+        $0 -A query_domain  -d aaa.com                                  #--- 查询域名【aaa.com】信息
+        $0 -A query_record  -d aaa.com                                  #--- 查询域名【aaa.com】下所有记录
+        $0 -A query_record  -d aaa.com  -t A                            #--- 查询域名【aaa.com】下【A】类型所有记录
+        $0 -A query_record  -d aaa.com  -t TXT  -n www                  #--- 查询域名【aaa.com】下【TXT】类型名称【www】的所有记录
+        $0 -A append        -d aaa.com  -t TXT  -n www  -v 2.22.22.22   #--- 添加【A】类型域名【www.aaa.com】，IP是【2.22.22.22】
     "
 }
 
@@ -186,7 +197,7 @@ do
         -d|--domain)
             j=$((i+1))
             J=${SH_ARGS[$j]}
-            R_DOMAIN=$J
+            MASTER_DOMAIN=$J
             ;;
         -t|--type)
             j=$((i+1))
@@ -214,7 +225,7 @@ done
 
 
 # 域名不能为空
-if [[ -z "${R_DOMAIN}" ]]; then
+if [[ -z "${MASTER_DOMAIN}" ]]; then
     echo -e "\n猪猪侠警告：域名参数为空，请检查！\n"
     exit 1
 fi
@@ -240,26 +251,36 @@ do
             #
             case ${R_ACTION} in
                 replace)
+                    #
+                    if [[ -z ${R_TYPE} || -z ${R_NAME} || -z ${R_VALUE} ]]; then
+                        echo -e "\n猪猪侠警告：命令参数不足，请查看帮助！\n"
+                        exit 53
+                    fi
                     # 删除匹配并追加
-                    curl -X PUT "${godaddy_env}/v1/domains/${R_DOMAIN}/records/${R_TYPE}/${R_NAME}"  -H "Authorization: sso-key $GODADDY_KEY:$GODADDY_TOKEN"  -H 'Content-Type: application/json'  --data '[{"type": "'"${R_TYPE}"'", "name": "'"$R_NAME"'", "data": "'"$R_VALUE"'", "ttl": 3600}]'
+                    curl -X PUT "${godaddy_env}/v1/domains/${MASTER_DOMAIN}/records/${R_TYPE}/${R_NAME}"  -H "Authorization: sso-key $GODADDY_KEY:$GODADDY_TOKEN"  -H 'Content-Type: application/json'  --data '[{"type": "'"${R_TYPE}"'", "name": "'"$R_NAME"'", "data": "'"$R_VALUE"'", "ttl": 3600}]'
                     ;;
                 append)
+                    #
+                    if [[ -z ${R_TYPE} || -z ${R_NAME} || -z ${R_VALUE} ]]; then
+                        echo -e "\n猪猪侠警告：命令参数不足，请查看帮助！\n"
+                        exit 53
+                    fi
                     # 仅追加
-                    curl -X PATCH "${godaddy_env}/v1/domains/${R_DOMAIN}/records"  -H "Authorization: sso-key $GODADDY_KEY:$GODADDY_TOKEN"  -H 'Content-Type: application/json'  --data '[{"type": "'"${R_TYPE}"'", "name": "'"$R_NAME"'", "data": "'"$R_VALUE"'", "ttl": 3600}]'
+                    curl -X PATCH "${godaddy_env}/v1/domains/${MASTER_DOMAIN}/records"  -H "Authorization: sso-key $GODADDY_KEY:$GODADDY_TOKEN"  -H 'Content-Type: application/json'  --data '[{"type": "'"${R_TYPE}"'", "name": "'"$R_NAME"'", "data": "'"$R_VALUE"'", "ttl": 3600}]'
                     ;;
                 delete)
-                    echo -e "\n猪猪侠警告：此功能暂未实现\n"
+                    echo -e "\n猪猪侠警告：此功能暂未实现，因为godaddy没有提供api\n"
                     ;;
                 query_domain)
-                    curl -X GET "${godaddy_env}/v1/domains/${R_DOMAIN}"  -H "Authorization: sso-key $GODADDY_KEY:$GODADDY_TOKEN"  | jq
+                    curl -X GET "${godaddy_env}/v1/domains/${MASTER_DOMAIN}"  -H "Authorization: sso-key $GODADDY_KEY:$GODADDY_TOKEN"  | jq
                     ;;
                 query_record)
                     if [[ "x${R_TYPE}" != "x" && "x${R_NAME}" != "x" ]]; then
-                        curl -X GET "${godaddy_env}/v1/domains/${R_DOMAIN}/records/${R_TYPE}/${R_NAME}"  -H "Authorization: sso-key $GODADDY_KEY:$GODADDY_TOKEN"  | jq
+                        curl -X GET "${godaddy_env}/v1/domains/${MASTER_DOMAIN}/records/${R_TYPE}/${R_NAME}"  -H "Authorization: sso-key $GODADDY_KEY:$GODADDY_TOKEN"  | jq
                     elif [[ "x${R_TYPE}" != "x" && "x${R_NAME}" == "x" ]]; then
-                        curl -X GET "${godaddy_env}/v1/domains/${R_DOMAIN}/records/${R_TYPE}"  -H "Authorization: sso-key $GODADDY_KEY:$GODADDY_TOKEN"  | jq
+                        curl -X GET "${godaddy_env}/v1/domains/${MASTER_DOMAIN}/records/${R_TYPE}"  -H "Authorization: sso-key $GODADDY_KEY:$GODADDY_TOKEN"  | jq
                     else
-                        curl -X GET "${godaddy_env}/v1/domains/${R_DOMAIN}/records"  -H "Authorization: sso-key $GODADDY_KEY:$GODADDY_TOKEN"  | jq
+                        curl -X GET "${godaddy_env}/v1/domains/${MASTER_DOMAIN}/records"  -H "Authorization: sso-key $GODADDY_KEY:$GODADDY_TOKEN"  | jq
                     fi
                     ;;
                 --)

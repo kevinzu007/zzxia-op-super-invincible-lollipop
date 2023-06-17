@@ -68,33 +68,42 @@ TIME_START="${TIME}"
 F_HELP()
 {
     echo "
-    用途：用于查询修改dns信息
+    用途：用于查询修改阿里云dns信息
     依赖：
-        /etc/profile.d/run-env.sh
         阿里云CLI：aliyun
     注意：
         * 输入命令时，参数顺序不分先后
     用法:
-          $0 [-h|--help]
-          $0 -A [replace|append|delete|query_domain|query_record]  <-d {域名}>  <-t [A|TXT|RNAME|...]>  <-n {dns记录名}>  <-v {dns记录值}>  <-w {关键字}>
+        $0 -h|--help
+        $0 [-A query_domain]  [-d {主域名}]                                                                    #-- 查询域信息
+        $0 [-A query_record]  [-d {主域名}]  <-t [A|TXT|RNAME|...]>  <<-n {dns记录名}>|<-w {关键字}>>          #-- 查询域记录
+        $0 [-A delete]        [-d {主域名}]  <-t [A|TXT|RNAME|...]>  <-n {dns记录名}>                          #-- 删除记录，未实现
+        $0 [-A replace|append]  [-d {主域名}]  <-t [A|TXT|RNAME|...]>  <-n {dns记录名}>  <-v {dns记录值}>      #-- 替换或追加域名记录
     参数说明：
-          -h|--help    此帮助
-          -A|--Action  指定操作类型replace|append|delete|query_domain|query_record
-          -d|--domain  指定域名，默认为/etc/profile.d/run-env.sh中定义的\${DOMAIN}
-          -t|--type    指定dns记录类型A|TXT|CNAME|...
-          -n|--name    指定dns记录名称
-          -v|--value   指定dns记录值
-          -w|--keyword 指定搜索关键字，在name及value中匹配
+        \$0   : 代表脚本本身
+        []   : 代表是一个整体，是必选项，默认是必选项（即没有括号【[]、<>】时也是必选项），一般用于表示参数对，此时不可乱序，单个参数也可以使用括号
+        <>   : 代表是一个整体，是可选项，默认是必选项
+        |    : 代表左右选其一
+        {}   : 代表参数值，请替换为具体参数值
+        %    : 代表通配符，非精确值，可以被包含
+        #
+        -h|--help    此帮助
+        -A|--Action  指定操作类型replace|append|delete|query_domain|query_record，注：replace是删除所有现有匹配的，然后新增
+        -d|--domain  指定主域名
+        -t|--type    指定dns记录类型A|TXT|RNAME|...
+        -n|--name    指定dns记录名称
+        -v|--value   指定dns记录值
+        -w|--keyword 指定搜索关键字，在name及value中进行匹配
     示例:
-          # 增加与修改：
-          $0 -A [replace|append]  <-d 域名>  [-t [A|TXT|CNAME|...]]  [-n dns记录名]  [-v dns记录值]     #--- replace：删除现有后新增； append：增加多一条
-          # 查询：
-          $0 -A query_domain  <-d 域名>                                          #--- 查询域名信息
-          $0 -A query_record  <-d 域名>                                          #--- 查询域名下所有记录
-          $0 -A query_record  <-d 域名>  [-t [A|TXT|CNAME|...]]                  #--- 查询域名下该类型所有的记录
-          $0 -A query_record  <-d 域名>  [-t [A|TXT|CNAME|...]]  [-n dns记录名]  #--- 查询域名下该类型该 名称 所有的记录
-          $0 -A query_record  <-d 域名>  [-w 关键字]                             #--- 查询域名下模糊匹配该 名称或值 所有的记录
-          $0 -A query_record  <-d 域名>  [-t [A|TXT|CNAME|...]]  [-w 关键字]     #--- 查询域名下该类型模糊匹配该 名称或值 所有的记录(此功能aliyun有bug)
+        # 增加与修改：
+        $0 -A [replace|append]  <-d 域名>  [-t [A|TXT|CNAME|...]]  [-n dns记录名]  [-v dns记录值]     #--- replace：删除现有后新增； append：增加多一条
+        # 查询：
+        $0 -A query_domain  -d 域名                                          #--- 查询域名信息
+        $0 -A query_record  -d 域名                                          #--- 查询域名下所有记录
+        $0 -A query_record  -d 域名  [-t A|TXT|CNAME|...]                    #--- 查询域名下该类型所有的记录
+        $0 -A query_record  -d 域名  [-t A|TXT|CNAME|...]  [-n dns记录名]    #--- 查询域名下该类型该 名称 所有的记录
+        $0 -A query_record  -d 域名  [-w 关键字]                             #--- 查询域名下模糊匹配该 名称或值 所有的记录
+        $0 -A query_record  -d 域名  [-t A|TXT|CNAME|...]  [-w 关键字]       #--- 查询域名下该类型模糊匹配该 名称或值 所有的记录(此功能aliyun有bug)
     "
 }
 
@@ -160,7 +169,7 @@ do
         -d|--domain)
             j=$((i+1))
             J=${SH_ARGS[$j]}
-            R_DOMAIN=$J
+            MASTER_DOMAIN=$J
             ;;
         -t|--type)
             j=$((i+1))
@@ -193,7 +202,7 @@ done
 
 
 # 域名不能为空
-if [[ -z "${R_DOMAIN}" ]]; then
+if [[ -z "${MASTER_DOMAIN}" ]]; then
     echo -e "\n猪猪侠警告：域名参数为空，请检查！\n"
     exit 1
 fi
@@ -221,24 +230,24 @@ do
                 replace)
                     # 删除匹配并追加
                     echo -e "以下记录将被删除：\n"
-                    aliyun alidns DescribeDomainRecords  --DomainName=${R_DOMAIN}  --Type=${R_TYPE}  --RRKeyWord ${R_NAME} | jq '.DomainRecords.Record[] | select (.RR=="'"${R_NAME}"'")'
-                    aliyun alidns DescribeDomainRecords  --DomainName=${R_DOMAIN}  --Type=${R_TYPE}  --RRKeyWord ${R_NAME} | jq '.DomainRecords.Record[] | select (.RR=="'"${R_NAME}"'") | .RecordId' > /tmp/${SH_NAME}.RID
+                    aliyun alidns DescribeDomainRecords  --DomainName=${MASTER_DOMAIN}  --Type=${R_TYPE}  --RRKeyWord ${R_NAME} | jq '.DomainRecords.Record[] | select (.RR=="'"${R_NAME}"'")'
+                    aliyun alidns DescribeDomainRecords  --DomainName=${MASTER_DOMAIN}  --Type=${R_TYPE}  --RRKeyWord ${R_NAME} | jq '.DomainRecords.Record[] | select (.RR=="'"${R_NAME}"'") | .RecordId' > /tmp/${SH_NAME}.RID
                     while read LINE
                     do
                         RID=`echo ${LINE} | sed 's/\"//g'`
                         aliyun alidns DeleteDomainRecord  --RecordId=${RID}
                     done < /tmp/${SH_NAME}.RID
                     # 追加
-                    aliyun alidns AddDomainRecord  --DomainName=${R_DOMAIN}  --Type=${R_TYPE} --RR=${R_NAME} --Value=${R_VALUE}
+                    aliyun alidns AddDomainRecord  --DomainName=${MASTER_DOMAIN}  --Type=${R_TYPE} --RR=${R_NAME} --Value=${R_VALUE}
                     ;;
                 append)
                     # 仅追加
-                    aliyun alidns AddDomainRecord  --DomainName=${R_DOMAIN}  --Type=${R_TYPE} --RR=${R_NAME} --Value=${R_VALUE}
+                    aliyun alidns AddDomainRecord  --DomainName=${MASTER_DOMAIN}  --Type=${R_TYPE} --RR=${R_NAME} --Value=${R_VALUE}
                     ;;
                 delete)
                     echo -e "以下记录将被删除：\n"
-                    aliyun alidns DescribeDomainRecords  --DomainName=${R_DOMAIN}  --Type=${R_TYPE}  --RRKeyWord ${R_NAME} | jq '.DomainRecords.Record[] | select (.RR=="'"${R_NAME}"'")'
-                    aliyun alidns DescribeDomainRecords  --DomainName=${R_DOMAIN}  --Type=${R_TYPE}  --RRKeyWord ${R_NAME} | jq '.DomainRecords.Record[] | select (.RR=="'"${R_NAME}"'") | .RecordId' > /tmp/${SH_NAME}.RID
+                    aliyun alidns DescribeDomainRecords  --DomainName=${MASTER_DOMAIN}  --Type=${R_TYPE}  --RRKeyWord ${R_NAME} | jq '.DomainRecords.Record[] | select (.RR=="'"${R_NAME}"'")'
+                    aliyun alidns DescribeDomainRecords  --DomainName=${MASTER_DOMAIN}  --Type=${R_TYPE}  --RRKeyWord ${R_NAME} | jq '.DomainRecords.Record[] | select (.RR=="'"${R_NAME}"'") | .RecordId' > /tmp/${SH_NAME}.RID
                     while read LINE
                     do
                         RID=`echo ${LINE} | sed 's/\"//g'`
@@ -251,17 +260,17 @@ do
                 query_record)
                     if [[ -z "${R_KEYWORD}" ]]; then
                         if [[ "x${R_TYPE}" != "x" && "x${R_NAME}" != "x" ]]; then
-                            aliyun alidns DescribeDomainRecords  --DomainName=${R_DOMAIN}  --Type=${R_TYPE}  --RRKeyWord ${R_NAME}
+                            aliyun alidns DescribeDomainRecords  --DomainName=${MASTER_DOMAIN}  --Type=${R_TYPE}  --RRKeyWord ${R_NAME}
                         elif [[ "x${R_TYPE}" != "x" && "x${R_NAME}" == "x" ]]; then
-                            aliyun alidns DescribeDomainRecords  --DomainName=${R_DOMAIN}  --Type=${R_TYPE}
+                            aliyun alidns DescribeDomainRecords  --DomainName=${MASTER_DOMAIN}  --Type=${R_TYPE}
                         else
-                            aliyun alidns DescribeDomainRecords  --DomainName=${R_DOMAIN}
+                            aliyun alidns DescribeDomainRecords  --DomainName=${MASTER_DOMAIN}
                         fi
                     else
                         if [[ ! -z "${R_TYPE}" ]]; then
-                            aliyun alidns DescribeDomainRecords  --DomainName=${R_DOMAIN}  --Type=${R_TYPE}  --KeyWord ${R_KEYWORD}
+                            aliyun alidns DescribeDomainRecords  --DomainName=${MASTER_DOMAIN}  --Type=${R_TYPE}  --KeyWord ${R_KEYWORD}
                         else
-                            aliyun alidns DescribeDomainRecords  --DomainName=${R_DOMAIN}  --KeyWord ${R_KEYWORD}
+                            aliyun alidns DescribeDomainRecords  --DomainName=${MASTER_DOMAIN}  --KeyWord ${R_KEYWORD}
                         fi
                     fi
                     ;;
