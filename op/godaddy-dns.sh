@@ -72,14 +72,13 @@ SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
+# 自动从/etc/profile.d/run-env.sh引入以下变量
+
 # 引入env
-#. /etc/profile.d/run.env.sh
 
 # 本地env
 TIME=`date +%Y-%m-%dT%H:%M:%S`
 TIME_START=${TIME}
-#
-R_DOMAIN=${DOMAIN}
 
 
 # godaddy信息
