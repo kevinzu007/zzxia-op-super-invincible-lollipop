@@ -16,8 +16,8 @@ cd "${SH_PATH}"
 
 # 引入env
 . ${SH_PATH}/env.sh
-GAN_PLATFORM_NAME="${GAN_PLATFORM_NAME:-'超甜B&D系统'}"
-DINGDING_API=${DINGDING_API:-"请定义"}
+#GAN_PLATFORM_NAME=
+#DINGDING_API=
 #USER_DB_FILE=
 
 # 本地env
