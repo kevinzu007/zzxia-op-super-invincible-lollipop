@@ -11,7 +11,7 @@ SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
-# 自动从/etc/profile.d/run-env.sh引入以下变量
+# 自动从/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh引入以下变量
 #RUN_ENV=
 #DOMAIN=
 
@@ -113,7 +113,7 @@ F_HELP()
     echo "
     用途：用于项目构建并发布
     依赖脚本：
-        /etc/profile.d/run-env.sh
+        /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
         ${SH_PATH}/env.sh
         ${GOGOGO_PROJECT_LIST_FILE}
         ${GOGOGO_PROJECT_LIST_FILE_APPEND_1}

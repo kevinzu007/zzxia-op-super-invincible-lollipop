@@ -3,8 +3,8 @@
   become: yes
   tasks:
     - name: cp nacos-mysql-srv
-      copy: src=./nacos-mysql-srv/  dest=/srv/docker/nacos-mysql-srv/  owner=root group=root mode=644 backup=yes
+      copy: src=./nacos-mysql-srv/  dest=/srv/docker_compose_services/nacos-mysql-srv/  owner=root group=root mode=644 backup=yes
     - name: 启动 nacos-mysql-srv
-      shell: cd /srv/docker/nacos-mysql-srv/  &&  [[ ! -f ./mysql.env ]]  &&  cp mysql.env.sample mysql.env  || echo "mysql.env已存在"  && docker-compose up -d
+      shell: cd /srv/docker_compose_services/nacos-mysql-srv/  &&  [[ ! -f ./mysql.env ]]  &&  cp mysql.env.sample mysql.env  || echo "mysql.env已存在"  && docker-compose up -d
 
 

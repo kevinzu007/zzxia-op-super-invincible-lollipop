@@ -11,7 +11,7 @@ SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd "${SH_PATH}"
 
-# 自动从/etc/profile.d/run-env.sh引入以下变量
+# 自动从/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh引入以下变量
 #RUN_ENV=
 
 # 引入env

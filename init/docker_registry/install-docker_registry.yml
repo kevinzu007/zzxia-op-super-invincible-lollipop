@@ -3,8 +3,8 @@
   become: yes
   tasks:
     - name: cp docker_registry-srv
-      copy: src=./docker_registry-srv/  dest=/srv/docker/docker_registry-srv/   owner=root group=root mode=644 backup=yes
+      copy: src=./docker_registry-srv/  dest=/srv/docker_compose_services/docker_registry-srv/   owner=root group=root mode=644 backup=yes
     - name: 启动 docker_registry-srv
-      shell: cd /srv/docker/docker_registry-srv/ && docker-compose up -d && echo 已启动，请检查是否征程；根据readme修改默认密码
+      shell: cd /srv/docker_compose_services/docker_registry-srv/ && docker-compose up -d && echo 已启动，请检查是否征程；根据readme修改默认密码
 
 

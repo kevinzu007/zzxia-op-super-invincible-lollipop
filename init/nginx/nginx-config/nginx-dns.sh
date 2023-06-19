@@ -7,7 +7,7 @@ SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
 # 引入env
-# 自动从/etc/profile.d/run-env.sh引入以下变量
+# 自动从/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh引入以下变量
 RUN_ENV=${RUN_ENV:-'dev'}
 DOMAIN=${DOMAIN:-"xxx.lan"}
 
@@ -52,7 +52,7 @@ F_HELP()
     echo "
     用途：根据${WEB_PROJECT_LIST_FILE}，在deploy服务器上添加修改域名A记录
     依赖：
-        /etc/profile.d/run-env.sh
+        /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
         ${WEB_PROJECT_LIST_FILE}
         ${ALIYUN_DNS_SH}
         ${GODADDY_DNS_SH}

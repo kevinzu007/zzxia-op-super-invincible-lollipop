@@ -1,0 +1,9 @@
+# docker 运行时引入到容器中的变量，对所有容器生效，以#开头的无效，以空格开头无效，可以是变量
+#export TZ="Asia/Phnom_Penh"
+export TZ="Asia/Shanghai"
+export RUN_ENV="dev"
+export NACOS_SERVER_ADDR="192.168.11.40"
+export NACOS_SERVER_PORT="8848"
+export NACOS_SERVER_USER="nacos"
+export NACOS_SERVER_PASSWORD="mypassword"
+

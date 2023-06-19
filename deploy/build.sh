@@ -11,7 +11,7 @@ SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd "${SH_PATH}"
 
-# 自动从/etc/profile.d/run-env.sh引入以下变量
+# 自动从/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh引入以下变量
 #RUN_ENV=
 #DOMAIN=
 #WEBSITE_BASE=
@@ -113,7 +113,7 @@ F_HELP()
     echo "
     用途：用于项目构建，生成docker镜像并push到仓库
     依赖：
-        /etc/profile.d/run-env.sh
+        /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
         ${SH_PATH}/env.sh
         ${PROJECT_LIST_FILE}
         ${SEND_MAIL}

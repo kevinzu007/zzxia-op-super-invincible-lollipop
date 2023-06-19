@@ -43,7 +43,7 @@ zzxia-om-super-invincible-lollipop/init/envs.sample$ tree
 ├── pg_db.list                                   #--- 可选，pg数据库备份清单
 ├── project.list                                 #--- 必选，构建项目清单
 ├── README.md                                    #--- 文件说明
-├── run-env.sh---dev                             #--- 必选，万物之根本
+├── zzxia-op-super-invincible-lollipop.run-env.sh---dev                             #--- 必选，万物之根本
 └── soft                                         #--- 可选，用于环境安装，maven、java、node，你可以手动安装
     ├── apache-maven-3.5.0-bin.tar.gz
     ├── jdk-8u144-linux-x64.tar.gz

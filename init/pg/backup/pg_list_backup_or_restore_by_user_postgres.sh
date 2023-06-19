@@ -18,8 +18,8 @@ SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
 # 引入env
-# 自动从/etc/profile.d/run-env.sh引入以下变量
-. /etc/profile.d/run-env.sh      #--- 计划任务中运行时，须source引入
+# 自动从/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh引入以下变量
+. /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh      #--- 计划任务中运行时，须source引入
 #RUN_ENV=
 
 # 本地env
@@ -50,7 +50,7 @@ F_HELP ()
     echo "
     用途：用于pg数据库备份or还原，仅备份或恢复${PG_DB_LIST}中的数据库。
     依赖：
-        /etc/profile.d/run-env.sh
+        /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
         ${PG_DB_LIST}
         ${DINGDING_MARKDOWN_PY}
     注意：需在root账户下运行，在还原时会自动设置访问限制、删库、创建、导入、取消限制。

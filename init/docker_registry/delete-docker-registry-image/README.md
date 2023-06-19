@@ -26,7 +26,7 @@
 ## run
 ```
 # 设置docker registry数据目录变量
-export REGISTRY_DATA_DIR="/srv/docker/docker_registry/data/docker/registry/v2"
+export REGISTRY_DATA_DIR="/srv/docker_compose_services/docker_registry/data/docker/registry/v2"
 
 # 执行删除blob
 #（http）

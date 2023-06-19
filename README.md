@@ -811,7 +811,7 @@ $ ./deploy/build.sh --help
 
     用途：用于项目构建，生成docker镜像并push到仓库
     依赖：
-        /etc/profile.d/run-env.sh
+        /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
         /root/deploy-bmp/deploy/env.sh
         /root/deploy-bmp/deploy/project.list
         /root/deploy-bmp/deploy/../op/send_mail.sh
@@ -900,7 +900,7 @@ $ ./deploy/build-parallel.sh --help
 
     用途：以并行的方式运行构建脚本，以加快构建速度
     依赖：
-        /etc/profile.d/run-env.sh
+        /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
         /root/deploy-bmp/deploy/env.sh
         /root/deploy-bmp/deploy/project.list
         /root/deploy-bmp/deploy/build.sh
@@ -1174,7 +1174,7 @@ $ ./deploy/gogogo.sh --help
 
     用途：用于项目构建并发布
     依赖脚本：
-        /etc/profile.d/run-env.sh
+        /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
         /root/deploy-bmp/deploy/env.sh
         /root/deploy-bmp/deploy/project.list
         /root/deploy-bmp/deploy/build.sh
@@ -1307,7 +1307,7 @@ $ ./gan.sh -d ngx-root --help
 
     用途：用以在nginx服务器上生成项目站点目录结构
     依赖：
-        /etc/profile.d/run-env.sh
+        /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
         /root/deploy-bmp/init/nginx-config/nginx.list
     注意: 运行在deploy上
     用法:
@@ -1343,7 +1343,7 @@ $ ./gan.sh -d ngx-conf --help
 
     用途：用以生成项目nginx配置文件，并放置到nginx服务器上
     依赖：
-        /etc/profile.d/run-env.sh
+        /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
         /root/deploy-bmp/init/nginx-config/nginx.list
     注意：运行在deploy节点上
     用法:
@@ -1384,7 +1384,7 @@ $ ./gan.sh -d ngx-dns --help
 
     用途：根据/root/deploy-bmp/init/nginx-config/nginx.list，在deploy服务器上添加修改域名A记录
     依赖：
-        /etc/profile.d/run-env.sh
+        /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
         /root/deploy-bmp/init/nginx-config/nginx.list
         /root/deploy-bmp/init/nginx-config/../../op/aliyun-dns.sh
         /root/deploy-bmp/init/nginx-config/../../op/godaddy-dns.sh
@@ -1484,7 +1484,7 @@ $ ./op/aliyun-dns.sh --help
 
     用途：用于查询修改dns信息
     依赖：
-        /etc/profile.d/run-env.sh
+        /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
         阿里云CLI：aliyun
     注意：
         * 输入命令时，参数顺序不分先后
@@ -1494,7 +1494,7 @@ $ ./op/aliyun-dns.sh --help
     参数说明：
           -h|--help    此帮助
           -A|--Action  指定操作类型replace|append|delete|query_domain|query_record
-          -d|--domain  指定域名，默认为/etc/profile.d/run-env.sh中定义的${DOMAIN}
+          -d|--domain  指定域名，默认为/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh中定义的${DOMAIN}
           -t|--type    指定dns记录类型A|TXT|CNAME|...
           -n|--name    指定dns记录名称
           -v|--value   指定dns记录值
@@ -1551,7 +1551,7 @@ $ ./op/cert-letsencrypt-wildcart.sh --help
     用途：用于申请与更新泛域名证书
           更新Letsencrypt泛域名证书，拷贝到nginx服务器，然后reload
     依赖：
-        /etc/profile.d/run-env.sh
+        /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
         certbot
         /root/deploy-bmp/op/certbot-letencrypt-wildcardcertificates-sh/au.sh
     注意：
@@ -1570,15 +1570,15 @@ $ ./op/cert-letsencrypt-wildcart.sh --help
         #
         -h|--help         此帮助
         -y|--yun          指定dns解析商，aly：阿里云；txy：腾讯云；hwy：华为云；godaddy，需要设置certbot-letencrypt-wildcardcertificates-sh/au.sh中相应的key、secret
-        -r|--request      申请Letsencrypt泛域名证书，短-选项与参数之间不能有空格，默认主域名为run-env.sh中定义的${DOMAIN}
+        -r|--request      申请Letsencrypt泛域名证书，短-选项与参数之间不能有空格，默认主域名为zzxia-op-super-invincible-lollipop.run-env.sh中定义的${DOMAIN}
         -u|--update       renew泛域名证书，要求同上
         -t|--test         以--dry-run方式运行演练测试
     示例:
         ./cert-letsencrypt-wildcart.sh  -h
-        ./cert-letsencrypt-wildcart.sh  -y aly  -r  -t              #--- 测试申请泛域名证书，dns域名解析商是阿里云，域名是默认为run-env.sh定义的${DOMAIN}
-        ./cert-letsencrypt-wildcart.sh  -y aly  -r                  #--- 申请泛域名证书，dns域名解析商是阿里云，域名是默认为run-env.sh中定义的${DOMAIN}
+        ./cert-letsencrypt-wildcart.sh  -y aly  -r  -t              #--- 测试申请泛域名证书，dns域名解析商是阿里云，域名是默认为zzxia-op-super-invincible-lollipop.run-env.sh定义的${DOMAIN}
+        ./cert-letsencrypt-wildcart.sh  -y aly  -r                  #--- 申请泛域名证书，dns域名解析商是阿里云，域名是默认为zzxia-op-super-invincible-lollipop.run-env.sh中定义的${DOMAIN}
         ./cert-letsencrypt-wildcart.sh  -y aly  -raaa.com           #--- 申请泛域名证书，dns域名解析商是阿里云，域名是aaa.com
-        ./cert-letsencrypt-wildcart.sh  -y aly  -u                  #--- 更新泛域名证书，dns域名解析商是阿里云，域名是默认为run-env.sh中定义的${DOMAIN}
+        ./cert-letsencrypt-wildcart.sh  -y aly  -u                  #--- 更新泛域名证书，dns域名解析商是阿里云，域名是默认为zzxia-op-super-invincible-lollipop.run-env.sh中定义的${DOMAIN}
 ```
 
 
@@ -1761,11 +1761,11 @@ $ ./init/send_login_alert_msg.sh
 
 # 用途：用户登录时发送消息通知
 # 注意：脚本拷贝到/etc/profile.d/下
-       # 自动从/etc/profile.d/run-env.sh引入以下变量，以实现IP白名单及其他依赖变量：
+       # 自动从/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh引入以下变量，以实现IP白名单及其他依赖变量：
        # RUN_ENV=${RUN_ENV:-'dev'}
        # EMAIL=${EMAIL:-"kevinzu@xxx.com"}
        # TRUST_IPS=${TRUST_IPS:-'办公室:111.111.111., 家:222.222.22'}
-# 依赖：/etc/profile.d/run-env.sh
+# 依赖：/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
 #       /usr/local/bin/dingding_send_markdown-login.py
 # 用法：
 #      用户登录时自动执行/etc/profile.d/下的脚本，包含本程序

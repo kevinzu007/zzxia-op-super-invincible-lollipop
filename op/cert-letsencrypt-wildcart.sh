@@ -13,7 +13,7 @@ SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
-# 自动从/etc/profile.d/run-env.sh引入以下变量
+# 自动从/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh引入以下变量
 
 # 引入env
 
@@ -48,7 +48,7 @@ F_HELP()
         #
         -h|--help         此帮助
         -y|--yun          指定dns解析商，aly：阿里云；txy：腾讯云；hwy：华为云；godaddy，需要设置certbot-letencrypt-wildcardcertificates-sh/au.sh中相应的key、secret
-        -r|--request      申请Letsencrypt泛域名证书，短-选项与参数之间不能有空格，默认主域名为run-env.sh中定义的\${DOMAIN}
+        -r|--request      申请泛域名证书
         -u|--update       renew泛域名证书，要求同上
         -e|--email        指定证书邮件地址
         -t|--test         以--dry-run方式运行演练测试

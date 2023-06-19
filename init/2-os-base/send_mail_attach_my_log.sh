@@ -7,14 +7,14 @@
 
 # 用途：将日志发送到指定邮箱
 # 注意：脚本拷贝到/etc/cron.daily/下
-# 依赖：/etc/profile.d/run-env.sh
+# 依赖：/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
 #       mailx
 
 
 
 # 引入env
 # cron必须主动引入
-. /etc/profile.d/run-env.sh
+. /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
 RUN_ENV=${RUN_ENV:-'dev'}
 EMAIL=${EMAIL:-"zzxia@xxx.com"}
 

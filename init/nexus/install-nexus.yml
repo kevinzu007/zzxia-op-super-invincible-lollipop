@@ -3,8 +3,8 @@
   become: yes
   tasks:
     - name: cp nexus
-      copy: src=./nexus-srv/  dest=/srv/docker/nexus-srv/   owner=root group=root mode=644 backup=yes
+      copy: src=./nexus-srv/  dest=/srv/docker_compose_services/nexus-srv/   owner=root group=root mode=644 backup=yes
     - name: 启动 nexus
-      shell: chown 200:200 -R /srv/docker/nexus-srv/nexus-data && cd /srv/docker/nexus-srv && docker-compose up -d && echo "请根据readme完成仓库设置"
+      shell: chown 200:200 -R /srv/docker_compose_services/nexus-srv/nexus-data && cd /srv/docker_compose_services/nexus-srv && docker-compose up -d && echo "请根据readme完成仓库设置"
 
 

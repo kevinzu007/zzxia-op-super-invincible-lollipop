@@ -44,7 +44,7 @@ F_CP ()
     #
     cp -f  ${ENVS_FILE_DIR}/install-hosts.yml---${R_ENV}             ./2-os-base/install-hosts.yml
     cp -f  ${ENVS_FILE_DIR}/bash_aliases---${R_ENV}                  ./2-os-base/bash_aliases
-    cp -f  ${ENVS_FILE_DIR}/run-env.sh---${R_ENV}                    ./2-os-base/run-env.sh
+    cp -f  ${ENVS_FILE_DIR}/zzxia-op-super-invincible-lollipop.run-env.sh---${R_ENV}                    ./2-os-base/zzxia-op-super-invincible-lollipop.run-env.sh
     cp -f  ${ENVS_FILE_DIR}/mailrc---${R_ENV}                        ./2-os-base/mailrc
     # cp到init/其他子目录
     cp -f  ${ENVS_FILE_DIR}/soft/jdk-*-linux-x64.tar.gz              ./build-envs/java/
@@ -91,7 +91,7 @@ F_RM ()
     #
     rm -f  ./2-os-base/install-hosts.yml
     rm -f  ./2-os-base/bash_aliases
-    rm -f  ./2-os-base/run-env.sh
+    rm -f  ./2-os-base/zzxia-op-super-invincible-lollipop.run-env.sh
     rm -f  ./2-os-base/mailrc
     # init子目录
     rm -f  ./build-envs/java/jdk-*-linux-x64.tar.gz

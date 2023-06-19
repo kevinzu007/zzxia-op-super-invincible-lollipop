@@ -1,0 +1,48 @@
+# 说明：
+# 
+# 变量用途分类：
+# I  安装配置(一次，在deploy服务器上)    /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
+# R  运行(多次，在所有服务器上)          /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
+# B  构建($ZZXIA_HOME/deploy下的命令)    ${ZZXIA_OP_SUPER_INVINCIBLE_LOLLIPOP_HOME}/env.sh
+# D  部署($ZZXIA_HOME/deploy下的命令)    ${ZZXIA_OP_SUPER_INVINCIBLE_LOLLIPOP_HOME}/env.sh
+# 
+# 变量存放优先级：
+# 1  包含【I、R】的一律优先放到【/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh】中
+# 2  包含【B、D】的一律放到【${ZZXIA_OP_SUPER_INVINCIBLE_LOLLIPOP_HOME}/env.sh】中
+
+
+# ===============================================================================
+
+
+# I - 此项目克隆路径
+export ZZXIA_OP_SUPER_INVINCIBLE_LOLLIPOP_HOME='/root/zzxia-op-super-invincible-lollipop'
+
+# R - 信任IP前缀
+export TRUST_IPS='office:16.24.7, 运城1:12.85.12, 运城2:12.85.13'
+
+# IRBD - dev,stag,prod
+export RUN_ENV='dev'
+
+# RB - 部署域名
+export DOMAIN="zjlh.lan"
+
+# RBD - EMAIL
+export EMAIL='admin@zzxia.com'
+
+
+# RBD -  静态网站base目录
+export WEBSITE_BASE='/srv/web_sites'
+
+# ID - docker-compose编排base目录
+DOCKER_COMPOSE_BASE='/srv/docker_compose_services'
+
+# IRBD - PYTHON网站base目录
+export PYTHON_SERVICES_BASE='/srv/python_services'
+
+
+# R - Nginx conf.d目录
+export NGINX_CONF_DEFAULT_DIR="/etc/nginx/conf.d"
+
+# IRD - Nginx配置脚本路径（cp nginx-config到nginx服务器上）
+export NGINX_CONFIG_SH_HOME='/root/nginx-config--bmp'
+

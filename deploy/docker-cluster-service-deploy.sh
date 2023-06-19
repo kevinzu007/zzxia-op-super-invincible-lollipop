@@ -11,7 +11,7 @@ SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
-# 自动从/etc/profile.d/run-env.sh引入以下变量
+# 自动从/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh引入以下变量
 #RUN_ENV=
 #DOCKER_COMPOSE_BASE=
 
@@ -22,7 +22,7 @@ GAN_PLATFORM_NAME="${GAN_PLATFORM_NAME:-'超甜B&D系统'}"
 #USER_DB_FILE=
 #DOCKER_REPO_SERVER=
 #DOCKER_IMAGE_DEFAULT_PRE_NAME=
-#DOCKER_REPO_SECRET_NAME=
+#K8S_DOCKER_REPO_SECRET_NAME=
 #CONTAINER_ENVS_PUB_FILE=
 #ENABLE_DEBUG_PORT=
 #DEBUG_RANDOM_PORT_MIN=
@@ -592,7 +592,7 @@ spec:
         env:
         ports:
       imagePullSecrets:
-      - name: ${DOCKER_REPO_SECRET_NAME}
+      - name: ${K8S_DOCKER_REPO_SECRET_NAME}
       nodeSelector:
       dnsPolicy: ClusterFirst
       restartPolicy: Always

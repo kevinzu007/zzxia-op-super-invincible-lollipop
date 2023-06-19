@@ -6,11 +6,12 @@ SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
-# 引入env
-# 自动从/etc/profile.d/run-env.sh引入以下变量
+# 自动从/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh引入以下变量
 #RUN_ENV=
 #DOMAIN=
 #WEBSITE_BASE=
+
+# 引入env
 
 # 本地env
 TIME=`date +%Y-%m-%dT%H:%M:%S`
@@ -52,7 +53,7 @@ F_HELP()
     echo "
     用途：用以在nginx服务器上生成项目站点目录结构
     依赖：
-        /etc/profile.d/run-env.sh
+        /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
         ${WEB_PROJECT_LIST_FILE}
     注意: 运行在deploy上
     用法:

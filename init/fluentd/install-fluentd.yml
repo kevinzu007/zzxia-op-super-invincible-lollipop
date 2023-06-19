@@ -3,9 +3,9 @@
   become: yes
   tasks:
     - name: cp fluentd-srv
-      copy: src=./fluentd-srv/  dest=/srv/docker/fluentd-srv/  owner=root group=root mode=644 backup=yes
+      copy: src=./fluentd-srv/  dest=/srv/docker_compose_services/fluentd-srv/  owner=root group=root mode=644 backup=yes
     - name: 启动 fluentd-srv
-      shell: cd /srv/docker/fluentd-srv/ && docker-compose up -d
+      shell: cd /srv/docker_compose_services/fluentd-srv/ && docker-compose up -d
 
 
 

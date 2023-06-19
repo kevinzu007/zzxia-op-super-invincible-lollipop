@@ -18,8 +18,8 @@ SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
 # 引入env
-# 自动从/etc/profile.d/run-env.sh引入以下变量
-. /etc/profile.d/run-env.sh      #--- 计划任务中运行时，须source引入
+# 自动从/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh引入以下变量
+. /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh      #--- 计划任务中运行时，须source引入
 #RUN_ENV=
 
 # 本地env
@@ -38,7 +38,7 @@ F_HELP()
     echo "
     用途：用于pg数据库备份or还原，一次仅处理一个数据库。
     依赖：
-        /etc/profile.d/run-env.sh
+        /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
         ${DINGDING_MARKDOWN_PY}
     注意：必须在postgres账户下运行
     用法:
