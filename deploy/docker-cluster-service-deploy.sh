@@ -123,8 +123,8 @@ F_HELP()
         * 输入命令时，参数顺序不分先后
     用法:
         $0 [-h|--help]
-        $0 [-l|--list]                    #--- 列出配置文件中的服务清单
-        $0 [-L|--list-run swarm|k8s]      #--- 列出指定集群中运行的所有服务，不支持持【docker-compose】
+        $0 [-l|--list]                            #--- 列出配置文件中的服务清单
+        $0 [-L|--list-run swarm|k8s|compose]      #--- 列出指定集群类型中运行的所有服务
         # 创建、修改
         $0 <-M|--mode [normal|function]>  [-c|--create|-m|--modify]  <-D|--debug-port>  <<-t|--tag {模糊镜像tag版本}> | <-T|--TAG {精确镜像tag版本}>>  <-I|--image-pre-name {镜像前置名称}>  <-n|--number {副本数}>  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
         # 更新
@@ -152,7 +152,7 @@ F_HELP()
         #
         -h|--help      ：帮助
         -l|--list      ：列出配置文件中的服务清单
-        -L|--list-run  ：列出指定集群中运行的所有服务，不支持【docker-compose】集群
+        -L|--list-run  ：列出指定集群类型中运行的所有服务
         -F|--fuck      ：直接运行命令，默认：仅显示命令行
         -P|--by-step   ：【-F|--fuck】生效时，步进执行（即：按任意键执行，或按【Ctrl+C】键退出）
         -c|--create    ：创建服务，基于服务清单参数
