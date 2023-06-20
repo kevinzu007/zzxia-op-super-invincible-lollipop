@@ -1,4 +1,26 @@
 #!/bin/bash
+#############################################################################
+# Create By: 猪猪侠
+# License: GNU GPLv3
+# Test On: CentOS 7
+#############################################################################
+
+
+# sh
+SH_NAME=${0##*/}
+SH_PATH=$( cd "$( dirname "$0" )" && pwd )
+cd ${SH_PATH}
+
+
+# 自动从/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh引入以下变量
+#NGINX_CONFIG_SH_HOME=
+
+# 引入env
+
+# 本地env
+ANSIBLE_HOST_FOR_PG_BACKUP_RESTORE='pg_m'
+ANSIBLE_HOST_FOR_NGINX_CERT_REQUEST='nginx_letsencrypt'
+
 
 
 # 用法：
@@ -42,21 +64,6 @@ F_HELP()
         $0  -d deploy-web  -r  项目a 项目b    #--- 运行web-release.sh命令，发布所有前端【项目a、项目b】
     "
 }
-
-
-
-# sh
-SH_NAME=${0##*/}
-SH_PATH=$( cd "$( dirname "$0" )" && pwd )
-cd ${SH_PATH}
-
-
-# 自动从/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh引入以下变量
-#NGINX_CONFIG_SH_HOME=
-
-# 本地env
-ANSIBLE_HOST_FOR_PG_BACKUP_RESTORE='pg_m'
-ANSIBLE_HOST_FOR_NGINX_CERT_REQUEST='nginx_letsencrypt'
 
 
 
