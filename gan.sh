@@ -51,6 +51,11 @@ SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
 
+# 
+#NGINX_CONFIG_SH_HOME=
+
+
+
 # 参数检查
 #TEMP=`getopt -o hd:  -l help,do: -- "$@"`
 #if [ $? != 0 ]; then
@@ -117,7 +122,7 @@ case "${DO}" in
         bash ${SH_PATH}/init/nginx/nginx-config/nginx-conf.sh  ${CMD_ARG}
         ;;
     "ngx-cert")
-        ansible nginx_letsencrypt -m command -a "bash /root/nginx-config/nginx-cert-letsencrypt-a.sh  ${CMD_ARG}"
+        ansible nginx_letsencrypt -m command -a "bash /root/${NGINX_CONFIG_SH_HOME}/nginx-cert-letsencrypt-a.sh  ${CMD_ARG}"
         ;;
     "ngx-cert-w")
         bash ${SH_PATH}/op/cert-letsencrypt-wildcart.sh  ${CMD_ARG}

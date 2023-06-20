@@ -18,6 +18,7 @@ cd ${SH_PATH}
 # 引入env
 . ${SH_PATH}/env.sh
 #GAN_PLATFORM_NAME=
+#ANSIBLE_HOST_FOR_LOGFILE=
 BUILD_LOG_WEBSITE_DOMAIN_A=${BUILD_LOG_WEBSITE_DOMAIN_A:-"build-log"}         #--- 这个需要与【nginx.list】中【项目名】为【build-log】的【域名A记录】保持一致
 #DINGDING_API=
 #BUILD_SKIP_TEST=
@@ -1135,7 +1136,7 @@ do
                 web_release)
                     > ${GOGOGO_RELEASE_WEB_OK_LIST_FILE}
                     #./web-release.sh  --release  ${PJ}
-                    ansible nginx_real -m command -a "bash /root/nginx-config/web-release-on-nginx.sh  --release  ${PJ}"  > ${GOGOGO_RELEASE_WEB_OK_LIST_FILE}
+                    ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m command -a "bash /root/nginx-config/web-release-on-nginx.sh  --release  ${PJ}"  > ${GOGOGO_RELEASE_WEB_OK_LIST_FILE}
                     #
                     if [[ $? -eq 0 ]]; then
                         RELEASE_RESULT=$(cat ${GOGOGO_RELEASE_WEB_OK_LIST_FILE} | sed -n '2p' | awk '{printf $2}')

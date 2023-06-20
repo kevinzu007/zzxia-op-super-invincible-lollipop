@@ -17,6 +17,7 @@ cd "${SH_PATH}"
 # 引入env
 . ${SH_PATH}/env.sh
 #GAN_PLATFORM_NAME=
+#ANSIBLE_HOST_FOR_LOGFILE=
 #DINGDING_API=
 #USER_DB_FILE=
 
@@ -365,7 +366,7 @@ do
             fi
             #
             > ${WEB_RELEASE_NGINX_OK_LIST_FILE}
-            ansible nginx_real -m command -a "bash /root/nginx-config/web-release-on-nginx.sh  --release  ${PJ}"  > ${WEB_RELEASE_NGINX_OK_LIST_FILE}    #--- 如果子命令返回值不是0，则ansible命令返回值为2
+            ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m command -a "bash /root/nginx-config/web-release-on-nginx.sh  --release  ${PJ}"  > ${WEB_RELEASE_NGINX_OK_LIST_FILE}    #--- 如果子命令返回值不是0，则ansible命令返回值为2
             if [[ $? -ne 0 ]]; then
                 ERROR_CODE=5
                 echo "${PJ} : 失败，OS级" >> ${WEB_RELEASE_OK_LIST_FILE}
@@ -394,7 +395,7 @@ do
             fi
             #
             > ${WEB_RELEASE_NGINX_OK_LIST_FILE}
-            ansible nginx_real -m command -a "bash /root/nginx-config/web-release-on-nginx.sh  --rollback  ${PJ}"  > ${WEB_RELEASE_NGINX_OK_LIST_FILE}
+            ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m command -a "bash /root/nginx-config/web-release-on-nginx.sh  --rollback  ${PJ}"  > ${WEB_RELEASE_NGINX_OK_LIST_FILE}
             if [[ $? -ne 0 ]]; then
                 ERROR_CODE=5
                 echo "${PJ} : 失败，OS级" >> ${WEB_RELEASE_OK_LIST_FILE}
