@@ -38,7 +38,7 @@ F_HELP()
 F_CP ()
 {
     #set -e
-    mkdir -f  /etc/ansible/inventories
+    mkdir -p  /etc/ansible/inventories
     sed -i -E  's@^.?inventory[ ]* = .*$@inventory = /etc/ansible/inventories@'  /etc/ansible/ansible.cfg
     cp -f  ./ansible-inventory---${R_ENV}                                /etc/ansible/inventories/ansible-inventory
     
