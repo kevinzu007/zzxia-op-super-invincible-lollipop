@@ -39,7 +39,8 @@ F_CP ()
 {
     #set -e
     mkdir -p  /etc/ansible/inventories
-    sed -i -E  's@^.?inventory[ ]* = .*$@inventory = /etc/ansible/inventories@'  /etc/ansible/ansible.cfg
+    sed -i -E  '/^inventory[ ]* = .*$/d'  /etc/ansible/ansible.cfg
+    sed -i -E  '/\[defaults\]/a\inventory = /etc/ansible/inventories/'  /etc/ansible/ansible.cfg
     cp -f  ./ansible-inventory.rubbish---${R_ENV}     /etc/ansible/inventories/ansible-inventory.rubbish
     # cp rubbish
     cp -f  ./bash_aliases---${R_ENV}                  ${DEST_DIR}/rubbish/bash_aliases
