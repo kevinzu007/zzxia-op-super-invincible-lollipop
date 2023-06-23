@@ -3,16 +3,18 @@
 - hosts: nginx
   become: yes
   vars:
-    - RUN_ENV: "{{ lookup('env','RUN_ENV') }}"
+    - NGINX_CONFIG_SH_HOME: "{{ lookup('env','NGINX_CONFIG_SH_HOME') }}"
+    - WEBSITE_BASE: "{{ lookup('env','WEBSITE_BASE') }}"
+    - NGINX_CONF_DEFAULT_DIR: "{{ lookup('env','NGINX_CONF_DEFAULT_DIR') }}"
   tasks:
     - name: 新建目录 nginx-config
-      file: path=~/nginx-config  state=directory  mode=0755
+      file: path={{ NGINX_CONFIG_SH_HOME }}  state=directory  mode=0755
     - name: 拷贝 nginx - nginx.list
-      synchronize: src=./nginx-config/nginx.list      dest=~/nginx-config/nginx.list      rsync_opts="--perms=yes,--times=yes"
+      synchronize: src=./nginx-config/nginx.list      dest={{ NGINX_CONFIG_SH_HOME }}/nginx.list      rsync_opts="--perms=yes,--times=yes"
     - name: 拷贝 nginx - nginx-cert-letsencrypt-a.sh
-      synchronize: src=./nginx-config/nginx-cert-letsencrypt-a.sh  dest=~/nginx-config/nginx-cert-letsencrypt-a.sh  rsync_opts="--perms=yes,--times=yes"
+      synchronize: src=./nginx-config/nginx-cert-letsencrypt-a.sh  dest={{ NGINX_CONFIG_SH_HOME }}/nginx-cert-letsencrypt-a.sh  rsync_opts="--perms=yes,--times=yes"
     - name: 拷贝 nginx - web-release.sh
-      synchronize: src=./nginx-config/web-release-on-nginx.sh  dest=~/nginx-config/web-release-on-nginx.sh  rsync_opts="--perms=yes,--times=yes"
+      synchronize: src=./nginx-config/web-release-on-nginx.sh  dest={{ NGINX_CONFIG_SH_HOME }}/web-release-on-nginx.sh  rsync_opts="--perms=yes,--times=yes"
 
 
 # cron
@@ -20,8 +22,8 @@
   become: yes
   tasks:
     - name: crontab - htpass
-      cron: name=htpass backup=yes state=present minute=0 hour=0 day=*  month=* weekday=* user=root job='echo "adm33`date +\%y\%-m\%-d`" | htpasswd -i -c /etc/nginx/conf.d/pass.db adm > /dev/null'
+      cron: name=htpass backup=yes state=present minute=0 hour=0 day=*  month=* weekday=* user=root job='echo "adm33`date +\%y\%-m\%-d`" | htpasswd -i -c {{ NGINX_CONF_DEFAULT_DIR }}/pass.db adm > /dev/null'
     - name: crontab - 清理build-log
-      cron: name=清理build-log backup=yes state=present minute=0 hour=0 day=*  month=* weekday=* user=root job='find /srv/web_sites/build-log/releases/current/file/ -type d -ctime +3 | xargs rm -rf {} \; >/dev/null'
+      cron: name=清理build-log backup=yes state=present minute=0 hour=0 day=*  month=* weekday=* user=root job='find {{ WEBSITE_BASE }}/build-log/releases/current/file/ -type d -ctime +3 | xargs rm -rf {} \; >/dev/null'
 
 

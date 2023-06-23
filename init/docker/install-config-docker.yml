@@ -8,7 +8,7 @@
       cron: name=deploy backup=yes state=present minute=0 hour=0 day=*  month=* weekday=*/1 user=root job='{{ ZZXIA_OP_SUPER_INVINCIBLE_LOLLIPOP_HOME }}/op/docker/rm-docker-image.sh -q -k gclife -d 7  >/dev/null'
 
 
-- hosts: swarm,k8s
+- hosts: swarm,k8s,compose
   become: yes
   tasks:
     - name: crontab - rm docker image and container

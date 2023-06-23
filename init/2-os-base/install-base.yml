@@ -10,7 +10,7 @@
   - name: restart ntpd service
     service:  name=ntpd.service state=restarted
   - name: yum update and install
-    shell: yum update -y ;  yum install -y rsync bash-completion  bzip2  unzip  python3-pip  iotop jq mailx
+    shell: yum update -y ;  yum install -y  bash-completion iotop bzip2 unzip  python3-pip rsync jq mailx
   - name: install pip
     shell: pip3 install --quiet requests
   - name: set selinux

@@ -39,9 +39,8 @@ F_CP ()
 {
     #set -e
     mkdir -p  /etc/ansible/inventories
-    #sed -i -E  's@^.?inventory[ ]* = .*$@inventory = /etc/ansible/inventories/@'  /etc/ansible/ansible.cfg
-    sed -i -E  '/^inventory[ ]* = .*$/d'  /etc/ansible/ansible.cfg
-    sed -i -E  '/\[defaults\]/a\inventory = /etc/ansible/inventories/'  /etc/ansible/ansible.cfg
+    sed -i -E  '/^inventory[ ]* = .*$/d'                                 /etc/ansible/ansible.cfg
+    sed -i -E  '/\[defaults\]/a\inventory = /etc/ansible/inventories/'   /etc/ansible/ansible.cfg
     cp -f  ./ansible-inventory---${R_ENV}                                /etc/ansible/inventories/ansible-inventory
     
     # cp到init/2-os-base/目录
@@ -67,6 +66,7 @@ F_CP ()
     cp -f  ./nginx.list---${R_ENV}                                       ${DEST_DIR}/deploy/nginx.list
     cp -f  ./nginx.list---${R_ENV}                                       ${DEST_DIR}/init/nginx/nginx-config/nginx.list
     cp -f  ./pg_db.list                                                  ${DEST_DIR}/init/pg/backup/pg_db.list
+    cp -f  ./pgbadger.env---${R_ENV}                                     ${DEST_DIR}/pgbadger/pgbadger_report/pgbadger.env
 }
 
 

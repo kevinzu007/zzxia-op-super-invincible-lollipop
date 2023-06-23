@@ -26,7 +26,6 @@
           backup: yes
       with_items:
         - { srcc: './bashrc', destt: '/root/.bashrc' }
-        - { srcc: './bash_aliases', destt: '/root/.bash_aliases' }
         - { srcc: './bash_logout', destt: '/root/.bash_logout' }
     - name: mailx - 拷贝mailrc、mailx_config.sh到/tmp
       copy: 

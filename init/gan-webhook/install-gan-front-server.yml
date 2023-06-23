@@ -1,9 +1,12 @@
 
-# nginx-config
+# gan-front-server
 - hosts: nginx_real
   become: yes
+  vars:
+    - WEBSITE_BASE: "{{ lookup('env','WEBSITE_BASE') }}"
+
   tasks:
     - name: 拷贝：gan-front-server
-      copy: src=./gan-front-server/server_root/  dest=/srv/web_sites/gan/releases/current/  owner=root group=root mode=644 backup=yes
+      copy: src=./gan-front-server/server_root/  dest={{ WEBSITE_BASE }}/gan/releases/current/  owner=root group=root mode=644 backup=yes
 
 

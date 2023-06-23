@@ -1,6 +1,6 @@
 
 # ossfs
-- hosts: pg_m,gitlab
+- hosts: pg_m
   become: yes
   tasks:
     - name: 下载 - ossfs

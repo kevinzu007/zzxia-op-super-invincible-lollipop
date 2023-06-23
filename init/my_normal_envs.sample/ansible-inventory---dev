@@ -2,6 +2,7 @@
 192.168.11.81  ansible_ssh_user=kevin
 
 
+
 [pg]
 192.168.11.[75:76]
 
@@ -12,29 +13,26 @@
 192.168.11.76
 
 
+
 [swarm]
 192.168.11.[71:74]
 192.168.11.86
 
-[swarm_m]
-192.168.11.[71:73]
+[k8s]
 
-[swarm_l]
-192.168.11.71
-
-[swarm_w]
-192.168.11.74
-192.168.11.86
-
-
-[docker_compose]
+[compose]
 192.168.11.77
 
+[docker_other]
+192.168.11.[83:85
 
-[nginx:children]
-nginx_real
-nginx_proxy
-nginx_letsencrypt
+[docker:children]
+swarm
+k8s
+compose
+docker_other
+
+
 
 [nginx_real]
 192.168.11.77
@@ -45,56 +43,10 @@ nginx_letsencrypt
 [nginx_letsencrypt]
 192.168.11.77
 
-[python_real]
-192.168.11.81 ansible_ssh_user=kevin
+[nginx:children]
+nginx_real
+nginx_proxy
+nginx_letsencrypt
 
-
-[zabbix]
-192.168.11.80
-
-
-[repo_nexus]
-192.168.11.79
-
-[repo_docker]
-192.168.11.79
-
-[gitlab]
-#192.168.11.9
-
-
-[redis]
-192.168.11.76
-
-[rabbitmq]
-192.168.11.76
-
-[neo4j]
-192.168.11.76
-
-
-[jenkins]
-192.168.11.82
-
-
-[efk]
-192.168.11.[83:85]
-
-[efk_f]
-192.168.11.83
-
-[efk_k]
-192.168.11.85
-
-[efk_e]
-192.168.11.84
-
-
-[docker:children]
-deploy
-swarm
-docker_compose
-efk
-repo_nexus
 
 

@@ -39,24 +39,23 @@ F_CP ()
 {
     #set -e
     mkdir -p  /etc/ansible/inventories
-    sed -i -E  '/^inventory[ ]* = .*$/d'  /etc/ansible/ansible.cfg
+    sed -i -E  '/^inventory[ ]* = .*$/d'                                /etc/ansible/ansible.cfg
     sed -i -E  '/\[defaults\]/a\inventory = /etc/ansible/inventories/'  /etc/ansible/ansible.cfg
-    cp -f  ./ansible-inventory.rubbish---${R_ENV}     /etc/ansible/inventories/ansible-inventory.rubbish
+    cp -f  ./ansible-inventory.rubbish---${R_ENV}                       /etc/ansible/inventories/ansible-inventory.rubbish
+    cp -f  ./bash_aliases---${R_ENV}                                    ~/.bash_aliases
     # cp rubbish
-    cp -f  ./bash_aliases---${R_ENV}                  ${DEST_DIR}/rubbish/bash_aliases
-    cp -f  ./install-hosts.yml---${R_ENV}             ${DEST_DIR}/rubbish/install-hosts.yml
-    cp -rf ./3rd_jar                                  ${DEST_DIR}/rubbish/
-    cp -f  ./soft/jdk-*-linux-x64.tar.gz              ${DEST_DIR}/java/
-    cp -f  ./soft/apache-maven-*-bin.tar.gz           ${DEST_DIR}/maven/
-    cp -f  ./soft/node-v*-linux-x64.tar.xz            ${DEST_DIR}/node/
-    cp -f  ./ossfs-backup.service                     ${DEST_DIR}/rubbish/ossfs/
-    cp -f  ./ossfs-internal-backup.service            ${DEST_DIR}/rubbish/ossfs/
-    cp -f  ./backup-center-project.list               ${DEST_DIR}/rubbish/backup-center/backup-center-project.list
+    cp -f  ./install-hosts.yml---${R_ENV}                               ${DEST_DIR}/rubbish/install-hosts.yml
+    cp -rf ./3rd_jar                                                    ${DEST_DIR}/rubbish/
+    cp -f  ./soft/jdk-*-linux-x64.tar.gz                                ${DEST_DIR}/java/
+    cp -f  ./soft/apache-maven-*-bin.tar.gz                             ${DEST_DIR}/maven/
+    cp -f  ./soft/node-v*-linux-x64.tar.xz                              ${DEST_DIR}/node/
+    cp -f  ./ossfs-backup.service                                       ${DEST_DIR}/rubbish/ossfs/
+    cp -f  ./ossfs-internal-backup.service                              ${DEST_DIR}/rubbish/ossfs/
+    cp -f  ./backup-center-project.list                                 ${DEST_DIR}/rubbish/backup-center/backup-center-project.list
     #
-    cp -f  ./fluent.conf---${R_ENV}                   ${DEST_DIR}/rubbish/fluentd/fluentd-srv/conf/fluent.conf
-    cp -f  ./kibana-srv-env---${R_ENV}                ${DEST_DIR}/rubbish/kibana/kibana-srv/.env
-    cp -f  ./elasticsearch-srv-env---${R_ENV}         ${DEST_DIR}/rubbish/elasticsearch/elasticsearch-srv/.env
-    cp -f  ./pgbadger.env---${R_ENV}                  ${DEST_DIR}/rubbish/pgbadger/pgbadger_report/pgbadger.env
+    cp -f  ./fluent.conf---${R_ENV}                                     ${DEST_DIR}/rubbish/fluentd/fluentd-srv/conf/fluent.conf
+    cp -f  ./kibana-srv-env---${R_ENV}                                  ${DEST_DIR}/rubbish/kibana/kibana-srv/.env
+    cp -f  ./elasticsearch-srv-env---${R_ENV}                           ${DEST_DIR}/rubbish/elasticsearch/elasticsearch-srv/.env
 }
 
 
