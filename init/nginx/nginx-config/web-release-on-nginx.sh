@@ -6,9 +6,10 @@ SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd "${SH_PATH}"
 
-# 引入env
-# 自动从/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh引入以下变量
+# 自动引入/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
 #WEBSITE_BASE=
+
+# 引入env.sh
 
 # 本地env
 TIME=`date +%Y-%m-%dT%H:%M:%S`

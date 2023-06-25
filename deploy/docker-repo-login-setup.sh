@@ -13,6 +13,7 @@ cd ${SH_PATH}
 
 # 引入env
 . ${SH_PATH}/env.sh
+# 来自 ${MY_PRIVATE_ENVS_DIR} 目录下的 *.sec
 #DOCKER_REPO_SERVER=
 #DOCKER_REPO_USER=
 #DOCKER_REPO_PASSWORD=

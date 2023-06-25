@@ -5,18 +5,18 @@ SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
-# 自动从/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh引入以下变量
-. /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh      #--- 计划任务中运行时，或ansible运行时，须source引入
+# 自动引入/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
+. /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh      #--- 计划任务中运行时，或ansible运行时，须主动引入
 #RUN_ENV=
 #DOMAIN=
 #EMAIL=
+#WEBSITE_BASE=
 
-# 引入env
+# 引入env.sh
 
 # 本地env
 TIME=`date +%Y-%m-%dT%H:%M:%S`
 TIME_START=${TIME}
-WEBSITE_BASE="/srv/web_sites"
 WEB_PROJECT_LIST_FILE="${SH_PATH}/nginx.list"
 WEB_PROJECT_LIST_FILE_TMP="/tmp/${SH_NAME}-nginx.tmp.list"
 #

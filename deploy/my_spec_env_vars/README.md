@@ -4,6 +4,5 @@
 - ENVS_FROM_FILE
 - CMDS_FROM_FILE
 - ......
-当前路径是【${DEPLOY_HOME_BASE}/init/my_spec_envs】
 
 

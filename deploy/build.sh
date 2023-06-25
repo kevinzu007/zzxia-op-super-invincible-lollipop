@@ -11,28 +11,32 @@ SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd "${SH_PATH}"
 
-# 自动从/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh引入以下变量
+# 自动引入/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
 #RUN_ENV=
 #DOMAIN=
 #WEBSITE_BASE=
 #PYTHON_SERVICES_BASE=
 
-# 引入env
+# 引入env.sh
 . "${SH_PATH}/env.sh"
-#GAN_PLATFORM_NAME=
+#LOLLIPOP_PLATFORM_NAME=
+#LOLLIPOP_DB_HOME=
+#LOLLIPOP_PROJECT_BASE=
+#LOLLIPOP_LOG_BASE=
 #ANSIBLE_HOST_FOR_LOGFILE=
 #BUILD_LOG_WEBSITE_DOMAIN_A=
-DINGDING_API=${DINGDING_API:-"请定义"}
-USER_DB_FILE=${USER_DB_FILE:-"${HOME}/.my_sec/user.db"}
 #ERROR_EXIT=
 #BUILD_SKIP_TEST=
-PROJECT_CODE_VERIFY=${PROJECT_CODE_VERIFY:-'NO'}    #--- YES|NO，请提供相关sonarQube地址用户名密码
 #NPM_BIN=
 #GIT_REPO_URL_BASE=
 #GIT_DEFAULT_NAMESPACE=
 #GIT_DEFAULT_BRANCH=
+# 来自 ${MY_PRIVATE_ENVS_DIR}目录下的 *.sec
+USER_DB_FILE=${USER_DB_FILE:-"${HOME}/.my_sec/user.db"}
+DINGDING_API=${DINGDING_API:-"请定义"}
 DOCKER_REPO_SERVER=${DOCKER_REPO_SERVER:-"docker-repo:5000"}
-#DOCKER_IMAGE_DEFAULT_PRE_NAME=
+DOCKER_IMAGE_DEFAULT_PRE_NAME=${#DOCKER_IMAGE_DEFAULT_PRE_NAME:-'public'}
+PROJECT_CODE_VERIFY=${PROJECT_CODE_VERIFY:-'NO'}    #--- YES|NO，请提供相关sonarQube地址用户名密码
 
 # 本地env
 GAN_WHAT_FUCK='Build'
@@ -44,9 +48,7 @@ ERROR_CODE=''     #--- 程序最终返回值，一般用于【--mode=function】
 DOCKER_BUILD_DIR_NAME='./docker_build'          #-- 对于dockerfile类项目，Dockerfile所在目录名
 DOCKER_IMAGE_TAG=$(date -d "${TIME}" +%Y.%m.%d.%H%M%S)
 #
-PROJECT_BASE="${SH_PATH}/tmp/build"
-LOG_BASE="${SH_PATH}/tmp/log"
-LOG_HOME="${LOG_BASE}/${DATE_TIME}"
+LOG_HOME="${LOLLIPOP_LOG_BASE}/${DATE_TIME}"
 # 方式
 SH_RUN_MODE="normal"
 BUILD_QUIET='YES'
@@ -64,14 +66,14 @@ PROJECT_LIST_FILE_TMP=${PROJECT_LIST_FILE_TMP:-"${LOG_HOME}/${SH_NAME}-project.l
 PROJECT_LIST_FILE_APPEND_1="${SH_PATH}/project.list.append.1"
 PROJECT_LIST_RETRY_FILE="${SH_PATH}/project.list.retry"
 PROJECT_BUILD_RESULT="${LOG_HOME}/${SH_NAME}-build.result"
-PROJECT_BUILD_DURATION_FILE="${SH_PATH}/db/${SH_NAME}-duration.last.db"     #--- db目录下的文件不建议删除
+PROJECT_BUILD_DURATION_FILE="${LOLLIPOP_DB_HOME}/${SH_NAME}-duration.last.db"     #--- db目录下的文件不建议删除
 #
 GIT_LOG="${LOG_HOME}/${SH_NAME}-git.log"
 BUILD_LOG="${LOG_HOME}/${SH_NAME}-build.log"
 BUILD_OK_LIST_FILE=${BUILD_OK_LIST_FILE:-"${LOG_HOME}/${SH_NAME}-build-OK.list"}
 BUILD_HISTORY_CURRENT_FILE="${LOG_HOME}/${SH_NAME}-history.current"
 # 公共
-FUCK_HISTORY_FILE="${SH_PATH}/db/fuck.history"
+FUCK_HISTORY_FILE="${LOLLIPOP_DB_HOME}/fuck.history"
 # LOG_DOWNLOAD_SERVER
 if [ "x${RUN_ENV}" = "xprod" ]; then
     LOG_DOWNLOAD_SERVER="https://${BUILD_LOG_WEBSITE_DOMAIN_A}.${DOMAIN}"
@@ -307,7 +309,7 @@ ERR_SHOW()
         MESSAGE_ERR="猪猪侠警告：【${GAN_WHAT_FUCK}】时，【${PJ}】出错了，请检查！ 代码分支：${GIT_BRANCH}。将继续构建后续项目！"
     fi
     echo -e "${ECHO_ERROR}${MESSAGE_ERR}${ECHO_CLOSE}"
-    ${DINGDING_MARKDOWN_PY}  "【Error:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "${MESSAGE_ERR}" > /dev/null
+    ${DINGDING_MARKDOWN_PY}  "【Error:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "${MESSAGE_ERR}" > /dev/null
 }
 
 
@@ -1245,8 +1247,8 @@ GIT_BRANCH=${GIT_BRANCH:-"${GIT_DEFAULT_BRANCH}"}
 
 # 建立base目录
 [ -d "${LOG_HOME}" ] || mkdir -p  "${LOG_HOME}"
-[ -d "${PROJECT_BASE}" ] || mkdir -p  ${PROJECT_BASE}
-cd  ${PROJECT_BASE}
+[ -d "${LOLLIPOP_PROJECT_BASE}" ] || mkdir -p  ${LOLLIPOP_PROJECT_BASE}
+cd  ${LOLLIPOP_PROJECT_BASE}
 
 
 
@@ -1277,7 +1279,7 @@ if [ -f "${PROJECT_LIST_RETRY_FILE}" ]; then
     for R_PJ in `cat ${PROJECT_LIST_RETRY_FILE}`
     do
         if [ x${R_PJ} != x ]; then
-            rm -rf  ${PROJECT_BASE}/${R_PJ}
+            rm -rf  ${LOLLIPOP_PROJECT_BASE}/${R_PJ}
             sed -i  "/${R_PJ}/d"  ${PROJECT_LIST_RETRY_FILE}
         fi
     done
@@ -1336,7 +1338,7 @@ else
         F_FIND_PROJECT "${THIS_LANGUAGE_CATEGORY}" >> ${PROJECT_LIST_FILE_TMP}
         if [[ $? -ne 0 ]]; then
             echo -e "\n${ECHO_ERROR}猪猪侠警告：【${GAN_WHAT_FUCK}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！${ECHO_CLOSE}\n"
-            ${DINGDING_MARKDOWN_PY}  "【Error:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_WHAT_FUCK}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！" > /dev/null
+            ${DINGDING_MARKDOWN_PY}  "【Error:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_WHAT_FUCK}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！" > /dev/null
             exit 51
         fi
     else
@@ -1347,7 +1349,7 @@ else
             F_FIND_PROJECT "${THIS_LANGUAGE_CATEGORY}" "$i" >> ${PROJECT_LIST_FILE_TMP}
             if [[ $? -ne 0 ]]; then
                 echo -e "\n${ECHO_ERROR}猪猪侠警告：【${GAN_WHAT_FUCK}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目【$i】，请检查！${ECHO_CLOSE}\n"
-                ${DINGDING_MARKDOWN_PY}  "【Error:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_WHAT_FUCK}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目【$i】，请检查！" > /dev/null
+                ${DINGDING_MARKDOWN_PY}  "【Error:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_WHAT_FUCK}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目【$i】，请检查！" > /dev/null
                 exit 51
             fi
         done
@@ -1474,7 +1476,7 @@ do
     BUILD_LOG_file=${BUILD_LOG}.${PJ}
     #
     BUILD_CHECK_COUNT=`expr ${BUILD_CHECK_COUNT} + 1`
-    cd  ${PROJECT_BASE}
+    cd  ${LOLLIPOP_PROJECT_BASE}
     echo ""
     echo -e "${ECHO_NORMAL}--------------------------------------------------${ECHO_CLOSE}"   #--- 50 (60-50-40)
     echo -e "${ECHO_NORMAL}${BUILD_CHECK_COUNT}/${TOTAL_PJS} - ${PJ} :${ECHO_CLOSE}"
@@ -1505,7 +1507,7 @@ do
     if [ $? -eq 0 ]; then
         echo "${PJ} : 失败，其他用户正在构建中 : x" >> ${BUILD_OK_LIST_FILE}
         echo -e "${ECHO_ERROR}【${GAN_WHAT_FUCK}】时，【${PJ}】失败了，其他用户正在构建中${ECHO_CLOSE}"
-        ${DINGDING_MARKDOWN_PY}  "【Error:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "【${GAN_WHAT_FUCK}】时，【${PJ}】失败了，其他用户正在构建中" > /dev/null
+        ${DINGDING_MARKDOWN_PY}  "【Error:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "【${GAN_WHAT_FUCK}】时，【${PJ}】失败了，其他用户正在构建中" > /dev/null
         [ "x${ERROR_EXIT}" = 'xYES' ] && break
         ERROR_CODE=53
         continue
@@ -1703,7 +1705,7 @@ case ${SH_RUN_MODE} in
             #echo ${MSG[$t]}
             let  t=$t+1
         done < ${BUILD_HISTORY_CURRENT_FILE}
-        ${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "${MSG[@]}" > /dev/null
+        ${DINGDING_MARKDOWN_PY}  "【Info:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "${MSG[@]}" > /dev/null
         exit 0
         ;;
     function)

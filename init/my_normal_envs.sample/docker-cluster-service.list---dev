@@ -5,7 +5,7 @@
 ###    DOCKER_ARG_PUB :      Docker通用运行参数文件。文件名【docker-arg-pub.list---*】，仅对【swarm】集群有效
 ###    CONTAINER_HOSTS_PUB : 所有容器中的hosts定义文件。文件名【container-hosts-pub.list---*】
 ###
-###    CONTAINER_ENVS_PUB :  所有容器中的变量定义文件。文件名【~/.my_sec/container-envs-pub.sec】(因为包含用户密码相关信息，所以不保存于当前仓库)
+###    CONTAINER_ENVS_PUB :  所有容器中的变量定义文件。文件名在【env.sh中的变量：CONTAINER_ENVS_PUB_FILE】中指定（因为包含用户密码相关信息，所以不保存于当前仓库）
 ###    JAVA_OPTIONS_PUB :    所有容器中的JAVA_OPTIONS变量定义文件。文件名【java-options-pub.list---*】。要使【JAVA_OPTIONS】变量生效，需在docker镜像中指定使用此变量
 ###
 ###  ---------------------------------------------------------------------------------------

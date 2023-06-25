@@ -11,20 +11,20 @@ SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
-# 自动从/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh引入以下变量
+# 自动引入/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
 #RUN_ENV=
 #DOMAIN=
+#NGINX_CONFIG_SH_HOME=
 
-# 引入env
+# 引入env.sh
 . ${SH_PATH}/env.sh
-#GAN_PLATFORM_NAME=
+#LOLLIPOP_PLATFORM_NAME=
+#LOLLIPOP_DB_HOME=
+#LOLLIPOP_LOG_BASE=
 #ANSIBLE_HOST_FOR_LOGFILE=
-BUILD_LOG_WEBSITE_DOMAIN_A=${BUILD_LOG_WEBSITE_DOMAIN_A:-"build-log"}         #--- 这个需要与【nginx.list】中【项目名】为【build-log】的【域名A记录】保持一致
-#DINGDING_API=
+#BUILD_LOG_WEBSITE_DOMAIN_A=
 #BUILD_SKIP_TEST=
-#USER_DB_FILE=
 #GIT_DEFAULT_BRANCH=
-#DOCKER_REPO_SERVER=
 #DOCKER_IMAGE_DEFAULT_PRE_NAME=
 #DEBUG=
 #K8S_DEFAULT_CONTEXT=
@@ -32,6 +32,11 @@ BUILD_LOG_WEBSITE_DOMAIN_A=${BUILD_LOG_WEBSITE_DOMAIN_A:-"build-log"}         #-
 #SWARM_DEFAULT_DOCKER_HOST=
 #SWARM_DEFAULT_NETWORK=
 #COMPOSE_DEFAULT_NETWORK=
+# 来自 ${MY_PRIVATE_ENVS_DIR} 目录下的 *.sec
+#USER_DB_FILE=
+#DINGDING_API=
+#DOCKER_REPO_SERVER=
+
 
 # 本地env
 GAN_WHAT_FUCK='Gogogo'
@@ -43,8 +48,7 @@ RELEASE_VERSION=''
 # 灰度
 GRAY_TAG="normal"
 #
-LOG_BASE="${SH_PATH}/tmp/log"
-LOG_HOME="${LOG_BASE}/${DATE_TIME}"
+LOG_HOME="${LOLLIPOP_LOG_BASE}/${DATE_TIME}"
 #
 DOCKER_IMAGE_TAG=$(date -d "${TIME}" +%Y.%m.%d.%H%M%S)
 # 子脚本参数
@@ -68,9 +72,9 @@ GOGOGO_RELEASE_WEB_OK_LIST_FILE="${LOG_HOME}/${SH_NAME}-web_release-OK.list"
 GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE="${LOG_HOME}/${SH_NAME}-build_and_release-OK.list"
 GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE="${LOG_HOME}/${SH_NAME}.history.current"
 GOGOGO_PROJECT_BUILD_RESULT="${LOG_HOME}/${SH_NAME}-build.result"
-GOGOGO_PROJECT_BUILD_DURATION_FILE="${SH_PATH}/db/${SH_NAME}-build_duration.last.db"      #--- db目录下的文件不建议删除
+GOGOGO_PROJECT_BUILD_DURATION_FILE="${LOLLIPOP_DB_HOME}/${SH_NAME}-build_duration.last.db"      #--- db目录下的文件不建议删除
 # 公共
-FUCK_HISTORY_FILE="${SH_PATH}/db/fuck.history"
+FUCK_HISTORY_FILE="${LOLLIPOP_DB_HOME}/fuck.history"
 # LOG_DOWNLOAD_SERVER
 if [ "x${RUN_ENV}" = "xprod" ]; then
     LOG_DOWNLOAD_SERVER="https://${BUILD_LOG_WEBSITE_DOMAIN_A}.${DOMAIN}"
@@ -904,7 +908,7 @@ if [[ -z ${THIS_LANGUAGE_CATEGORY} ]]; then
             #
             if [[ $GET_IT != 'YES' ]]; then
                 echo -e "\n${ECHO_ERROR}猪猪侠警告：【${GAN_WHAT_FUCK}】时，项目【${i}】正则不匹配项目列表【${GOGOGO_PROJECT_LIST_FILE}】中任何项目，请检查！${ECHO_CLOSE}\n"
-                ${DINGDING_MARKDOWN_PY}  "【Error:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_WHAT_FUCK}】时，项目【${i}】正则不匹配项目列表【${GOGOGO_PROJECT_LIST_FILE}】中任何项目，请检查！" > /dev/null
+                ${DINGDING_MARKDOWN_PY}  "【Error:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_WHAT_FUCK}】时，项目【${i}】正则不匹配项目列表【${GOGOGO_PROJECT_LIST_FILE}】中任何项目，请检查！" > /dev/null
                 exit 51
             fi
         done
@@ -924,7 +928,7 @@ else
         F_FIND_PROJECT ${THIS_LANGUAGE_CATEGORY} >> ${GOGOGO_PROJECT_LIST_FILE_TMP}
         if [[ $? -ne 0 ]]; then
             echo -e "\n${ECHO_ERROR}猪猪侠警告：【${GAN_WHAT_FUCK}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！${ECHO_CLOSE}\n"
-            ${DINGDING_MARKDOWN_PY}  "【Error:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_WHAT_FUCK}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！" > /dev/null
+            ${DINGDING_MARKDOWN_PY}  "【Error:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_WHAT_FUCK}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！" > /dev/null
             exit 51
         fi
     else
@@ -935,7 +939,7 @@ else
             F_FIND_PROJECT ${THIS_LANGUAGE_CATEGORY} $i >> ${GOGOGO_PROJECT_LIST_FILE_TMP}
             if [[ $? -ne 0 ]]; then
                 echo -e "\n${ECHO_ERROR}猪猪侠警告：【GAN_WHAT_FUCK】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】且正则匹配【$i】的项目，请检查！${ECHO_CLOSE}\n"
-                ${DINGDING_MARKDOWN_PY}  "【Error:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【GAN_WHAT_FUCK】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】且正则匹配【$i】的项目，请检查！" > /dev/null
+                ${DINGDING_MARKDOWN_PY}  "【Error:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【GAN_WHAT_FUCK】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】且正则匹配【$i】的项目，请检查！" > /dev/null
                 exit 51
             fi
         done
@@ -1136,7 +1140,7 @@ do
                 web_release)
                     > ${GOGOGO_RELEASE_WEB_OK_LIST_FILE}
                     #./web-release.sh  --release  ${PJ}
-                    ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m command -a "bash /root/nginx-config/web-release-on-nginx.sh  --release  ${PJ}"  > ${GOGOGO_RELEASE_WEB_OK_LIST_FILE}
+                    ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m command -a "bash /root/${NGINX_CONFIG_SH_HOME}/web-release-on-nginx.sh  --release  ${PJ}"  > ${GOGOGO_RELEASE_WEB_OK_LIST_FILE}
                     #
                     if [[ $? -eq 0 ]]; then
                         RELEASE_RESULT=$(cat ${GOGOGO_RELEASE_WEB_OK_LIST_FILE} | sed -n '2p' | awk '{printf $2}')
@@ -1228,7 +1232,7 @@ do
     #echo ${MSG[$t]}
     let  t=$t+1
 done < ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
-${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "${MSG[@]}" > /dev/null
+${DINGDING_MARKDOWN_PY}  "【Info:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "${MSG[@]}" > /dev/null
 
 
 

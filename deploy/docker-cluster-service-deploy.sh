@@ -11,17 +11,16 @@ SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
-# 自动从/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh引入以下变量
+# 自动引入/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
 #RUN_ENV=
 #DOCKER_COMPOSE_BASE=
 
-# 引入env
+# 引入env.sh
 . ${SH_PATH}/env.sh
-#GAN_PLATFORM_NAME=
-#DINGDING_API=
-#USER_DB_FILE=
-#DOCKER_REPO_SERVER=
-#DOCKER_IMAGE_DEFAULT_PRE_NAME=
+#LOLLIPOP_PLATFORM_NAME=
+#LOLLIPOP_DB_HOME=
+#LOLLIPOP_LOG_BASE=
+#LOLLIPOP_YAML_BASE=
 #K8S_DOCKER_REPO_SECRET_NAME=
 #CONTAINER_ENVS_PUB_FILE=
 #ENABLE_DEBUG_PORT=
@@ -33,6 +32,12 @@ cd ${SH_PATH}
 #SWARM_DEFAULT_NETWORK=
 #COMPOSE_DEFAULT_DOCKER_HOST=
 #COMPOSE_DEFAULT_NETWORK=
+# 来自 ${MY_PRIVATE_ENVS_DIR} 目录下的 *.sec
+#USER_DB_FILE=
+#DINGDING_API=
+#DOCKER_REPO_SERVER=
+#DOCKER_IMAGE_DEFAULT_PRE_NAME=
+
 
 # 本地env
 GAN_WHAT_FUCK='Docker_Deploy'
@@ -43,11 +48,9 @@ DATE_TIME=`date -d "${TIME}" +%Y%m%dT%H%M%S`
 RELEASE_VERSION=''
 # 灰度
 GRAY_TAG="normal"                                             #--- 【normal】正常部署；【gray】灰度部署
-DEBUG_X_PORTS_FILE="${SH_PATH}/db/deploy-debug-x-ports.db"    #--- db目录下的文件不建议删除
+DEBUG_X_PORTS_FILE="${LOLLIPOP_DB_HOME}/deploy-debug-x-ports.db"    #--- db目录下的文件不建议删除
 #
-LOG_BASE="${SH_PATH}/tmp/log"
-LOG_HOME="${LOG_BASE}/${DATE_TIME}"
-YAML_BASE="${SH_PATH}/tmp/yaml"
+LOG_HOME="${LOLLIPOP_LOG_BASE}/${DATE_TIME}"
 #
 ERROR_CODE=''     #--- 程序最终返回值，一般用于【--mode=function】时
 #
@@ -67,7 +70,7 @@ DEPLOY_BY_STEP=${DEPLOY_BY_STEP:-"NO"}
 DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE=${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE:-"${LOG_HOME}/${SH_NAME}-OK.list"}
 #
 DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE="${LOG_HOME}/${SH_NAME}-history.current"
-FUCK_HISTORY_FILE="${SH_PATH}/db/fuck.history"
+FUCK_HISTORY_FILE="${LOLLIPOP_DB_HOME}/fuck.history"
 # 运行方式
 SH_RUN_MODE="normal"
 # 来自父shell
@@ -1314,7 +1317,7 @@ fi
 
 # 建立base目录
 [ -d "${LOG_HOME}" ] || mkdir -p "${LOG_HOME}"
-[ -d "${YAML_BASE}" ] || mkdir -p "${YAML_BASE}"
+[ -d "${LOLLIPOP_YAML_BASE}" ] || mkdir -p "${LOLLIPOP_YAML_BASE}"
 
 
 # 删除空行
@@ -1522,11 +1525,11 @@ do
             echo
             ;;
         k8s)
-            YAML_HOME="${YAML_BASE}/${SERVICE_NAME}"
+            YAML_HOME="${LOLLIPOP_YAML_BASE}/${SERVICE_NAME}"
             [ -d "${YAML_HOME}" ] || mkdir -p "${YAML_HOME}"
             ;;
         compose)
-            YAML_HOME="${YAML_BASE}/${SERVICE_NAME}"
+            YAML_HOME="${LOLLIPOP_YAML_BASE}/${SERVICE_NAME}"
             [ -d "${YAML_HOME}" ] || mkdir -p "${YAML_HOME}"
             ;;
         *)
@@ -2962,7 +2965,7 @@ case ${SH_RUN_MODE} in
             #echo ${MSG[$t]}
             let  t=$t+1
         done < ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
-        ${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "${MSG[@]}" > /dev/null
+        ${DINGDING_MARKDOWN_PY}  "【Info:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "${MSG[@]}" > /dev/null
         ;;
     function)
         #

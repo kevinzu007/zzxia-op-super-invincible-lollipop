@@ -12,10 +12,10 @@ SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
 
-# 自动从/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh引入以下变量
+# 自动引入/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
 #NGINX_CONFIG_SH_HOME=
 
-# 引入env
+# 引入env.sh
 
 # 本地env
 ANSIBLE_HOST_FOR_PG_BACKUP_RESTORE='pg_m'

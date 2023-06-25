@@ -11,15 +11,19 @@ SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd "${SH_PATH}"
 
-# 自动从/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh引入以下变量
+# 自动引入/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
 #RUN_ENV=
+#NGINX_CONFIG_SH_HOME=
 
-# 引入env
+# 引入env.sh
 . ${SH_PATH}/env.sh
-#GAN_PLATFORM_NAME=
+#LOLLIPOP_PLATFORM_NAME=
+#LOLLIPOP_DB_HOME=
+#LOLLIPOP_LOG_BASE=
 #ANSIBLE_HOST_FOR_LOGFILE=
-#DINGDING_API=
+# 来自 ${MY_PRIVATE_ENVS_DIR} 目录下的 *.sec
 #USER_DB_FILE=
+#DINGDING_API=
 
 # 本地env
 GAN_WHAT_FUCK='Web_Release'
@@ -27,8 +31,7 @@ TIME=${TIME:-`date +%Y-%m-%dT%H:%M:%S`}
 TIME_START=${TIME}
 DATE_TIME=`date -d "${TIME}" +%Y%m%dT%H%M%S`
 #
-LOG_BASE="${SH_PATH}/tmp/log"
-LOG_HOME="${LOG_BASE}/${DATE_TIME}"
+LOG_HOME="${LOLLIPOP_LOG_BASE}/${DATE_TIME}"
 #
 ERROR_CODE=''     #--- 程序最终返回值，一般用于【--mode=function】时
 #
@@ -40,7 +43,7 @@ WEB_RELEASE_NGINX_OK_LIST_FILE="${LOG_HOME}/${SH_NAME}-web_release_nginx-OK.list
 WEB_RELEASE_OK_LIST_FILE="${LOG_HOME}/${SH_NAME}-web_release-OK.list"
 #
 WEB_RELEASE_HISTORY_CURRENT_FILE="${LOG_HOME}/${SH_NAME}.history.current"
-FUCK_HISTORY_FILE="${SH_PATH}/db/fuck.history"
+FUCK_HISTORY_FILE="${LOLLIPOP_DB_HOME}/fuck.history"
 # 运行方式
 SH_RUN_MODE="normal"
 # 来自父shell
@@ -311,7 +314,7 @@ else
         #
         if [[ $GET_IT != 'YES' ]]; then
             echo -e "\n${ECHO_ERROR}猪猪侠警告：【${GAN_WHAT_FUCK}】时，项目【${i}】正则不匹配项目列表【${WEB_PROJECT_LIST_FILE}】中任何项目，请检查！${ECHO_CLOSE}\n"
-            ${DINGDING_MARKDOWN_PY}  "【Error:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_WHAT_FUCK}】时，项目【${i}】正则不匹配项目列表【${WEB_PROJECT_LIST_FILE}】中任何项目，请检查！" > /dev/null
+            ${DINGDING_MARKDOWN_PY}  "【Error:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_WHAT_FUCK}】时，项目【${i}】正则不匹配项目列表【${WEB_PROJECT_LIST_FILE}】中任何项目，请检查！" > /dev/null
             exit 51
         fi
     done
@@ -366,7 +369,7 @@ do
             fi
             #
             > ${WEB_RELEASE_NGINX_OK_LIST_FILE}
-            ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m command -a "bash /root/nginx-config/web-release-on-nginx.sh  --release  ${PJ}"  > ${WEB_RELEASE_NGINX_OK_LIST_FILE}    #--- 如果子命令返回值不是0，则ansible命令返回值为2
+            ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m command -a "bash /root/${NGINX_CONFIG_SH_HOME}/web-release-on-nginx.sh  --release  ${PJ}"  > ${WEB_RELEASE_NGINX_OK_LIST_FILE}    #--- 如果子命令返回值不是0，则ansible命令返回值为2
             if [[ $? -ne 0 ]]; then
                 ERROR_CODE=5
                 echo "${PJ} : 失败，OS级" >> ${WEB_RELEASE_OK_LIST_FILE}
@@ -395,7 +398,7 @@ do
             fi
             #
             > ${WEB_RELEASE_NGINX_OK_LIST_FILE}
-            ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m command -a "bash /root/nginx-config/web-release-on-nginx.sh  --rollback  ${PJ}"  > ${WEB_RELEASE_NGINX_OK_LIST_FILE}
+            ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m command -a "bash /root/${NGINX_CONFIG_SH_HOME}/web-release-on-nginx.sh  --rollback  ${PJ}"  > ${WEB_RELEASE_NGINX_OK_LIST_FILE}
             if [[ $? -ne 0 ]]; then
                 ERROR_CODE=5
                 echo "${PJ} : 失败，OS级" >> ${WEB_RELEASE_OK_LIST_FILE}
@@ -477,7 +480,7 @@ case ${SH_RUN_MODE} in
             #echo ${MSG[$t]}
             let  t=$t+1
         done < ${WEB_RELEASE_HISTORY_CURRENT_FILE}
-        ${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "${MSG[@]}" > /dev/null
+        ${DINGDING_MARKDOWN_PY}  "【Info:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "${MSG[@]}" > /dev/null
         ;;
     function)
         #
