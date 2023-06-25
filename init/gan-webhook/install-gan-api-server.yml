@@ -11,6 +11,6 @@
     - name: 安装python
       shell: pip3 install --quiet  flask
     - name: 拷贝：重启服务
-      shell: cd {{ PYTHON_SERVICES_BASE }}/gan-api-server/  &&  [[ ! -f ./gan_api_var.py ]]  &&  cp gan_api_var.py.sample gan_api_var.py  || echo "gan_api_var.py已存在"  &&  pip3 install  flask flask_cors &&  bash ./service-ctl.sh --restart
+      shell: cd {{ PYTHON_SERVICES_BASE }}/gan-api-server/  &&  [[ ! -f ./gan_api_var.py ]]  &&  cp gan_api_var.py.sample gan_api_var.py  || echo "gan_api_var.py已存在"  &&  pip3 install  flask flask_cors &&  bash ./gan-api-server-ctl.sh --restart
 
 

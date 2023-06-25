@@ -389,7 +389,7 @@ def hook_gitlab():
     #
     # hook/gitlab
     hook_time = time.strftime("%Y-%m-%d_T_%H%M%S", time.localtime())
-    web_hook_logfile = WEB_ROOT + '/web_hook_gitlab---' + hook_time + '.log'
+    web_hook_logfile = GAN_LOG_HOME + '/web_hook_gitlab---' + hook_time + '.log'
     run_result = os.system(gan_cmd_0 + ' ; ' + gan_cmd +
                            ' > ' + web_hook_logfile + ' 2>&1')
     
@@ -567,7 +567,7 @@ def hook_hand():
     #
     # hook/hand
     hook_time = time.strftime("%Y-%m-%d_T_%H%M%S", time.localtime())
-    web_hook_logfile = WEB_ROOT + '/web_hook_hand---' + hook_time + '.log'
+    web_hook_logfile = GAN_LOG_HOME + '/web_hook_hand---' + hook_time + '.log'
     run_result = os.system(gan_cmd_0 + ' ; ' + gan_cmd +
                            ' > ' + web_hook_logfile + ' 2>&1')
     
