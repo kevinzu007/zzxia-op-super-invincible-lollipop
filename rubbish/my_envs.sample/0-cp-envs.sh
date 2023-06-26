@@ -44,15 +44,15 @@ F_CP ()
     cp -f  ./ansible-inventory.rubbish---${R_ENV}                       /etc/ansible/inventories/ansible-inventory.rubbish
     cp -f  ./bash_aliases---${R_ENV}                                    ~/.bash_aliases
     # cp rubbish
-    cp -f  ./install-hosts.yml---${R_ENV}                               ${DEST_DIR}/rubbish/install-hosts.yml
     cp -rf ./3rd_jar                                                    ${DEST_DIR}/rubbish/
-    cp -f  ./soft/jdk-*-linux-x64.tar.gz                                ${DEST_DIR}/java/
-    cp -f  ./soft/apache-maven-*-bin.tar.gz                             ${DEST_DIR}/maven/
-    cp -f  ./soft/node-v*-linux-x64.tar.xz                              ${DEST_DIR}/node/
+    cp -f  ./soft/jdk-*-linux-x64.tar.gz                                ${DEST_DIR}/rubbish/java/
+    cp -f  ./soft/apache-maven-*-bin.tar.gz                             ${DEST_DIR}/rubbish/maven/
+    cp -f  ./soft/node-v*-linux-x64.tar.xz                              ${DEST_DIR}/rubbish/node/
     cp -f  ./ossfs-backup.service                                       ${DEST_DIR}/rubbish/ossfs/
     cp -f  ./ossfs-internal-backup.service                              ${DEST_DIR}/rubbish/ossfs/
     cp -f  ./backup-center-project.list                                 ${DEST_DIR}/rubbish/backup-center/backup-center-project.list
     #
+    cp -f  ./install-hosts.yml---${R_ENV}                               ${DEST_DIR}/rubbish/install-hosts.yml
     cp -f  ./fluent.conf---${R_ENV}                                     ${DEST_DIR}/rubbish/fluentd/fluentd-srv/conf/fluent.conf
     cp -f  ./kibana-srv-env---${R_ENV}                                  ${DEST_DIR}/rubbish/kibana/kibana-srv/.env
     cp -f  ./elasticsearch-srv-env---${R_ENV}                           ${DEST_DIR}/rubbish/elasticsearch/elasticsearch-srv/.env
@@ -93,10 +93,10 @@ do
             fi
             #
             # 获取【zzxia-op-super-invincible-lollipop|超级无敌棒棒糖】项目路径
-            .  ./zzxia-op-super-invincible-lollipop.run-env.sh---${R_ENV}
+            .  /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
             DEST_DIR=${ZZXIA_OP_SUPER_INVINCIBLE_LOLLIPOP_HOME}
             if [[ ! -f ${DEST_DIR}/gan.sh ]]; then
-                echo -e "\n猪猪侠警告：配置文件【./zzxia-op-super-invincible-lollipop.run-env.sh---${R_ENV}】中指定的项目路径参数【ZZXIA_OP_SUPER_INVINCIBLE_LOLLIPOP_HOME】有误，请检查\n"
+                echo -e "\n猪猪侠警告：配置文件【zzxia-op-super-invincible-lollipop.run-env.sh】中指定的项目路径参数【ZZXIA_OP_SUPER_INVINCIBLE_LOLLIPOP_HOME】有误，请检查\n"
                 exit 1
             fi
             #
