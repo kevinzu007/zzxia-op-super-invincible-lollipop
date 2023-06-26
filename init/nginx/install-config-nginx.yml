@@ -20,6 +20,9 @@
 # cron
 - hosts: nginx
   become: yes
+  vars:
+    - WEBSITE_BASE: "{{ lookup('env','WEBSITE_BASE') }}"
+    - NGINX_CONF_DEFAULT_DIR: "{{ lookup('env','NGINX_CONF_DEFAULT_DIR') }}"
   tasks:
     - name: crontab - htpass
       cron: name=htpass backup=yes state=present minute=0 hour=0 day=*  month=* weekday=* user=root job='echo "adm33`date +\%y\%-m\%-d`" | htpasswd -i -c {{ NGINX_CONF_DEFAULT_DIR }}/pass.db adm > /dev/null'
