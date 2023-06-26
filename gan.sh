@@ -133,7 +133,7 @@ case "${DO}" in
         bash ${SH_PATH}/init/nginx/nginx-config/nginx-conf.sh  ${CMD_ARG}
         ;;
     "ngx-cert")
-        ansible ${ANSIBLE_HOST_FOR_NGINX_CERT_REQUEST} -m command -a "bash /root/${NGINX_CONFIG_SH_HOME}/nginx-cert-letsencrypt-a.sh  ${CMD_ARG}"
+        ansible ${ANSIBLE_HOST_FOR_NGINX_CERT_REQUEST} -m command -a "bash  ${NGINX_CONFIG_SH_HOME}/nginx-cert-letsencrypt-a.sh  ${CMD_ARG}"
         ;;
     "ngx-cert-w")
         bash ${SH_PATH}/op/cert-letsencrypt-wildcart.sh  ${CMD_ARG}

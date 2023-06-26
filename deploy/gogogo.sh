@@ -1140,7 +1140,7 @@ do
                 web_release)
                     > ${GOGOGO_RELEASE_WEB_OK_LIST_FILE}
                     #./web-release.sh  --release  ${PJ}
-                    ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m command -a "bash /root/${NGINX_CONFIG_SH_HOME}/web-release-on-nginx.sh  --release  ${PJ}"  > ${GOGOGO_RELEASE_WEB_OK_LIST_FILE}
+                    ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m command -a "bash  ${NGINX_CONFIG_SH_HOME}/web-release-on-nginx.sh  --release  ${PJ}"  > ${GOGOGO_RELEASE_WEB_OK_LIST_FILE}
                     #
                     if [[ $? -eq 0 ]]; then
                         RELEASE_RESULT=$(cat ${GOGOGO_RELEASE_WEB_OK_LIST_FILE} | sed -n '2p' | awk '{printf $2}')
