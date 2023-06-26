@@ -62,7 +62,6 @@ F_CP ()
 
 
 
-
 # 参数检查
 TEMP=`getopt -o hc::  -l help,copy:: -- "$@"`
 if [ $? != 0 ]; then
@@ -72,6 +71,12 @@ if [ $? != 0 ]; then
 fi
 #
 eval set -- "${TEMP}"
+#
+if [[ $# == 0 ]]; then
+    echo -e "\n猪猪侠警告：请提供运行参数！\n"
+    exit 1
+fi
+
 
 
 # 获取运行参数
