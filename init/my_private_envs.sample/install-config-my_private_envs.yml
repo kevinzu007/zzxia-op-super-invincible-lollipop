@@ -14,7 +14,7 @@
     - MY_PRIVATE_ENVS_DIR: "{{ lookup('env','MY_PRIVATE_ENVS_DIR') }}"
   tasks:
     - name: 拷贝 - {{ MY_PRIVATE_ENVS_DIR }}
-      copy: src=./{{ RUN_ENV }}/my_sec/   dest=~/{{ MY_PRIVATE_ENVS_DIR }}/ owner=root group=root mode=0600  backup=no
+      copy: src=./{{ RUN_ENV }}/my_sec/   dest={{ MY_PRIVATE_ENVS_DIR }}/ owner=root group=root mode=0600  backup=no
     - name: 拷贝 - 用户密码工具
       copy:
           src: '{{ item.srcc }}'
@@ -24,12 +24,12 @@
           mode: 0700
           backup: yes
       with_items:
-        - { srcc: './user-secret-update.sh', destt: '~/{{ MY_PRIVATE_ENVS_DIR }}/' }
-        - { srcc: './user-token-update.sh', destt: '~/{{ MY_PRIVATE_ENVS_DIR }}/' }
-        - { srcc: './user-manage.sh', destt: '~/{{ MY_PRIVATE_ENVS_DIR }}/' }
-        - { srcc: './user.db', destt: '~/{{ MY_PRIVATE_ENVS_DIR }}/' }
+        - { srcc: './user-secret-update.sh', destt: '{{ MY_PRIVATE_ENVS_DIR }}/' }
+        - { srcc: './user-token-update.sh', destt: '{{ MY_PRIVATE_ENVS_DIR }}/' }
+        - { srcc: './user-manage.sh', destt: '{{ MY_PRIVATE_ENVS_DIR }}/' }
+        - { srcc: './user.db', destt: '{{ MY_PRIVATE_ENVS_DIR }}/' }
     - name: crontab - user-token-update
-      cron: name=user-token-update backup=yes state=present minute=0 hour=0 day=*  month=* weekday=* user=root job='~/{{ MY_PRIVATE_ENVS_DIR }}/user-token-update.sh --update >/dev/null'
+      cron: name=user-token-update backup=yes state=present minute=0 hour=0 day=*  month=* weekday=* user=root job='{{ MY_PRIVATE_ENVS_DIR }}/user-token-update.sh --update >/dev/null'
     - name: 拷贝 - maven-settings.xml
       copy: src=./{{ RUN_ENV }}/maven-settings.xml dest=~/.m2/settings.xml owner=root group=root mode=0644  backup=no
     - name: 拷贝 - godaddy.sec.env
