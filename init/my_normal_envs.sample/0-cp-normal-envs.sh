@@ -28,7 +28,7 @@ F_HELP()
     示例：
         $0  -h            #-- 帮助
         $0  -c            #-- 拷贝【/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh】文件中指定的运行环境的文件到目标路径
-        $0  -cdev        #-- 拷贝以【dev】运行环境的文件到目标路径
+        $0  -cdev         #-- 拷贝以【dev】运行环境的文件到目标路径
     "
 }
 
@@ -44,6 +44,7 @@ F_CP ()
     cp -f  ./ansible-inventory---${R_ENV}                                /etc/ansible/inventories/ansible-inventory
     
     # cp到init/2-os-base/目录
+    cp -f  ./zzxia-op-super-invincible-lollipop.run-env.sh---${R_ENV}    /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
     cp -f  ./zzxia-op-super-invincible-lollipop.run-env.sh---${R_ENV}    ${DEST_DIR}/init/2-os-base/zzxia-op-super-invincible-lollipop.run-env.sh
     cp -f  ./host-ip.list---${R_ENV}                                     ${DEST_DIR}/init/host-ip.list
     cp -f  ./mailrc---${R_ENV}                                           ${DEST_DIR}/init/2-os-base/mailrc
@@ -117,6 +118,8 @@ do
             fi
             #
             F_CP
+            #
+            echo -e "\n猪猪侠警告：请重新登录以使【/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh】中的变量生效！\n"
             ;;
         --)
             shift
