@@ -74,6 +74,11 @@ F_CP ()
 
 
 # 参数检查
+if [[ $# == 0 ]]; then
+    echo -e "\n猪猪侠警告：请提供运行参数！\n"
+    exit 1
+fi
+#
 TEMP=`getopt -o hc::  -l help,copy:: -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
@@ -82,11 +87,6 @@ if [ $? != 0 ]; then
 fi
 #
 eval set -- "${TEMP}"
-#
-if [[ $# == 0 ]]; then
-    echo -e "\n猪猪侠警告：请提供运行参数！\n"
-    exit 1
-fi
 
 
 
