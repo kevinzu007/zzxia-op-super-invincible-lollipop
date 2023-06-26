@@ -25,11 +25,11 @@ F_HELP()
     用法:
         bash $0  [-h|--help]
         bash $0  [-c|--copy<{运行环境>]    #-- 拷贝当前目录中以【---运行环境】结尾的文件到指定路径，【运行环境】如果没有指定，则从【/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh】中获取
-    "
     示例：
         $0  -h            #-- 帮助
         $0  -c            #-- 拷贝【/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh】文件中指定的运行环境的文件到目标路径
         $0  -cdev         #-- 拷贝以【dev】运行环境的文件到目标路径
+    "
 }
 
 
