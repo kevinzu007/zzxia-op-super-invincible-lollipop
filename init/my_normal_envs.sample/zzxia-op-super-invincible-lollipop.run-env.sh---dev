@@ -52,6 +52,6 @@ export NGINX_CONFIG_SH_HOME='/root/nginx-config--xx'
 export NGINX_CONF_DEFAULT_DIR="/etc/nginx/conf.d"
 
 # IRBD - 私密变量存放目录
-MY_PRIVATE_ENVS_DIR="/root/.my_sec"
+export MY_PRIVATE_ENVS_DIR="/root/.my_sec"
 
 
