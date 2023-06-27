@@ -653,10 +653,10 @@ services:
 networks:
   ${COMPOSE_NETWORK}:
     # 自建网络
-    driver: bridge
+    #driver: bridge
     # 使用外部网络
-    #external:
-    #  name: ${COMPOSE_NETWORK}
+    external:
+      name: ${COMPOSE_NETWORK}
     "
 }
 
