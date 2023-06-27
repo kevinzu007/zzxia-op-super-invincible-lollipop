@@ -323,7 +323,9 @@ GIT_CODE()
         #git clone  git@${GIT_SERVER}:${GIT_GROUP}/${PJ}.git   2>&1  | tee ${GIT_LOG_file}
         #git clone  "git@${GIT_SERVER}:${GIT_GROUP}/${PJ}.git"   > "${GIT_LOG_file}"  2>&1
         git clone  "${GIT_REPO_URL_BASE}${GIT_NAMESPACE}/${PJ}.git"   > "${GIT_LOG_file}"  2>&1
-        if [ $? -eq 0 ]; then
+        git_clone_return=$?
+        cat  ${GIT_LOG_file}
+        if [ ${git_clone_return} -eq 0 ]; then
             ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m copy -a "src=${GIT_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"  > "${GIT_LOG_file}"  2>&1
             cd  "${PJ}"
         else
@@ -355,7 +357,9 @@ GIT_CODE()
         #
         #timeout 300 git pull   2>&1  | tee ${GIT_LOG_file}
         git pull -p  > "${GIT_LOG_file}"  2>&1  #--- pull + 清理远程已删除本地还存在的分支
-        if [ $? -ne 0 ]; then
+        git_pull_return=$?
+        cat  ${GIT_LOG_file}
+        if [ ${git_pull_return} -ne 0 ]; then
             echo "失败，Git Pull 出错，请检查日志文件：${GIT_LOG_file}"
             ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m copy -a "src=${GIT_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
             echo "${PJ} : 失败，Git Pull 出错 : x" >> "${BUILD_OK_LIST_FILE}"
