@@ -636,7 +636,7 @@ services:
     # 必须有
     ports:
     networks:
-      - ${COMPOSE_NETWORK}
+      - default
     extra_hosts:
       - somehost:1.1.1.1
     #depends_on:
@@ -651,10 +651,10 @@ services:
     #mem_limit: 1000000000
     #privileged: true
 networks:
-  ${COMPOSE_NETWORK}:
-    # 自建网络
+  default:
+    # 1 自建网络
     #driver: bridge
-    # 使用外部网络
+    # 2 使用外部网络
     external:
       name: ${COMPOSE_NETWORK}
     "
