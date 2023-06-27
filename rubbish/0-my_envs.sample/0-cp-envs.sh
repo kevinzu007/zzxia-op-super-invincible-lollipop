@@ -45,9 +45,9 @@ F_CP ()
     cp -f  ./bash_aliases---${R_ENV}                                    ~/.bash_aliases
     # cp rubbish
     cp -rf ./3rd_jar                                                    ${DEST_DIR}/rubbish/
-    cp -f  ./soft/jdk-*-linux-x64.tar.gz                                ${DEST_DIR}/rubbish/java/
-    cp -f  ./soft/apache-maven-*-bin.tar.gz                             ${DEST_DIR}/rubbish/maven/
-    cp -f  ./soft/node-v*-linux-x64.tar.xz                              ${DEST_DIR}/rubbish/node/
+    #cp -f  ./soft/jdk-*-linux-x64.tar.gz                                ${DEST_DIR}/rubbish/java/
+    #cp -f  ./soft/apache-maven-*-bin.tar.gz                             ${DEST_DIR}/rubbish/maven/
+    #cp -f  ./soft/node-v*-linux-x64.tar.xz                              ${DEST_DIR}/rubbish/node/
     cp -f  ./ossfs-backup.service                                       ${DEST_DIR}/rubbish/ossfs/
     cp -f  ./ossfs-internal-backup.service                              ${DEST_DIR}/rubbish/ossfs/
     cp -f  ./backup-center-project.list                                 ${DEST_DIR}/rubbish/backup-center/backup-center-project.list
