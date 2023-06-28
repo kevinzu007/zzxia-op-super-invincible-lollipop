@@ -746,7 +746,7 @@ F_PYTHON_DEPLOY()
 
 
 # 参数检查
-TEMP=`getopt -o hlc:b:I:e:sfvGV:D  -l help,list,category:,branch:,image-pre-name:,email:,skiptest,force,verbose,gray,release-version:debug-port -- "$@"`
+TEMP=`getopt -o hlc:b:I:e:sfvGV:D  -l help,list,category:,branch:,image-pre-name:,email:,skiptest,force,verbose,gray,release-version:,debug-port -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
     exit 51
