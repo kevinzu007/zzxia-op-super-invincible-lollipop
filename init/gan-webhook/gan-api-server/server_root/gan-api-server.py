@@ -319,9 +319,9 @@ def hook_gitlab():
     print('提交次数:' + str(gan_repo_commits_count))
     print('提交信息:' + gan_repo_commits_message)
     #
-    # 调试用，多余
-    #if gan_repo_commits_message.find('{') == -1 or gan_repo_commits_message.find('}') == -1 :
-    #    return jsonify({"Status": "Error", "Message": "wehook信息不存在或不完整"})
+    # 没有 { } 就退出
+    if gan_repo_commits_message.find('{') == -1 or gan_repo_commits_message.find('}') == -1 :
+        return jsonify({"Status": "OK", "Message": "Wehook信息不存在或不完整，退出！"})
     #
     gan_arg = gan_repo_commits_message
     gan_arg = gan_arg.split('{')[1]
