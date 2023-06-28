@@ -30,7 +30,10 @@ do
     git remote add origin  git@${HOSTA}:${HOSTA_GROUP}/${PJ}.git
     git add -A
     git commit -m "init and first commit"
-    git push origin master
+    #
+    #git push origin master    #-- 改成下面两行，方便xx
+    git push --set-upstream origin master
+    git push
     cd ..
     echo
     echo
