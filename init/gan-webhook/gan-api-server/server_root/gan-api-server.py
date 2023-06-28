@@ -382,7 +382,7 @@ def hook_gitlab():
     if gan_user_email != '':
         gan_cmd = gan_cmd + ' --email ' + gan_user_email
     #
-    gan_cmd = gan_cmd + ' --branch ' + gan_project_branch + ' ' + gan_project
+    gan_cmd = gan_cmd + ' --branch ' + gan_project_branch + ' ' + '^' + gan_project + '$'
 
 
     # 运行shell脚本
