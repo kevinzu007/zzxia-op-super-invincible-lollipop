@@ -496,7 +496,7 @@ DOCKER_BUILD()
                 ERR_SHOW
                 # mail
                 if [[ ! -z "${MY_USER_EMAIL}" ]]; then
-                    ${SEND_MAIL}  --subject "【${RUN_ENV}】Build Log - ${PJ}"  --content "请看附件\n"  --attach "${BUILD_LOG_file}"  "${MY_USER_EMAIL}"
+                    ${SEND_MAIL}  --subject "【${RUN_ENV}】${GAN_WHAT_FUCK} Log - ${PJ}"  --content "请看附件\n"  --attach "${BUILD_LOG_file}"  "${MY_USER_EMAIL}"
                 fi
                 return 54
             else
@@ -591,7 +591,7 @@ JAVA_BUILD()
                 ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no" 
                 # mail
                 if [[ ! -z "${MY_USER_EMAIL}" ]]; then
-                    ${SEND_MAIL}  --subject "【${RUN_ENV}】Build Log - ${PJ}"  --content "请看附件\n"  --attach "${BUILD_LOG_file}"  "${MY_USER_EMAIL}"
+                    ${SEND_MAIL}  --subject "【${RUN_ENV}】${GAN_WHAT_FUCK} Log - ${PJ}"  --content "请看附件\n"  --attach "${BUILD_LOG_file}"  "${MY_USER_EMAIL}"
                 fi
                 echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
                 echo "${PJ} : 失败 : x" >> ${BUILD_OK_LIST_FILE}
@@ -747,7 +747,7 @@ NODE_BUILD()
         ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
         # mail
         if [[ ! -z "${MY_USER_EMAIL}" ]]; then
-            ${SEND_MAIL}  --subject "【${RUN_ENV}】Build Log - ${PJ}"  --content "请看附件\n"  --attach "${BUILD_LOG_file}"  "${MY_USER_EMAIL}"
+            ${SEND_MAIL}  --subject "【${RUN_ENV}】${GAN_WHAT_FUCK} Log - ${PJ}"  --content "请看附件\n"  --attach "${BUILD_LOG_file}"  "${MY_USER_EMAIL}"
         fi
         echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
         echo "${PJ} : 失败 : x" >> ${BUILD_OK_LIST_FILE}
@@ -877,7 +877,7 @@ HTML_BUILD()
         ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
         # mail
         if [[ ! -z "${MY_USER_EMAIL}" ]]; then
-            ${SEND_MAIL}  --subject "【${RUN_ENV}】Build Log - ${PJ}"  --content "请看附件\n"  --attach "${BUILD_LOG_file}"  "${MY_USER_EMAIL}"
+            ${SEND_MAIL}  --subject "【${RUN_ENV}】${GAN_WHAT_FUCK} Log - ${PJ}"  --content "请看附件\n"  --attach "${BUILD_LOG_file}"  "${MY_USER_EMAIL}"
         fi
         echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"  2>&1 | tee -a ${BUILD_LOG_file}
         echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
@@ -994,7 +994,7 @@ PYTHON_BUILD()
         ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
         # mail
         if [[ ! -z "${MY_USER_EMAIL}" ]]; then
-            ${SEND_MAIL}  --subject "【${RUN_ENV}】Build Log - ${PJ}"  --content "请看附件\n"  --attach "${BUILD_LOG_file}"  "${MY_USER_EMAIL}"
+            ${SEND_MAIL}  --subject "【${RUN_ENV}】${GAN_WHAT_FUCK} Log - ${PJ}"  --content "请看附件\n"  --attach "${BUILD_LOG_file}"  "${MY_USER_EMAIL}"
         fi
         echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"  2>&1 | tee -a ${BUILD_LOG_file}
         echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
@@ -1489,8 +1489,8 @@ do
     fi
     #
     #
-    GIT_LOG_file=${GIT_LOG}.${PJ}
-    BUILD_LOG_file=${BUILD_LOG}.${PJ}
+    GIT_LOG_file="${GIT_LOG}--${PJ}.log"
+    BUILD_LOG_file="${BUILD_LOG}--${PJ}.log"
     #
     BUILD_CHECK_COUNT=`expr ${BUILD_CHECK_COUNT} + 1`
     cd  ${LOLLIPOP_PROJECT_BASE}

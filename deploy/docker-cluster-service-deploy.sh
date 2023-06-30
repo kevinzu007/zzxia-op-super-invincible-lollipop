@@ -66,6 +66,7 @@ SERVICE_ONLINE_LIST_FILE_TMP="${LOG_HOME}/${SH_NAME}-docker-cluster-service-onli
 DOCKER_IMAGE_TAG='latest'
 FUCK=${FUCK:-"NO"}
 DEPLOY_BY_STEP=${DEPLOY_BY_STEP:-"NO"}
+DEPLOY_LOG="${LOG_HOME}/${SH_NAME}-deploy.log"
 #
 DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE=${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE:-"${LOG_HOME}/${SH_NAME}-OK.list"}
 #
@@ -88,6 +89,7 @@ if [[ -z ${USER_INFO_FROM} ]]; then
     USER_INFO_FROM=${HOOK_USER_INFO_FROM:-'local'}     #--【local|hook_hand|hook_gitlab】，默认：local
 fi
 # sh
+SEND_MAIL="${SH_PATH}/../op/send_mail.sh"
 DOCKER_IMAGE_SEARCH_SH="${SH_PATH}/docker-image-search.sh"
 FORMAT_TABLE_SH="${SH_PATH}/../op/format_table.sh"
 DINGDING_MARKDOWN_PY="${SH_PATH}/../op/dingding_conver_to_markdown_list-deploy.py"
@@ -124,6 +126,7 @@ F_HELP()
         ${CONTAINER_HOSTS_PUB_FILE}
         ${JAVA_OPTIONS_PUB_FILE}
         ${SH_PATH}/env.sh
+        ${SEND_MAIL}
         ${DOCKER_IMAGE_SEARCH_SH}
         ${FORMAT_TABLE_SH}
         ${DINGDING_MARKDOWN_PY}
@@ -1033,10 +1036,23 @@ F_FUCK()
             # 在while read循环中的read命令会失效，需要加上 < /dev/tty
             #read -p "按任意键继续，或按【Ctrl+C】键终止"
             read -p "按任意键继续，或按【Ctrl+C】键终止"  < /dev/tty
+            #
+            # 执行命令
+            echo  ${DOCKER_FULL_CMD} | bash
+            SH_ERROR_CODE=$?
+        else
+            # 执行命令，并写日志
+            DEPLOY_LOG_file="${DEPLOY_LOG}--${PJ}.log"
+            echo "正在执行，请等待......"
+            echo  ${DOCKER_FULL_CMD} | bash  > ${DEPLOY_LOG_file}  2>&1
+            SH_ERROR_CODE=$?
+            cat  ${DEPLOY_LOG_file}
+            # mail
+            if [[ ${SH_ERROR_CODE} != 0 && -n "${MY_USER_EMAIL}" ]]; then
+                ${SEND_MAIL}  --subject "【${RUN_ENV}】${GAN_WHAT_FUCK} Log - ${PJ}"  --content "请看附件\n"  --attach "${DEPLOY_LOG_file}"  "${MY_USER_EMAIL}"
+            fi
         fi
-        # 执行命令
-        echo "${DOCKER_FULL_CMD}" | bash
-        SH_ERROR_CODE=$?
+        #
         case ${SERVICE_OPERATION} in
             create|modify|update|rollback|scale)
                 if [[ ${SH_ERROR_CODE} -eq 0 ]]; then
