@@ -435,7 +435,7 @@ def hook_gitlab():
     gan_cmd = gan_cmd + ' --branch ' + gan_project_branch + ' ' + '^' + gan_project + '$'
     # 调试
     print("运行命令：")
-    print(gan_cmd_0 + ' ; ' + gan_cmd + ' > ' + web_hook_logfile)
+    print(gan_cmd_0 + ' ; ' + gan_cmd)
 
 
     # 运行shell脚本
