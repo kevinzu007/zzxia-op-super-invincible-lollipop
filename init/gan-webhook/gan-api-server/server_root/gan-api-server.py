@@ -403,7 +403,7 @@ def hook_gitlab():
     # 必须参数
     if gan_env == '':
         # 退出
-        return jsonify({"Status": "Error", "Message": "webhook信息之【env】不存在"})
+        return jsonify({"Status": "Error", "Message": "Webhook信息之【env】不存在"})
     else:
         gan_cmd_0 = ' export HOOK_USER_INFO_FROM=hook_gitlab ' + \
             '; export HOOK_GAN_ENV=' + gan_env + \
@@ -427,7 +427,7 @@ def hook_gitlab():
             gan_cmd = gan_cmd + ' --gray '
     else:
         # 退出
-        return jsonify({"Status": "Error","Message": "webhook信息之【do】不存在、错误或超出范围"})
+        return jsonify({"Status": "Error","Message": "Webhook信息之【do】不存在、错误或超出范围"})
     # 
     if re.match(r'^yes|^YES|^y|^yes', gan_skiptest):
         gan_cmd = gan_cmd + ' --skiptest '
