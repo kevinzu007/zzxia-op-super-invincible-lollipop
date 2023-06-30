@@ -53,13 +53,20 @@ LOG_HOME="${LOLLIPOP_LOG_BASE}/${DATE_TIME}"
 SH_RUN_MODE="normal"
 BUILD_QUIET='YES'
 BUILD_FORCE='NO'
+# 来自webhook或父shell
+export HOOK_USER_INFO_FROM
+export HOOK_GAN_ENV
+export HOOK_USER_NAME
+export HOOK_USER_XINGMING
+export HOOK_USER_EMAIL
 # 来自父shell
 BUILD_OK_LIST_FILE_function=${BUILD_OK_LIST_FILE_function:-"${LOG_HOME}/${SH_NAME}-build-OK.list.function"}
-MY_USER_NAME=${MY_USER_NAME:-''}
-MY_EMAIL=${MY_EMAIL:-''}
-# 来自webhook
-HOOK_GAN_ENV=${HOOK_GAN_ENV:-''}
-HOOK_USER=${HOOK_USER:-''}
+#MY_USER_NAME=
+#MY_USER_XINGMING=
+#MY_USER_EMAIL=
+if [[ -z ${USER_INFO_FROM} ]]; then
+    USER_INFO_FROM=${HOOK_USER_INFO_FROM:-'local'}     #--【local|hook_hand|hook_gitlab】，默认：local
+fi
 #
 PROJECT_LIST_FILE="${SH_PATH}/project.list"
 PROJECT_LIST_FILE_TMP=${PROJECT_LIST_FILE_TMP:-"${LOG_HOME}/${SH_NAME}-project.list.tmp"}
@@ -488,8 +495,8 @@ DOCKER_BUILD()
                 echo "${PJ} : 失败 : x" >> ${BUILD_OK_LIST_FILE}
                 ERR_SHOW
                 # mail
-                if [[ ! -z "${MY_EMAIL}" ]]; then
-                    ${SEND_MAIL}  --subject "【${RUN_ENV}】Build Log - ${PJ}"  --content "请看附件\n"  --attach "${BUILD_LOG_file}"  "${MY_EMAIL}"
+                if [[ ! -z "${MY_USER_EMAIL}" ]]; then
+                    ${SEND_MAIL}  --subject "【${RUN_ENV}】Build Log - ${PJ}"  --content "请看附件\n"  --attach "${BUILD_LOG_file}"  "${MY_USER_EMAIL}"
                 fi
                 return 54
             else
@@ -583,8 +590,8 @@ JAVA_BUILD()
                 # copy
                 ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no" 
                 # mail
-                if [[ ! -z "${MY_EMAIL}" ]]; then
-                    ${SEND_MAIL}  --subject "【${RUN_ENV}】Build Log - ${PJ}"  --content "请看附件\n"  --attach "${BUILD_LOG_file}"  "${MY_EMAIL}"
+                if [[ ! -z "${MY_USER_EMAIL}" ]]; then
+                    ${SEND_MAIL}  --subject "【${RUN_ENV}】Build Log - ${PJ}"  --content "请看附件\n"  --attach "${BUILD_LOG_file}"  "${MY_USER_EMAIL}"
                 fi
                 echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
                 echo "${PJ} : 失败 : x" >> ${BUILD_OK_LIST_FILE}
@@ -739,8 +746,8 @@ NODE_BUILD()
         # copy
         ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
         # mail
-        if [[ ! -z "${MY_EMAIL}" ]]; then
-            ${SEND_MAIL}  --subject "【${RUN_ENV}】Build Log - ${PJ}"  --content "请看附件\n"  --attach "${BUILD_LOG_file}"  "${MY_EMAIL}"
+        if [[ ! -z "${MY_USER_EMAIL}" ]]; then
+            ${SEND_MAIL}  --subject "【${RUN_ENV}】Build Log - ${PJ}"  --content "请看附件\n"  --attach "${BUILD_LOG_file}"  "${MY_USER_EMAIL}"
         fi
         echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
         echo "${PJ} : 失败 : x" >> ${BUILD_OK_LIST_FILE}
@@ -869,8 +876,8 @@ HTML_BUILD()
         # copy
         ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
         # mail
-        if [[ ! -z "${MY_EMAIL}" ]]; then
-            ${SEND_MAIL}  --subject "【${RUN_ENV}】Build Log - ${PJ}"  --content "请看附件\n"  --attach "${BUILD_LOG_file}"  "${MY_EMAIL}"
+        if [[ ! -z "${MY_USER_EMAIL}" ]]; then
+            ${SEND_MAIL}  --subject "【${RUN_ENV}】Build Log - ${PJ}"  --content "请看附件\n"  --attach "${BUILD_LOG_file}"  "${MY_USER_EMAIL}"
         fi
         echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"  2>&1 | tee -a ${BUILD_LOG_file}
         echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
@@ -986,8 +993,8 @@ PYTHON_BUILD()
         # copy
         ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
         # mail
-        if [[ ! -z "${MY_EMAIL}" ]]; then
-            ${SEND_MAIL}  --subject "【${RUN_ENV}】Build Log - ${PJ}"  --content "请看附件\n"  --attach "${BUILD_LOG_file}"  "${MY_EMAIL}"
+        if [[ ! -z "${MY_USER_EMAIL}" ]]; then
+            ${SEND_MAIL}  --subject "【${RUN_ENV}】Build Log - ${PJ}"  --content "请看附件\n"  --attach "${BUILD_LOG_file}"  "${MY_USER_EMAIL}"
         fi
         echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"  2>&1 | tee -a ${BUILD_LOG_file}
         echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
@@ -1205,11 +1212,11 @@ do
             shift 2
             ;;
         -e|--email)
-            MY_EMAIL=$2
+            MY_USER_EMAIL=$2
             shift 2
             EMAIL_REGULAR='^[a-zA-Z0-9]+[a-zA-Z0-9_\.]*@([a-zA-Z0-9]+[a-zA-Z0-9\-]*[a-zA-Z0-9]\.)*[a-z]+$'
-            if [[ ! "${MY_EMAIL}" =~ ${EMAIL_REGULAR} ]]; then
-                echo -e "\n猪猪侠警告：【${MY_EMAIL}】邮件地址不合法\n"
+            if [[ ! "${MY_USER_EMAIL}" =~ ${EMAIL_REGULAR} ]]; then
+                echo -e "\n猪猪侠警告：【${MY_USER_EMAIL}】邮件地址不合法\n"
                 exit 51
             fi
             ;;
@@ -1238,13 +1245,6 @@ done
 
 
 
-# 运行环境匹配for Hook
-if [[ -n ${HOOK_GAN_ENV} ]] && [[ ${HOOK_GAN_ENV} != ${RUN_ENV} ]]; then
-    echo -e "\n猪猪侠警告：运行环境不匹配，跳过（这是正常情况）\n"
-    exit
-fi
-
-
 # 默认ENV
 GIT_BRANCH=${GIT_BRANCH:-"${GIT_DEFAULT_BRANCH}"}
 
@@ -1256,24 +1256,37 @@ cd  ${LOLLIPOP_PROJECT_BASE}
 
 
 
-# 用户信息
-if [[ -n ${HOOK_USER} ]]; then
-    MY_USER_NAME=${HOOK_USER}
-elif [[ -n ${MY_USER_NAME} ]]; then
-    MY_USER_NAME=${MY_USER_NAME}
-else
-    # if sudo -i 取${SUDO_USER}；
-    # if sudo cmd 取${LOGNAME}
-    MY_USER_NAME=${SUDO_USER:-"${LOGNAME}"}
+# 运行环境匹配for Hook
+if [[ -n ${HOOK_GAN_ENV} ]] && [[ ${HOOK_GAN_ENV} != ${RUN_ENV} ]]; then
+    echo -e "\n猪猪侠警告：运行环境不匹配，跳过（这是正常情况）\n"
+    exit
 fi
-#
-F_USER_SEARCH ${MY_USER_NAME} > /dev/null
-if [ $? -eq 0 ]; then
-    R=`F_USER_SEARCH ${MY_USER_NAME}`
-    export MY_EMAIL=${MY_EMAIL:-"`echo $R | cut -d ' ' -f 2`"}
-    MY_XINGMING=`echo $R | cut -d ' ' -f 1`
-else
-    MY_XINGMING='X-Man'
+
+
+# 用户信息
+if [[ -z ${MY_USER_NAME} ]]; then
+    if [[ ${USER_INFO_FROM} == 'local' ]]; then
+        # if sudo -i 取${SUDO_USER}；
+        # if sudo cmd 取${LOGNAME}
+        export MY_USER_NAME=${SUDO_USER:-"${LOGNAME}"}
+        #
+        F_USER_SEARCH ${MY_USER_NAME} > /dev/null
+        if [ $? -eq 0 ]; then
+            R=`F_USER_SEARCH ${MY_USER_NAME}`
+            export MY_USER_EMAIL=${MY_USER_EMAIL:-"`echo $R | cut -d ' ' -f 2`"}
+            export MY_USER_XINGMING=`echo $R | cut -d ' ' -f 1`
+        else
+            export MY_USER_XINGMING='X-Man'
+            export MY_USER_EMAIL
+        fi
+    elif [[ ${USER_INFO_FROM} =~ 'hook_gitlab|hook_hand' ]]; then
+        export MY_USER_NAME=${HOOK_USER_NAME}
+        export MY_USER_XINGMING=${HOOK_USER_XINGMING}
+        export MY_USER_EMAIL=${HOOK_USER_EMAIL}
+    else
+        echo -e "\n猪猪侠警告：未知参数值【\${USER_INFO_FROM} = ${USER_INFO_FROM}】\n"
+        exit  51
+    fi
 fi
 
 
@@ -1677,7 +1690,8 @@ case ${SH_RUN_MODE} in
         echo -e "${ECHO_REPORT}========================= 构建报告 ==========================${ECHO_CLOSE}"    #--- 60 (60-50-40)
         #
         echo "所在环境：${RUN_ENV}" | tee -a ${BUILD_HISTORY_CURRENT_FILE}
-        echo "造 浪 者：${MY_XINGMING}" | tee -a ${BUILD_HISTORY_CURRENT_FILE}
+        echo "造 浪 者：${MY_USER_XINGMING}@${USER_INFO_FROM}" | tee -a ${BUILD_HISTORY_CURRENT_FILE}
+        echo "发送邮箱：${MY_USER_EMAIL}" | tee -a ${BUILD_HISTORY_CURRENT_FILE}
         echo "开始时间：${TIME}" | tee -a ${BUILD_HISTORY_CURRENT_FILE}
         echo "结束时间：${TIME_END}" | tee -a ${BUILD_HISTORY_CURRENT_FILE}
         echo "代码分支：${GIT_BRANCH}" | tee -a ${BUILD_HISTORY_CURRENT_FILE}

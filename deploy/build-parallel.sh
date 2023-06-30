@@ -45,17 +45,23 @@ PARA_PROJECT_LIST_FILE="${SH_PATH}/project.list"
 PARA_PROJECT_LIST_FILE_TMP="${LOG_HOME}/${SH_NAME}-project.list.tmp"
 PARA_BUILD_OK_LIST_FILE="${LOG_HOME}/${SH_NAME}-build-OK.list"
 PARA_BUILD_HISTORY_CURRENT_FILE="${LOG_HOME}/${SH_NAME}-history.current"
-# 子脚本参数
+# 来自webhook，传递给子脚本
+export HOOK_USER_INFO_FROM
+export HOOK_GAN_ENV
+export HOOK_USER_NAME
+export HOOK_USER_XINGMING
+export HOOK_USER_EMAIL
+# 传递给子脚本
 BASE_PROJECT_LIST_FILE_TMP="${LOG_HOME}/${SH_NAME}-export-project.list.tmp"
 export PROJECT_LIST_FILE_TMP=
 BASE_BUILD_OK_LIST_FILE="${LOG_HOME}/${SH_NAME}-export-build-OK.list"
 export BUILD_OK_LIST_FILE=
 BASE_BUILD_OK_LIST_FILE_function="${LOG_HOME}/${SH_NAME}-export-build-OK.list.function"
 export BUILD_OK_LIST_FILE_function=''
+export USER_INFO_FROM=${HOOK_USER_INFO_FROM:-'local'}     #--【local|hook_hand|hook_gitlab】，默认：local
 export MY_USER_NAME=''
-export MY_EMAIL=''
-export HOOK_GAN_ENV=${HOOK_GAN_ENV:-''}
-export HOOK_USER=${HOOK_USER:-''}
+export MY_USER_XINGMING=''
+export MY_USER_EMAIL=''
 # 公共
 FUCK_HISTORY_FILE="${LOLLIPOP_DB_HOME}/fuck.history"
 # LOG_DOWNLOAD_SERVER
@@ -312,12 +318,12 @@ do
             shift 2
             ;;
         -e|--email)
-            MY_EMAIL=$2
+            MY_USER_EMAIL=$2
             shift 2
-            export MY_EMAIL
+            export MY_USER_EMAIL
             EMAIL_REGULAR='^[a-zA-Z0-9]+[a-zA-Z0-9_\.]*@([a-zA-Z0-9]+[a-zA-Z0-9\-]*[a-zA-Z0-9]\.)*[a-z]+$'
-            if [[ ! "${MY_EMAIL}" =~ ${EMAIL_REGULAR} ]]; then
-                echo -e "\n猪猪侠警告：【${MY_EMAIL}】邮件地址不合法\n"
+            if [[ ! "${MY_USER_EMAIL}" =~ ${EMAIL_REGULAR} ]]; then
+                echo -e "\n猪猪侠警告：【${MY_USER_EMAIL}】邮件地址不合法\n"
                 exit 51
             fi
             ;;
@@ -342,13 +348,6 @@ done
 
 
 
-# 运行环境匹配for Hook
-if [[ -n ${HOOK_GAN_ENV} ]] && [[ ${HOOK_GAN_ENV} != ${RUN_ENV} ]]; then
-    echo -e "\n猪猪侠警告：运行环境不匹配，跳过（这是正常情况）\n"
-    exit
-fi
-
-
 # 默认ENV
 GIT_BRANCH=${GIT_BRANCH:-"${GIT_DEFAULT_BRANCH}"}
 
@@ -358,23 +357,37 @@ GIT_BRANCH=${GIT_BRANCH:-"${GIT_DEFAULT_BRANCH}"}
 
 
 
-# 用户信息
-if [[ -n ${HOOK_USER} ]]; then
-    MY_USER_NAME=${HOOK_USER}
-else
-    # if sudo -i 取${SUDO_USER}；
-    # if sudo cmd 取${LOGNAME}
-    MY_USER_NAME=${SUDO_USER:-"${LOGNAME}"}
+# 运行环境匹配for Hook
+if [[ -n ${HOOK_GAN_ENV} ]] && [[ ${HOOK_GAN_ENV} != ${RUN_ENV} ]]; then
+    echo -e "\n猪猪侠警告：运行环境不匹配，跳过（这是正常情况）\n"
+    exit
 fi
-export MY_USER_NAME
-#
-F_USER_SEARCH ${MY_USER_NAME} > /dev/null
-if [ $? -eq 0 ]; then
-    R=`F_USER_SEARCH ${MY_USER_NAME}`
-    export MY_EMAIL=${MY_EMAIL:-"`echo $R | cut -d ' ' -f 2`"}
-    MY_XINGMING=`echo $R | cut -d ' ' -f 1`
-else
-    MY_XINGMING='X-Man'
+
+
+# 用户信息
+if [[ -z ${MY_USER_NAME} ]]; then
+    if [[ ${USER_INFO_FROM} == 'local' ]]; then
+        # if sudo -i 取${SUDO_USER}；
+        # if sudo cmd 取${LOGNAME}
+        export MY_USER_NAME=${SUDO_USER:-"${LOGNAME}"}
+        #
+        F_USER_SEARCH ${MY_USER_NAME} > /dev/null
+        if [ $? -eq 0 ]; then
+            R=`F_USER_SEARCH ${MY_USER_NAME}`
+            export MY_USER_EMAIL=${MY_USER_EMAIL:-"`echo $R | cut -d ' ' -f 2`"}
+            export MY_USER_XINGMING=`echo $R | cut -d ' ' -f 1`
+        else
+            export MY_USER_XINGMING='X-Man'
+            export MY_USER_EMAIL
+        fi
+    elif [[ ${USER_INFO_FROM} =~ 'hook_gitlab|hook_hand' ]]; then
+        export MY_USER_NAME=${HOOK_USER_NAME}
+        export MY_USER_XINGMING=${HOOK_USER_XINGMING}
+        export MY_USER_EMAIL=${HOOK_USER_EMAIL}
+    else
+        echo -e "\n猪猪侠警告：未知参数值【\${USER_INFO_FROM} = ${USER_INFO_FROM}】\n"
+        exit  51
+    fi
 fi
 
 
@@ -569,7 +582,8 @@ echo "====== 并行构建报告 ======" >> ${PARA_BUILD_HISTORY_CURRENT_FILE}
 echo -e "${ECHO_REPORT}################################# 并行构建报告 #################################${ECHO_CLOSE}"    #--- 80 (80-70-60)
 #
 echo "所在环境：${RUN_ENV}" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
-echo "造 浪 者：${MY_XINGMING}" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
+echo "造 浪 者：${MY_USER_XINGMING}@${USER_INFO_FROM}" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
+echo "发送邮箱：${MY_USER_EMAIL}" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
 echo "开始时间：${TIME}" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
 echo "结束时间：${TIME_END}" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
 echo "代码分支：${GIT_BRANCH}" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}

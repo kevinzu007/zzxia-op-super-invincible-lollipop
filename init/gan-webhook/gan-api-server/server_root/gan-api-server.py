@@ -173,6 +173,33 @@ def get_user_token(user):
         return {"Status": "Error", "Message": "Token库中未找到"}
 
 
+# 获取用户名的姓名与email
+def get_user_info(user):
+    user_db_file = open(USER_DB_FILE)
+    _USER_INFO_OK = 'N'
+    for line in user_db_file:
+        line = line.strip()
+        print('看看行记录： ' + line)
+        if re.match('^#', line) or re.match('^ *$', line):
+            continue
+        try:
+            line_user_name, line_user_xingming, line_user_email = line.split('|')[2], line.split('|')[
+                3], line.split('|')[4]
+            line_user_name = line_user_name.strip()
+            line_user_xingming = line_user_xingming.strip()
+            line_user_email = line_user_email.strip()
+        except:
+            return {"Status": "Error", "Message": "服务器用户信息异常"}
+        if line_user_name == user:
+            _USER_INFO_OK = 'Y'
+            break
+    #
+    if _USER_INFO_OK == 'Y':
+        return {"Status": "Success", "Message": "验证成功", "USER_NAME": user, "USER_XINGMING": line_user_xingming, "USER_EMAIL": line_user_email}
+    else:
+        return {"Status": "Error", "Message": "用户信息不存在"}
+
+
 
 
 # 摘要1-hashlib（不加盐）
@@ -226,6 +253,9 @@ def get_token():
     # header【"user: kevin", "sec: sha1(用户名+密码)"】
     #
     recive_header = request.headers
+    print("#####################################################################")
+    print("# /get/token                                                        #")
+    print("#####################################################################")
     print("请求头：")
     print(recive_header)
     print('')
@@ -254,11 +284,16 @@ def get_token():
 
 
 
-# git仓库用hook
+# gitlab仓库用hook
 #
 @app.route('/hook/gitlab', methods=['POST'])
 def hook_gitlab():
-    # msg包含信息: {env=dev,do=gogogo,skiptest=yes,version=5.5,gray=yes}
+    hook_time = time.strftime("%Y-%m-%d_T_%H%M%S", time.localtime())
+
+    # git commit msg包含信息: 
+    # 全部： {env=dev|stag|prod|其他,do=build|gogogo,skiptest=yes,version=5.5,gray=yes}
+    # 最少： {env=dev|stag|prod|其他,do=build|gogogo}
+
     recive_header = request.headers
     recive_raw_body = request.data
     recive_json_body = recive_raw_body.decode('utf-8')
@@ -267,6 +302,10 @@ def hook_gitlab():
     #--    f"recive_json_body:{recive_json_body}，type:{type(recive_json_body)}")
     #
     # 调试信息
+    print("##################################################")
+    print("# /hook/gitlab                                   #")
+    print("# " + hook_time + "                            #")
+    print("##################################################")
     print("请求头：")
     print(recive_header)
     print("请求body：")
@@ -295,8 +334,11 @@ def hook_gitlab():
     gan_project_branch = extract_element_from_json(kv, ["ref"])
     gan_project_branch = gan_project_branch[0].split('/')[2]
     #
-    gan_user_username = extract_element_from_json(kv, ["user_username"])
-    gan_user_username = gan_user_username[0]
+    gan_user_name = extract_element_from_json(kv, ["user_username"])
+    gan_user_name = gan_user_name[0]
+    #
+    gan_user_xingming = extract_element_from_json(kv, ["user_name"])
+    gan_user_xingming = gan_user_xingming[0]
     #
     gan_repo_commits_count = extract_element_from_json(kv, ["total_commits_count"])
     gan_repo_commits_count = gan_repo_commits_count[0]
@@ -313,7 +355,8 @@ def hook_gitlab():
     
     print('项目:' + gan_project)
     print('分支:' + gan_project_branch)
-    print('用户名:' + gan_user_username)
+    print('用户名:' + gan_user_name)
+    print('用户姓名:' + gan_user_xingming)
     print('用户邮箱:' + gan_user_email)
     print('提交次数: %d' % gan_repo_commits_count)
     print('提交次数:' + str(gan_repo_commits_count))
@@ -321,6 +364,7 @@ def hook_gitlab():
     #
     # 没有 { } 就退出
     if gan_repo_commits_message.find('{') == -1 or gan_repo_commits_message.find('}') == -1 :
+        print("{Status: OK, Message: Wehook信息不存在或不完整，退出！}")
         return jsonify({"Status": "OK", "Message": "Wehook信息不存在或不完整，退出！"})
     #
     gan_arg = gan_repo_commits_message
@@ -361,7 +405,12 @@ def hook_gitlab():
         # 退出
         return jsonify({"Status": "Error", "Message": "wehook信息之【env】不存在"})
     else:
-        gan_cmd_0 = 'export HOOK_GAN_ENV=' + gan_env
+        gan_cmd_0 = ' export HOOK_USER_INFO_FROM=hook_gitlab ' + \
+            '; export HOOK_GAN_ENV=' + gan_env + \
+            '; export HOOK_USER_NAME=' + gan_user_name + \
+            '; export HOOK_USER_XINGMING=' + gan_user_xingming + \
+            '; export HOOK_USER_EMAIL=' + gan_user_email
+    #
     #
     # 必须参数
     if gan_do == 'build':
@@ -379,17 +428,20 @@ def hook_gitlab():
     # 
     if re.match(r'^yes|^YES|^y|^yes', gan_skiptest):
         gan_cmd = gan_cmd + ' --skiptest '
-    if gan_user_email != '':
-        gan_cmd = gan_cmd + ' --email ' + gan_user_email
+    #
+    #if gan_user_email != '':
+    #    gan_cmd = gan_cmd + ' --email ' + gan_user_email
     #
     gan_cmd = gan_cmd + ' --branch ' + gan_project_branch + ' ' + '^' + gan_project + '$'
+    # 调试
+    print("运行命令：")
+    print(gan_cmd_0 + ' ; ' + gan_cmd + ' > ' + web_hook_logfile)
 
 
     # 运行shell脚本
     #
     # hook/gitlab
-    hook_time = time.strftime("%Y-%m-%d_T_%H%M%S", time.localtime())
-    web_hook_logfile = GAN_LOG_HOME + '/web_hook_gitlab---' + hook_time + '.log'
+    web_hook_logfile = GAN_LOG_HOME + '/webhook_gitlab--' + hook_time + '--' + gan_project + '.log'
     run_result = os.system(gan_cmd_0 + ' ; ' + gan_cmd +
                            ' > ' + web_hook_logfile + ' 2>&1')
     
@@ -404,26 +456,114 @@ def hook_gitlab():
 #
 @app.route('/hook/hand', methods=['POST'])
 def hook_hand():
+    hook_time = time.strftime("%Y-%m-%d_T_%H%M%S", time.localtime())
 
-    # header【"token: sdlffsekwodksdlfolsefksdfpofefpsefop34pfsdf"】
-    # header【"user: kevin", "sec: sha1(用户名+密码)"】
+    # 1 header ：
+    # 【"token: sdlffsekwodksdlfolsefksdfpofefpsefop34pfsdf"】
+    # 或
+    # 【"user: kevin", "sec: sha1(用户名+密码)"】
     #
-    # body = {"do":"build|deploy|gogogo","branch":"master","version":"5.5","gray":"yes","skiptest":"yes","force":"yes","category":"java","projects":["pj1","pj2","pj3"]}
+    # 2 body
+    # 2.1 build body ：
     # {
-    #     "do": "build|deploy|gogogo",
+    #     "do": "build|gogogo|docker-deploy|web-release",
+    #     "lise": "yes",
+    #     "category": "java",
     #     "branch": "master",
-    #     "version": "5.5",
-    #     "gray": "yes",
+    #     "image-pre-name": "ppp",
+    #     "email": "xxx@xxx.com",
     #     "skiptest": "yes",
     #     "force": "yes",
-    #     "category": "java",
+    #     "verbose": "yes",
     #     "projects": [
     #         "pj1",
     #         "pj2",
     #         "pj3"
     #     ]
     # }
-    
+
+    # 2.2 build-parallel body ：
+    # {
+    #     "do": "build|gogogo|docker-deploy|web-release",
+    #     "lise": "yes",
+    #     "number": "3",
+    #     "category": "java",
+    #     "branch": "master",
+    #     "image-pre-name": "ppp",
+    #     "email": "xxx@xxx.com",
+    #     "skiptest": "yes",
+    #     "force": "yes",
+    #     "projects": [
+    #         "pj1",
+    #         "pj2",
+    #         "pj3"
+    #     ]
+    # }
+
+    # 2.3 gogogo body ：
+    # {
+    #     "do": "build|gogogo|docker-deploy|web-release",
+    #     "lise": "yes",
+    #     "category": "java",
+    #     "branch": "master",
+    #     "image-pre-name": "ppp",
+    #     "email": "xxx@xxx.com",
+    #     "skiptest": "yes",
+    #     "force": "yes",
+    #     "verbose": "yes",
+    #     "gray": "yes",
+    #     "release-version": "5.5",
+    #     "debug-port": "yes",
+    #     "projects": [
+    #         "pj1",
+    #         "pj2",
+    #         "pj3"
+    #     ]
+    # }
+
+    # 2.4 docker-deploy body 晚点再来：
+    # {
+    #     "do": "docker-deploy",    
+    #     "lise": "yes",
+    #     "list-run": "k8s",
+    #     "branch": "master",
+    #     "image-pre-name": "ppp",
+    #     "email": "xxx@xxx.com",
+    #     "skiptest": "yes",
+    #     "force": "yes",
+    #     "verbose": "yes",
+    #     "gray": "yes",
+    #     "release-version": "5.5",
+    #     "debug-port": "yes",
+    #     "projects": [
+    #         "pj1",
+    #         "pj2",
+    #         "pj3"
+    #     ]
+    # }
+
+    # 2.5 web-release body 晚点再来：
+    # {
+    #     "do": "docker-deploy",
+    #     "lise": "yes",
+    #     "list-run": "k8s",
+    #     "branch": "master",
+    #     "image-pre-name": "ppp",
+    #     "email": "xxx@xxx.com",
+    #     "skiptest": "yes",
+    #     "force": "yes",
+    #     "verbose": "yes",
+    #     "gray": "yes",
+    #     "release-version": "5.5",
+    #     "debug-port": "yes",
+    #     "projects": [
+    #         "pj1",
+    #         "pj2",
+    #         "pj3"
+    #     ]
+    # }
+
+
     recive_header = request.headers
     recive_raw_body = request.data
     recive_json_body = recive_raw_body.decode('utf-8')
@@ -431,6 +571,10 @@ def hook_hand():
     #--logger.info(
     #--    f"recive_json_body:{recive_json_body}，type:{type(recive_json_body)}")
     # 调试信息
+    print("##################################################")
+    print("# /hook/hand                                     #")
+    print("# " + hook_time + "                            #")
+    print("##################################################")
     print("请求头：")
     print(recive_header)
     print("请求body：")
@@ -468,10 +612,14 @@ def hook_hand():
             return jsonify(auth_result)
     else:
         return jsonify({"Status": "Error", "Message": "请提供登录信息"})
+    
     # 赋值
-    gan_user_username = user
-
-
+    gan_user_name = user
+    user_info = get_user_info(user)
+    gan_user_xingming = extract_element_from_json(user_info, ["USER_XINGMING"])[0]
+    gan_user_email = extract_element_from_json(user_info, ["USER_EMAIL"])[0]
+    
+    
     # body处理
     #
     # 完整性签名验证
@@ -522,15 +670,20 @@ def hook_hand():
     #
     #
     # 必须参数
-    if gan_user_username == '':
+    if gan_user_name == '':
         # 退出
         return jsonify({"Status": "Error", "Message": "Hook用户名为空，绝无可能"})
     else:
-        gan_cmd_0 = 'export HOOK_USER=' + gan_user_username
+        gan_cmd_0 = 'export HOOK_USER_INFO_FROM=hook_hand' + \
+            '; export HOOK_USER_NAME=' + gan_user_name + \
+            '; export HOOK_USER_XINGMING=' + gan_user_xingming + \
+            '; export HOOK_USER_EMAIL=' + gan_user_email
     #
     # 关键参数
     if gan_do == 'build':
         gan_cmd = GAN_CMD_HOME + '/deploy/build.sh'
+    elif gan_do == 'build-parallel':
+        gan_cmd = GAN_CMD_HOME + '/deploy/build-parallel.sh'
     elif gan_do == 'gogogo':
         gan_cmd = GAN_CMD_HOME + '/deploy/gogogo.sh'
         # deploy
@@ -538,8 +691,10 @@ def hook_hand():
             gan_cmd = gan_cmd + ' --release-version ' + gan_version
         if re.match(r'yes|YES|y|yes',gan_gray):
             gan_cmd = gan_cmd + ' --gray '
-    elif gan_do == 'deploy':
-        gan_cmd = GAN_CMD_HOME + '/deploy/deploy.sh  待完成 '
+    elif gan_do == 'docker-cluster-service-deploy':
+        gan_cmd = GAN_CMD_HOME + '/deploy/docker-cluster-service-deploy.sh  待完成 '
+    elif gan_do == 'web-release':
+        gan_cmd = GAN_CMD_HOME + '/deploy/web-release.sh  待完成 '
     else:
         # 退出
         return jsonify({"Status": "Error", "Message": "wehook信息之【do】不存在或错误"})
@@ -566,7 +721,6 @@ def hook_hand():
     # 运行shell脚本
     #
     # hook/hand
-    hook_time = time.strftime("%Y-%m-%d_T_%H%M%S", time.localtime())
     web_hook_logfile = GAN_LOG_HOME + '/web_hook_hand---' + hook_time + '.log'
     run_result = os.system(gan_cmd_0 + ' ; ' + gan_cmd +
                            ' > ' + web_hook_logfile + ' 2>&1')

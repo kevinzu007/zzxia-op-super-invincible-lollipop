@@ -46,13 +46,20 @@ WEB_RELEASE_HISTORY_CURRENT_FILE="${LOG_HOME}/${SH_NAME}.history.current"
 FUCK_HISTORY_FILE="${LOLLIPOP_DB_HOME}/fuck.history"
 # 运行方式
 SH_RUN_MODE="normal"
+# 来自webhook或父shell
+export HOOK_USER_INFO_FROM
+export HOOK_GAN_ENV
+export HOOK_USER_NAME
+export HOOK_USER_XINGMING
+export HOOK_USER_EMAIL
 # 来自父shell
 WEB_RELEASE_OK_LIST_FILE_function=${WEB_RELEASE_OK_LIST_FILE_function:-"${LOG_HOME}/${SH_NAME}-web_release-OK.list.function"}
-MY_USER_NAME=${MY_USER_NAME:-''}
-MY_EMAIL=${MY_EMAIL:-''}
-# 来自webhook
-HOOK_GAN_ENV=${HOOK_GAN_ENV:-''}
-HOOK_USER=${HOOK_USER:-''}
+#MY_USER_NAME=
+#MY_USER_XINGMING=
+#MY_USER_EMAIL=
+if [[ -z ${USER_INFO_FROM} ]]; then
+    USER_INFO_FROM=${HOOK_USER_INFO_FROM:-'local'}     #--【local|hook_hand|hook_gitlab】，默认：local
+fi
 # sh
 FORMAT_TABLE_SH="${SH_PATH}/../op/format_table.sh"
 DINGDING_MARKDOWN_PY="${SH_PATH}/../op/dingding_conver_to_markdown_list-deploy.py"
@@ -252,6 +259,11 @@ done
 
 
 
+# 建立base目录
+[ -d "${LOG_HOME}" ] || mkdir -p  ${LOG_HOME}
+
+
+
 # 运行环境匹配for Hook
 if [[ -n ${HOOK_GAN_ENV} ]] && [[ ${HOOK_GAN_ENV} != ${RUN_ENV} ]]; then
     echo -e "\n猪猪侠警告：运行环境不匹配，跳过（这是正常情况）\n"
@@ -259,30 +271,30 @@ if [[ -n ${HOOK_GAN_ENV} ]] && [[ ${HOOK_GAN_ENV} != ${RUN_ENV} ]]; then
 fi
 
 
-
-# 建立base目录
-[ -d "${LOG_HOME}" ] || mkdir -p  ${LOG_HOME}
-
-
-
 # 用户信息
-if [[ -n ${HOOK_USER} ]]; then
-    MY_USER_NAME=${HOOK_USER}
-elif [[ -n ${MY_USER_NAME} ]]; then
-    MY_USER_NAME=${MY_USER_NAME}
-else
-    # if sudo -i 取${SUDO_USER}；
-    # if sudo cmd 取${LOGNAME}
-    MY_USER_NAME=${SUDO_USER:-"${LOGNAME}"}
-fi
-#
-F_USER_SEARCH ${MY_USER_NAME} > /dev/null
-if [ $? -eq 0 ]; then
-    R=`F_USER_SEARCH ${MY_USER_NAME}`
-    export MY_EMAIL=${MY_EMAIL:-"`echo $R | cut -d ' ' -f 2`"}
-    MY_XINGMING=`echo $R | cut -d ' ' -f 1`
-else
-    MY_XINGMING='X-Man'
+if [[ -z ${MY_USER_NAME} ]]; then
+    if [[ ${USER_INFO_FROM} == 'local' ]]; then
+        # if sudo -i 取${SUDO_USER}；
+        # if sudo cmd 取${LOGNAME}
+        export MY_USER_NAME=${SUDO_USER:-"${LOGNAME}"}
+        #
+        F_USER_SEARCH ${MY_USER_NAME} > /dev/null
+        if [ $? -eq 0 ]; then
+            R=`F_USER_SEARCH ${MY_USER_NAME}`
+            export MY_USER_EMAIL=${MY_USER_EMAIL:-"`echo $R | cut -d ' ' -f 2`"}
+            export MY_USER_XINGMING=`echo $R | cut -d ' ' -f 1`
+        else
+            export MY_USER_XINGMING='X-Man'
+            export MY_USER_EMAIL
+        fi
+    elif [[ ${USER_INFO_FROM} =~ 'hook_gitlab|hook_hand' ]]; then
+        export MY_USER_NAME=${HOOK_USER_NAME}
+        export MY_USER_XINGMING=${HOOK_USER_XINGMING}
+        export MY_USER_EMAIL=${HOOK_USER_EMAIL}
+    else
+        echo -e "\n猪猪侠警告：未知参数值【\${USER_INFO_FROM} = ${USER_INFO_FROM}】\n"
+        exit  51
+    fi
 fi
 
 
@@ -451,7 +463,8 @@ case ${SH_RUN_MODE} in
         echo -e "${ECHO_REPORT}========================== WEB 站点${WEB_ACTION}报告 ==========================${ECHO_CLOSE}"
         #
         echo "所在环境：${RUN_ENV}" | tee -a ${WEB_RELEASE_HISTORY_CURRENT_FILE}
-        echo "造 浪 者：${MY_XINGMING}" | tee -a ${WEB_RELEASE_HISTORY_CURRENT_FILE}
+        echo "造 浪 者：${MY_USER_XINGMING}@${USER_INFO_FROM}" | tee -a ${WEB_RELEASE_HISTORY_CURRENT_FILE}
+        echo "发送邮箱：${MY_USER_EMAIL}" | tee -a ${WEB_RELEASE_HISTORY_CURRENT_FILE}
         echo "开始时间：${TIME}" | tee -a ${WEB_RELEASE_HISTORY_CURRENT_FILE}
         echo "结束时间：${TIME_END}" | tee -a ${WEB_RELEASE_HISTORY_CURRENT_FILE}
         echo "${WEB_ACTION}清单：" | tee -a ${WEB_RELEASE_HISTORY_CURRENT_FILE}

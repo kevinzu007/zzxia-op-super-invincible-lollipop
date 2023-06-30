@@ -73,13 +73,20 @@ DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE="${LOG_HOME}/${SH_NAME}-histo
 FUCK_HISTORY_FILE="${LOLLIPOP_DB_HOME}/fuck.history"
 # 运行方式
 SH_RUN_MODE="normal"
+# 来自webhook或父shell
+export HOOK_USER_INFO_FROM
+export HOOK_GAN_ENV
+export HOOK_USER_NAME
+export HOOK_USER_XINGMING
+export HOOK_USER_EMAIL
 # 来自父shell
 DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE_function=${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE_function:-"${LOG_HOME}/${SH_NAME}-OK.function"}
-MY_USER_NAME=${MY_USER_NAME:-''}
-MY_EMAIL=${MY_EMAIL:-''}
-# 来自webhook
-HOOK_GAN_ENV=${HOOK_GAN_ENV:-''}
-HOOK_USER=${HOOK_USER:-''}
+#MY_USER_NAME=
+#MY_USER_XINGMING=
+#MY_USER_EMAIL=
+if [[ -z ${USER_INFO_FROM} ]]; then
+    USER_INFO_FROM=${HOOK_USER_INFO_FROM:-'local'}     #--【local|hook_hand|hook_gitlab】，默认：local
+fi
 # sh
 DOCKER_IMAGE_SEARCH_SH="${SH_PATH}/docker-image-search.sh"
 FORMAT_TABLE_SH="${SH_PATH}/../op/format_table.sh"
@@ -1307,14 +1314,6 @@ fi
 
 
 
-# 运行环境匹配for Hook
-if [[ -n ${HOOK_GAN_ENV} ]] && [[ ${HOOK_GAN_ENV} != ${RUN_ENV} ]]; then
-    echo -e "\n猪猪侠警告：运行环境不匹配，跳过（这是正常情况）\n"
-    exit
-fi
-
-
-
 # 建立base目录
 [ -d "${LOG_HOME}" ] || mkdir -p "${LOG_HOME}"
 [ -d "${LOLLIPOP_YAML_BASE}" ] || mkdir -p "${LOLLIPOP_YAML_BASE}"
@@ -1327,24 +1326,38 @@ fi
 
 
 
-# 用户信息
-if [[ -n ${HOOK_USER} ]]; then
-    MY_USER_NAME=${HOOK_USER}
-elif [[ -n ${MY_USER_NAME} ]]; then
-    MY_USER_NAME=${MY_USER_NAME}
-else
-    # if sudo -i 取${SUDO_USER}；
-    # if sudo cmd 取${LOGNAME}
-    MY_USER_NAME=${SUDO_USER:-"${LOGNAME}"}
+# 运行环境匹配for Hook
+if [[ -n ${HOOK_GAN_ENV} ]] && [[ ${HOOK_GAN_ENV} != ${RUN_ENV} ]]; then
+    echo -e "\n猪猪侠警告：运行环境不匹配，跳过（这是正常情况）\n"
+    exit
 fi
-#
-F_USER_SEARCH ${MY_USER_NAME} > /dev/null
-if [ $? -eq 0 ]; then
-    R=`F_USER_SEARCH ${MY_USER_NAME}`
-    export MY_EMAIL=${MY_EMAIL:-"`echo $R | cut -d ' ' -f 2`"}
-    MY_XINGMING=`echo $R | cut -d ' ' -f 1`
-else
-    MY_XINGMING='X-Man'
+
+
+
+# 用户信息
+if [[ -z ${MY_USER_NAME} ]]; then
+    if [[ ${USER_INFO_FROM} == 'local' ]]; then
+        # if sudo -i 取${SUDO_USER}；
+        # if sudo cmd 取${LOGNAME}
+        export MY_USER_NAME=${SUDO_USER:-"${LOGNAME}"}
+        #
+        F_USER_SEARCH ${MY_USER_NAME} > /dev/null
+        if [ $? -eq 0 ]; then
+            R=`F_USER_SEARCH ${MY_USER_NAME}`
+            export MY_USER_EMAIL=${MY_USER_EMAIL:-"`echo $R | cut -d ' ' -f 2`"}
+            export MY_USER_XINGMING=`echo $R | cut -d ' ' -f 1`
+        else
+            export MY_USER_XINGMING='X-Man'
+            export MY_USER_EMAIL
+        fi
+    elif [[ ${USER_INFO_FROM} =~ 'hook_gitlab|hook_hand' ]]; then
+        export MY_USER_NAME=${HOOK_USER_NAME}
+        export MY_USER_XINGMING=${HOOK_USER_XINGMING}
+        export MY_USER_EMAIL=${HOOK_USER_EMAIL}
+    else
+        echo -e "\n猪猪侠警告：未知参数值【\${USER_INFO_FROM} = ${USER_INFO_FROM}】\n"
+        exit  51
+    fi
 fi
 
 
@@ -2933,7 +2946,8 @@ case ${SH_RUN_MODE} in
         echo -e "${ECHO_REPORT}==================== DOCKER SERVICE ${SERVICE_OPERATION} 报告 ====================${ECHO_CLOSE}"
         #
         echo "所在环境：${RUN_ENV}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
-        echo "造 浪 者：${MY_XINGMING}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
+        echo "造 浪 者：${MY_USER_XINGMING}@${USER_INFO_FROM}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
+        echo "发送邮箱：${MY_USER_EMAIL}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         echo "开始时间：${TIME}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         echo "结束时间：${TIME_END}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         echo "镜像TAG ：${DOCKER_IMAGE_TAG}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
