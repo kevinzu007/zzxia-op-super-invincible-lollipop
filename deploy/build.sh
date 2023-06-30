@@ -1279,7 +1279,7 @@ if [[ -z ${MY_USER_NAME} ]]; then
             export MY_USER_XINGMING='x-Man'
             export MY_USER_EMAIL
         fi
-    elif [[ ${USER_INFO_FROM} =~ 'hook_gitlab|hook_hand' ]]; then
+    elif [[ ${USER_INFO_FROM} =~ hook_gitlab|hook_hand ]]; then
         export MY_USER_NAME=${HOOK_USER_NAME}
         export MY_USER_XINGMING=${HOOK_USER_XINGMING}
         export MY_USER_EMAIL=${HOOK_USER_EMAIL}
