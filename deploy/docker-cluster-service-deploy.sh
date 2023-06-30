@@ -1347,7 +1347,7 @@ if [[ -z ${MY_USER_NAME} ]]; then
             export MY_USER_EMAIL=${MY_USER_EMAIL:-"`echo $R | cut -d ' ' -f 2`"}
             export MY_USER_XINGMING=`echo $R | cut -d ' ' -f 1`
         else
-            export MY_USER_XINGMING='X-Man'
+            export MY_USER_XINGMING='x-Man'
             export MY_USER_EMAIL
         fi
     elif [[ ${USER_INFO_FROM} =~ 'hook_gitlab|hook_hand' ]]; then
