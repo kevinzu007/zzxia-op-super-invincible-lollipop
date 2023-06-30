@@ -414,8 +414,8 @@ def hook_gitlab():
     #
     # 必须参数
     if gan_do == '':
-        # 默认：build
-        gan_cmd = GAN_CMD_HOME + '/deploy/build.sh'
+        # 默认：gogogo
+        gan_cmd = GAN_CMD_HOME + '/deploy/gogogo.sh'
     elif gan_do == 'build':
         gan_cmd = GAN_CMD_HOME + '/deploy/build.sh'
     elif gan_do == 'gogogo':
