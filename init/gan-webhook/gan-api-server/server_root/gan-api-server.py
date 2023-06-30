@@ -292,7 +292,7 @@ def hook_gitlab():
 
     # git commit msg包含信息: 
     # 全部： {env=dev|stag|prod|其他,do=build|gogogo,skiptest=yes,version=5.5,gray=yes}
-    # 最少： {env=dev|stag|prod|其他,do=build|gogogo}
+    # 最少： {env=dev|stag|prod|其他}     #-- 默认：do=gogogo
 
     recive_header = request.headers
     recive_raw_body = request.data
@@ -364,8 +364,8 @@ def hook_gitlab():
     #
     # 没有 { } 就退出
     if gan_repo_commits_message.find('{') == -1 or gan_repo_commits_message.find('}') == -1 :
-        print("{Status: OK, Message: Wehook信息不存在或不完整，退出！}")
-        return jsonify({"Status": "OK", "Message": "Wehook信息不存在或不完整，退出！"})
+        print("{Status: OK, Message: Webhook信息不存在或不完整，退出！}")
+        return jsonify({"Status": "OK", "Message": "Webhook信息不存在或不完整，退出！"})
     #
     gan_arg = gan_repo_commits_message
     gan_arg = gan_arg.split('{')[1]
@@ -403,7 +403,7 @@ def hook_gitlab():
     # 必须参数
     if gan_env == '':
         # 退出
-        return jsonify({"Status": "Error", "Message": "wehook信息之【env】不存在"})
+        return jsonify({"Status": "Error", "Message": "webhook信息之【env】不存在"})
     else:
         gan_cmd_0 = ' export HOOK_USER_INFO_FROM=hook_gitlab ' + \
             '; export HOOK_GAN_ENV=' + gan_env + \
@@ -413,7 +413,10 @@ def hook_gitlab():
     #
     #
     # 必须参数
-    if gan_do == 'build':
+    if gan_do == '':
+        # 默认：build
+        gan_cmd = GAN_CMD_HOME + '/deploy/build.sh'
+    elif gan_do == 'build':
         gan_cmd = GAN_CMD_HOME + '/deploy/build.sh'
     elif gan_do == 'gogogo':
         gan_cmd = GAN_CMD_HOME + '/deploy/gogogo.sh'
@@ -424,7 +427,7 @@ def hook_gitlab():
             gan_cmd = gan_cmd + ' --gray '
     else:
         # 退出
-        return jsonify({"Status": "Error","Message": "wehook信息之【do】不存在、错误或超出范围"})
+        return jsonify({"Status": "Error","Message": "webhook信息之【do】不存在、错误或超出范围"})
     # 
     if re.match(r'^yes|^YES|^y|^yes', gan_skiptest):
         gan_cmd = gan_cmd + ' --skiptest '
@@ -441,13 +444,13 @@ def hook_gitlab():
     # 运行shell脚本
     #
     # hook/gitlab
-    web_hook_logfile = GAN_LOG_HOME + '/webhook_gitlab--' + hook_time + '--' + gan_project + '.log'
+    webhook_logfile = GAN_LOG_HOME + '/webhook_gitlab--' + hook_time + '--' + gan_project + '.log'
     run_result = os.system(gan_cmd_0 + ' ; ' + gan_cmd +
-                           ' > ' + web_hook_logfile + ' 2>&1')
+                           ' > ' + webhook_logfile + ' 2>&1')
     
     # 返回详细信息没用：
     #return send_file(web_hook_logfile, mimetype='text/plain')
-    return jsonify({"Status": "OK", "Logfile": web_hook_logfile})
+    return jsonify({"Status": "OK", "Logfile": webhook_logfile})
 
 
 
@@ -666,13 +669,13 @@ def hook_hand():
     print('项目列表:', gan_projects)
     #
     if not re.match(r'build|deploy|gogogo', gan_do):
-        return jsonify({"Status": "Error", "Message": "wehook信息不存在或错误"})
+        return jsonify({"Status": "Error", "Message": "Webhook信息不存在或错误"})
     #
     #
     # 必须参数
     if gan_user_name == '':
         # 退出
-        return jsonify({"Status": "Error", "Message": "Hook用户名为空，绝无可能"})
+        return jsonify({"Status": "Error", "Message": "Webhook用户名为空，绝无可能"})
     else:
         gan_cmd_0 = 'export HOOK_USER_INFO_FROM=hook_hand' + \
             '; export HOOK_USER_NAME=' + gan_user_name + \
@@ -697,7 +700,7 @@ def hook_hand():
         gan_cmd = GAN_CMD_HOME + '/deploy/web-release.sh  待完成 '
     else:
         # 退出
-        return jsonify({"Status": "Error", "Message": "wehook信息之【do】不存在或错误"})
+        return jsonify({"Status": "Error", "Message": "Webhook信息之【do】不存在或错误"})
     #
     if re.search ('deploy', gan_do):
         if gan_projects != '':
@@ -721,11 +724,11 @@ def hook_hand():
     # 运行shell脚本
     #
     # hook/hand
-    web_hook_logfile = GAN_LOG_HOME + '/web_hook_hand---' + hook_time + '.log'
+    webhook_logfile = GAN_LOG_HOME + '/webhook_hand--' + hook_time + '.log'
     run_result = os.system(gan_cmd_0 + ' ; ' + gan_cmd +
-                           ' > ' + web_hook_logfile + ' 2>&1')
+                           ' > ' + webhook_logfile + ' 2>&1')
     
-    return send_file(web_hook_logfile, mimetype='text/plain')
+    return send_file(webhook_logfile, mimetype='text/plain')
 
 
 
