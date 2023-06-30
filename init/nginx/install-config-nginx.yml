@@ -25,8 +25,8 @@
     - NGINX_CONF_DEFAULT_DIR: "{{ lookup('env','NGINX_CONF_DEFAULT_DIR') }}"
   tasks:
     - name: crontab - htpass
-      cron: name=htpass backup=yes state=present minute=0 hour=0 day=*  month=* weekday=* user=root job='echo "adm33$(date +\%y\%-m\%-d)" | htpasswd -i -c {{ NGINX_CONF_DEFAULT_DIR }}/pass.db adm > /dev/null'
+      cron: name=htpass backup=yes state=present minute=0 hour=0 day=*  month=* weekday=* user=root job='echo "adm33$(date +\%y\%-m\%-d)" | htpasswd -i -c {{ NGINX_CONF_DEFAULT_DIR }}/pass.db adm > /dev/null 2>&1'
     - name: crontab - 清理build-log
-      cron: name=清理build-log backup=yes state=present minute=0 hour=0 day=*  month=* weekday=* user=root job='find {{ WEBSITE_BASE }}/build-log/releases/current/file/ -type d -ctime +3 | xargs rm -rf {} \; >/dev/null'
+      cron: name=清理build-log backup=yes state=present minute=0 hour=0 day=*  month=* weekday=* user=root job='find {{ WEBSITE_BASE }}/build-log/releases/current/file/ -type d -ctime +3 | xargs rm -rf {} \; >/dev/null 2>&1'
 
 
