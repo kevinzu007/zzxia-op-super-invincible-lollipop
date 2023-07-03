@@ -12,7 +12,8 @@ SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
 
-# 自动引入/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
+# 引入/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
+.  /etc/profile
 #NGINX_CONFIG_SH_HOME=
 
 # 引入env.sh
