@@ -497,7 +497,7 @@ DOCKER_BUILD()
                 ERR_SHOW
                 # mail
                 if [[ ! -z "${MY_USER_EMAIL}" ]]; then
-                    ${SEND_MAIL}  --subject "【${RUN_ENV}】Build Log - ${PJ}"  --content "请看附件\n"  --attach "${BUILD_LOG_file}"  "${MY_USER_EMAIL}"
+                    ${SEND_MAIL}  --subject "【${RUN_ENV}】${GAN_WHAT_FUCK} Log - ${PJ}"  --content "请看附件\n"  --attach "${BUILD_LOG_file}"  "${MY_USER_EMAIL}"
                 fi
                 return 54
             else
@@ -592,7 +592,7 @@ JAVA_BUILD()
                 ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no" 
                 # mail
                 if [[ ! -z "${MY_USER_EMAIL}" ]]; then
-                    ${SEND_MAIL}  --subject "【${RUN_ENV}】Build Log - ${PJ}"  --content "请看附件\n"  --attach "${BUILD_LOG_file}"  "${MY_USER_EMAIL}"
+                    ${SEND_MAIL}  --subject "【${RUN_ENV}】${GAN_WHAT_FUCK} Log - ${PJ}"  --content "请看附件\n"  --attach "${BUILD_LOG_file}"  "${MY_USER_EMAIL}"
                 fi
                 echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
                 echo "${PJ} : 失败 : x" >> ${BUILD_OK_LIST_FILE}
@@ -748,7 +748,7 @@ NODE_BUILD()
         ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
         # mail
         if [[ ! -z "${MY_USER_EMAIL}" ]]; then
-            ${SEND_MAIL}  --subject "【${RUN_ENV}】Build Log - ${PJ}"  --content "请看附件\n"  --attach "${BUILD_LOG_file}"  "${MY_USER_EMAIL}"
+            ${SEND_MAIL}  --subject "【${RUN_ENV}】${GAN_WHAT_FUCK} Log - ${PJ}"  --content "请看附件\n"  --attach "${BUILD_LOG_file}"  "${MY_USER_EMAIL}"
         fi
         echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
         echo "${PJ} : 失败 : x" >> ${BUILD_OK_LIST_FILE}
@@ -878,7 +878,7 @@ HTML_BUILD()
         ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
         # mail
         if [[ ! -z "${MY_USER_EMAIL}" ]]; then
-            ${SEND_MAIL}  --subject "【${RUN_ENV}】Build Log - ${PJ}"  --content "请看附件\n"  --attach "${BUILD_LOG_file}"  "${MY_USER_EMAIL}"
+            ${SEND_MAIL}  --subject "【${RUN_ENV}】${GAN_WHAT_FUCK} Log - ${PJ}"  --content "请看附件\n"  --attach "${BUILD_LOG_file}"  "${MY_USER_EMAIL}"
         fi
         echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"  2>&1 | tee -a ${BUILD_LOG_file}
         echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
@@ -995,7 +995,7 @@ PYTHON_BUILD()
         ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
         # mail
         if [[ ! -z "${MY_USER_EMAIL}" ]]; then
-            ${SEND_MAIL}  --subject "【${RUN_ENV}】Build Log - ${PJ}"  --content "请看附件\n"  --attach "${BUILD_LOG_file}"  "${MY_USER_EMAIL}"
+            ${SEND_MAIL}  --subject "【${RUN_ENV}】${GAN_WHAT_FUCK} Log - ${PJ}"  --content "请看附件\n"  --attach "${BUILD_LOG_file}"  "${MY_USER_EMAIL}"
         fi
         echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"  2>&1 | tee -a ${BUILD_LOG_file}
         echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
@@ -1490,8 +1490,8 @@ do
     fi
     #
     #
-    GIT_LOG_file=${GIT_LOG}.${PJ}
-    BUILD_LOG_file=${BUILD_LOG}.${PJ}
+    GIT_LOG_file="${GIT_LOG}--${PJ}.log"
+    BUILD_LOG_file="${BUILD_LOG}--${PJ}.log"
     #
     BUILD_CHECK_COUNT=`expr ${BUILD_CHECK_COUNT} + 1`
     cd  ${LOLLIPOP_PROJECT_BASE}
@@ -1521,8 +1521,9 @@ do
     fi
     BUILD_TIME_0=`date +%s`
     # 检查是否正在构建
-    ps -ef | grep "${PJ}" | grep -v "$0" | grep -v '.sh' | grep -v grep > /dev/null 2>&1
-    if [ $? -eq 0 ]; then
+    #ps -ef | grep "${PJ}" | grep -v "$0" | grep -v '.sh' | grep -v grep > /dev/null 2>&1
+    grep_N=$(ps -ef | grep -v grep | grep -E "$0 .* ${PJ}")
+    if [[ ${grep_N} > 1 ]]; then
         echo "${PJ} : 失败，其他用户正在构建中 : x" >> ${BUILD_OK_LIST_FILE}
         echo -e "${ECHO_ERROR}【${GAN_WHAT_FUCK}】时，【${PJ}】失败了，其他用户正在构建中${ECHO_CLOSE}"
         ${DINGDING_MARKDOWN_PY}  "【Error:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "【${GAN_WHAT_FUCK}】时，【${PJ}】失败了，其他用户正在构建中" > /dev/null
@@ -1683,7 +1684,7 @@ TIME_END=`date +%Y-%m-%dT%H:%M:%S`
 case ${SH_RUN_MODE} in
     normal)
         #
-        MESSAGE_END="项目构建已完成！共企图构建${TOTAL_PJS}个项目，成功构建${BUILD_SUCCESS_COUNT}个项目，${BUILD_NOCHANGE_COUNT}个项目无更新，${BUILD_NOTNEED_COUNT}个项目无需构建，${BUILD_ERROR_COUNT}个项目出错，${NOT_BUILD_COUNT}个项目因外部干预退出构建。"
+        MESSAGE_END="项目构建已完成！共企图构建${TOTAL_PJS}个项目，成功构建${BUILD_SUCCESS_COUNT}个项目，${BUILD_NOCHANGE_COUNT}个项目无更新，${BUILD_NOTNEED_COUNT}个项目无需构建，${BUILD_ERROR_COUNT}个项目出错，${NOT_BUILD_COUNT}个项目因其他原因退出构建。"
         # 消息回显拼接
         > ${BUILD_HISTORY_CURRENT_FILE}
         echo "干：**${GAN_WHAT_FUCK}**" | tee -a ${BUILD_HISTORY_CURRENT_FILE}

@@ -364,8 +364,8 @@ def hook_gitlab():
     #
     # 没有 { } 就退出
     if gan_repo_commits_message.find('{') == -1 or gan_repo_commits_message.find('}') == -1 :
-        print("{Status: OK, Message: Webhook信息不存在或不完整，退出！}")
-        return jsonify({"Status": "OK", "Message": "Webhook信息不存在或不完整，退出！"})
+        print("{Status: OK, Message: Webhook信息不存在或不完整，正常退出！}")
+        return jsonify({"Status": "OK", "Message": "Webhook信息不存在或不完整，正常退出！"})
     #
     gan_arg = gan_repo_commits_message
     gan_arg = gan_arg.split('{')[1]
