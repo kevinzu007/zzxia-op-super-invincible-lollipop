@@ -308,8 +308,8 @@ def hook_gitlab():
     print("##################################################")
     print("请求头：")
     print(recive_header)
-    print("请求body：")
-    print(recive_json_body)
+    #print("请求body：")
+    #print(recive_json_body)
     print('')
     
     # header处理
@@ -580,8 +580,8 @@ def hook_hand():
     print("##################################################")
     print("请求头：")
     print(recive_header)
-    print("请求body：")
-    print(recive_json_body)
+    #print("请求body：")
+    #print(recive_json_body)
     print('')
 
     # header处理
