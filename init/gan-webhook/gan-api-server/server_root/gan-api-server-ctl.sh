@@ -15,6 +15,7 @@ cd "${SH_PATH}"
 LISTEN_IP='0.0.0.0'
 LISTEN_PORT='9527'
 SERVER_LOG_FILE="${SH_PATH}/${SH_NAME}.log"
+WAITRESS_CMD='/usr/local/bin/waitress-serve'
 
 
 
@@ -52,7 +53,7 @@ F_HELP()
 # 启动服务
 START()
 {
-    nohup  waitress-serve  --host="${LISTEN_IP}"  --port="${LISTEN_PORT}"  gan_api_server:app  >> ${SERVER_LOG_FILE} 2>&1 &
+    nohup  ${WAITRESS_CMD}  --host="${LISTEN_IP}"  --port="${LISTEN_PORT}"  gan_api_server:app  >> ${SERVER_LOG_FILE} 2>&1 &
 }
 
 
