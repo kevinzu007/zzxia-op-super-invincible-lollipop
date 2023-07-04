@@ -1,5 +1,4 @@
+waitress
 flask
 flask_cors
-hmac
-hashlib
 
