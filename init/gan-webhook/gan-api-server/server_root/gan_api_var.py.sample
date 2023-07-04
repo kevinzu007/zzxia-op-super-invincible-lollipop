@@ -4,11 +4,10 @@
 
 # 0 基本变量
 GAN_CMD_HOME = '/root/zzxia-op-super-invincible-lollipop'      #-- 项目路径
-GAN_LOG_HOME = '/srv/python_services/gan-api-server/log'           #-- 运行日志路径
+GAN_LOG_HOME = '/srv/python_services/gan-api-server/log'       #-- 运行日志路径
 
 
 # 1
-
 
 # 1.1 gitlab
 

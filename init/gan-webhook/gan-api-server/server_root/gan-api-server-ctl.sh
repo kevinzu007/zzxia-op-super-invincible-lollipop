@@ -11,6 +11,12 @@ SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd "${SH_PATH}"
 
+# 本地env
+LISTEN_IP='0.0.0.0'
+LISTEN_PORT='9527'
+SERVER_LOG_FILE="${SH_PATH}/${SH_NAME}.log"
+
+
 
 # 用法：
 F_HELP()
@@ -42,15 +48,33 @@ F_HELP()
 }
 
 
+
+# 启动服务
+START()
+{
+    nohup  waitress-serve  --host="${LISTEN_IP}"  --port="${LISTEN_PORT}"  gan_api_server:app  >> ${SERVER_LOG_FILE} 2>&1 &
+}
+
+
+
+# 查找PID
+GET_PID()
+{
+    xPID=$(ps -ef | grep 'gan_api_server:app' | grep -v 'grep' | awk '{print $2}')
+    echo ${xPID}
+}
+
+
+
 case $1 in
     -h|--help)
         F_HELP
         exit
         ;;
     -u|--up)
-        PID_GAN=$(ps -ef | grep  gan-api-server.py | grep -v 'grep' | awk '{print $2}')
+        PID_GAN=$(GET_PID)
         if [[ -z ${PID_GAN} ]]; then
-            nohup  python3 ./gan-api-server.py  >> ./gan-api-server.py.log 2>&1 &
+            START
             echo "服务启动: OK"
             exit
         else
@@ -59,7 +83,7 @@ case $1 in
         fi
         ;;
     -d|--down)
-        PID_GAN=$(ps -ef | grep  gan-api-server.py | grep -v 'grep' | awk '{print $2}')
+        PID_GAN=$(GET_PID)
         if [[ -z ${PID_GAN} ]]; then
             echo -e "\n猪猪侠警告：服务不在运行中！\n"
             exit 1
@@ -70,16 +94,16 @@ case $1 in
         fi
         ;;
     -r|--restart)
-        PID_GAN=$(ps -ef | grep  gan-api-server.py | grep -v 'grep' | awk '{print $2}')
+        PID_GAN=$(GET_PID)
         if [[ -z ${PID_GAN} ]]; then
             echo -e "\n猪猪侠警告：服务不在运行中！\n"
-            nohup  python3 ./gan-api-server.py  >> ./gan-api-server.py.log 2>&1 &
+            START
             echo "服务启动: OK"
             exit
         else
             kill -9 ${PID_GAN}
             echo "服务停止: OK"
-            nohup  python3 ./gan-api-server.py  >> ./gan-api-server.py.log 2>&1 &
+            START
             echo "服务启动: OK"
             exit
         fi
