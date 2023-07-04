@@ -15,6 +15,7 @@ cd ${SH_PATH}
 # 引入/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
 .  /etc/profile
 #NGINX_CONFIG_SH_HOME=
+#PG_MANAGE_SH_HOME=
 
 # 引入env.sh
 
@@ -140,7 +141,7 @@ case "${DO}" in
         bash ${SH_PATH}/op/cert-letsencrypt-wildcart.sh  ${CMD_ARG}
         ;;
     "pg-b-r")
-        ansible ${ANSIBLE_HOST_FOR_PG_BACKUP_RESTORE} -m shell  -a "bash /backup/pg/pg_list_backup_or_restore.sh  ${CMD_ARG}"
+        ansible ${ANSIBLE_HOST_FOR_PG_BACKUP_RESTORE} -m shell  -a "bash ${PG_MANAGE_SH_HOME}/pg_list_backup_or_restore.sh  ${CMD_ARG}"
         ;;
     "aliyun-dns")
         bash ${SH_PATH}/op/aliyun-dns.sh  ${CMD_ARG}

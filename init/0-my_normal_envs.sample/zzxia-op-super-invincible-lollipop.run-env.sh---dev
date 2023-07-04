@@ -18,6 +18,9 @@
 # I - 【zzxia-op-super-invincible-lollipop|超级无敌棒棒糖】项目路径
 export ZZXIA_OP_SUPER_INVINCIBLE_LOLLIPOP_HOME='/root/zzxia-op-super-invincible-lollipop'
 
+# IBD -.
+export LOLLIPOP_PLATFORM_NAME="超甜BD系统"         #--- 给本构建发布系统取个名字
+
 
 
 # IRBD - dev,stag,prod
@@ -45,8 +48,11 @@ export PYTHON_SERVICES_BASE='/srv/python_services'
 
 
 
+# IRD - Postgresql备份恢复脚本路径（cp pg/manage到pg服务器上）
+export PG_MANAGE_SH_HOME="/manage/pg--${LOLLIPOP_PLATFORM_NAME}"
+
 # IRD - Nginx配置脚本路径（cp nginx-config到nginx服务器上）
-export NGINX_CONFIG_SH_HOME='/root/nginx-config--xx'
+export NGINX_CONFIG_SH_HOME="/root/nginx-config--${LOLLIPOP_PLATFORM_NAME}"
 
 # R - Nginx conf.d目录
 export NGINX_CONF_DEFAULT_DIR="/etc/nginx/conf.d"
