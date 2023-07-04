@@ -362,54 +362,58 @@ def hook_gitlab():
     print('提交次数:' + str(gan_repo_commits_count))
     print('提交信息:' + gan_repo_commits_message)
     #
-    # 没有 { } 就退出
-    if gan_repo_commits_message.find('{') == -1 or gan_repo_commits_message.find('}') == -1 :
-        print("{Status: OK, Message: Webhook信息不存在或不完整，正常退出！}")
-        return jsonify({"Status": "OK", "Message": "Webhook信息不存在或不完整，正常退出！"})
     #
-    gan_arg = gan_repo_commits_message
-    gan_arg = gan_arg.split('{')[1]
-    gan_arg = gan_arg.split('}')[0]
-    gan_arg = gan_arg.replace(' ','')
-    gan_arg = gan_arg.replace('"','')
-    gan_arg = gan_arg.replace("'", '')
-    gan_arg = gan_arg.lower()
+    # 检查{}
+    if gan_repo_commits_message.find('{') == -1 and gan_repo_commits_message.find('}') == -1 :
+        #
+        gan_arg = gan_repo_commits_message
+        gan_arg = gan_arg.split('{')[1]
+        gan_arg = gan_arg.split('}')[0]
+        gan_arg = gan_arg.replace(' ','')
+        gan_arg = gan_arg.replace('"','')
+        gan_arg = gan_arg.replace("'", '')
+        gan_arg = gan_arg.lower()
+        #
+        split_char = ','
+        num = gan_arg.count(split_char) + 1
+        #
+        gan_env = ''
+        gan_do = ''
+        gan_version = ''
+        gan_gray = ''
+        gan_skiptest = ''
+        print('gan_arg参数：' + gan_arg)
+        for i in range(num):
+            gan_kv = gan_arg.split(split_char)[i].strip()
+            gan_k = gan_kv.split('=')[0].strip()
+            gan_v = gan_kv.split('=')[1].strip()
+            if gan_k == 'env' and gan_v != '':
+                gan_env = gan_v
+            elif gan_k == 'do' and gan_v != '':
+                gan_do = gan_v
+            elif gan_k == 'version' and gan_v != '':
+                gan_version = gan_v
+            elif gan_k == 'gray' and gan_v != '':
+                gan_gray = gan_v
+            elif gan_k == 'skiptest':
+                gan_skiptest = gan_v
     #
-    split_char = ','
-    num = gan_arg.count(split_char) + 1
-    #
-    gan_env = ''
-    gan_do = ''
-    gan_version = ''
-    gan_gray = ''
-    gan_skiptest = ''
-    print('gan_arg参数：' + gan_arg)
-    for i in range(num):
-        gan_kv = gan_arg.split(split_char)[i].strip()
-        gan_k = gan_kv.split('=')[0].strip()
-        gan_v = gan_kv.split('=')[1].strip()
-        if gan_k == 'env' and gan_v != '':
-            gan_env = gan_v
-        elif gan_k == 'do' and gan_v != '':
-            gan_do = gan_v
-        elif gan_k == 'version' and gan_v != '':
-            gan_version = gan_v
-        elif gan_k == 'gray' and gan_v != '':
-            gan_gray = gan_v
-        elif gan_k == 'skiptest':
-            gan_skiptest = gan_v
-    #
-    #
-    # 必须参数
-    if gan_env == '':
-        # 退出
-        return jsonify({"Status": "Error", "Message": "Webhook信息之【env】不存在"})
+    # 检查设置env
+    if GITLAB_GIT_COMMIT_ENV_CHECK == True:
+        # 必须参数
+        if gan_env == '':
+            # 退出
+            return jsonify({"Status": "Error", "Message": "Webhook信息之【env】不存在"})
+        #
     else:
-        gan_cmd_0 = ' export HOOK_USER_INFO_FROM=hook_gitlab ' + \
-            '; export HOOK_GAN_ENV=' + gan_env + \
-            '; export HOOK_USER_NAME=' + gan_user_name + \
-            '; export HOOK_USER_XINGMING=' + gan_user_xingming + \
-            '; export HOOK_USER_EMAIL=' + gan_user_email
+        HOOK_GAN_ENV = 'NOT_CHECK'
+
+    # 组装 gan_cmd_0
+    gan_cmd_0 = ' export HOOK_USER_INFO_FROM=hook_gitlab ' + \
+        '; export HOOK_GAN_ENV=' + gan_env + \
+        '; export HOOK_USER_NAME=' + gan_user_name + \
+        '; export HOOK_USER_XINGMING=' + gan_user_xingming + \
+        '; export HOOK_USER_EMAIL=' + gan_user_email
     #
     #
     # 必须参数

@@ -266,7 +266,7 @@ done
 
 
 # 运行环境匹配for Hook
-if [[ -n ${HOOK_GAN_ENV} ]] && [[ ${HOOK_GAN_ENV} != ${RUN_ENV} ]]; then
+if [[ -n ${HOOK_GAN_ENV} ]] && [[ ${HOOK_GAN_ENV} != 'NOT_CHECK' ]] && [[ ${HOOK_GAN_ENV} != ${RUN_ENV} ]]; then
     echo -e "\n猪猪侠警告：运行环境不匹配，跳过（这是正常情况）\n"
     exit
 fi
