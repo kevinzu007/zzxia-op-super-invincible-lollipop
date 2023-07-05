@@ -364,7 +364,7 @@ def hook_gitlab():
     #
     #
     # 检查{}
-    if gan_repo_commits_message.find('{') == -1 and gan_repo_commits_message.find('}') == -1 :
+    if gan_repo_commits_message.find('{') != -1 and gan_repo_commits_message.find('}') != -1 :
         #
         gan_arg = gan_repo_commits_message
         gan_arg = gan_arg.split('{')[1]
