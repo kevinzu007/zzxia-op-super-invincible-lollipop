@@ -406,7 +406,7 @@ def hook_gitlab():
             return jsonify({"Status": "Error", "Message": "Webhook信息之【env】不存在"})
         #
     else:
-        HOOK_GAN_ENV = 'NOT_CHECK'
+        gan_env = 'NOT_CHECK'
 
     # 组装 gan_cmd_0
     gan_cmd_0 = ' export HOOK_USER_INFO_FROM=hook_gitlab ' + \
