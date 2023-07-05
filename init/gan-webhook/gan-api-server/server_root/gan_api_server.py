@@ -361,8 +361,18 @@ def hook_gitlab():
     print('提交次数: %d' % gan_repo_commits_count)
     print('提交次数:' + str(gan_repo_commits_count))
     print('提交信息:' + gan_repo_commits_message)
-    #
-    #
+
+
+
+    # 变量初始化
+    gan_env = ''
+    gan_do = ''
+    gan_version = ''
+    gan_gray = ''
+    gan_skiptest = ''
+
+
+    # commit msg 处理
     # 检查{}
     if gan_repo_commits_message.find('{') != -1 and gan_repo_commits_message.find('}') != -1 :
         #
@@ -377,11 +387,6 @@ def hook_gitlab():
         split_char = ','
         num = gan_arg.count(split_char) + 1
         #
-        gan_env = ''
-        gan_do = ''
-        gan_version = ''
-        gan_gray = ''
-        gan_skiptest = ''
         print('gan_arg参数：' + gan_arg)
         for i in range(num):
             gan_kv = gan_arg.split(split_char)[i].strip()
@@ -397,7 +402,8 @@ def hook_gitlab():
                 gan_gray = gan_v
             elif gan_k == 'skiptest':
                 gan_skiptest = gan_v
-    #
+
+
     # 检查设置env
     if GITLAB_GIT_COMMIT_ENV_CHECK == True:
         # 必须参数
@@ -414,8 +420,8 @@ def hook_gitlab():
         '; export HOOK_USER_NAME=' + gan_user_name + \
         '; export HOOK_USER_XINGMING=' + gan_user_xingming + \
         '; export HOOK_USER_EMAIL=' + gan_user_email
-    #
-    #
+
+
     # 必须参数
     if gan_do == '':
         # 默认：gogogo
