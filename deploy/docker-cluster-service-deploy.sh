@@ -827,17 +827,17 @@ F_SEARCH_CLUSTER_MANAGE_INFO()
     #
     F_CLUSTER=$1
     #
-    CLUSTER_MANAGE_INFO=()
+    CLUSTER_MANAGE_INFO=''
     #
     case ${F_CLUSTER} in
         swarm)
-            CLUSTER_MANAGE_INFO=(${SWARM_DEFAULT_DOCKER_HOST})
+            CLUSTER_MANAGE_INFO=${SWARM_DEFAULT_DOCKER_HOST}
             ;;
         k8s)
-            CLUSTER_MANAGE_INFO=(${K8S_DEFAULT_CONTEXT})
+            CLUSTER_MANAGE_INFO=${K8S_DEFAULT_CONTEXT}
             ;;
         compose)
-            CLUSTER_MANAGE_INFO=(${COMPOSE_DEFAULT_DOCKER_HOST})
+            CLUSTER_MANAGE_INFO=${COMPOSE_DEFAULT_DOCKER_HOST}
             ;;
         *)
             echo -e "\n猪猪侠警告：未定义的集群类型\n"
@@ -902,10 +902,10 @@ F_SEARCH_CLUSTER_MANAGE_INFO()
     done < ${SERVICE_LIST_FILE_APPEND_1}
     #
     # 去重
-    #CLUSTER_MANAGE_INFO=($( awk  -v RS=' '  '!a[$1]++'  <<< ${CLUSTER_MANAGE_INFO[@]} ))
-    CLUSTER_MANAGE_INFO=($( echo ${CLUSTER_MANAGE_INFO[@]} | awk  -v RS=' '  '!a[$1]++' ))
+    #CLUSTER_MANAGE_INFO=$( awk  -v RS=' '  '!a[$1]++'  <<< ${CLUSTER_MANAGE_INFO} )
+    CLUSTER_MANAGE_INFO=$( echo ${CLUSTER_MANAGE_INFO} | awk  -v RS=' '  '!a[$1]++' )
     # 输出
-    echo ${CLUSTER_MANAGE_INFO[@]}
+    echo ${CLUSTER_MANAGE_INFO}
     return
     #
 }
