@@ -878,17 +878,17 @@ F_SEARCH_CLUSTER_MANAGE_INFO()
                 case ${F_CLUSTER} in
                     swarm)
                         if [[ ${DEPLOY_PLACEMENT_SET} =~ ^H ]]; then
-                            CLUSTER_MANAGE_INFO+=$(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-)
+                            CLUSTER_MANAGE_INFO+=" $(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-)"
                         fi
                         ;;
                     k8s)
                         if [[ ${DEPLOY_PLACEMENT_SET} =~ ^C ]]; then
-                            CLUSTER_MANAGE_INFO+=$(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-)
+                            CLUSTER_MANAGE_INFO+=" $(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-)"
                         fi
                         ;;
                     compose)
                         if [[ ${DEPLOY_PLACEMENT_SET} =~ ^H ]]; then
-                            CLUSTER_MANAGE_INFO+=$(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-)
+                            CLUSTER_MANAGE_INFO+=" $(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-)"
                         fi
                         ;;
                     *)
@@ -902,7 +902,8 @@ F_SEARCH_CLUSTER_MANAGE_INFO()
     done < ${SERVICE_LIST_FILE_APPEND_1}
     #
     # 去重
-    CLUSTER_MANAGE_INFO=($( awk  -v RS=' '  '!a[$1]++'  <<< ${CLUSTER_MANAGE_INFO[@]} ))
+    #CLUSTER_MANAGE_INFO=($( awk  -v RS=' '  '!a[$1]++'  <<< ${CLUSTER_MANAGE_INFO[@]} ))
+    CLUSTER_MANAGE_INFO=($( echo ${CLUSTER_MANAGE_INFO[@]} | awk  -v RS=' '  '!a[$1]++' ))
     # 输出
     echo ${CLUSTER_MANAGE_INFO[@]}
     return
