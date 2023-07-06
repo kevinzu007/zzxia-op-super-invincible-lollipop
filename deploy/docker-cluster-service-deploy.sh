@@ -924,7 +924,7 @@ F_SEARCH_CLUSTER_MANAGE_INFO()
         # 在原表中查询完全信息
         for c in ${CLUSTER_MANAGE_INFO}
         do
-            c_host=$( $c |  awk -F '//' '{print $2}' | awk -F ':' '{print $1}' | cut -d '@' -f 2 )
+            c_host=$( echo $c  |  awk -F '//' '{print $2}' | awk -F ':' '{print $1}' | cut -d '@' -f 2 )
             if [[ ${c_host} == $b ]]; then
                 CLUSTER_MANAGE_INFO_HOST_bc+=" ${c_host}"
             fi
