@@ -11,9 +11,16 @@
 # 2  包含【B、D】的一律放到【${ZZXIA_OP_SUPER_INVINCIBLE_LOLLIPOP_HOME}/env.sh】中
 
 
-# ===============================================================================
-
 # 注意：目录名不要以【/】结尾
+
+
+
+######################################################################
+#                                                                    #
+# 1 关键信息，必须正确提供                                           #
+#                                                                    #
+######################################################################
+
 
 # I - 【zzxia-op-super-invincible-lollipop|超级无敌棒棒糖】项目路径
 export ZZXIA_OP_SUPER_INVINCIBLE_LOLLIPOP_HOME='/root/zzxia-op-super-invincible-lollipop'
@@ -23,11 +30,23 @@ export LOLLIPOP_PLATFORM_NAME="超甜BD系统"         #--- 给本构建发布�
 
 
 
-# IRBD - dev,stag,prod
+# IRBD - 环境参数，比如：dev,stag,prod，可以自定义
 export RUN_ENV='dev'
 
 # RB - 部署域名
 export DOMAIN="zjlh.lan"
+
+
+
+######################################################################
+#                                                                    #
+# 2 下面部分，如果不需要使用，可以不予理会                           #
+#                                                                    #
+######################################################################
+
+
+# ==============================
+# 警报用
 
 # RBD - EMAIL
 export EMAIL='admin@zzxia.com'
@@ -36,6 +55,9 @@ export EMAIL='admin@zzxia.com'
 export TRUST_IPS='office:16.24.7, 亚运城1:120.85.12, 亚运城2:120.85.13'
 
 
+
+# ==============================
+# 项目部署目录
 
 # RBD -  静态网站base目录
 export WEBSITE_BASE='/srv/web_sites'
@@ -48,6 +70,12 @@ export PYTHON_SERVICES_BASE='/srv/python_services'
 
 
 
+# ==============================
+# 系统部署目录
+
+# IRBD - 私密变量存放目录
+export MY_PRIVATE_ENVS_DIR="/root/.my_sec"
+
 # IRD - Postgresql备份恢复脚本路径（cp pg/manage到pg服务器上）
 export PG_MANAGE_SH_HOME="/manage/pg--${LOLLIPOP_PLATFORM_NAME}"
 
@@ -56,8 +84,5 @@ export NGINX_CONFIG_SH_HOME="/root/nginx-config--${LOLLIPOP_PLATFORM_NAME}"
 
 # R - Nginx conf.d目录
 export NGINX_CONF_DEFAULT_DIR="/etc/nginx/conf.d"
-
-# IRBD - 私密变量存放目录
-export MY_PRIVATE_ENVS_DIR="/root/.my_sec"
 
 
