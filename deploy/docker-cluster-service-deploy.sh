@@ -901,9 +901,38 @@ F_SEARCH_CLUSTER_MANAGE_INFO()
         #
     done < ${SERVICE_LIST_FILE_APPEND_1}
     #
-    # 去重
+    # 全匹配去重
     #CLUSTER_MANAGE_INFO=$( awk  -v RS=' '  '!a[$1]++'  <<< ${CLUSTER_MANAGE_INFO} )
     CLUSTER_MANAGE_INFO=$( echo ${CLUSTER_MANAGE_INFO} | awk  -v RS=' '  '!a[$1]++' )
+    #
+    #
+    # 去ip相同部分（避免因为IP主机相同，而用户或端口不同，亦或者用户或端口省略的情况造成的重复问题，这也许不是大问题，但我想做个全套）
+    # 获取ip主机列表
+    CLUSTER_MANAGE_INFO_HOST_a=''
+    for a in ${CLUSTER_MANAGE_INFO}
+    do
+        a_host=$( echo $a  |  awk -F '//' '{print $2}' | awk -F ':' '{print $1}' | cut -d '@' -f 2 )
+        CLUSTER_MANAGE_INFO_HOST_a+=" ${a_host}"
+    done
+    # ip主机去重
+    CLUSTER_MANAGE_INFO_HOST_a=$( echo ${CLUSTER_MANAGE_INFO_HOST_a} | awk  -v RS=' '  '!a[$1]++' )
+    # 根据列表重新组织${CLUSTER_MANAGE_INFO}
+    CLUSTER_MANAGE_INFO_HOST_bc=''
+    for b in ${CLUSTER_MANAGE_INFO_HOST_a}
+    do
+        # 在原表中查询完全信息
+        for c in ${CLUSTER_MANAGE_INFO}
+        do
+            c_host=$( $c |  awk -F '//' '{print $2}' | awk -F ':' '{print $1}' | cut -d '@' -f 2 )
+            if [[ ${c_host} == $b ]]; then
+                CLUSTER_MANAGE_INFO_HOST_bc+=" ${c_host}"
+            fi
+        done
+    done
+    #
+    CLUSTER_MANAGE_INFO=${CLUSTER_MANAGE_INFO_HOST_bc}
+    #
+    #
     # 输出
     echo ${CLUSTER_MANAGE_INFO}
     return
