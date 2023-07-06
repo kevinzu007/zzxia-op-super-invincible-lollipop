@@ -927,6 +927,7 @@ F_SEARCH_CLUSTER_MANAGE_INFO()
             c_host=$( echo $c  |  awk -F '//' '{print $2}' | awk -F ':' '{print $1}' | cut -d '@' -f 2 )
             if [[ ${c_host} == $b ]]; then
                 CLUSTER_MANAGE_INFO_HOST_bc+=" $c"
+                break
             fi
         done
     done
