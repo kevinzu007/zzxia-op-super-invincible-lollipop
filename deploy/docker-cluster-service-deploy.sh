@@ -789,6 +789,7 @@ F_SET_RUN_ENV()
             COMPOSE_NETWORK=${COMPOSE_NETWORK:-"${COMPOSE_DEFAULT_NETWORK}"}
             COMPOSE_SERVICE_HOME=${DOCKER_COMPOSE_BASE}/${SERVICE_NAME}
             #
+            # 检查是否ssh协议，并获取 COMPOSE_SSH_HOST_OR_WITH_USER 及 COMPOSE_SSH_PORT 供后面使用
             # ssh://<用户@>主机名或IP<:端口号>
             if [[ ${COMPOSE_DOCKER_HOST} =~ ^ssh ]]; then
                 # awk会自动去掉【""】引号
@@ -798,7 +799,7 @@ F_SET_RUN_ENV()
                     COMPOSE_SSH_PORT='22'
                 fi
             else
-                echo -e "\n猪猪侠警告：配置文件错误，请检查【DEPLOY_PLACEMENT】，Compose集群仅支持【ssh://<用户@>主机名或IP<:端口号>】格式\n"
+                echo -e "\n猪猪侠警告：配置文件错误，请检查【DEPLOY_PLACEMENT】，Compose集群仅支持【ssh://<用户@>主机名或IP<:端口号>】格式，因为要使用ssh端口拷贝文件\n"
                 return 52
             fi
             #
