@@ -6,20 +6,22 @@ SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
-# 引入env
-# 自动从/etc/profile.d/run-env.sh引入以下变量
-RUN_ENV=${RUN_ENV:-'dev'}
-DOMAIN=${DOMAIN:-"xxx.lan"}
+# 自动引入/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
+.  /etc/profile        #-- 非终端界面不会自动引入，必须主动引入
+#RUN_ENV=
+#DOMAIN=
+#WEBSITE_BASE=
+#NGINX_CONF_DEFAULT_DIR=
+
+# 引入env.sh
 
 # 本地env
 TIME=`date +%Y-%m-%dT%H:%M:%S`
 TIME_START=${TIME}
 WEB_PROJECT_LIST_FILE="${SH_PATH}/nginx.list"
 WEB_PROJECT_LIST_FILE_TMP="/tmp/${SH_NAME}-nginx.tmp.list"
-TMP_CONF_DIR="${SH_PATH}/tmp/conf.d"
-DST_CONF_DIR="/etc/nginx/conf.d"
-WEBSITE_BASE="/srv/web_sites"
-
+DST_CONF_DIR=${NGINX_CONF_DEFAULT_DIR:-"/etc/nginx/conf.d"}
+TMP_CONF_DIR="/tmp/${SH_NAME}-conf.d"
 [ -d ${TMP_CONF_DIR} ] && rm -rf   ${TMP_CONF_DIR}
 mkdir -p ${TMP_CONF_DIR}
 
@@ -52,7 +54,7 @@ F_HELP()
     echo "
     用途：用以生成项目nginx配置文件，并放置到nginx服务器上
     依赖：
-        /etc/profile.d/run-env.sh
+        /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
         ${WEB_PROJECT_LIST_FILE}
     注意：运行在deploy节点上
     用法:

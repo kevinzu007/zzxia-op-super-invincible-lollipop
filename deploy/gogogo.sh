@@ -11,19 +11,21 @@ SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
-# 自动从/etc/profile.d/run-env.sh引入以下变量
-RUN_ENV=${RUN_ENV:-'dev'}
-DOMAIN=${DOMAIN:-"xxx.lan"}
+# 引入/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
+.  /etc/profile         #-- 非终端界面不会自动引入，必须主动引入
+#RUN_ENV=
+#DOMAIN=
+#NGINX_CONFIG_SH_HOME=
 
-# 引入env
+# 引入env.sh
 . ${SH_PATH}/env.sh
-GAN_PLATFORM_NAME="${GAN_PLATFORM_NAME:-'超甜B&D系统'}"
-BUILD_LOG_WEBSITE_DOMAIN_A=${BUILD_LOG_WEBSITE_DOMAIN_A:-"build-log"}         #--- 这个需要与【nginx.list】中【项目名】为【build-log】的【域名A记录】保持一致
-DINGDING_API=${DINGDING_API:-"请定义"}
-BUILD_SKIP_TEST=${BUILD_SKIP_TEST:-'NO'}  #--- 跳过测试（YES|NO）
-#USER_DB_FILE=
+#LOLLIPOP_PLATFORM_NAME=
+#LOLLIPOP_DB_HOME=
+#LOLLIPOP_LOG_BASE=
+#ANSIBLE_HOST_FOR_LOGFILE=
+#BUILD_LOG_WEBSITE_DOMAIN_A=
+#BUILD_SKIP_TEST=
 #GIT_DEFAULT_BRANCH=
-#DOCKER_REPO_SERVER=
 #DOCKER_IMAGE_DEFAULT_PRE_NAME=
 #DEBUG=
 #K8S_DEFAULT_CONTEXT=
@@ -31,6 +33,11 @@ BUILD_SKIP_TEST=${BUILD_SKIP_TEST:-'NO'}  #--- 跳过测试（YES|NO）
 #SWARM_DEFAULT_DOCKER_HOST=
 #SWARM_DEFAULT_NETWORK=
 #COMPOSE_DEFAULT_NETWORK=
+# 来自 ${MY_PRIVATE_ENVS_DIR} 目录下的 *.sec
+#USER_DB_FILE=
+#DINGDING_API=
+#DOCKER_REPO_SERVER=
+
 
 # 本地env
 GAN_WHAT_FUCK='Gogogo'
@@ -42,18 +49,23 @@ RELEASE_VERSION=''
 # 灰度
 GRAY_TAG="normal"
 #
-LOG_BASE="${SH_PATH}/tmp/log"
-LOG_HOME="${LOG_BASE}/${DATE_TIME}"
+LOG_HOME="${LOLLIPOP_LOG_BASE}/${DATE_TIME}"
 #
 DOCKER_IMAGE_TAG=$(date -d "${TIME}" +%Y.%m.%d.%H%M%S)
-# 子脚本参数
+# 来自webhook，传递给子脚本
+export HOOK_USER_INFO_FROM
+export HOOK_GAN_ENV
+export HOOK_USER_NAME
+export HOOK_USER_XINGMING
+export HOOK_USER_EMAIL
+# 传递给子脚本
 export BUILD_OK_LIST_FILE_function="${LOG_HOME}/${SH_NAME}-export-build-OK.list.function"
 export DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE_function="${LOG_HOME}/${SH_NAME}-export-docker_deploy-OK.list.function"
 export WEB_RELEASE_OK_LIST_FILE_function="${LOG_HOME}/${SH_NAME}-export-web_release-OK.list.function"
+export USER_INFO_FROM=${HOOK_USER_INFO_FROM:-'local'}     #--【local|hook_hand|hook_gitlab】，默认：local
 export MY_USER_NAME=''
-export MY_EMAIL=''
-export HOOK_GAN_ENV=${HOOK_GAN_ENV:-''}
-export HOOK_USER=${HOOK_USER:-''}
+export MY_USER_XINGMING=''
+export MY_USER_EMAIL=''
 # 独有
 BUILD_QUIET='YES'
 BUILD_FORCE='NO'
@@ -67,9 +79,9 @@ GOGOGO_RELEASE_WEB_OK_LIST_FILE="${LOG_HOME}/${SH_NAME}-web_release-OK.list"
 GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE="${LOG_HOME}/${SH_NAME}-build_and_release-OK.list"
 GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE="${LOG_HOME}/${SH_NAME}.history.current"
 GOGOGO_PROJECT_BUILD_RESULT="${LOG_HOME}/${SH_NAME}-build.result"
-GOGOGO_PROJECT_BUILD_DURATION_FILE="${SH_PATH}/db/${SH_NAME}-build_duration.last.db"      #--- db目录下的文件不建议删除
+GOGOGO_PROJECT_BUILD_DURATION_FILE="${LOLLIPOP_DB_HOME}/${SH_NAME}-build_duration.last.db"      #--- db目录下的文件不建议删除
 # 公共
-FUCK_HISTORY_FILE="${SH_PATH}/db/fuck.history"
+FUCK_HISTORY_FILE="${LOLLIPOP_DB_HOME}/fuck.history"
 # LOG_DOWNLOAD_SERVER
 if [ "x${RUN_ENV}" = "xprod" ]; then
     LOG_DOWNLOAD_SERVER="https://${BUILD_LOG_WEBSITE_DOMAIN_A}.${DOMAIN}"
@@ -113,7 +125,7 @@ F_HELP()
     echo "
     用途：用于项目构建并发布
     依赖脚本：
-        /etc/profile.d/run-env.sh
+        /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
         ${SH_PATH}/env.sh
         ${GOGOGO_PROJECT_LIST_FILE}
         ${GOGOGO_PROJECT_LIST_FILE_APPEND_1}
@@ -741,7 +753,7 @@ F_PYTHON_DEPLOY()
 
 
 # 参数检查
-TEMP=`getopt -o hlc:b:I:e:sfvGV:D  -l help,list,category:,branch:,image-pre-name:,email:,skiptest,force,verbose,gray,release-version:debug-port -- "$@"`
+TEMP=`getopt -o hlc:b:I:e:sfvGV:D  -l help,list,category:,branch:,image-pre-name:,email:,skiptest,force,verbose,gray,release-version:,debug-port -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
     exit 51
@@ -780,12 +792,12 @@ do
             shift 2
             ;;
         -e|--email)
-            MY_EMAIL=$2
+            MY_USER_EMAIL=$2
             shift 2
-            export MY_EMAIL
+            export MY_USER_EMAIL
             EMAIL_REGULAR='^[a-zA-Z0-9]+[a-zA-Z0-9_\.]*@([a-zA-Z0-9]+[a-zA-Z0-9\-]*[a-zA-Z0-9]\.)*[a-z]+$'
-            if [[ ! "${MY_EMAIL}" =~ ${EMAIL_REGULAR} ]]; then
-                echo -e "\n猪猪侠警告：【${MY_EMAIL}】邮件地址不合法\n"
+            if [[ ! "${MY_USER_EMAIL}" =~ ${EMAIL_REGULAR} ]]; then
+                echo -e "\n猪猪侠警告：【${MY_USER_EMAIL}】邮件地址不合法\n"
                 exit 51
             fi
             ;;
@@ -832,13 +844,6 @@ done
 
 
 
-# 运行环境匹配for Hook
-if [[ -n ${HOOK_GAN_ENV} ]] && [[ ${HOOK_GAN_ENV} != ${RUN_ENV} ]]; then
-    echo -e "\n猪猪侠警告：运行环境不匹配，跳过（这是正常情况）\n"
-    exit
-fi
-
-
 # 默认ENV
 GIT_BRANCH=${GIT_BRANCH:-"${GIT_DEFAULT_BRANCH}"}
 
@@ -848,25 +853,38 @@ GIT_BRANCH=${GIT_BRANCH:-"${GIT_DEFAULT_BRANCH}"}
 
 
 
-# 用户信息
-if [[ -n ${HOOK_USER} ]]; then
-    MY_USER_NAME=${HOOK_USER}
-else
-    # if sudo -i 取${SUDO_USER}；
-    # if sudo cmd 取${LOGNAME}
-    MY_USER_NAME=${SUDO_USER:-"${LOGNAME}"}
-fi
-export MY_USER_NAME
-#
-F_USER_SEARCH ${MY_USER_NAME} > /dev/null
-if [ $? -eq 0 ]; then
-    R=`F_USER_SEARCH ${MY_USER_NAME}`
-    export MY_EMAIL=${MY_EMAIL:-"`echo $R | cut -d ' ' -f 2`"}
-    MY_XINGMING=`echo $R | cut -d ' ' -f 1`
-else
-    MY_XINGMING='X-Man'
+# 运行环境匹配for Hook
+if [[ -n ${HOOK_GAN_ENV} ]] && [[ ${HOOK_GAN_ENV} != 'NOT_CHECK' ]] && [[ ${HOOK_GAN_ENV} != ${RUN_ENV} ]]; then
+    echo -e "\n猪猪侠警告：运行环境不匹配，跳过（这是正常情况）\n"
+    exit
 fi
 
+
+# 用户信息
+if [[ -z ${MY_USER_NAME} ]]; then
+    if [[ ${USER_INFO_FROM} == 'local' ]]; then
+        # if sudo -i 取${SUDO_USER}；
+        # if sudo cmd 取${LOGNAME}
+        export MY_USER_NAME=${SUDO_USER:-"${LOGNAME}"}
+        #
+        F_USER_SEARCH ${MY_USER_NAME} > /dev/null
+        if [ $? -eq 0 ]; then
+            R=`F_USER_SEARCH ${MY_USER_NAME}`
+            export MY_USER_EMAIL=${MY_USER_EMAIL:-"`echo $R | cut -d ' ' -f 2`"}
+            export MY_USER_XINGMING=`echo $R | cut -d ' ' -f 1`
+        else
+            export MY_USER_XINGMING='x-Man'
+            export MY_USER_EMAIL
+        fi
+    elif [[ ${USER_INFO_FROM} =~ hook_gitlab|hook_hand ]]; then
+        export MY_USER_NAME=${HOOK_USER_NAME}
+        export MY_USER_XINGMING=${HOOK_USER_XINGMING}
+        export MY_USER_EMAIL=${HOOK_USER_EMAIL}
+    else
+        echo -e "\n猪猪侠警告：未知参数值【\${USER_INFO_FROM} = ${USER_INFO_FROM}】\n"
+        exit  51
+    fi
+fi
 
 
 # 待搜索的项目清单
@@ -903,7 +921,7 @@ if [[ -z ${THIS_LANGUAGE_CATEGORY} ]]; then
             #
             if [[ $GET_IT != 'YES' ]]; then
                 echo -e "\n${ECHO_ERROR}猪猪侠警告：【${GAN_WHAT_FUCK}】时，项目【${i}】正则不匹配项目列表【${GOGOGO_PROJECT_LIST_FILE}】中任何项目，请检查！${ECHO_CLOSE}\n"
-                ${DINGDING_MARKDOWN_PY}  "【Error:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_WHAT_FUCK}】时，项目【${i}】正则不匹配项目列表【${GOGOGO_PROJECT_LIST_FILE}】中任何项目，请检查！" > /dev/null
+                ${DINGDING_MARKDOWN_PY}  "【Error:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_WHAT_FUCK}】时，项目【${i}】正则不匹配项目列表【${GOGOGO_PROJECT_LIST_FILE}】中任何项目，请检查！" > /dev/null
                 exit 51
             fi
         done
@@ -923,7 +941,7 @@ else
         F_FIND_PROJECT ${THIS_LANGUAGE_CATEGORY} >> ${GOGOGO_PROJECT_LIST_FILE_TMP}
         if [[ $? -ne 0 ]]; then
             echo -e "\n${ECHO_ERROR}猪猪侠警告：【${GAN_WHAT_FUCK}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！${ECHO_CLOSE}\n"
-            ${DINGDING_MARKDOWN_PY}  "【Error:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_WHAT_FUCK}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！" > /dev/null
+            ${DINGDING_MARKDOWN_PY}  "【Error:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_WHAT_FUCK}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！" > /dev/null
             exit 51
         fi
     else
@@ -934,7 +952,7 @@ else
             F_FIND_PROJECT ${THIS_LANGUAGE_CATEGORY} $i >> ${GOGOGO_PROJECT_LIST_FILE_TMP}
             if [[ $? -ne 0 ]]; then
                 echo -e "\n${ECHO_ERROR}猪猪侠警告：【GAN_WHAT_FUCK】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】且正则匹配【$i】的项目，请检查！${ECHO_CLOSE}\n"
-                ${DINGDING_MARKDOWN_PY}  "【Error:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【GAN_WHAT_FUCK】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】且正则匹配【$i】的项目，请检查！" > /dev/null
+                ${DINGDING_MARKDOWN_PY}  "【Error:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【GAN_WHAT_FUCK】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】且正则匹配【$i】的项目，请检查！" > /dev/null
                 exit 51
             fi
         done
@@ -1066,7 +1084,7 @@ do
         # 静默(并行构建)
         read -u 6       # 获取令牌
         {
-            ${BUILD_SH}  --mode function  --category ${LANGUAGE_CATEGORY}  --branch ${GIT_BRANCH}  ${PJ}  ${IMAGE_PRE_NAME_ARG}  ${BUILD_SKIP_TEST_OPT}  ${BUILD_FORCE_OPT}  > /dev/null 2>&1
+            ${BUILD_SH}  --mode function  --category ${LANGUAGE_CATEGORY}  --branch ${GIT_BRANCH}  ^${PJ}$  ${IMAGE_PRE_NAME_ARG}  ${BUILD_SKIP_TEST_OPT}  ${BUILD_FORCE_OPT}  > /dev/null 2>&1
             BUILD_RETURN=$?
             echo "ok ${BUILD_RETURN}" > "${GOGOGO_PROJECT_BUILD_RESULT}.${PJ}"
             echo >&6    # 归还令牌
@@ -1098,7 +1116,7 @@ do
         done
     else
         # 非静默
-        ${BUILD_SH}  --mode function  --category ${LANGUAGE_CATEGORY}  --branch ${GIT_BRANCH}  ${PJ}  ${IMAGE_PRE_NAME_ARG}  ${BUILD_SKIP_TEST_OPT}  ${BUILD_FORCE_OPT}  --verbose
+        ${BUILD_SH}  --mode function  --category ${LANGUAGE_CATEGORY}  --branch ${GIT_BRANCH}  ^${PJ}$  ${IMAGE_PRE_NAME_ARG}  ${BUILD_SKIP_TEST_OPT}  ${BUILD_FORCE_OPT}  --verbose
         BUILD_RETURN=$?
         #echo "ok ${BUILD_RETURN}" > "${GOGOGO_PROJECT_BUILD_RESULT}.${PJ}"
     fi
@@ -1135,7 +1153,7 @@ do
                 web_release)
                     > ${GOGOGO_RELEASE_WEB_OK_LIST_FILE}
                     #./web-release.sh  --release  ${PJ}
-                    ansible nginx_real -m command -a "bash /root/nginx-config/web-release-on-nginx.sh  --release  ${PJ}"  > ${GOGOGO_RELEASE_WEB_OK_LIST_FILE}
+                    ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m command -a "bash  ${NGINX_CONFIG_SH_HOME}/web-release-on-nginx.sh  --release  ${PJ}"  > ${GOGOGO_RELEASE_WEB_OK_LIST_FILE}
                     #
                     if [[ $? -eq 0 ]]; then
                         RELEASE_RESULT=$(cat ${GOGOGO_RELEASE_WEB_OK_LIST_FILE} | sed -n '2p' | awk '{printf $2}')
@@ -1184,7 +1202,7 @@ RELEASE_SKIP_COUNT=`cat ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE} | grep -o '发�
 BUILD_ERROR_COUNT=`cat ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE} | grep -o '构建失败' | wc -l`
 let  NOT_BUILD_RELEASE_COUNT=${TOTAL_PJS}-${RELEASE_CHECK_COUNT}
 TIME_END=`date +%Y-%m-%dT%H:%M:%S`
-MESSAGE_END="项目构建已完成！ 共企图构建发布${TOTAL_PJS}个项目，成功构建发布${RELEASE_SUCCESS_COUNT}个项目，成功构建但失败发布${RELEASE_ERROR_COUNT}个项目，跳过发布${RELEASE_SKIP_COUNT}个项目，失败构建${BUILD_ERROR_COUNT}个项目，${NOT_BUILD_RELEASE_COUNT}个项目因外部干预退出构建发布。"
+MESSAGE_END="项目构建已完成！ 共企图构建发布${TOTAL_PJS}个项目，成功构建发布${RELEASE_SUCCESS_COUNT}个项目，成功构建但失败发布${RELEASE_ERROR_COUNT}个项目，跳过发布${RELEASE_SKIP_COUNT}个项目，失败构建${BUILD_ERROR_COUNT}个项目，${NOT_BUILD_RELEASE_COUNT}个项目因其他原因退出构建发布。"
 # 消息回显拼接
 > ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 echo "干：**${GAN_WHAT_FUCK}**" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
@@ -1192,7 +1210,8 @@ echo "===== 构建与发布报告 =====" >> ${GOGOGO_BUILD_AND_RELEASE_HISTORY_C
 echo -e "${ECHO_REPORT}################################ 构建与发布报告 ################################${ECHO_CLOSE}"   #--- 80 (80-70-60)
 #
 echo "所在环境：${RUN_ENV}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
-echo "造 浪 者：${MY_XINGMING}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
+echo "造 浪 者：${MY_USER_XINGMING}@${USER_INFO_FROM}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
+echo "发送邮箱：${MY_USER_EMAIL}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 echo "开始时间：${TIME}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 echo "结束时间：${TIME_END}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 echo "代码分支：${GIT_BRANCH}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
@@ -1227,7 +1246,7 @@ do
     #echo ${MSG[$t]}
     let  t=$t+1
 done < ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
-${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "${MSG[@]}" > /dev/null
+${DINGDING_MARKDOWN_PY}  "【Info:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "${MSG[@]}" > /dev/null
 
 
 

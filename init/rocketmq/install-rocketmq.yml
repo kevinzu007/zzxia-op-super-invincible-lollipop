@@ -1,9 +1,0 @@
-
-- hosts: rocketmq_srv
-  become: yes
-  tasks:
-    - name: cp rocketmq-srv
-      copy: src=./rocketmq-srv/  dest=/srv/docker/rocketmq-srv/   owner=root group=root mode=644 backup=yes
-    - name: 启动 rocketmq-srv
-      shell: cd /srv/docker/rocketmq-srv/ && docker-compose up -d && echo 已启动，请检查是否正常
-

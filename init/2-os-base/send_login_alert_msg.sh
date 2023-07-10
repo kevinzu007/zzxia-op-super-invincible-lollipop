@@ -8,13 +8,13 @@
 
 # 用途：用户登录时发送消息通知
 # 注意：脚本拷贝到/etc/profile.d/下
-# 依赖：/etc/profile.d/run-env.sh
+# 依赖：/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
 #       /usr/local/bin/dingding_send_markdown-login.py
 
 
 
 # 引入env
-# 自动从/etc/profile.d/run-env.sh引入以下变量
+# 自动从/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh引入以下变量
 RUN_ENV=${RUN_ENV:-'dev'}
 EMAIL=${EMAIL:-"kevinzu@xxx.com"}
 TRUST_IPS=${TRUST_IPS:-'办公室:111.111.111., 家:222.222.22'}

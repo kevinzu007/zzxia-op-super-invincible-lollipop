@@ -11,13 +11,14 @@ SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
-# 引入env
+# 引入env.sh
 . ${SH_PATH}/env.sh
+#DOCKER_IMAGE_DEFAULT_PRE_NAME=
+# 来自 ${MY_PRIVATE_ENVS_DIR} 目录下的 *.sec
 #DOCKER_REPO_USER=
 #DOCKER_REPO_PASSWORD=
 #DOCKER_REPO_SERVER=
 #DOCKER_REPO_URL_BASE=
-#DOCKER_IMAGE_DEFAULT_PRE_NAME=
 
 # 本地env
 TIME=`date +%Y-%m-%dT%H:%M:%S`

@@ -3,21 +3,32 @@
 
 
 # 0 基本变量
-GAN_CMD_HOME = '/root/zzxia-op-super-invincible-lollipop'      #--- 项目路径
-WEB_ROOT = '/root/tmp'
+GAN_CMD_HOME = '/root/zzxia-op-super-invincible-lollipop'      #-- 项目路径
+GAN_LOG_HOME = '/srv/python_services/gan-api-server/log'       #-- 运行日志路径
+
 
 # 1
 
 # 1.1 gitlab
-GITLAB_SECRET_TOKEN = 'QQQQQ12345'
+
+# gitlab webhook设置的token
+GITLAB_SECRET_TOKEN = 'setYourselfTokenHere'
+
+# 检查git commit msg 中的env参数。【True】时：git commit msg 必须有类似'{env=dev}'信息，；【False】时：不检查
+# git commit msg 包含信息:
+# 全部： {env=dev|stag|prod|其他,do=build|gogogo,skiptest=yes,version=5.5,gray=yes}
+# 最少（为 True 时 ）： {env=dev|stag|prod|其他}                           #-- 默认：do=gogogo
+# 最少（为 False 时）： 无需任何特殊信息，也可以包含其他信息，比如：{do=build}    #-- 默认：do=gogogo
+GITLAB_GIT_COMMIT_ENV_CHECK = True
+
 
 # 1.2 hand
 # web
-#   在非独立使用时，你需要使他与基于【init/my_sec_envs.sample】创建的【user.env】中的变量保持一致
-USER_DB_FILE = '/root/.my_sec/user.db'             #--- 与sh共享，也可以独立
-USER_TOKEN_FILE = '/root/.my_sec/user.db.token'    #--- 与sh共享，也可以独立
-# 数据完整性校验
+#   在非独立使用时，你需要使他与基于【init/my_private_envs.sample】创建的【user.env】中的变量保持一致
+USER_DB_FILE = '/root/.my_sec/user.db'             #-- 与sh共享，也可以独立
+USER_TOKEN_FILE = '/root/.my_sec/user.db.token'    #-- 与sh共享，也可以独立
+# 数据完整性校验，【False】时：不校验，反之，校验
 X_ZZXIA_SIGN_CHECK = False
-X_ZZXIA_SIGN_SECRET = '11223344'
+X_ZZXIA_SIGN_SECRET = 'setYourselfSigncharStringHere'
 
 

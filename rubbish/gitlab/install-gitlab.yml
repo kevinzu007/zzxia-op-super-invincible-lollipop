@@ -1,0 +1,10 @@
+
+
+- hosts: gitlab
+  become: yes
+  tasks:
+    - name: cp gitlab-srv
+      copy: src=./gitlab-srv/  dest=/srv/docker_compose_services/gitlab-srv/   owner=root group=root mode=644 backup=yes
+    - name: 启动 gitlab-srv
+      shell: cd /srv/docker_compose_services/gitlab-srv/ && docker-compose up -d && echo 已启动，请检查是否正常
+

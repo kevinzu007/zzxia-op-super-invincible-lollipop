@@ -14,7 +14,7 @@ echo  "以逗号分隔的列表，列出了针对当前证书提出挑战的所�
 
 
 echo "引入相关变量变量（猪猪侠）"
-.  ~/.my_sec/certbot-letencrypt-wildcardcertificates-sh.sec.env
+.  ~/${MY_PRIVATE_ENVS_DIR}/certbot-letencrypt-wildcardcertificates-sh.sec.env
 # 或写在这里：
 ####### 根据自己的情况修改 Begin ##############
 #

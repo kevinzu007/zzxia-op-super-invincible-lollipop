@@ -5,17 +5,18 @@ SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
-# 引入env
-# 自动从/etc/profile.d/run-env.sh引入以下变量
-. /etc/profile.d/run-env.sh      #--- 计划任务中运行时，须source引入
-RUN_ENV=${RUN_ENV:-'dev'}
-DOMAIN=${DOMAIN:-"xxx.lan"}
-EMAIL=${EMAIL:-"kevinzu@xxx.com"}
+# 自动引入/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
+.  /etc/profile        #-- 非终端界面不会自动引入，必须主动引入
+#RUN_ENV=
+#DOMAIN=
+#EMAIL=
+#WEBSITE_BASE=
+
+# 引入env.sh
 
 # 本地env
 TIME=`date +%Y-%m-%dT%H:%M:%S`
 TIME_START=${TIME}
-WEBSITE_BASE="/srv/web_sites"
 WEB_PROJECT_LIST_FILE="${SH_PATH}/nginx.list"
 WEB_PROJECT_LIST_FILE_TMP="/tmp/${SH_NAME}-nginx.tmp.list"
 #
@@ -53,7 +54,7 @@ F_HELP()
     echo "
     用途：从letsencrypt申请普通单域名证书
     依赖：
-        /etc/profile.d/run-env.sh
+        /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
         ${WEB_PROJECT_LIST_FILE}
         certbot
     注意：运行在nginx上

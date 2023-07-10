@@ -13,8 +13,9 @@ cd ${SH_PATH}
 
 # 引入env
 . ${SH_PATH}/env.sh
-#DOCKER_REPO_SERVER=
 #DOCKER_IMAGE_DEFAULT_PRE_NAME=
+# 来自 ${MY_PRIVATE_ENVS_DIR} 目录下的 *.sec
+#DOCKER_REPO_SERVER=
 
 # 本地env
 TIME=${TIME:-`date +%Y-%m-%dT%H:%M:%S`}

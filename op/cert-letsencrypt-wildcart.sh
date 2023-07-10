@@ -13,11 +13,9 @@ SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
+# 自动从/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh引入以下变量
+
 # 引入env
-# 自动从/etc/profile.d/run-env.sh引入以下变量
-. /etc/profile.d/run-env.sh      #--- 计划任务中运行时，须source引入
-DOMAIN=${DOMAIN:-"xxx.lan"}
-EMAIL=${EMAIL:-"kevinzu@xxx.com"}
 
 # 本地env
 TIME=`date +%Y-%m-%dT%H:%M:%S`
@@ -30,10 +28,8 @@ AU_SH="${SH_PATH}/certbot-letencrypt-wildcardcertificates-sh/au.sh"
 F_HELP()
 {
     echo "
-    用途：用于申请与更新泛域名证书
-          更新Letsencrypt泛域名证书，拷贝到nginx服务器，然后reload
+    用途：用于申请与更新Letsencrypt泛域名证书
     依赖：
-        /etc/profile.d/run-env.sh
         certbot
         ${AU_SH}
     注意：
@@ -41,26 +37,26 @@ F_HELP()
         * 输入命令时，参数顺序不分先后
     用法:
         $0  [-h|--help]
-        $0  [-y|--yun [aly|hwy|godaddy]]  [ [-r|--request=]<{主域名}> | [-u|--update=]<{主域名}> ]  <-t|--test>   #--- 申请或renew泛域名证书
+        $0  [-y|--yun [aly|hwy|godaddy]]  [-r|--request|-u|--update {域名}]  [-e|--email {邮箱}]  <-t|--test>   #--- 申请或renew泛域名证书
     参数说明：
         \$0   : 代表脚本本身
-        []   : 代表是必选项
-        <>   : 代表是可选项
+        []   : 代表是一个整体，是必选项，默认是必选项（即没有括号【[]、<>】时也是必选项），一般用于表示参数对，此时不可乱序，单个参数也可以使用括号
+        <>   : 代表是一个整体，是可选项，默认是必选项
         |    : 代表左右选其一
         {}   : 代表参数值，请替换为具体参数值
         %    : 代表通配符，非精确值，可以被包含
         #
         -h|--help         此帮助
         -y|--yun          指定dns解析商，aly：阿里云；txy：腾讯云；hwy：华为云；godaddy，需要设置certbot-letencrypt-wildcardcertificates-sh/au.sh中相应的key、secret
-        -r|--request      申请Letsencrypt泛域名证书，短-选项与参数之间不能有空格，默认主域名为run-env.sh中定义的\${DOMAIN}
+        -r|--request      申请泛域名证书
         -u|--update       renew泛域名证书，要求同上
+        -e|--email        指定证书邮件地址
         -t|--test         以--dry-run方式运行演练测试
     示例:
         $0  -h
-        $0  -y aly  -r  -t              #--- 测试申请泛域名证书，dns域名解析商是阿里云，域名是默认为run-env.sh定义的\${DOMAIN}
-        $0  -y aly  -r                  #--- 申请泛域名证书，dns域名解析商是阿里云，域名是默认为run-env.sh中定义的\${DOMAIN}
-        $0  -y aly  -raaa.com           #--- 申请泛域名证书，dns域名解析商是阿里云，域名是aaa.com
-        $0  -y aly  -u                  #--- 更新泛域名证书，dns域名解析商是阿里云，域名是默认为run-env.sh中定义的\${DOMAIN}
+        $0  -y aly  -r aaa.com  -e my@aaa.com  -t     #--- 测试申请泛域名证书，dns域名解析商是阿里云，域名是aaa.com，邮箱是my@aaa.com
+        $0  -y aly  -r aaa.com  -e my@aaa.com         #--- 申请泛域名证书，dns域名解析商是阿里云，域名是aaa.com，邮箱是my@aaa.com
+        $0  -y aly  -u aaa.com  -e my@aaa.com         #--- renew泛域名证书，dns域名解析商是阿里云，域名是aaa.com，邮箱是my@aaa.com
     "
 }
 
@@ -251,7 +247,7 @@ F_GO()
 
 
 # 参数检查
-TEMP=`getopt -o hty:r::u::  -l help,test,yun:,request::,update:: -- "$@"`
+TEMP=`getopt -o hty:r:u:e:  -l help,test,yun:,request:,update:,email: -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
     exit 51
@@ -293,6 +289,15 @@ do
                 exit 51
             fi
             ;;
+        -e|--email)
+            EMAIL=$2
+            shift 2
+            EMAIL_REGULAR='^[a-zA-Z0-9]+[a-zA-Z0-9_\.]*@([a-zA-Z0-9]+[a-zA-Z0-9\-]*[a-zA-Z0-9]\.)*[a-z]+$'
+            if [[ ! "${EMAIL}" =~ ${EMAIL_REGULAR} ]]; then
+                echo -e "\n猪猪侠警告：【${EMAIL}】邮件地址不合法\n"
+                exit 51
+            fi
+            ;;
         --)
             break
             ;;
@@ -324,7 +329,7 @@ do
             shift 2
             ;;
         -r|--request)
-            THIS_DOMAIN=${2:-${DOMAIN}}
+            THIS_DOMAIN=$2
             shift 2
             #
             certbot  certificates | grep "*.${THIS_DOMAIN}" > /dev/null 2>&1
@@ -363,7 +368,7 @@ do
             esac
             ;;
         -u|--update)
-            THIS_DOMAIN=${2:-${DOMAIN}}
+            THIS_DOMAIN=$2
             shift 2
             # 是否存在该证书
             certbot  certificates | grep "*.${THIS_DOMAIN}" > /dev/null 2>&1

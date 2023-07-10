@@ -11,18 +11,23 @@ SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
-# 自动从/etc/profile.d/run-env.sh引入以下变量
-RUN_ENV=${RUN_ENV:-'dev'}
-DOMAIN=${DOMAIN:-"xxx.lan"}
+# 引入/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
+.  /etc/profile        #-- 非终端界面不会自动引入，必须主动引入
+#RUN_ENV=
+#DOMAIN=
 
-# 引入env
+# 引入env.sh
 . ${SH_PATH}/env.sh
-GAN_PLATFORM_NAME="${GAN_PLATFORM_NAME:-'超甜B&D系统'}"
-BUILD_LOG_WEBSITE_DOMAIN_A=${BUILD_LOG_WEBSITE_DOMAIN_A:-"build-log"}         #--- 这个需要与【nginx.list】中【项目名】为【build-log】的【域名A记录】保持一致
-DINGDING_API=${DINGDING_API:-"请定义"}
-BUILD_SKIP_TEST=${BUILD_SKIP_TEST:-'NO'}  #--- 跳过测试
-#USER_DB_FILE=
+#LOLLIPOP_PLATFORM_NAME=
+#LOLLIPOP_DB_HOME=
+#LOLLIPOP_LOG_BASE=
+#BUILD_LOG_WEBSITE_DOMAIN_A=
+#BUILD_SKIP_TEST=
 #GIT_DEFAULT_BRANCH=
+# 来自 ${MY_PRIVATE_ENVS_DIR} 目录下的 *.sec
+#USER_DB_FILE=
+#DINGDING_API=
+
 
 # 本地env
 GAN_WHAT_FUCK='P_Build'
@@ -30,8 +35,7 @@ export TIME=`date +%Y-%m-%dT%H:%M:%S`
 TIME_START=${TIME}
 DATE_TIME=`date -d "${TIME}" +%Y%m%dT%H%M%S`
 #
-LOG_BASE="${SH_PATH}/tmp/log"
-LOG_HOME="${LOG_BASE}/${DATE_TIME}"
+LOG_HOME="${LOLLIPOP_LOG_BASE}/${DATE_TIME}"
 #
 DOCKER_IMAGE_TAG=$(date -d "${TIME}" +%Y.%m.%d.%H%M%S)
 #
@@ -42,19 +46,25 @@ PARA_PROJECT_LIST_FILE="${SH_PATH}/project.list"
 PARA_PROJECT_LIST_FILE_TMP="${LOG_HOME}/${SH_NAME}-project.list.tmp"
 PARA_BUILD_OK_LIST_FILE="${LOG_HOME}/${SH_NAME}-build-OK.list"
 PARA_BUILD_HISTORY_CURRENT_FILE="${LOG_HOME}/${SH_NAME}-history.current"
-# 子脚本参数
+# 来自webhook，传递给子脚本
+export HOOK_USER_INFO_FROM
+export HOOK_GAN_ENV
+export HOOK_USER_NAME
+export HOOK_USER_XINGMING
+export HOOK_USER_EMAIL
+# 传递给子脚本
 BASE_PROJECT_LIST_FILE_TMP="${LOG_HOME}/${SH_NAME}-export-project.list.tmp"
 export PROJECT_LIST_FILE_TMP=
 BASE_BUILD_OK_LIST_FILE="${LOG_HOME}/${SH_NAME}-export-build-OK.list"
 export BUILD_OK_LIST_FILE=
 BASE_BUILD_OK_LIST_FILE_function="${LOG_HOME}/${SH_NAME}-export-build-OK.list.function"
 export BUILD_OK_LIST_FILE_function=''
+export USER_INFO_FROM=${HOOK_USER_INFO_FROM:-'local'}     #--【local|hook_hand|hook_gitlab】，默认：local
 export MY_USER_NAME=''
-export MY_EMAIL=''
-export HOOK_GAN_ENV=${HOOK_GAN_ENV:-''}
-export HOOK_USER=${HOOK_USER:-''}
+export MY_USER_XINGMING=''
+export MY_USER_EMAIL=''
 # 公共
-FUCK_HISTORY_FILE="${SH_PATH}/db/fuck.history"
+FUCK_HISTORY_FILE="${LOLLIPOP_DB_HOME}/fuck.history"
 # LOG_DOWNLOAD_SERVER
 if [ "x${RUN_ENV}" = "xprod" ]; then
     LOG_DOWNLOAD_SERVER="https://${BUILD_LOG_WEBSITE_DOMAIN_A}.${DOMAIN}"
@@ -98,7 +108,7 @@ F_HELP()
     echo "
     用途：以并行的方式运行构建脚本，以加快构建速度
     依赖：
-        /etc/profile.d/run-env.sh
+        /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
         ${SH_PATH}/env.sh
         ${PARA_PROJECT_LIST_FILE}
         ${BUILD_SH}
@@ -309,12 +319,12 @@ do
             shift 2
             ;;
         -e|--email)
-            MY_EMAIL=$2
+            MY_USER_EMAIL=$2
             shift 2
-            export MY_EMAIL
+            export MY_USER_EMAIL
             EMAIL_REGULAR='^[a-zA-Z0-9]+[a-zA-Z0-9_\.]*@([a-zA-Z0-9]+[a-zA-Z0-9\-]*[a-zA-Z0-9]\.)*[a-z]+$'
-            if [[ ! "${MY_EMAIL}" =~ ${EMAIL_REGULAR} ]]; then
-                echo -e "\n猪猪侠警告：【${MY_EMAIL}】邮件地址不合法\n"
+            if [[ ! "${MY_USER_EMAIL}" =~ ${EMAIL_REGULAR} ]]; then
+                echo -e "\n猪猪侠警告：【${MY_USER_EMAIL}】邮件地址不合法\n"
                 exit 51
             fi
             ;;
@@ -339,13 +349,6 @@ done
 
 
 
-# 运行环境匹配for Hook
-if [[ -n ${HOOK_GAN_ENV} ]] && [[ ${HOOK_GAN_ENV} != ${RUN_ENV} ]]; then
-    echo -e "\n猪猪侠警告：运行环境不匹配，跳过（这是正常情况）\n"
-    exit
-fi
-
-
 # 默认ENV
 GIT_BRANCH=${GIT_BRANCH:-"${GIT_DEFAULT_BRANCH}"}
 
@@ -355,23 +358,37 @@ GIT_BRANCH=${GIT_BRANCH:-"${GIT_DEFAULT_BRANCH}"}
 
 
 
-# 用户信息
-if [[ -n ${HOOK_USER} ]]; then
-    MY_USER_NAME=${HOOK_USER}
-else
-    # if sudo -i 取${SUDO_USER}；
-    # if sudo cmd 取${LOGNAME}
-    MY_USER_NAME=${SUDO_USER:-"${LOGNAME}"}
+# 运行环境匹配for Hook
+if [[ -n ${HOOK_GAN_ENV} ]] && [[ ${HOOK_GAN_ENV} != 'NOT_CHECK' ]] && [[ ${HOOK_GAN_ENV} != ${RUN_ENV} ]]; then
+    echo -e "\n猪猪侠警告：运行环境不匹配，跳过（这是正常情况）\n"
+    exit
 fi
-export MY_USER_NAME
-#
-F_USER_SEARCH ${MY_USER_NAME} > /dev/null
-if [ $? -eq 0 ]; then
-    R=`F_USER_SEARCH ${MY_USER_NAME}`
-    export MY_EMAIL=${MY_EMAIL:-"`echo $R | cut -d ' ' -f 2`"}
-    MY_XINGMING=`echo $R | cut -d ' ' -f 1`
-else
-    MY_XINGMING='X-Man'
+
+
+# 用户信息
+if [[ -z ${MY_USER_NAME} ]]; then
+    if [[ ${USER_INFO_FROM} == 'local' ]]; then
+        # if sudo -i 取${SUDO_USER}；
+        # if sudo cmd 取${LOGNAME}
+        export MY_USER_NAME=${SUDO_USER:-"${LOGNAME}"}
+        #
+        F_USER_SEARCH ${MY_USER_NAME} > /dev/null
+        if [ $? -eq 0 ]; then
+            R=`F_USER_SEARCH ${MY_USER_NAME}`
+            export MY_USER_EMAIL=${MY_USER_EMAIL:-"`echo $R | cut -d ' ' -f 2`"}
+            export MY_USER_XINGMING=`echo $R | cut -d ' ' -f 1`
+        else
+            export MY_USER_XINGMING='x-Man'
+            export MY_USER_EMAIL
+        fi
+    elif [[ ${USER_INFO_FROM} =~ hook_gitlab|hook_hand ]]; then
+        export MY_USER_NAME=${HOOK_USER_NAME}
+        export MY_USER_XINGMING=${HOOK_USER_XINGMING}
+        export MY_USER_EMAIL=${HOOK_USER_EMAIL}
+    else
+        echo -e "\n猪猪侠警告：未知参数值【\${USER_INFO_FROM} = ${USER_INFO_FROM}】\n"
+        exit  51
+    fi
 fi
 
 
@@ -426,8 +443,8 @@ else
         # 查找
         F_FIND_PROJECT ${THIS_LANGUAGE_CATEGORY} >> ${PARA_PROJECT_LIST_FILE_TMP}
         if [[ $? -ne 0 ]]; then
-            echo -e "\n${ECHO_ERROR}猪猪侠警告：【${GAN_PLATFORM_NAME}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！${ECHO_CLOSE}\n"
-            ${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_PLATFORM_NAME}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！" > /dev/null
+            echo -e "\n${ECHO_ERROR}猪猪侠警告：【${LOLLIPOP_PLATFORM_NAME}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！${ECHO_CLOSE}\n"
+            ${DINGDING_MARKDOWN_PY}  "【Info:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${LOLLIPOP_PLATFORM_NAME}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！" > /dev/null
             exit 51
         fi
     else
@@ -436,8 +453,8 @@ else
             # 查找
             F_FIND_PROJECT ${THIS_LANGUAGE_CATEGORY} $i >> ${PARA_PROJECT_LIST_FILE_TMP}
             if [[ $? -ne 0 ]]; then
-                echo -e "\n${ECHO_ERROR}猪猪侠警告：【${GAN_PLATFORM_NAME}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目【$i】，请检查！${ECHO_CLOSE}\n"
-                ${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_PLATFORM_NAME}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目【$i】，请检查！" > /dev/null
+                echo -e "\n${ECHO_ERROR}猪猪侠警告：【${LOLLIPOP_PLATFORM_NAME}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目【$i】，请检查！${ECHO_CLOSE}\n"
+                ${DINGDING_MARKDOWN_PY}  "【Info:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${LOLLIPOP_PLATFORM_NAME}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目【$i】，请检查！" > /dev/null
                 exit 51
             fi
         done
@@ -558,7 +575,7 @@ BUILD_NOTNEED_COUNT=`cat ${BUILD_OK_LIST_FILE} | grep -o '跳过，无需构建'
 let NOT_BUILD_COUNT=${TOTAL_PARA_PJS}-${BUILD_CHECK_COUNT}
 #
 TIME_END=`date +%Y-%m-%dT%H:%M:%S`
-MESSAGE_END="项目构建已完成！ 共企图构建${TOTAL_PARA_PJS}个项目，成功构建${BUILD_SUCCESS_COUNT}个项目，${BUILD_NOCHANGE_COUNT}个项目无更新，${BUILD_NOTNEED_COUNT}个项目无需构建，${BUILD_ERROR_COUNT}个项目出错，${NOT_BUILD_COUNT}各项目因外部干预退出构建。"
+MESSAGE_END="项目构建已完成！ 共企图构建${TOTAL_PARA_PJS}个项目，成功构建${BUILD_SUCCESS_COUNT}个项目，${BUILD_NOCHANGE_COUNT}个项目无更新，${BUILD_NOTNEED_COUNT}个项目无需构建，${BUILD_ERROR_COUNT}个项目出错，${NOT_BUILD_COUNT}各项目因其他原因退出构建。"
 # 消息回显拼接
 >  ${PARA_BUILD_HISTORY_CURRENT_FILE}
 echo "干：**${GAN_WHAT_FUCK}**" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
@@ -566,7 +583,8 @@ echo "====== 并行构建报告 ======" >> ${PARA_BUILD_HISTORY_CURRENT_FILE}
 echo -e "${ECHO_REPORT}################################# 并行构建报告 #################################${ECHO_CLOSE}"    #--- 80 (80-70-60)
 #
 echo "所在环境：${RUN_ENV}" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
-echo "造 浪 者：${MY_XINGMING}" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
+echo "造 浪 者：${MY_USER_XINGMING}@${USER_INFO_FROM}" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
+echo "发送邮箱：${MY_USER_EMAIL}" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
 echo "开始时间：${TIME}" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
 echo "结束时间：${TIME_END}" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
 echo "代码分支：${GIT_BRANCH}" | tee -a ${PARA_BUILD_HISTORY_CURRENT_FILE}
@@ -600,7 +618,7 @@ do
     #echo ${MSG[$t]}
     let  t=$t+1
 done < ${PARA_BUILD_HISTORY_CURRENT_FILE}
-${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "${MSG[@]}" > /dev/null
+${DINGDING_MARKDOWN_PY}  "【Info:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "${MSG[@]}" > /dev/null
 
 
 

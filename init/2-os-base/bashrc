@@ -16,3 +16,11 @@ if [ -f ~/.bash_aliases ]; then
     . ~/.bash_aliases
 fi
 
+
+# ls
+alias ll='ls -aF -l       --time-style=long-iso'   # 列出【./和../】，  目录末尾加【/】，长列表格式，长日期
+alias la='ls -AF'                                  # 不列出【./和../】
+alias lx='ls -AF -l  -Sr  --time-style=long-iso'   # 按照大小排序(反序)
+alias lt='ls -AF -lh -tr  --time-style=long-iso'   # 按照修改时间排序(反序)
+
+

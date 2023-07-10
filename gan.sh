@@ -1,4 +1,28 @@
 #!/bin/bash
+#############################################################################
+# Create By: 猪猪侠
+# License: GNU GPLv3
+# Test On: CentOS 7
+#############################################################################
+
+
+# sh
+SH_NAME=${0##*/}
+SH_PATH=$( cd "$( dirname "$0" )" && pwd )
+cd ${SH_PATH}
+
+
+# 引入/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
+.  /etc/profile
+#NGINX_CONFIG_SH_HOME=
+#PG_MANAGE_SH_HOME=
+
+# 引入env.sh
+
+# 本地env
+ANSIBLE_HOST_FOR_PG_BACKUP_RESTORE='pg_m'
+ANSIBLE_HOST_FOR_NGINX_CERT_REQUEST='nginx_letsencrypt'
+
 
 
 # 用法：
@@ -43,12 +67,6 @@ F_HELP()
     "
 }
 
-
-
-# sh
-SH_NAME=${0##*/}
-SH_PATH=$( cd "$( dirname "$0" )" && pwd )
-cd ${SH_PATH}
 
 
 # 参数检查
@@ -117,13 +135,13 @@ case "${DO}" in
         bash ${SH_PATH}/init/nginx/nginx-config/nginx-conf.sh  ${CMD_ARG}
         ;;
     "ngx-cert")
-        ansible nginx_letsencrypt -m command -a "bash /root/nginx-config/nginx-cert-letsencrypt-a.sh  ${CMD_ARG}"
+        ansible ${ANSIBLE_HOST_FOR_NGINX_CERT_REQUEST} -m command -a "bash  ${NGINX_CONFIG_SH_HOME}/nginx-cert-letsencrypt-a.sh  ${CMD_ARG}"
         ;;
     "ngx-cert-w")
         bash ${SH_PATH}/op/cert-letsencrypt-wildcart.sh  ${CMD_ARG}
         ;;
     "pg-b-r")
-        ansible pg_m -m shell  -a "bash /backup/pg/pg_list_backup_or_restore.sh  ${CMD_ARG}"
+        ansible ${ANSIBLE_HOST_FOR_PG_BACKUP_RESTORE} -m shell  -a "bash ${PG_MANAGE_SH_HOME}/pg_list_backup_or_restore.sh  ${CMD_ARG}"
         ;;
     "aliyun-dns")
         bash ${SH_PATH}/op/aliyun-dns.sh  ${CMD_ARG}

@@ -11,17 +11,18 @@ SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
-# 自动从/etc/profile.d/run-env.sh引入以下变量
-RUN_ENV=${RUN_ENV:-'dev'}
+# 引入/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
+.  /etc/profile        #-- 非终端界面不会自动引入，必须主动引入
+#RUN_ENV=
+#DOCKER_COMPOSE_BASE=
 
-# 引入env
+# 引入env.sh
 . ${SH_PATH}/env.sh
-GAN_PLATFORM_NAME="${GAN_PLATFORM_NAME:-'超甜B&D系统'}"
-#DINGDING_API=
-#USER_DB_FILE=
-#DOCKER_REPO_SERVER=
-#DOCKER_IMAGE_DEFAULT_PRE_NAME=
-#DOCKER_REPO_SECRET_NAME=
+#LOLLIPOP_PLATFORM_NAME=
+#LOLLIPOP_DB_HOME=
+#LOLLIPOP_LOG_BASE=
+#LOLLIPOP_YAML_BASE=
+#K8S_DOCKER_REPO_SECRET_NAME=
 #CONTAINER_ENVS_PUB_FILE=
 #ENABLE_DEBUG_PORT=
 #DEBUG_RANDOM_PORT_MIN=
@@ -32,6 +33,12 @@ GAN_PLATFORM_NAME="${GAN_PLATFORM_NAME:-'超甜B&D系统'}"
 #SWARM_DEFAULT_NETWORK=
 #COMPOSE_DEFAULT_DOCKER_HOST=
 #COMPOSE_DEFAULT_NETWORK=
+# 来自 ${MY_PRIVATE_ENVS_DIR} 目录下的 *.sec
+#USER_DB_FILE=
+#DINGDING_API=
+#DOCKER_REPO_SERVER=
+#DOCKER_IMAGE_DEFAULT_PRE_NAME=
+
 
 # 本地env
 GAN_WHAT_FUCK='Docker_Deploy'
@@ -42,12 +49,9 @@ DATE_TIME=`date -d "${TIME}" +%Y%m%dT%H%M%S`
 RELEASE_VERSION=''
 # 灰度
 GRAY_TAG="normal"                                             #--- 【normal】正常部署；【gray】灰度部署
-DEBUG_X_PORTS_FILE="${SH_PATH}/db/deploy-debug-x-ports.db"    #--- db目录下的文件不建议删除
+DEBUG_X_PORTS_FILE="${LOLLIPOP_DB_HOME}/deploy-debug-x-ports.db"    #--- db目录下的文件不建议删除
 #
-LOG_BASE="${SH_PATH}/tmp/log"
-LOG_HOME="${LOG_BASE}/${DATE_TIME}"
-YAML_BASE="${SH_PATH}/tmp/yaml"
-DOCKER_COMPOSE_BASE='/srv/docker'
+LOG_HOME="${LOLLIPOP_LOG_BASE}/${DATE_TIME}"
 #
 ERROR_CODE=''     #--- 程序最终返回值，一般用于【--mode=function】时
 #
@@ -63,21 +67,30 @@ SERVICE_ONLINE_LIST_FILE_TMP="${LOG_HOME}/${SH_NAME}-docker-cluster-service-onli
 DOCKER_IMAGE_TAG='latest'
 FUCK=${FUCK:-"NO"}
 DEPLOY_BY_STEP=${DEPLOY_BY_STEP:-"NO"}
+DEPLOY_LOG="${LOG_HOME}/${SH_NAME}-deploy.log"
 #
 DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE=${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE:-"${LOG_HOME}/${SH_NAME}-OK.list"}
 #
 DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE="${LOG_HOME}/${SH_NAME}-history.current"
-FUCK_HISTORY_FILE="${SH_PATH}/db/fuck.history"
+FUCK_HISTORY_FILE="${LOLLIPOP_DB_HOME}/fuck.history"
 # 运行方式
 SH_RUN_MODE="normal"
+# 来自webhook或父shell
+export HOOK_USER_INFO_FROM
+export HOOK_GAN_ENV
+export HOOK_USER_NAME
+export HOOK_USER_XINGMING
+export HOOK_USER_EMAIL
 # 来自父shell
 DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE_function=${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE_function:-"${LOG_HOME}/${SH_NAME}-OK.function"}
-MY_USER_NAME=${MY_USER_NAME:-''}
-MY_EMAIL=${MY_EMAIL:-''}
-# 来自webhook
-HOOK_GAN_ENV=${HOOK_GAN_ENV:-''}
-HOOK_USER=${HOOK_USER:-''}
+#MY_USER_NAME=
+#MY_USER_XINGMING=
+#MY_USER_EMAIL=
+if [[ -z ${USER_INFO_FROM} ]]; then
+    USER_INFO_FROM=${HOOK_USER_INFO_FROM:-'local'}     #--【local|hook_hand|hook_gitlab】，默认：local
+fi
 # sh
+SEND_MAIL="${SH_PATH}/../op/send_mail.sh"
 DOCKER_IMAGE_SEARCH_SH="${SH_PATH}/docker-image-search.sh"
 FORMAT_TABLE_SH="${SH_PATH}/../op/format_table.sh"
 DINGDING_MARKDOWN_PY="${SH_PATH}/../op/dingding_conver_to_markdown_list-deploy.py"
@@ -114,6 +127,7 @@ F_HELP()
         ${CONTAINER_HOSTS_PUB_FILE}
         ${JAVA_OPTIONS_PUB_FILE}
         ${SH_PATH}/env.sh
+        ${SEND_MAIL}
         ${DOCKER_IMAGE_SEARCH_SH}
         ${FORMAT_TABLE_SH}
         ${DINGDING_MARKDOWN_PY}
@@ -123,8 +137,8 @@ F_HELP()
         * 输入命令时，参数顺序不分先后
     用法:
         $0 [-h|--help]
-        $0 [-l|--list]                    #--- 列出配置文件中的服务清单
-        $0 [-L|--list-run swarm|k8s]      #--- 列出指定集群中运行的所有服务，不支持持【docker-compose】
+        $0 [-l|--list]                            #--- 列出配置文件中的服务清单
+        $0 [-L|--list-run swarm|k8s|compose]      #--- 列出指定集群类型中运行的所有服务
         # 创建、修改
         $0 <-M|--mode [normal|function]>  [-c|--create|-m|--modify]  <-D|--debug-port>  <<-t|--tag {模糊镜像tag版本}> | <-T|--TAG {精确镜像tag版本}>>  <-I|--image-pre-name {镜像前置名称}>  <-n|--number {副本数}>  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
         # 更新
@@ -152,7 +166,7 @@ F_HELP()
         #
         -h|--help      ：帮助
         -l|--list      ：列出配置文件中的服务清单
-        -L|--list-run  ：列出指定集群中运行的所有服务，不支持【docker-compose】集群
+        -L|--list-run  ：列出指定集群类型中运行的所有服务
         -F|--fuck      ：直接运行命令，默认：仅显示命令行
         -P|--by-step   ：【-F|--fuck】生效时，步进执行（即：按任意键执行，或按【Ctrl+C】键退出）
         -c|--create    ：创建服务，基于服务清单参数
@@ -592,7 +606,7 @@ spec:
         env:
         ports:
       imagePullSecrets:
-      - name: ${DOCKER_REPO_SECRET_NAME}
+      - name: ${K8S_DOCKER_REPO_SECRET_NAME}
       nodeSelector:
       dnsPolicy: ClusterFirst
       restartPolicy: Always
@@ -633,7 +647,7 @@ services:
     # 必须有
     ports:
     networks:
-      - ${COMPOSE_NETWORK}
+      - default
     extra_hosts:
       - somehost:1.1.1.1
     #depends_on:
@@ -648,7 +662,12 @@ services:
     #mem_limit: 1000000000
     #privileged: true
 networks:
-  ${COMPOSE_NETWORK}:
+  default:
+    # 1 自建网络
+    #driver: bridge
+    # 2 使用外部网络
+    external:
+      name: ${COMPOSE_NETWORK}
     "
 }
 
@@ -770,6 +789,7 @@ F_SET_RUN_ENV()
             COMPOSE_NETWORK=${COMPOSE_NETWORK:-"${COMPOSE_DEFAULT_NETWORK}"}
             COMPOSE_SERVICE_HOME=${DOCKER_COMPOSE_BASE}/${SERVICE_NAME}
             #
+            # 检查是否ssh协议，并获取 COMPOSE_SSH_HOST_OR_WITH_USER 及 COMPOSE_SSH_PORT 供后面使用
             # ssh://<用户@>主机名或IP<:端口号>
             if [[ ${COMPOSE_DOCKER_HOST} =~ ^ssh ]]; then
                 # awk会自动去掉【""】引号
@@ -779,7 +799,7 @@ F_SET_RUN_ENV()
                     COMPOSE_SSH_PORT='22'
                 fi
             else
-                echo -e "\n猪猪侠警告：配置文件错误，请检查【DEPLOY_PLACEMENT】，Compose集群仅支持【ssh://<用户@>主机名或IP<:端口号>】格式\n"
+                echo -e "\n猪猪侠警告：配置文件错误，请检查【DEPLOY_PLACEMENT】，Compose集群仅支持【ssh://<用户@>主机名或IP<:端口号>】格式，因为要使用ssh端口拷贝文件\n"
                 return 52
             fi
             #
@@ -808,17 +828,17 @@ F_SEARCH_CLUSTER_MANAGE_INFO()
     #
     F_CLUSTER=$1
     #
-    CLUSTER_MANAGE_INFO=()
+    CLUSTER_MANAGE_INFO=''
     #
     case ${F_CLUSTER} in
         swarm)
-            CLUSTER_MANAGE_INFO=(${SWARM_DEFAULT_DOCKER_HOST})
+            CLUSTER_MANAGE_INFO=${SWARM_DEFAULT_DOCKER_HOST}
             ;;
         k8s)
-            CLUSTER_MANAGE_INFO=(${K8S_DEFAULT_CONTEXT})
+            CLUSTER_MANAGE_INFO=${K8S_DEFAULT_CONTEXT}
             ;;
         compose)
-            CLUSTER_MANAGE_INFO=(${COMPOSE_DEFAULT_DOCKER_HOST})
+            CLUSTER_MANAGE_INFO=${COMPOSE_DEFAULT_DOCKER_HOST}
             ;;
         *)
             echo -e "\n猪猪侠警告：未定义的集群类型\n"
@@ -859,17 +879,17 @@ F_SEARCH_CLUSTER_MANAGE_INFO()
                 case ${F_CLUSTER} in
                     swarm)
                         if [[ ${DEPLOY_PLACEMENT_SET} =~ ^H ]]; then
-                            CLUSTER_MANAGE_INFO+=$(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-)
+                            CLUSTER_MANAGE_INFO+=" $(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-)"
                         fi
                         ;;
                     k8s)
                         if [[ ${DEPLOY_PLACEMENT_SET} =~ ^C ]]; then
-                            CLUSTER_MANAGE_INFO+=$(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-)
+                            CLUSTER_MANAGE_INFO+=" $(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-)"
                         fi
                         ;;
                     compose)
                         if [[ ${DEPLOY_PLACEMENT_SET} =~ ^H ]]; then
-                            CLUSTER_MANAGE_INFO+=$(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-)
+                            CLUSTER_MANAGE_INFO+=" $(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-)"
                         fi
                         ;;
                     *)
@@ -882,10 +902,41 @@ F_SEARCH_CLUSTER_MANAGE_INFO()
         #
     done < ${SERVICE_LIST_FILE_APPEND_1}
     #
-    # 去重
-    CLUSTER_MANAGE_INFO=($( awk  -v RS=' '  '!a[$1]++'  <<< ${CLUSTER_MANAGE_INFO[@]} ))
+    # 全匹配去重
+    #CLUSTER_MANAGE_INFO=$( awk  -v RS=' '  '!a[$1]++'  <<< ${CLUSTER_MANAGE_INFO} )
+    CLUSTER_MANAGE_INFO=$( echo ${CLUSTER_MANAGE_INFO} | awk  -v RS=' '  '!a[$1]++' )
+    #
+    #
+    # 去ip相同部分（避免因为IP主机相同，而用户或端口不同，亦或者用户或端口省略的情况造成的重复问题，这也许不是大问题，但我想做个全套）
+    # 获取ip主机列表
+    CLUSTER_MANAGE_INFO_HOST_a=''
+    for a in ${CLUSTER_MANAGE_INFO}
+    do
+        a_host=$( echo $a  |  awk -F '//' '{print $2}' | awk -F ':' '{print $1}' | cut -d '@' -f 2 )
+        CLUSTER_MANAGE_INFO_HOST_a+=" ${a_host}"
+    done
+    # ip主机去重
+    CLUSTER_MANAGE_INFO_HOST_a=$( echo ${CLUSTER_MANAGE_INFO_HOST_a} | awk  -v RS=' '  '!a[$1]++' )
+    # 根据列表重新组织${CLUSTER_MANAGE_INFO}
+    CLUSTER_MANAGE_INFO_HOST_bc=''
+    for b in ${CLUSTER_MANAGE_INFO_HOST_a}
+    do
+        # 在原表中查询完全信息
+        for c in ${CLUSTER_MANAGE_INFO}
+        do
+            c_host=$( echo $c  |  awk -F '//' '{print $2}' | awk -F ':' '{print $1}' | cut -d '@' -f 2 )
+            if [[ ${c_host} == $b ]]; then
+                CLUSTER_MANAGE_INFO_HOST_bc+=" $c"
+                break
+            fi
+        done
+    done
+    #
+    CLUSTER_MANAGE_INFO=${CLUSTER_MANAGE_INFO_HOST_bc}
+    #
+    #
     # 输出
-    echo ${CLUSTER_MANAGE_INFO[@]}
+    echo ${CLUSTER_MANAGE_INFO}
     return
     #
 }
@@ -1018,10 +1069,23 @@ F_FUCK()
             # 在while read循环中的read命令会失效，需要加上 < /dev/tty
             #read -p "按任意键继续，或按【Ctrl+C】键终止"
             read -p "按任意键继续，或按【Ctrl+C】键终止"  < /dev/tty
+            #
+            # 执行命令
+            echo  ${DOCKER_FULL_CMD} | bash
+            SH_ERROR_CODE=$?
+        else
+            # 执行命令，并写日志
+            DEPLOY_LOG_file="${DEPLOY_LOG}--${PJ}.log"
+            echo "正在执行，请等待......"
+            echo  ${DOCKER_FULL_CMD} | bash  > ${DEPLOY_LOG_file}  2>&1
+            SH_ERROR_CODE=$?
+            cat  ${DEPLOY_LOG_file}
+            # mail
+            if [[ ${SH_ERROR_CODE} != 0 && -n "${MY_USER_EMAIL}" ]]; then
+                ${SEND_MAIL}  --subject "【${RUN_ENV}】${GAN_WHAT_FUCK} Log - ${PJ}"  --content "请看附件\n"  --attach "${DEPLOY_LOG_file}"  "${MY_USER_EMAIL}"
+            fi
         fi
-        # 执行命令
-        echo "${DOCKER_FULL_CMD}" | bash
-        SH_ERROR_CODE=$?
+        #
         case ${SERVICE_OPERATION} in
             create|modify|update|rollback|scale)
                 if [[ ${SH_ERROR_CODE} -eq 0 ]]; then
@@ -1299,17 +1363,9 @@ fi
 
 
 
-# 运行环境匹配for Hook
-if [[ -n ${HOOK_GAN_ENV} ]] && [[ ${HOOK_GAN_ENV} != ${RUN_ENV} ]]; then
-    echo -e "\n猪猪侠警告：运行环境不匹配，跳过（这是正常情况）\n"
-    exit
-fi
-
-
-
 # 建立base目录
 [ -d "${LOG_HOME}" ] || mkdir -p "${LOG_HOME}"
-[ -d "${YAML_BASE}" ] || mkdir -p "${YAML_BASE}"
+[ -d "${LOLLIPOP_YAML_BASE}" ] || mkdir -p "${LOLLIPOP_YAML_BASE}"
 
 
 # 删除空行
@@ -1319,24 +1375,38 @@ fi
 
 
 
-# 用户信息
-if [[ -n ${HOOK_USER} ]]; then
-    MY_USER_NAME=${HOOK_USER}
-elif [[ -n ${MY_USER_NAME} ]]; then
-    MY_USER_NAME=${MY_USER_NAME}
-else
-    # if sudo -i 取${SUDO_USER}；
-    # if sudo cmd 取${LOGNAME}
-    MY_USER_NAME=${SUDO_USER:-"${LOGNAME}"}
+# 运行环境匹配for Hook
+if [[ -n ${HOOK_GAN_ENV} ]] && [[ ${HOOK_GAN_ENV} != 'NOT_CHECK' ]] && [[ ${HOOK_GAN_ENV} != ${RUN_ENV} ]]; then
+    echo -e "\n猪猪侠警告：运行环境不匹配，跳过（这是正常情况）\n"
+    exit
 fi
-#
-F_USER_SEARCH ${MY_USER_NAME} > /dev/null
-if [ $? -eq 0 ]; then
-    R=`F_USER_SEARCH ${MY_USER_NAME}`
-    export MY_EMAIL=${MY_EMAIL:-"`echo $R | cut -d ' ' -f 2`"}
-    MY_XINGMING=`echo $R | cut -d ' ' -f 1`
-else
-    MY_XINGMING='X-Man'
+
+
+
+# 用户信息
+if [[ -z ${MY_USER_NAME} ]]; then
+    if [[ ${USER_INFO_FROM} == 'local' ]]; then
+        # if sudo -i 取${SUDO_USER}；
+        # if sudo cmd 取${LOGNAME}
+        export MY_USER_NAME=${SUDO_USER:-"${LOGNAME}"}
+        #
+        F_USER_SEARCH ${MY_USER_NAME} > /dev/null
+        if [ $? -eq 0 ]; then
+            R=`F_USER_SEARCH ${MY_USER_NAME}`
+            export MY_USER_EMAIL=${MY_USER_EMAIL:-"`echo $R | cut -d ' ' -f 2`"}
+            export MY_USER_XINGMING=`echo $R | cut -d ' ' -f 1`
+        else
+            export MY_USER_XINGMING='x-Man'
+            export MY_USER_EMAIL
+        fi
+    elif [[ ${USER_INFO_FROM} =~ hook_gitlab|hook_hand ]]; then
+        export MY_USER_NAME=${HOOK_USER_NAME}
+        export MY_USER_XINGMING=${HOOK_USER_XINGMING}
+        export MY_USER_EMAIL=${HOOK_USER_EMAIL}
+    else
+        echo -e "\n猪猪侠警告：未知参数值【\${USER_INFO_FROM} = ${USER_INFO_FROM}】\n"
+        exit  51
+    fi
 fi
 
 
@@ -1517,11 +1587,11 @@ do
             echo
             ;;
         k8s)
-            YAML_HOME="${YAML_BASE}/${SERVICE_NAME}"
+            YAML_HOME="${LOLLIPOP_YAML_BASE}/${SERVICE_NAME}"
             [ -d "${YAML_HOME}" ] || mkdir -p "${YAML_HOME}"
             ;;
         compose)
-            YAML_HOME="${YAML_BASE}/${SERVICE_NAME}"
+            YAML_HOME="${LOLLIPOP_YAML_BASE}/${SERVICE_NAME}"
             [ -d "${YAML_HOME}" ] || mkdir -p "${YAML_HOME}"
             ;;
         *)
@@ -2917,7 +2987,7 @@ TIME_END=`date +%Y-%m-%dT%H:%M:%S`
 case ${SH_RUN_MODE} in
     normal)
         #
-        MESSAGE_END="DOCKER SERVICE ${SERVICE_OPERATION} 已完成！ 共企图 ${SERVICE_OPERATION} ${TOTAL_SERVICES} 个项目，成功 ${SERVICE_OPERATION} ${SUCCESS_DO_COUNT} 个项目，跳过 ${NOTNEED_DO_COUNT} 个项目，${ERROR_DO_COUNT} 个项目失败，因外部干预未执行 ${SERVICE_OPERATION} ${NOT_DO_COUNT} 个项目。"
+        MESSAGE_END="DOCKER SERVICE ${SERVICE_OPERATION} 已完成！ 共企图 ${SERVICE_OPERATION} ${TOTAL_SERVICES} 个项目，成功 ${SERVICE_OPERATION} ${SUCCESS_DO_COUNT} 个项目，跳过 ${NOTNEED_DO_COUNT} 个项目，${ERROR_DO_COUNT} 个项目失败，因其他原因未执行 ${SERVICE_OPERATION} ${NOT_DO_COUNT} 个项目。"
         # 消息回显拼接
         > ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         echo "干：**${GAN_WHAT_FUCK}**" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
@@ -2925,7 +2995,8 @@ case ${SH_RUN_MODE} in
         echo -e "${ECHO_REPORT}==================== DOCKER SERVICE ${SERVICE_OPERATION} 报告 ====================${ECHO_CLOSE}"
         #
         echo "所在环境：${RUN_ENV}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
-        echo "造 浪 者：${MY_XINGMING}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
+        echo "造 浪 者：${MY_USER_XINGMING}@${USER_INFO_FROM}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
+        echo "发送邮箱：${MY_USER_EMAIL}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         echo "开始时间：${TIME}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         echo "结束时间：${TIME_END}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         echo "镜像TAG ：${DOCKER_IMAGE_TAG}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
@@ -2957,7 +3028,7 @@ case ${SH_RUN_MODE} in
             #echo ${MSG[$t]}
             let  t=$t+1
         done < ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
-        ${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "${MSG[@]}" > /dev/null
+        ${DINGDING_MARKDOWN_PY}  "【Info:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "${MSG[@]}" > /dev/null
         ;;
     function)
         #

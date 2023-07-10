@@ -12,7 +12,7 @@
           mode: 0644
           backup: no
       with_items:
-        - { srcc: './run-env.sh', destt: '/etc/profile.d/' }
+        - { srcc: './zzxia-op-super-invincible-lollipop.run-env.sh', destt: '/etc/profile.d/' }
         - { srcc: './send_login_alert_msg.sh', destt: '/etc/profile.d/' }
     - name: 拷贝 - send_mail_attach_my_log.sh
       copy: src=./send_mail_attach_my_log.sh dest=/etc/cron.daily/ owner=root group=root mode=755  backup=no
@@ -26,7 +26,6 @@
           backup: yes
       with_items:
         - { srcc: './bashrc', destt: '/root/.bashrc' }
-        - { srcc: './bash_aliases', destt: '/root/.bash_aliases' }
         - { srcc: './bash_logout', destt: '/root/.bash_logout' }
     - name: mailx - 拷贝mailrc、mailx_config.sh到/tmp
       copy: 

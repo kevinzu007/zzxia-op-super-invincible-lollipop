@@ -11,14 +11,20 @@ SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd "${SH_PATH}"
 
-# 自动从/etc/profile.d/run-env.sh引入以下变量
-RUN_ENV=${RUN_ENV:-'dev'}
+# 引入/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
+.  /etc/profile        #-- 非终端界面不会自动引入，必须主动引入
+#RUN_ENV=
+#NGINX_CONFIG_SH_HOME=
 
-# 引入env
+# 引入env.sh
 . ${SH_PATH}/env.sh
-GAN_PLATFORM_NAME="${GAN_PLATFORM_NAME:-'超甜B&D系统'}"
-DINGDING_API=${DINGDING_API:-"请定义"}
+#LOLLIPOP_PLATFORM_NAME=
+#LOLLIPOP_DB_HOME=
+#LOLLIPOP_LOG_BASE=
+#ANSIBLE_HOST_FOR_LOGFILE=
+# 来自 ${MY_PRIVATE_ENVS_DIR} 目录下的 *.sec
 #USER_DB_FILE=
+#DINGDING_API=
 
 # 本地env
 GAN_WHAT_FUCK='Web_Release'
@@ -26,8 +32,7 @@ TIME=${TIME:-`date +%Y-%m-%dT%H:%M:%S`}
 TIME_START=${TIME}
 DATE_TIME=`date -d "${TIME}" +%Y%m%dT%H%M%S`
 #
-LOG_BASE="${SH_PATH}/tmp/log"
-LOG_HOME="${LOG_BASE}/${DATE_TIME}"
+LOG_HOME="${LOLLIPOP_LOG_BASE}/${DATE_TIME}"
 #
 ERROR_CODE=''     #--- 程序最终返回值，一般用于【--mode=function】时
 #
@@ -39,16 +44,23 @@ WEB_RELEASE_NGINX_OK_LIST_FILE="${LOG_HOME}/${SH_NAME}-web_release_nginx-OK.list
 WEB_RELEASE_OK_LIST_FILE="${LOG_HOME}/${SH_NAME}-web_release-OK.list"
 #
 WEB_RELEASE_HISTORY_CURRENT_FILE="${LOG_HOME}/${SH_NAME}.history.current"
-FUCK_HISTORY_FILE="${SH_PATH}/db/fuck.history"
+FUCK_HISTORY_FILE="${LOLLIPOP_DB_HOME}/fuck.history"
 # 运行方式
 SH_RUN_MODE="normal"
+# 来自webhook或父shell
+export HOOK_USER_INFO_FROM
+export HOOK_GAN_ENV
+export HOOK_USER_NAME
+export HOOK_USER_XINGMING
+export HOOK_USER_EMAIL
 # 来自父shell
 WEB_RELEASE_OK_LIST_FILE_function=${WEB_RELEASE_OK_LIST_FILE_function:-"${LOG_HOME}/${SH_NAME}-web_release-OK.list.function"}
-MY_USER_NAME=${MY_USER_NAME:-''}
-MY_EMAIL=${MY_EMAIL:-''}
-# 来自webhook
-HOOK_GAN_ENV=${HOOK_GAN_ENV:-''}
-HOOK_USER=${HOOK_USER:-''}
+#MY_USER_NAME=
+#MY_USER_XINGMING=
+#MY_USER_EMAIL=
+if [[ -z ${USER_INFO_FROM} ]]; then
+    USER_INFO_FROM=${HOOK_USER_INFO_FROM:-'local'}     #--【local|hook_hand|hook_gitlab】，默认：local
+fi
 # sh
 FORMAT_TABLE_SH="${SH_PATH}/../op/format_table.sh"
 DINGDING_MARKDOWN_PY="${SH_PATH}/../op/dingding_conver_to_markdown_list-deploy.py"
@@ -248,37 +260,42 @@ done
 
 
 
-# 运行环境匹配for Hook
-if [[ -n ${HOOK_GAN_ENV} ]] && [[ ${HOOK_GAN_ENV} != ${RUN_ENV} ]]; then
-    echo -e "\n猪猪侠警告：运行环境不匹配，跳过（这是正常情况）\n"
-    exit
-fi
-
-
-
 # 建立base目录
 [ -d "${LOG_HOME}" ] || mkdir -p  ${LOG_HOME}
 
 
 
-# 用户信息
-if [[ -n ${HOOK_USER} ]]; then
-    MY_USER_NAME=${HOOK_USER}
-elif [[ -n ${MY_USER_NAME} ]]; then
-    MY_USER_NAME=${MY_USER_NAME}
-else
-    # if sudo -i 取${SUDO_USER}；
-    # if sudo cmd 取${LOGNAME}
-    MY_USER_NAME=${SUDO_USER:-"${LOGNAME}"}
+# 运行环境匹配for Hook
+if [[ -n ${HOOK_GAN_ENV} ]] && [[ ${HOOK_GAN_ENV} != 'NOT_CHECK' ]] && [[ ${HOOK_GAN_ENV} != ${RUN_ENV} ]]; then
+    echo -e "\n猪猪侠警告：运行环境不匹配，跳过（这是正常情况）\n"
+    exit
 fi
-#
-F_USER_SEARCH ${MY_USER_NAME} > /dev/null
-if [ $? -eq 0 ]; then
-    R=`F_USER_SEARCH ${MY_USER_NAME}`
-    export MY_EMAIL=${MY_EMAIL:-"`echo $R | cut -d ' ' -f 2`"}
-    MY_XINGMING=`echo $R | cut -d ' ' -f 1`
-else
-    MY_XINGMING='X-Man'
+
+
+# 用户信息
+if [[ -z ${MY_USER_NAME} ]]; then
+    if [[ ${USER_INFO_FROM} == 'local' ]]; then
+        # if sudo -i 取${SUDO_USER}；
+        # if sudo cmd 取${LOGNAME}
+        export MY_USER_NAME=${SUDO_USER:-"${LOGNAME}"}
+        #
+        F_USER_SEARCH ${MY_USER_NAME} > /dev/null
+        if [ $? -eq 0 ]; then
+            R=`F_USER_SEARCH ${MY_USER_NAME}`
+            export MY_USER_EMAIL=${MY_USER_EMAIL:-"`echo $R | cut -d ' ' -f 2`"}
+            export MY_USER_XINGMING=`echo $R | cut -d ' ' -f 1`
+        else
+            export MY_USER_XINGMING='x-Man'
+            export MY_USER_EMAIL
+        fi
+    elif [[ ${USER_INFO_FROM} =~ hook_gitlab|hook_hand ]]; then
+        export MY_USER_NAME=${HOOK_USER_NAME}
+        export MY_USER_XINGMING=${HOOK_USER_XINGMING}
+        export MY_USER_EMAIL=${HOOK_USER_EMAIL}
+    else
+        echo -e "\n猪猪侠警告：未知参数值【\${USER_INFO_FROM} = ${USER_INFO_FROM}】\n"
+        exit  51
+    fi
 fi
 
 
@@ -310,7 +327,7 @@ else
         #
         if [[ $GET_IT != 'YES' ]]; then
             echo -e "\n${ECHO_ERROR}猪猪侠警告：【${GAN_WHAT_FUCK}】时，项目【${i}】正则不匹配项目列表【${WEB_PROJECT_LIST_FILE}】中任何项目，请检查！${ECHO_CLOSE}\n"
-            ${DINGDING_MARKDOWN_PY}  "【Error:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_WHAT_FUCK}】时，项目【${i}】正则不匹配项目列表【${WEB_PROJECT_LIST_FILE}】中任何项目，请检查！" > /dev/null
+            ${DINGDING_MARKDOWN_PY}  "【Error:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_WHAT_FUCK}】时，项目【${i}】正则不匹配项目列表【${WEB_PROJECT_LIST_FILE}】中任何项目，请检查！" > /dev/null
             exit 51
         fi
     done
@@ -365,7 +382,7 @@ do
             fi
             #
             > ${WEB_RELEASE_NGINX_OK_LIST_FILE}
-            ansible nginx_real -m command -a "bash /root/nginx-config/web-release-on-nginx.sh  --release  ${PJ}"  > ${WEB_RELEASE_NGINX_OK_LIST_FILE}    #--- 如果子命令返回值不是0，则ansible命令返回值为2
+            ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m command -a "bash  ${NGINX_CONFIG_SH_HOME}/web-release-on-nginx.sh  --release  ${PJ}"  > ${WEB_RELEASE_NGINX_OK_LIST_FILE}    #--- 如果子命令返回值不是0，则ansible命令返回值为2
             if [[ $? -ne 0 ]]; then
                 ERROR_CODE=5
                 echo "${PJ} : 失败，OS级" >> ${WEB_RELEASE_OK_LIST_FILE}
@@ -394,7 +411,7 @@ do
             fi
             #
             > ${WEB_RELEASE_NGINX_OK_LIST_FILE}
-            ansible nginx_real -m command -a "bash /root/nginx-config/web-release-on-nginx.sh  --rollback  ${PJ}"  > ${WEB_RELEASE_NGINX_OK_LIST_FILE}
+            ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m command -a "bash  ${NGINX_CONFIG_SH_HOME}/web-release-on-nginx.sh  --rollback  ${PJ}"  > ${WEB_RELEASE_NGINX_OK_LIST_FILE}
             if [[ $? -ne 0 ]]; then
                 ERROR_CODE=5
                 echo "${PJ} : 失败，OS级" >> ${WEB_RELEASE_OK_LIST_FILE}
@@ -447,7 +464,8 @@ case ${SH_RUN_MODE} in
         echo -e "${ECHO_REPORT}========================== WEB 站点${WEB_ACTION}报告 ==========================${ECHO_CLOSE}"
         #
         echo "所在环境：${RUN_ENV}" | tee -a ${WEB_RELEASE_HISTORY_CURRENT_FILE}
-        echo "造 浪 者：${MY_XINGMING}" | tee -a ${WEB_RELEASE_HISTORY_CURRENT_FILE}
+        echo "造 浪 者：${MY_USER_XINGMING}@${USER_INFO_FROM}" | tee -a ${WEB_RELEASE_HISTORY_CURRENT_FILE}
+        echo "发送邮箱：${MY_USER_EMAIL}" | tee -a ${WEB_RELEASE_HISTORY_CURRENT_FILE}
         echo "开始时间：${TIME}" | tee -a ${WEB_RELEASE_HISTORY_CURRENT_FILE}
         echo "结束时间：${TIME_END}" | tee -a ${WEB_RELEASE_HISTORY_CURRENT_FILE}
         echo "${WEB_ACTION}清单：" | tee -a ${WEB_RELEASE_HISTORY_CURRENT_FILE}
@@ -476,7 +494,7 @@ case ${SH_RUN_MODE} in
             #echo ${MSG[$t]}
             let  t=$t+1
         done < ${WEB_RELEASE_HISTORY_CURRENT_FILE}
-        ${DINGDING_MARKDOWN_PY}  "【Info:${GAN_PLATFORM_NAME}:${RUN_ENV}】" "${MSG[@]}" > /dev/null
+        ${DINGDING_MARKDOWN_PY}  "【Info:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "${MSG[@]}" > /dev/null
         ;;
     function)
         #
