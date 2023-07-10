@@ -80,7 +80,7 @@ export MY_PRIVATE_ENVS_DIR="/root/.my_sec"
 export PG_MANAGE_SH_HOME="/manage/pg--${LOLLIPOP_PLATFORM_NAME}"
 
 # IRD - Nginx配置脚本路径（cp nginx-config到nginx服务器上）
-export NGINX_CONFIG_SH_HOME="/root/nginx-config--${LOLLIPOP_PLATFORM_NAME}"
+export NGINX_CONFIG_SH_HOME="/manage/nginx-config--${LOLLIPOP_PLATFORM_NAME}"
 
 # R - Nginx conf.d目录
 export NGINX_CONF_DEFAULT_DIR="/etc/nginx/conf.d"
