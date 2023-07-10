@@ -326,7 +326,8 @@ GIT_CODE()
 {
     # clone 或 pull
     if [ ! -d "./${PJ}" ]; then
-        #echo "Git Clone ......"
+        # clone
+        echo "Git Clone ......"
         #timeout 300 git clone  git@${GIT_SERVER}:${GIT_GROUP}/${PJ}.git   2>&1  | tee ${GIT_LOG_file}
         #git clone  git@${GIT_SERVER}:${GIT_GROUP}/${PJ}.git   2>&1  | tee ${GIT_LOG_file}
         #git clone  "git@${GIT_SERVER}:${GIT_GROUP}/${PJ}.git"   > "${GIT_LOG_file}"  2>&1
@@ -355,14 +356,15 @@ GIT_CODE()
             return 54
         fi
     else
+        # pull
         # 更改为本地的本地分支有无更新（以前为本地的remote分支有无更新）
-        echo  "Git Pull ......"
         cd  "${PJ}"
         git checkout .      #--- 撤销工作区修改
         git clean -xdf     #--- 删除未跟踪的文件与目录
         LAST_BUILD_BRANCH=$(git branch | grep '*' | awk '{print $2}')
         git checkout master  #--- 切换到必定存在的分支，避免当前分支不存在造成后面的git pull命令出错！
         #
+        echo  "Git Pull ......"
         #timeout 300 git pull   2>&1  | tee ${GIT_LOG_file}
         git pull -p  > "${GIT_LOG_file}"  2>&1  #--- pull + 清理远程已删除本地还存在的分支
         git_pull_return=$?
@@ -484,14 +486,14 @@ DOCKER_BUILD()
             cat  ${LOG_HOME}/DOCKER_BUILD-${PJ}.log  | tee -a ${BUILD_LOG_file}
             #
             echo  "ansible copy log ..."
-            ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no" 
+            ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
             #grep  'Successfully built'  ${BUILD_LOG_file}
             #
             if [ ${RETURN_r} -ne 0 ]; then
                 echo ""
                 echo -e "${ECHO_ERROR} 失败！请检查日志文件：${BUILD_LOG_file}  ${ECHO_CLOSE}"  2>&1 | tee -a ${BUILD_LOG_file}
                 echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"  2>&1 | tee -a ${BUILD_LOG_file}
-                ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no" 
+                ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
                 echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
                 echo "${PJ} : 失败 : x" >> ${BUILD_OK_LIST_FILE}
                 ERR_SHOW
@@ -507,7 +509,7 @@ DOCKER_BUILD()
                         if [ -z "${DOCKER_IMAGE_NAME}" ]; then
                             echo -e "\n猪猪侠警告：输出方式为【docker_image_push】时，镜像名不能为空！\n"  2>&1 | tee -a ${BUILD_LOG_file}
                             echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"  2>&1 | tee -a ${BUILD_LOG_file}
-                            ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no" 
+                            ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
                             echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
                             echo "${PJ} : 失败 : x" >> ${BUILD_OK_LIST_FILE}
                             ERR_SHOW
@@ -519,7 +521,7 @@ DOCKER_BUILD()
                         if [[ $(grep -q '猪猪侠警告' ${BUILD_LOG_file}; echo $?) == 0 ]]; then
                             echo -e "\n猪猪侠警告：项目镜像PUSH失败！\n"  2>&1 | tee -a ${BUILD_LOG_file}
                             echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"  2>&1 | tee -a ${BUILD_LOG_file}
-                            ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no" 
+                            ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
                             echo "${PJ}" >>  ${PROJECT_LIST_RETRY_FILE}
                             echo "${PJ} : 失败 : x" >> ${BUILD_OK_LIST_FILE}
                             ERR_SHOW
@@ -532,20 +534,20 @@ DOCKER_BUILD()
                     *)
                         # 啥也不用做，这只是为了标准化
                         echo -e "\n猪猪侠警告：【${OUTPUT_METHOD}】这种输出方法我未定义，你自己搞下！\n"  2>&1 | tee -a ${BUILD_LOG_file}
-                        ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no" 
+                        ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
                         return 52
                         ;;
                 esac
                 # echo
                 echo 'OUTPUT成功！'  2>&1 | tee -a ${BUILD_LOG_file}
-                ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no" 
+                ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
                 #echo "${PJ} : 成功 : x" >> ${BUILD_OK_LIST_FILE}
                 return 50
             fi
             ;;
         *)
             echo -e "\n猪猪侠警告：【 ${LANGUAGE_CATEGORY} 之 ${BUILD_METHOD} 】这个构建方法我没弄，你自己搞下！\n"  2>&1 | tee -a ${BUILD_LOG_file}
-            ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no" 
+            ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
             return 52
             ;;
     esac
