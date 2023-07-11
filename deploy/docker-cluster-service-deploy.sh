@@ -708,7 +708,7 @@ F_SET_RUN_ENV()
                     if [[ ${DEPLOY_PLACEMENT_SET} =~ ^H ]]; then
                         SWARM_DOCKER_HOST=$(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-)
                     elif [[ ${DEPLOY_PLACEMENT_SET} =~ ^NET ]]; then
-                        SWARM_NETWORK=$(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2- | awk -F '@' '{print $1}')
+                        SWARM_NETWORK=$(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-)
                     elif [[ ${DEPLOY_PLACEMENT_SET} =~ ^L ]]; then
                         DEPLOY_PLACEMENT_LABELS="$(echo ${DEPLOY_PLACEMENT_SET} | cut -d '=' -f 2-) ${DEPLOY_PLACEMENT_LABELS}"
                     else
@@ -756,6 +756,7 @@ F_SET_RUN_ENV()
             # DEPLOY_PLACEMENT_LABELS
             ;;
         compose)
+            COMPOSE_NETWORK_IS_EXT='NO'           #-- 默认不是外部预定义网络
             if [[ ! -z ${DEPLOY_PLACEMENT} ]]; then
                 DEPLOY_PLACEMENT=${DEPLOY_PLACEMENT// /}               #--- 删除字符串中所有的空格
                 DEPLOY_PLACEMENT_ARG_NUM=$(echo ${DEPLOY_PLACEMENT} | grep -o ',' | wc -l)
@@ -786,8 +787,12 @@ F_SET_RUN_ENV()
             #
             # 输出
             COMPOSE_DOCKER_HOST=${COMPOSE_DOCKER_HOST:-"${COMPOSE_DEFAULT_DOCKER_HOST}"}
-            COMPOSE_NETWORK=${COMPOSE_NETWORK:-"${COMPOSE_DEFAULT_NETWORK}"}
             COMPOSE_SERVICE_HOME=${DOCKER_COMPOSE_BASE}/${SERVICE_NAME}
+            COMPOSE_NETWORK=${COMPOSE_NETWORK:-"${COMPOSE_DEFAULT_NETWORK}"}
+            if [[ ${COMPOSE_NETWORK} =~ @ ]]; then
+                COMPOSE_NETWORK=$( echo ${COMPOSE_NETWORK} | awk -F '@' '{print $1}' )
+                COMPOSE_NETWORK_IS_EXT='YES'
+            fi
             #
             # 检查是否ssh协议，并获取 COMPOSE_SSH_HOST_OR_WITH_USER 及 COMPOSE_SSH_PORT 供后面使用
             # ssh://<用户@>主机名或IP<:端口号>
@@ -1691,10 +1696,9 @@ do
                     ;;
                 compose)
                     F_DOCKER_COMPOSE_MODEL_YAML > ${YAML_HOME}/docker-compose.yaml
-                    #if [[ ${COMPOSE_NETWORK} =~ @ext ]]; then
-                    if [[ ${COMPOSE_NETWORK} =~ @ ]]; then
-                        sed -i "s/^    #external:/    external:/"  ${YAML_HOME}/docker-compose.yaml
-                        sed -i "s/^    #  name:/      name:/"      ${YAML_HOME}/docker-compose.yaml
+                    if [[ ${COMPOSE_NETWORK_IS_EXT} == 'YES' ]]; then
+                        sed -i "s/^    #external:/    external:/"       ${YAML_HOME}/docker-compose.yaml
+                        sed -i "s/^    #  name:/      name:/"           ${YAML_HOME}/docker-compose.yaml
                     else
                         sed -i "s/^    #driver: bridge/    driver: bridge/"  ${YAML_HOME}/docker-compose.yaml
                     fi
