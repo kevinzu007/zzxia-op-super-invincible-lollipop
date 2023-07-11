@@ -25,7 +25,9 @@
 ###      * L=label键值对         : L 同上，即Label，指定标签，可以有多个，代表服务部署到这个标签主机节点
 ###      * H="ssh://<用户@>主机名或IP<:端口号>"
 ###          或 H="tcp://主机名或IP<:端口号>"    : H 即DOCKER_HOST，通过设置此变量实现远程管理`swarm`集群或`compose`集群（docker-compose简称compose），`compose`集群只支持`ssh`格式
-###      * NET=网络              : NET 即network，用于swarm集群
+###      * NET=网络<@ext>        : NET 即network，用于swarm或compose集群。
+###                               【@ext】:  代表是容器外部预定义的网络名，仅在compose集群时有效，可以简写为【@】。
+###                                          如果是compose集群且无【@ext】参数，则代表是容器内部定义的网络名
 ###    用法（若有多个参数，则用【,】分隔）：
 ###      1 集群='k8s'        : C=Context配置, NS=命名空间, L=label键值对    :【C】及【NS】的默认值在env.sh---*中定义，这里可以省略，【L】可以为空
 ###      2 集群='swarm'      : H=主机, NET=网络, L=label键值对              :【H】及【NET】的默认值在env.sh---*中定义，这里可以省略，【L】可以为空
@@ -38,6 +40,8 @@
 ###      【L=node=worker_node_2】
 ###      【NET=net1, L=node=worker, L=aa=bbb】
 ###      【NET=net1】
+###      【NET=net1@ext】
+###      【NET=net1@】
 ###      【H=ssh://root@192.168.11.77:22】
 ###      【H=ssh://192.168.11.77】
 ###      【H=tcp://192.168.11.77:2375】
@@ -58,6 +62,6 @@
 |gc-gateway               | swarm    |               |                                                            |
 |gc-monitor               | swarm    |               |                                                            |
 |gc-client-service        | k8s      |               |                                                            |
-|gc-client-app-service    | compose  |               | H=ssh://192.168.11.77                                      |
+|gc-client-app-service    | compose  |               | H=ssh://192.168.11.77, NET=net1@ext                        |
 |gc-travel-service        | k8s      |               |                                                            |
 

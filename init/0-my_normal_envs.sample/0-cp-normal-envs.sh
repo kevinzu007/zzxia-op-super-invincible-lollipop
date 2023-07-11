@@ -66,7 +66,7 @@ F_CP ()
     # 其他
     cp -f  ./nginx.list---${R_ENV}                                       ${DEST_DIR}/deploy/nginx.list
     cp -f  ./nginx.list---${R_ENV}                                       ${DEST_DIR}/init/nginx/nginx-config/nginx.list
-    cp -f  ./pg_db.list                                                  ${DEST_DIR}/init/pg/backup/pg_db.list
+    cp -f  ./pg_db.list                                                  ${DEST_DIR}/init/pg/manage/pg_db.list
     cp -f  ./pgbadger.env---${R_ENV}                                     ${DEST_DIR}/init/pgbadger/pgbadger_report/pgbadger.env
 }
 

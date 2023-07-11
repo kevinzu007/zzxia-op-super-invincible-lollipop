@@ -647,27 +647,27 @@ services:
     # 必须有
     ports:
     networks:
-      - default
+      - ${COMPOSE_NETWORK}
     extra_hosts:
       - somehost:1.1.1.1
     #depends_on:
     #  - db 
     environment:
       foo: "bar"
-    #volumes:
-    #  - ./tmp:/tmp/cac:ro
+    volumes:
+      - ./default_vol:/host_vol:rw
     # 其他（一般不用）
     #cpu_shares: 73
     #cpu_quota: 50000
     #mem_limit: 1000000000
     #privileged: true
 networks:
-  default:
+  ${COMPOSE_NETWORK}:
     # 1 自建网络
     #driver: bridge
     # 2 使用外部网络
-    external:
-      name: ${COMPOSE_NETWORK}
+    #external:
+    #  name: ${COMPOSE_NETWORK}
     "
 }
 
@@ -756,6 +756,7 @@ F_SET_RUN_ENV()
             # DEPLOY_PLACEMENT_LABELS
             ;;
         compose)
+            COMPOSE_NETWORK_IS_EXT='NO'           #-- 默认不是外部预定义网络
             if [[ ! -z ${DEPLOY_PLACEMENT} ]]; then
                 DEPLOY_PLACEMENT=${DEPLOY_PLACEMENT// /}               #--- 删除字符串中所有的空格
                 DEPLOY_PLACEMENT_ARG_NUM=$(echo ${DEPLOY_PLACEMENT} | grep -o ',' | wc -l)
@@ -786,8 +787,12 @@ F_SET_RUN_ENV()
             #
             # 输出
             COMPOSE_DOCKER_HOST=${COMPOSE_DOCKER_HOST:-"${COMPOSE_DEFAULT_DOCKER_HOST}"}
-            COMPOSE_NETWORK=${COMPOSE_NETWORK:-"${COMPOSE_DEFAULT_NETWORK}"}
             COMPOSE_SERVICE_HOME=${DOCKER_COMPOSE_BASE}/${SERVICE_NAME}
+            COMPOSE_NETWORK=${COMPOSE_NETWORK:-"${COMPOSE_DEFAULT_NETWORK}"}
+            if [[ ${COMPOSE_NETWORK} =~ @ ]]; then
+                COMPOSE_NETWORK=$( echo ${COMPOSE_NETWORK} | awk -F '@' '{print $1}' )
+                COMPOSE_NETWORK_IS_EXT='YES'
+            fi
             #
             # 检查是否ssh协议，并获取 COMPOSE_SSH_HOST_OR_WITH_USER 及 COMPOSE_SSH_PORT 供后面使用
             # ssh://<用户@>主机名或IP<:端口号>
@@ -1691,6 +1696,12 @@ do
                     ;;
                 compose)
                     F_DOCKER_COMPOSE_MODEL_YAML > ${YAML_HOME}/docker-compose.yaml
+                    if [[ ${COMPOSE_NETWORK_IS_EXT} == 'YES' ]]; then
+                        sed -i "s/^    #external:/    external:/"       ${YAML_HOME}/docker-compose.yaml
+                        sed -i "s/^    #  name:/      name:/"           ${YAML_HOME}/docker-compose.yaml
+                    else
+                        sed -i "s/^    #driver: bridge/    driver: bridge/"  ${YAML_HOME}/docker-compose.yaml
+                    fi
                     ;;
                 *)
                     echo -e "\n猪猪侠警告：未定义的集群类型\n"
@@ -2127,11 +2138,26 @@ do
                         continue
                     fi
                 else
-                    # 直接组装
-                    CONTAINER_ENVS_OK="${CONTAINER_ENVS_OK}  --env ${CONTAINER_ENVS_SET_n}=\"${CONTAINER_ENVS_SET_v}\""
+                    # 组装
+                    case "${CLUSTER}" in
+                        swarm)
+                            CONTAINER_ENVS_OK="${CONTAINER_ENVS_OK}  --env ${CONTAINER_ENVS_SET_n}=\"${CONTAINER_ENVS_SET_v}\""
+                            ;;
+                        k8s)
+                            sed -i "/        env:/a\        - name: JAVA_OPTIONS\n          value: ${JAVA_OPTIONS_OK_V}"  ${YAML_HOME}/${SERVICE_X_NAME}.yaml
+                            ;;
+                        compose)
+                            sed -i "/^    environment:/a\      JAVA_OPTIONS: ${JAVA_OPTIONS_OK_V}"  ${YAML_HOME}/docker-compose.yaml
+                            ;;
+                        *)
+                            echo -e "\n猪猪侠警告：未定义的集群类型\n"
+                            exit 52
+                            ;;
+                    esac
                 fi
             done
             #
+            # for swarm
             CONTAINER_ENVS_OK=$( echo ${CONTAINER_ENVS_OK} )
 
 
