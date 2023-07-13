@@ -25,8 +25,11 @@
 # I - 【zzxia-op-super-invincible-lollipop|超级无敌棒棒糖】项目路径
 export ZZXIA_OP_SUPER_INVINCIBLE_LOLLIPOP_HOME='/root/zzxia-op-super-invincible-lollipop'
 
-# IBD -.
-export LOLLIPOP_PLATFORM_NAME="超甜BD系统"         #--- 给本构建发布系统取个名字
+# BD - 【zzxia-op-super-invincible-lollipop|超级无敌棒棒糖】项目数据路径
+export LOLLIPOP_VAR_BASE='/root/.var/lollipop'
+
+# IBD - 给本构建发布系统取个名字
+export LOLLIPOP_PLATFORM_NAME="超甜BD系统"
 
 
 
