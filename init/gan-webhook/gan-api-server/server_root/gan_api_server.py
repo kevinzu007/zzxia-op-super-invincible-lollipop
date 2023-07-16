@@ -474,7 +474,7 @@ def hook_hand():
     # 1 header ：
     # 【"token: sdlffsekwodksdlfolsefksdfpofefpsefop34pfsdf"】
     # 或
-    # 【"user: kevin", "sec: sha1(用户名+密码)"】
+    # 【"user: kevin", "sec: sha1(用户名+密码)"】 --- 已经关闭用户密码验证，只开启token验证
     #
     # 2 body
     # 2.1 build body ：
@@ -615,14 +615,14 @@ def hook_hand():
             print('Token验证成功')
         else:
             return jsonify(auth_user_token_result)
-    elif user != '' and sec != '':
-        # 校验用户名密码
-        auth_result = auth_user_pw(user, sec)
-        #auth_result = json.loads(auth_result)
-        print(auth_result)
-        auth_result_status = extract_element_from_json(auth_result, ["Status"])[0]
-        if auth_result_status == 'Error':
-            return jsonify(auth_result)
+    #elif user != '' and sec != '':
+    #    # 校验用户名密码
+    #    auth_result = auth_user_pw(user, sec)
+    #    #auth_result = json.loads(auth_result)
+    #    print(auth_result)
+    #    auth_result_status = extract_element_from_json(auth_result, ["Status"])[0]
+    #    if auth_result_status == 'Error':
+    #        return jsonify(auth_result)
     else:
         return jsonify({"Status": "Error", "Message": "请提供登录信息"})
     
