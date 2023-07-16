@@ -33,14 +33,16 @@ cd "${SH_PATH}"
 #GIT_DEFAULT_NAMESPACE=
 #GIT_DEFAULT_BRANCH=
 # 来自 ${MY_PRIVATE_ENVS_DIR}目录下的 *.sec
-USER_DB_FILE=${USER_DB_FILE:-"${HOME}/.my_sec/user.db"}
-DINGDING_API=${DINGDING_API:-"请定义"}
-DOCKER_REPO_SERVER=${DOCKER_REPO_SERVER:-"docker-repo:5000"}
-DOCKER_IMAGE_DEFAULT_PRE_NAME=${DOCKER_IMAGE_DEFAULT_PRE_NAME:-'public'}
+#USER_DB_FILE=
+#USER_DB_FILE_APPEND_1=
+#DINGDING_API=
+#DOCKER_REPO_SERVER=
+#DOCKER_IMAGE_DEFAULT_PRE_NAME=
 PROJECT_CODE_VERIFY=${PROJECT_CODE_VERIFY:-'NO'}    #--- YES|NO，请提供相关sonarQube地址用户名密码
 
 # 本地env
 GAN_WHAT_FUCK='Build'
+NEED_PRIVILEGES='build'
 TIME=${TIME:-`date +%Y-%m-%dT%H:%M:%S`}
 TIME_START=${TIME}
 DATE_TIME=`date -d "${TIME}" +%Y%m%dT%H%M%S`
@@ -1129,9 +1131,34 @@ F_BUILD_TIME_SEARCH()
 
 
 
-# 用户搜索
-# F_USER_SEARCH  [用户名|用户ID]
-F_USER_SEARCH()
+# 搜索Gitlab用户，返回主用户名
+# F_SEARCH_GITLAB_USER  [gitlab用户名]
+F_SEARCH_GITLAB_USER()
+{
+    F_GITLAB_USER_NAME=$1
+    while read U_LINE
+    do
+        # 跳过以#开头的行或空行
+        [[ "$U_LINE" =~ ^# ]] || [[ "$U_LINE" =~ ^[\ ]*$ ]] && continue
+        #
+        CURRENT_USER_NAME=`echo $U_LINE | cut -d '|' -f 3`
+        CURRENT_USER_NAME=`echo ${CURRENT_USER_NAME}`
+        CURRENT_GITLAB_USER_NAME=`echo $U_LINE | cut -d '|' -f 4`
+        CURRENT_GITLAB_USER_NAME=`echo ${CURRENT_GITLAB_USER_NAME}`
+        if [[ ${F_GITLAB_USER_NAME} == ${CURRENT_GITLAB_USER_NAME} ]]; then
+            echo "${CURRENT_USER_NAME}"
+            return 0
+        fi
+    done < "${USER_DB_FILE_APPEND_1}"
+    #
+    return 3
+}
+
+
+
+# 搜索用户，返回用户信息
+# F_SEARCH_USER  [用户名|用户ID]
+F_SEARCH_USER()
 {
     F_USER_NAME=$1
     while read U_LINE
@@ -1148,11 +1175,81 @@ F_USER_SEARCH()
         CURRENT_USER_EMAIL=`echo $U_LINE | cut -d '|' -f 5`
         CURRENT_USER_EMAIL=`echo ${CURRENT_USER_EMAIL}`
         if [ "${F_USER_NAME}" = "${CURRENT_USER_ID}"  -o  "${F_USER_NAME}" = "${CURRENT_USER_NAME}" ]; then
-            echo "${CURRENT_USER_XINGMING} ${CURRENT_USER_EMAIL}"
-            return 0
+            # 获取append部分
+            while read UA_LINE
+            do
+                CURRENT_USER_NAME_A=`echo $UA_LINE | cut -d '|' -f 3`
+                CURRENT_USER_NAME_A=`echo ${CURRENT_USER_NAME_A}`
+                CURRENT_GITLAB_USER_NAME_A=`echo $UA_LINE | cut -d '|' -f 4`
+                CURRENT_GITLAB_USER_NAME_A=`echo ${CURRENT_GITLAB_USER_NAME_A}`
+                CURRENT_USER_PRIVILEGES_A=`echo $UA_LINE | cut -d '|' -f 5`
+                CURRENT_USER_PRIVILEGES_A=`echo ${CURRENT_USER_PRIVILEGES_A}`
+                if [[ ${F_USER_NAME} == ${CURRENT_USER_NAME_A} ]]; then
+                    # 获取权限字段
+                    CURRENT_USER_PRIVILEGES_A=${CURRENT_USER_PRIVILEGES_A// /}      #-- 删除字符串中所有的空格
+                    # 匹配，输出
+                    echo "${F_USER_NAME} | ${CURRENT_USER_XINGMING} | ${CURRENT_USER_EMAIL} | ${CURRENT_GITLAB_USER_NAME_A} | ${CURRENT_USER_PRIVILEGES_A}"
+                    return 0
+                fi
+            done < "${USER_DB_FILE_APPEND_1}"
         fi
     done < "${USER_DB_FILE}"
     return 3
+}
+
+
+
+# 搜索用户，返回用户权限
+# F_SEARCH_USER_PRIV  [用户名]
+F_SEARCH_USER_PRIV()
+{
+    F_USER_NAME=$1
+    #
+    # 获取append部分
+    while read UA_LINE
+    do
+        CURRENT_USER_NAME_A=`echo $UA_LINE | cut -d '|' -f 3`
+        CURRENT_USER_NAME_A=`echo ${CURRENT_USER_NAME_A}`
+        CURRENT_USER_PRIVILEGES_A=`echo $UA_LINE | cut -d '|' -f 5`
+        CURRENT_USER_PRIVILEGES_A=`echo ${CURRENT_USER_PRIVILEGES_A}`
+        if [[ ${F_USER_NAME} == ${CURRENT_USER_NAME_A} ]]; then
+            # 获取权限字段
+            CURRENT_USER_PRIVILEGES_A=${CURRENT_USER_PRIVILEGES_A// /}      #-- 删除字符串中所有的空格
+            PRIVILEGES_env_NUM=$(echo ${CURRENT_USER_PRIVILEGES_A} | grep -o ',' | wc -l)
+            for ((i=PRIVILEGES_env_NUM; i>=0; i--))
+            do
+                # 为空
+                if [[ -z ${CURRENT_USER_PRIVILEGES_A} ]]; then
+                    break
+                fi
+                #
+                FIELD=$((i+1))
+                CURRENT_USER_PRIVILEGES_A_SET=`echo ${CURRENT_USER_PRIVILEGES_A} | cut -d ',' -f ${FIELD}`
+                #
+                CURRENT_USER_PRIVILEGES_A_SET_env=`echo ${CURRENT_USER_PRIVILEGES_A_SET} | cut -d ':' -f 1`
+                CURRENT_USER_PRIVILEGES_A_SET_priv_SET=`echo ${CURRENT_USER_PRIVILEGES_A_SET} | cut -d ':' -f 2`
+                if [[ ${CURRENT_USER_PRIVILEGES_A_SET_env} == ${RUN_ENV} ]] || [[ ${CURRENT_USER_PRIVILEGES_A_SET_env} == ALL ]]; then
+                    # 获取具体权限
+                    PRIVILEGES_env_priv_NUM=$(echo ${CURRENT_USER_PRIVILEGES_A_SET_priv_SET} | grep -o '&' | wc -l)
+                    for ((j=PRIVILEGES_env_priv_NUM; j>=0; j--))
+                    do
+                        # 为空
+                        if [[ -z ${CURRENT_USER_PRIVILEGES_A_SET_priv_SET} ]]; then
+                            break
+                        fi
+                        #
+                        FIELD_J=$((j+1))
+                        CURRENT_USER_PRIVILEGES_A_SET_priv=`echo ${CURRENT_USER_PRIVILEGES_A_SET_priv_SET} | cut -d '&' -f ${FIELD_J}`
+                        if [[ ${CURRENT_USER_PRIVILEGES_A_SET_priv} == ${NEED_PRIVILEGES} ]] || [[ ${CURRENT_USER_PRIVILEGES_A_SET_priv} == ALL ]]; then
+                            # 匹配，输出
+                            echo "0 | PASS"
+                        fi
+                    done
+                fi
+            done
+        fi
+    done < "${USER_DB_FILE_APPEND_1}"
+    echo "3 | NOT_PASS"
 }
 
 
@@ -1273,20 +1370,44 @@ if [[ -z ${MY_USER_NAME} ]]; then
         # if sudo cmd 取${LOGNAME}
         export MY_USER_NAME=${SUDO_USER:-"${LOGNAME}"}
         #
-        F_USER_SEARCH ${MY_USER_NAME} > /dev/null
+        F_SEARCH_USER ${MY_USER_NAME} > /dev/null
         if [ $? -eq 0 ]; then
-            R=`F_USER_SEARCH ${MY_USER_NAME}`
-            export MY_USER_EMAIL=${MY_USER_EMAIL:-"`echo $R | cut -d ' ' -f 2`"}
-            export MY_USER_XINGMING=`echo $R | cut -d ' ' -f 1`
+            R=`F_SEARCH_USER ${MY_USER_NAME}`
+            export MY_USER_XINGMING=`echo $R | cut -d '|' -f 2 | awk '{print $1}'`
+            export MY_USER_EMAIL=${MY_USER_EMAIL:-"`echo $R | cut -d '|' -f 3 | awk '{print $1}'`"}
         else
             export MY_USER_XINGMING='x-Man'
             export MY_USER_EMAIL
         fi
-    elif [[ ${USER_INFO_FROM} =~ hook_gitlab|hook_hand ]]; then
+    elif [[ ${USER_INFO_FROM} =~ hook_hand ]]; then
+        #
         export MY_USER_NAME=${HOOK_USER_NAME}
         export MY_USER_XINGMING=${HOOK_USER_XINGMING}
         export MY_USER_EMAIL=${HOOK_USER_EMAIL}
+    elif [[ ${USER_INFO_FROM} =~ hook_gitlab ]]; then
+        #
+        F_SEARCH_GITLAB_USER ${HOOK_USER_NAME} > /dev/null
+        if [[ $? != 0 ]]; then
+            echo -e "\n猪猪侠警告：Gitlab用户不存在【${HOOK_USER_NAME}】\n"
+            exit 52
+        fi
+        R=$(F_SEARCH_GITLAB_USER ${HOOK_USER_NAME})
+        export MY_USER_NAME=${R}
+        export MY_USER_XINGMING=${HOOK_USER_XINGMING}
+        export MY_USER_EMAIL=${HOOK_USER_EMAIL}
     else
+        echo -e "\n猪猪侠警告：未知参数值【\${USER_INFO_FROM} = ${USER_INFO_FROM}】\n"
+        exit  51
+    fi
+fi
+
+
+# 用户权限
+if [[ ${MY_USER_XINGMING} != x-Man ]]; then
+    R=$(F_SEARCH_USER_PRIV ${MY_USER_NAME})
+    R_1=$(echo $R | cut -d '|' -f 1 | awk '{print $1}')
+    R_2=$(echo $R | cut -d '|' -f 2 | awk '{print $1}')
+    if [[ $R_1 == 0 ]] && [[ $R_2 == PASS ]]; then
         echo -e "\n猪猪侠警告：未知参数值【\${USER_INFO_FROM} = ${USER_INFO_FROM}】\n"
         exit  51
     fi
