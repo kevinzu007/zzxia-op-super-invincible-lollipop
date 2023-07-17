@@ -95,7 +95,7 @@ do
         USER_SECRET_sha256_50=${USER_SECRET_sha256:3:50}                         #--- 与webhook-server.py保持一致，从第4位开始，取50位，即4-53
         USER_SECRET=${USER_SECRET_sha256_50}
         #
-        sed -i -E "s/(\|[ ]*[0-9]+[ ]*\|[ ]*${USER_NAME}[ ]*\|.+\|.+\|).+\|.+\|$/\1 ${USER_SALT} \| ${USER_SECRET} \|/"  ${USER_DB_FILE}
+        sed -i -E "s/(\|[ ]*[0-9]+[ ]*\|[ ]*${USER_NAME}[ ]*\|.+\|.+\|).+\|.+\|(.+\|)$/\1 ${USER_SALT} \| ${USER_SECRET} \|\2/"  ${USER_DB_FILE}
         UPDATE_1=$?
         if [[ ${UPDATE_1} -eq 0 ]]; then
             echo -e "\n猪猪侠提醒：用户【${USER_NAME}】密码更新成功\n"
