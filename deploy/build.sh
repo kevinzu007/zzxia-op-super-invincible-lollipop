@@ -1385,7 +1385,7 @@ if [[ -z ${MY_USER_NAME} ]]; then
             export MY_USER_XINGMING=${R_3}
             export MY_USER_EMAIL=${MY_USER_EMAIL:-"${R_4}"}
         else
-            export MY_USER_XINGMING='x-Man(${MY_USER_NAME})'
+            export MY_USER_XINGMING="x-Man(${MY_USER_NAME})"
             export MY_USER_EMAIL
         fi
     elif [[ ${USER_INFO_FROM} =~ hook_hand ]]; then
