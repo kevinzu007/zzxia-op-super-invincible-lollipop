@@ -42,7 +42,7 @@ PROJECT_CODE_VERIFY=${PROJECT_CODE_VERIFY:-'NO'}    #--- YES|NO，请提供相�
 
 # 本地env
 GAN_WHAT_FUCK='Build'
-NEED_PRIVILEGES='build'
+NEED_PRIVILEGES='build'                   #-- 运行此程序需要的权限，如果需要多个权限，则用【&】分隔
 TIME=${TIME:-`date +%Y-%m-%dT%H:%M:%S`}
 TIME_START=${TIME}
 DATE_TIME=`date -d "${TIME}" +%Y%m%dT%H%M%S`
@@ -1131,7 +1131,7 @@ F_BUILD_TIME_SEARCH()
 
 
 
-# 搜索Gitlab用户，返回主用户名
+# 搜索Gitlab用户名，返回主用户名
 # F_SEARCH_GITLAB_USER  [gitlab用户名]
 F_SEARCH_GITLAB_USER()
 {
@@ -1146,11 +1146,12 @@ F_SEARCH_GITLAB_USER()
         CURRENT_GITLAB_USER_NAME=`echo $U_LINE | cut -d '|' -f 4`
         CURRENT_GITLAB_USER_NAME=`echo ${CURRENT_GITLAB_USER_NAME}`
         if [[ ${F_GITLAB_USER_NAME} == ${CURRENT_GITLAB_USER_NAME} ]]; then
-            echo "${CURRENT_USER_NAME}"
+            echo "0 | ${CURRENT_USER_NAME}"
             return 0
         fi
     done < "${USER_DB_FILE_APPEND_1}"
     #
+    echo "3 | ${CURRENT_USER_NAME}"
     return 3
 }
 
@@ -1188,22 +1189,25 @@ F_SEARCH_USER()
                     # 获取权限字段
                     CURRENT_USER_PRIVILEGES_A=${CURRENT_USER_PRIVILEGES_A// /}      #-- 删除字符串中所有的空格
                     # 匹配，输出
-                    echo "${F_USER_NAME} | ${CURRENT_USER_XINGMING} | ${CURRENT_USER_EMAIL} | ${CURRENT_GITLAB_USER_NAME_A} | ${CURRENT_USER_PRIVILEGES_A}"
+                    echo "0 | ${F_USER_NAME} | ${CURRENT_USER_XINGMING} | ${CURRENT_USER_EMAIL} | ${CURRENT_GITLAB_USER_NAME_A} | ${CURRENT_USER_PRIVILEGES_A}"
                     return 0
                 fi
             done < "${USER_DB_FILE_APPEND_1}"
         fi
     done < "${USER_DB_FILE}"
+    #
+    echo "3 | ${F_USER_NAME}"
     return 3
 }
 
 
 
 # 搜索用户，返回用户权限
-# F_SEARCH_USER_PRIV  [用户名]
+# F_SEARCH_USER_PRIV  [用户名]  [权限]
 F_SEARCH_USER_PRIV()
 {
     F_USER_NAME=$1
+    F_USER_PRIV=$2
     #
     # 获取append部分
     while read UA_LINE
@@ -1240,16 +1244,19 @@ F_SEARCH_USER_PRIV()
                         #
                         FIELD_J=$((j+1))
                         CURRENT_USER_PRIVILEGES_A_SET_priv=`echo ${CURRENT_USER_PRIVILEGES_A_SET_priv_SET} | cut -d '&' -f ${FIELD_J}`
-                        if [[ ${CURRENT_USER_PRIVILEGES_A_SET_priv} == ${NEED_PRIVILEGES} ]] || [[ ${CURRENT_USER_PRIVILEGES_A_SET_priv} == ALL ]]; then
+                        if [[ ${CURRENT_USER_PRIVILEGES_A_SET_priv} == ${F_USER_PRIV} ]] || [[ ${CURRENT_USER_PRIVILEGES_A_SET_priv} == ALL ]]; then
                             # 匹配，输出
                             echo "0 | PASS"
+                            return 0
                         fi
                     done
                 fi
             done
         fi
     done < "${USER_DB_FILE_APPEND_1}"
+    #
     echo "3 | NOT_PASS"
+    reutrn 3
 }
 
 
@@ -1363,18 +1370,20 @@ if [[ -n ${HOOK_GAN_ENV} ]] && [[ ${HOOK_GAN_ENV} != 'NOT_CHECK' ]] && [[ ${HOOK
 fi
 
 
-# 用户信息
+# 获取用户信息
 if [[ -z ${MY_USER_NAME} ]]; then
     if [[ ${USER_INFO_FROM} == 'local' ]]; then
         # if sudo -i 取${SUDO_USER}；
         # if sudo cmd 取${LOGNAME}
         export MY_USER_NAME=${SUDO_USER:-"${LOGNAME}"}
         #
-        F_SEARCH_USER ${MY_USER_NAME} > /dev/null
-        if [ $? -eq 0 ]; then
-            R=`F_SEARCH_USER ${MY_USER_NAME}`
-            export MY_USER_XINGMING=`echo $R | cut -d '|' -f 2 | awk '{print $1}'`
-            export MY_USER_EMAIL=${MY_USER_EMAIL:-"`echo $R | cut -d '|' -f 3 | awk '{print $1}'`"}
+        R=$(F_SEARCH_USER ${MY_USER_NAME})
+        R_1=$(echo $R | awk -F '|' '{print $1}' | awk '{print $1}')
+        if [[ ${R_1} == 0 ]]; then
+            R_3=$(echo $R | awk -F '|' '{print $3}' | awk '{print $1}')
+            R_4=$(echo $R | awk -F '|' '{print $4}' | awk '{print $1}')
+            export MY_USER_XINGMING=${R_3}
+            export MY_USER_EMAIL=${MY_USER_EMAIL:-"${R_4}"}
         else
             export MY_USER_XINGMING='x-Man'
             export MY_USER_EMAIL
@@ -1386,15 +1395,17 @@ if [[ -z ${MY_USER_NAME} ]]; then
         export MY_USER_EMAIL=${HOOK_USER_EMAIL}
     elif [[ ${USER_INFO_FROM} =~ hook_gitlab ]]; then
         #
-        F_SEARCH_GITLAB_USER ${HOOK_USER_NAME} > /dev/null
-        if [[ $? != 0 ]]; then
+        R=$(F_SEARCH_GITLAB_USER ${HOOK_USER_NAME})
+        R_1=$(echo $R | awk -F '|' '{print $1}' | awk '{print $1}')
+        if [[ ${R_1} == 0 ]]; then
+            R_2=$(echo $R | awk -F '|' '{print $2}' | awk '{print $1}')
+            export MY_USER_NAME=${R_2}
+        else
             echo -e "\n猪猪侠警告：Gitlab用户不存在【${HOOK_USER_NAME}】\n"
             exit 52
         fi
-        R=$(F_SEARCH_GITLAB_USER ${HOOK_USER_NAME})
-        export MY_USER_NAME=${R}
-        export MY_USER_XINGMING=${HOOK_USER_XINGMING}
-        export MY_USER_EMAIL=${HOOK_USER_EMAIL}
+        export MY_USER_XINGMING=${HOOK_USER_XINGMING}      #-- 使用gitlab上的
+        export MY_USER_EMAIL=${HOOK_USER_EMAIL}            #-- 使用gitlab上的
     else
         echo -e "\n猪猪侠警告：未知参数值【\${USER_INFO_FROM} = ${USER_INFO_FROM}】\n"
         exit  51
@@ -1402,15 +1413,26 @@ if [[ -z ${MY_USER_NAME} ]]; then
 fi
 
 
-# 用户权限
+# 检查用户权限
 if [[ ${MY_USER_XINGMING} != x-Man ]]; then
-    R=$(F_SEARCH_USER_PRIV ${MY_USER_NAME})
-    R_1=$(echo $R | cut -d '|' -f 1 | awk '{print $1}')
-    R_2=$(echo $R | cut -d '|' -f 2 | awk '{print $1}')
-    if [[ $R_1 == 0 ]] && [[ $R_2 == PASS ]]; then
-        echo -e "\n猪猪侠警告：未知参数值【\${USER_INFO_FROM} = ${USER_INFO_FROM}】\n"
-        exit  51
-    fi
+    #
+    NEED_PRIVILEGES=${NEED_PRIVILEGES// /}
+    NEED_PRIVILEGES_NUM=$(echo ${NEED_PRIVILEGES} | grep -o '&' | wc -l)
+    #
+    for ((j=PRIVILEGES_env_priv_NUM; j>=0; j--))
+    do
+        #
+        FIELD_J=$((j+1))
+        NEED_PRIVILEGES_x=`echo ${NEED_PRIVILEGES} | cut -d '&' -f ${FIELD_J}`
+        #
+        R=$(F_SEARCH_USER_PRIV  ${MY_USER_NAME}  ${NEED_PRIVILEGES_x})
+        R_1=$(echo $R | awk -F '|' '{print $1}' | awk '{print $1}')
+        if [[ ${R_1} != 0 ]]; then
+            # 必须全部匹配
+            echo -e "\n猪猪侠警告：用户【${MY_USER_NAME}】无【${NEED_PRIVILEGES}】权限！\n"
+            exit 52
+        fi
+    done
 fi
 
 
