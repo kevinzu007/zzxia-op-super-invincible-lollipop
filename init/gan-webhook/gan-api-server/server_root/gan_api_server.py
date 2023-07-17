@@ -455,8 +455,13 @@ def hook_gitlab():
     #
     # hook/gitlab
     webhook_logfile = GAN_LOG_HOME + '/webhook_gitlab--' + hook_time + '--' + gan_project + '.log'
-    run_result = os.system(gan_cmd_0 + ' ; ' + gan_cmd +
-                           ' > ' + webhook_logfile + ' 2>&1')
+    #gan_cmd_send_mail = GAN_CMD_HOME + '/op/send_mail.sh' + ' --subject webhook_gitlab日志 ' + \
+    #    ' --content "请看附件" ' + ' --attach ' + webhook_logfile + ' ' + gan_user_email
+    gan_cmd_send_mail = GAN_CMD_HOME + '/op/send_mail.sh' + ' --subject webhook_gitlab日志 ' + \
+        ' --content "$(cat ' + webhook_logfile + ')" ' + gan_user_email
+    run_result = os.system(gan_cmd_0 +
+                            ' ; ' + gan_cmd + ' > ' + webhook_logfile + ' 2>&1' +
+                            ' ; ' + gan_cmd_send_mail)
     
     # 返回详细信息没用：
     #return send_file(web_hook_logfile, mimetype='text/plain')
