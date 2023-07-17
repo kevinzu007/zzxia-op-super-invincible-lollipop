@@ -96,7 +96,7 @@ DOCKER_TAG_PUSH_SH="${SH_PATH}/docker-tag-push.sh"
 FORMAT_TABLE_SH="${SH_PATH}/../op/format_table.sh"
 DINGDING_MARKDOWN_PY="${SH_PATH}/../op/dingding_conver_to_markdown_list-deploy.py"
 # 引入函数
-.  ${SH_PATH}/fuction.sh
+.  ${SH_PATH}/function.sh
 
 
 
