@@ -463,16 +463,22 @@ def hook_gitlab():
     # 执行
     run_result = os.system(gan_cmd_full)
     
-    ## mail
+
+    # 生成删除控制字符的日志文件
+    webhook_logfile_txt = webhook_logfile + '.txt'
+    #
+    gan_cmd_copy = 'cp ' + webhook_logfile + ' ' + webhook_logfile_txt
+    gan_cmd_sed = 'sed  -i -E  -e "s/\\x1B\[([0-9]{1,2}(;[0-9]{1,2})?){0,2}[m|A-Z]//g"  -e "s/\\x0D//g" ' + \
+        webhook_logfile_txt
+    # 
+    os.system(gan_cmd_copy + ' ; ' + gan_cmd_sed)
+
+    ## 邮件
     if GITLAB_HOOK_SEND_EMAIL == 'YES':
-        webhook_logfile_txt = webhook_logfile +  '.txt'
-        gan_cmd_copy = 'cp ' + webhook_logfile + ' ' + webhook_logfile_txt
-        gan_cmd_sed = 'sed  -i -E  -e "s/\\x1B\[([0-9]{1,2}(;[0-9]{1,2})?){0,2}[m|A-Z]//g"  -e "s/\\x0D//g" ' + \
-            webhook_logfile_txt
         gan_cmd_send_mail = GAN_CMD_HOME + '/op/send_mail.sh' + ' --subject "webhook_gitlab日志" ' +  \
             ' --content "$(cat ' + webhook_logfile_txt + ')" ' + gan_user_email
-        # 发邮件
-        os.system(gan_cmd_copy + ' ; ' + gan_cmd_sed + ' ; ' + gan_cmd_send_mail)
+        # 
+        os.system(gan_cmd_send_mail)
 
 
     # 返回详细信息没用：
@@ -748,14 +754,36 @@ def hook_hand():
 
     
 
-    # 运行shell脚本
+    ## 运行shell脚本
     #
     # hook/hand
+    #
     webhook_logfile = GAN_LOG_HOME + '/webhook_hand--' + hook_time + '.log'
-    run_result = os.system(gan_cmd_0 + ' ; ' + gan_cmd +
-                           ' > ' + webhook_logfile + ' 2>&1')
+    gan_cmd_full = gan_cmd_0 + ' ; ' + gan_cmd + ' > ' + webhook_logfile + ' 2>&1'
+    # 调试
+    print("运行命令：")
+    print(gan_cmd_full)
+    # 执行
+    os.system(gan_cmd_full)
     
-    return send_file(webhook_logfile, mimetype='text/plain')
+    # 生成删除控制字符的日志文件
+    webhook_logfile_txt = webhook_logfile + '.txt'
+    #
+    gan_cmd_copy = 'cp ' + webhook_logfile + ' ' + webhook_logfile_txt
+    gan_cmd_sed = 'sed  -i -E  -e "s/\\x1B\[([0-9]{1,2}(;[0-9]{1,2})?){0,2}[m|A-Z]//g"  -e "s/\\x0D//g" ' + \
+        webhook_logfile_txt
+    #.
+    os.system(gan_cmd_copy + ' ; ' + gan_cmd_sed)
+
+    ## 邮件
+    if HAND_HOOK_SEND_EMAIL == 'YES':
+        gan_cmd_send_mail = GAN_CMD_HOME + '/op/send_mail.sh' + ' --subject "webhook_hand日志" ' +  \
+            ' --content "$(cat ' + webhook_logfile_txt + ')" ' + gan_user_email
+        #.
+        os.system(gan_cmd_send_mail)
+
+    # 返回页面信息
+    return send_file(webhook_logfile_txt, mimetype='text/plain')
 
 
 
