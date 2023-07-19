@@ -466,12 +466,13 @@ def hook_gitlab():
     ## mail
     if GITLAB_HOOK_SEND_EMAIL == 'YES':
         webhook_logfile_txt = webhook_logfile +  '.txt'
-        gan_cmd_sed = ' sed  -i -E  -e "s/\\x1B\[([0-9]{1,2}(;[0-9]{1,2})?){0,2}[m|A-Z]//g"  -e "s/\\x0D//g" ' + \
+        gan_cmd_copy = 'cp ' + webhook_logfile + ' ' + webhook_logfile_txt
+        gan_cmd_sed = 'sed  -i -E  -e "s/\\x1B\[([0-9]{1,2}(;[0-9]{1,2})?){0,2}[m|A-Z]//g"  -e "s/\\x0D//g" ' + \
             webhook_logfile_txt
         gan_cmd_send_mail = GAN_CMD_HOME + '/op/send_mail.sh' + ' --subject "webhook_gitlab日志" ' +  \
             ' --content "$(cat ' + webhook_logfile_txt + ')" ' + gan_user_email
         # 发邮件
-        os.system(gan_cmd_sed + ' ; ' + gan_cmd_send_mail)
+        os.system(gan_cmd_copy + ' ; ' + gan_cmd_sed + ' ; ' + gan_cmd_send_mail)
 
 
     # 返回详细信息没用：
