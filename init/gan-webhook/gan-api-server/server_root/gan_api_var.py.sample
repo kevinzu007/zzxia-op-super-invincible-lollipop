@@ -28,6 +28,7 @@ GITLAB_SECRET_TOKEN = 'setYourselfTokenHere'
 # 最少（为 YES 时 ）： {env=dev|stag|prod|其他}                           #-- 默认：do=gogogo
 # 最少（为 NO 时）： 无需任何特殊信息，也可以包含其他信息，比如：{do=build}    #-- 默认：do=gogogo
 GITLAB_GIT_COMMIT_ENV_CHECK = 'YES'
+
 # 发送gitlab的webhook日志，可选项【YES|NO】
 GITLAB_HOOK_SEND_EMAIL = 'YES'
 
