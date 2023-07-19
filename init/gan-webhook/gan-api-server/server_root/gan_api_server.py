@@ -405,7 +405,7 @@ def hook_gitlab():
 
 
     # 检查设置env
-    if GITLAB_GIT_COMMIT_ENV_CHECK == True:
+    if GITLAB_GIT_COMMIT_ENV_CHECK == 'YES':
         # 必须参数
         if gan_env == '':
             # 退出
@@ -464,13 +464,14 @@ def hook_gitlab():
     run_result = os.system(gan_cmd_full)
     
     ## mail
-    webhook_logfile_txt = webhook_logfile +  '.txt'
-    gan_cmd_sed = ' sed  -i -E  -e "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?){0,2}[m|A-Z]//g"  -e "s/\x0D//g" ' + \
-        webhook_logfile_txt
-    gan_cmd_send_mail = GAN_CMD_HOME + '/op/send_mail.sh' + ' --subject "webhook_gitlab日志" ' +  \
-        ' --content "$(cat ' + webhook_logfile_txt + ')" ' + gan_user_email
-    # 发邮件
-    os.system(gan_cmd_sed + ' ; ' + gan_cmd_send_mail)
+    if GITLAB_HOOK_SEND_EMAIL == 'YES':
+        webhook_logfile_txt = webhook_logfile +  '.txt'
+        gan_cmd_sed = ' sed  -i -E  -e "s/\\x1B\[([0-9]{1,2}(;[0-9]{1,2})?){0,2}[m|A-Z]//g"  -e "s/\\x0D//g" ' + \
+            webhook_logfile_txt
+        gan_cmd_send_mail = GAN_CMD_HOME + '/op/send_mail.sh' + ' --subject "webhook_gitlab日志" ' +  \
+            ' --content "$(cat ' + webhook_logfile_txt + ')" ' + gan_user_email
+        # 发邮件
+        os.system(gan_cmd_sed + ' ; ' + gan_cmd_send_mail)
 
 
     # 返回详细信息没用：
@@ -651,7 +652,7 @@ def hook_hand():
     # body处理
     #
     # 完整性签名验证
-    if X_ZZXIA_SIGN_CHECK == True:
+    if X_ZZXIA_SIGN_CHECK == 'YES':
         x_server_sign = digest_hmac_sha1(X_ZZXIA_SIGN_SECRET, recive_raw_body)
         if x_user_sign != x_server_sign:
             return jsonify({"Status": "Error", "Message": "X-ZZXia-Signature 验证失败"})

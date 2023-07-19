@@ -25,15 +25,17 @@ GITLAB_SECRET_TOKEN = 'setYourselfTokenHere'
 # 检查git commit msg 中的env参数。【True】时：git commit msg 必须有类似'{env=dev}'信息，；【False】时：不检查
 # git commit msg 包含信息:
 # 全部： {env=dev|stag|prod|其他,do=build|gogogo,skiptest=yes,version=5.5,gray=yes}
-# 最少（为 True 时 ）： {env=dev|stag|prod|其他}                           #-- 默认：do=gogogo
-# 最少（为 False 时）： 无需任何特殊信息，也可以包含其他信息，比如：{do=build}    #-- 默认：do=gogogo
-GITLAB_GIT_COMMIT_ENV_CHECK = True
+# 最少（为 YES 时 ）： {env=dev|stag|prod|其他}                           #-- 默认：do=gogogo
+# 最少（为 NO 时）： 无需任何特殊信息，也可以包含其他信息，比如：{do=build}    #-- 默认：do=gogogo
+GITLAB_GIT_COMMIT_ENV_CHECK = 'YES'
+# 发送gitlab的webhook日志，可选项【YES|NO】
+GITLAB_HOOK_SEND_EMAIL = 'YES'
 
 
 # 2.2 hand
 
-# 数据完整性校验，【False】时：不校验，反之，校验
-X_ZZXIA_SIGN_CHECK = False
+# 数据完整性校验，【NO】时：不校验，反之【YES】校验
+X_ZZXIA_SIGN_CHECK = 'NO'
 X_ZZXIA_SIGN_SECRET = 'setYourselfSigncharStringHere'
 
 
