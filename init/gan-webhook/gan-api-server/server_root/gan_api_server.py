@@ -448,9 +448,10 @@ def hook_gitlab():
     gan_cmd = gan_cmd + ' --branch ' + gan_project_branch + ' ' + '^' + gan_project + '$'
 
 
-    # 运行shell脚本
+    ## 运行shell脚本
     #
     # hook/gitlab
+    #
     webhook_logfile = GAN_LOG_HOME  +  '/webhook_gitlab--'  +  \
         hook_time  +  '--'  +  gan_project  +  '.log'
     gan_cmd_full = gan_cmd_0  +  ' ; '  +  gan_cmd  +  ' > '  +  webhook_logfile  +  ' 2>&1'
@@ -462,14 +463,14 @@ def hook_gitlab():
     # 执行
     run_result = os.system(gan_cmd_full)
     
-    # mail
+    ## mail
     webhook_logfile_txt = webhook_logfile +  '.txt'
-    shell_sed = ' sed  -i -E  -e "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?){0,2}[m|A-Z]//g"  -e "s/\x0D//g" ' + \
+    gan_cmd_sed = ' sed  -i -E  -e "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?){0,2}[m|A-Z]//g"  -e "s/\x0D//g" ' + \
         webhook_logfile_txt
     gan_cmd_send_mail = GAN_CMD_HOME + '/op/send_mail.sh' + ' --subject "webhook_gitlab日志" ' +  \
         ' --content "$(cat ' + webhook_logfile_txt + ')" ' + gan_user_email
     # 发邮件
-    os.system(gan_cmd_send_mail)
+    os.system(gan_cmd_sed + ' ; ' + gan_cmd_send_mail)
 
 
     # 返回详细信息没用：
