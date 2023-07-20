@@ -1495,7 +1495,7 @@ do
     BUILD_TIME_0=`date +%s`
     # 检查是否正在构建
     #ps -ef | grep "${PJ}" | grep -v "$0" | grep -v '.sh' | grep -v grep > /dev/null 2>&1
-    grep_N=$(ps -ef | grep -v grep | grep -E "$0 .* ${PJ}")
+    grep_N=$(ps -ef | grep -v grep | grep -E "$0 .*${PJ}")
     if [[ ${grep_N} > 1 ]]; then
         echo "${PJ} : 失败，其他用户正在构建中 : x" >> ${BUILD_OK_LIST_FILE}
         echo -e "${ECHO_ERROR}【${GAN_WHAT_FUCK}】时，【${PJ}】失败了，其他用户正在构建中${ECHO_CLOSE}"
