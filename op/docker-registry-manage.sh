@@ -345,12 +345,14 @@ case ${ACTION} in
             exit 1
         fi
         #
+        N=0
         while read R
         do
+            let N=$N+1
             REPO_TAG_LIST_TMP="/tmp/${SH_NAME}-repo-tag.list.tmp"
             #
             echo "=================================================="
-            echo "仓库：${R}"
+            echo "$N 仓库：${R}"
             R_SED=${R//\//_}
             #
             > ${REPO_TAG_LIST_TMP}--${R_SED}
