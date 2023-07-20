@@ -91,10 +91,10 @@ else
     LOG_DOWNLOAD_SERVER="https://${RUN_ENV}-${BUILD_LOG_WEBSITE_DOMAIN_A}.${DOMAIN}"
 fi
 # sh
-SEND_MAIL="${SH_PATH}/../op/send_mail.sh"
+SEND_MAIL="${SH_PATH}/../tools/send_mail.sh"
 DOCKER_TAG_PUSH_SH="${SH_PATH}/docker-tag-push.sh"
-FORMAT_TABLE_SH="${SH_PATH}/../op/format_table.sh"
-DINGDING_MARKDOWN_PY="${SH_PATH}/../op/dingding_conver_to_markdown_list-deploy.py"
+FORMAT_TABLE_SH="${SH_PATH}/../tools/format_table.sh"
+DINGDING_MARKDOWN_PY="${SH_PATH}/../tools/dingding_conver_to_markdown_list-deploy.py"
 # 引入函数
 .  ${SH_PATH}/function.sh
 

@@ -75,9 +75,9 @@ else
 fi
 # sh
 BUILD_SH="${SH_PATH}/build.sh"
-DRAW_TABLE_SH="${SH_PATH}/../op/draw_table.sh"
-FORMAT_TABLE_SH="${SH_PATH}/../op/format_table.sh"
-DINGDING_MARKDOWN_PY="${SH_PATH}/../op/dingding_conver_to_markdown_list-deploy.py"
+DRAW_TABLE_SH="${SH_PATH}/../tools/draw_table.sh"
+FORMAT_TABLE_SH="${SH_PATH}/../tools/format_table.sh"
+DINGDING_MARKDOWN_PY="${SH_PATH}/../tools/dingding_conver_to_markdown_list-deploy.py"
 # 引入函数
 .  ${SH_PATH}/function.sh
 

@@ -475,7 +475,7 @@ def hook_gitlab():
 
     ## 邮件
     if GITLAB_HOOK_SEND_EMAIL == 'YES':
-        gan_cmd_send_mail = GAN_CMD_HOME + '/op/send_mail.sh' + ' --subject "webhook_gitlab日志" ' +  \
+        gan_cmd_send_mail = GAN_CMD_HOME + '/tools/send_mail.sh' + ' --subject "webhook_gitlab日志" ' +  \
             ' --content "$(cat ' + webhook_logfile_txt + ')" ' + gan_user_email
         # 
         os.system(gan_cmd_send_mail)
@@ -777,7 +777,7 @@ def hook_hand():
 
     ## 邮件
     if HAND_HOOK_SEND_EMAIL == 'YES':
-        gan_cmd_send_mail = GAN_CMD_HOME + '/op/send_mail.sh' + ' --subject "webhook_hand日志" ' +  \
+        gan_cmd_send_mail = GAN_CMD_HOME + '/tools/send_mail.sh' + ' --subject "webhook_hand日志" ' +  \
             ' --content "$(cat ' + webhook_logfile_txt + ')" ' + gan_user_email
         #.
         os.system(gan_cmd_send_mail)

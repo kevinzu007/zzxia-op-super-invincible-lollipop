@@ -814,10 +814,10 @@ $ ./deploy/build.sh --help
         /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
         /root/deploy-bmp/deploy/env.sh
         /root/deploy-bmp/deploy/project.list
-        /root/deploy-bmp/deploy/../op/send_mail.sh
+        /root/deploy-bmp/deploy/../tools/send_mail.sh
         /root/deploy-bmp/deploy/docker-tag-push.sh
-        /root/deploy-bmp/deploy/../op/format_table.sh
-        /root/deploy-bmp/deploy/../op/dingding_conver_to_markdown_list-deploy.py
+        /root/deploy-bmp/deploy/../tools/format_table.sh
+        /root/deploy-bmp/deploy/../tools/dingding_conver_to_markdown_list-deploy.py
     注意：
         * 名称正则表达式完全匹配，会自动在正则表达式的头尾加上【^ $】，请规避
         * 输入命令时，参数顺序不分先后
@@ -904,8 +904,8 @@ $ ./deploy/build-parallel.sh --help
         /root/deploy-bmp/deploy/env.sh
         /root/deploy-bmp/deploy/project.list
         /root/deploy-bmp/deploy/build.sh
-        /root/deploy-bmp/deploy/../op/format_table.sh
-        /root/deploy-bmp/deploy/../op/dingding_conver_to_markdown_list-deploy.py
+        /root/deploy-bmp/deploy/../tools/format_table.sh
+        /root/deploy-bmp/deploy/../tools/dingding_conver_to_markdown_list-deploy.py
     注意：
         * 名称正则表达式完全匹配，会自动在正则表达式的头尾加上【^ $】，请规避
         * 输入命令时，参数顺序不分先后
@@ -972,8 +972,8 @@ $ ./deploy/docker-cluster-service-deploy.sh --help
         /root/deploy-bmp/deploy/java-options-pub.list
         /root/deploy-bmp/deploy/env.sh
         /root/deploy-bmp/deploy/docker-image-search.sh
-        /root/deploy-bmp/deploy/../op/format_table.sh
-        /root/deploy-bmp/deploy/../op/dingding_conver_to_markdown_list-deploy.py
+        /root/deploy-bmp/deploy/../tools/format_table.sh
+        /root/deploy-bmp/deploy/../tools/dingding_conver_to_markdown_list-deploy.py
     注意：
         * 名称正则表达式完全匹配，会自动在正则表达式的头尾加上【^ $】，请规避
         * 一般服务名（非灰度服务名）为项目清单中的服务名，灰度服务名为为【项目清单服务名】+【--】+【灰度版本号】
@@ -1112,8 +1112,8 @@ $ ./deploy/web-release.sh --help
     用途：Web站点发布上线
     依赖：
         /root/deploy-bmp/deploy/nginx.list
-        /root/deploy-bmp/deploy/../op/format_table.sh
-        /root/deploy-bmp/deploy/../op/dingding_conver_to_markdown_list-deploy.py
+        /root/deploy-bmp/deploy/../tools/format_table.sh
+        /root/deploy-bmp/deploy/../tools/dingding_conver_to_markdown_list-deploy.py
         /root/deploy-bmp/deploy/env.sh
         nginx上：/root/nginx-config/web-release-on-nginx.sh
     注意：运行在nginx节点上
@@ -1180,8 +1180,8 @@ $ ./deploy/gogogo.sh --help
         /root/deploy-bmp/deploy/build.sh
         /root/deploy-bmp/deploy/docker-cluster-service.list
         /root/deploy-bmp/deploy/docker-cluster-service-deploy.sh
-        /root/deploy-bmp/deploy/../op/format_table.sh
-        /root/deploy-bmp/deploy/../op/dingding_conver_to_markdown_list-deploy.py
+        /root/deploy-bmp/deploy/../tools/format_table.sh
+        /root/deploy-bmp/deploy/../tools/dingding_conver_to_markdown_list-deploy.py
     注意：
         - 构建完成后的发布：如果目标服务不在运行中，则执行【create】；如果已经存在，则执行【update】。如果是以【create】方式执行，则【-G|--gray】参数有效
     用法:
@@ -1386,8 +1386,8 @@ $ ./gan.sh -d ngx-dns --help
     依赖：
         /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
         /root/deploy-bmp/init/nginx-config/nginx.list
-        /root/deploy-bmp/init/nginx-config/../../op/aliyun-dns.sh
-        /root/deploy-bmp/init/nginx-config/../../op/godaddy-dns.sh
+        /root/deploy-bmp/init/nginx-config/../../tools/aliyun-dns.sh
+        /root/deploy-bmp/init/nginx-config/../../tools/godaddy-dns.sh
     注意: 运行在deploy上
     用法:
         /root/deploy-bmp/init/nginx-config/nginx-dns.sh  [-h|--help]
@@ -1480,7 +1480,7 @@ $ ./deploy/docker-image-search.sh --help
 #### 5.6.2 阿里云dns查询与修改工具
 
 ```bash
-$ ./op/aliyun-dns.sh --help
+$ ./tools/aliyun-dns.sh --help
 
     用途：用于查询修改dns信息
     依赖：
@@ -1516,7 +1516,7 @@ $ ./op/aliyun-dns.sh --help
 #### 5.6.3 godaddy dns查询与修改工具
 
 ```bash
-$ ./op/godaddy-dns.sh --help
+$ ./tools/godaddy-dns.sh --help
 
     用途：用于查询修改dns信息
     依赖：
@@ -1546,14 +1546,14 @@ $ ./op/godaddy-dns.sh --help
 #### 5.6.4 泛域名证书申请与续期工具（支持阿里云、腾讯云、华为云、godaddy，借助了第三方项目）
 
 ```bash
-$ ./op/cert-letsencrypt-wildcart.sh --help
+$ ./tools/cert-letsencrypt-wildcart.sh --help
 
     用途：用于申请与更新泛域名证书
           更新Letsencrypt泛域名证书，拷贝到nginx服务器，然后reload
     依赖：
         /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
         certbot
-        /root/deploy-bmp/op/certbot-letencrypt-wildcardcertificates-sh/au.sh
+        /root/deploy-bmp/tools/certbot-letencrypt-wildcardcertificates-sh/au.sh
     注意：
         * 本脚本基于项目https://github.com/ywdblog/certbot-letencrypt-wildcardcertificates-alydns-au
         * 输入命令时，参数顺序不分先后
@@ -1586,7 +1586,7 @@ $ ./op/cert-letsencrypt-wildcart.sh --help
 #### 5.6.5 邮件发送工具
 
 ```bash
-$ ./op/send_mail.sh --help
+$ ./tools/send_mail.sh --help
 
     用途：使用mailx发送邮件
     依赖：
@@ -1629,7 +1629,7 @@ $ ./op/send_mail.sh --help
 #### 5.6.6 将数据输出为表格工具1
 
 ```bash
-$ ./op/format_table.sh --help
+$ ./tools/format_table.sh --help
 
     用途：将数据输出为表格
     依赖：
@@ -1664,7 +1664,7 @@ $ ./op/format_table.sh --help
 #### 5.6.7 将数据输出为表格工具2（彩色）
 
 ```bash
-$ ./op/draw_table.sh --help
+$ ./tools/draw_table.sh --help
 
     用途：将文件以表格的形式输出
     依赖：

@@ -64,8 +64,8 @@ if [[ -z ${USER_INFO_FROM} ]]; then
     USER_INFO_FROM=${HOOK_USER_INFO_FROM:-'local'}     #--【local|hook_hand|hook_gitlab】，默认：local
 fi
 # sh
-FORMAT_TABLE_SH="${SH_PATH}/../op/format_table.sh"
-DINGDING_MARKDOWN_PY="${SH_PATH}/../op/dingding_conver_to_markdown_list-deploy.py"
+FORMAT_TABLE_SH="${SH_PATH}/../tools/format_table.sh"
+DINGDING_MARKDOWN_PY="${SH_PATH}/../tools/dingding_conver_to_markdown_list-deploy.py"
 # 引入函数
 .  ${SH_PATH}/function.sh
 

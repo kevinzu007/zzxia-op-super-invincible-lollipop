@@ -93,8 +93,8 @@ fi
 # sh
 BUILD_SH="${SH_PATH}/build.sh"
 DOCKER_CLUSTER_SERVICE_DEPLOY_SH="${SH_PATH}/docker-cluster-service-deploy.sh"
-FORMAT_TABLE_SH="${SH_PATH}/../op/format_table.sh"
-DINGDING_MARKDOWN_PY="${SH_PATH}/../op/dingding_conver_to_markdown_list-deploy.py"
+FORMAT_TABLE_SH="${SH_PATH}/../tools/format_table.sh"
+DINGDING_MARKDOWN_PY="${SH_PATH}/../tools/dingding_conver_to_markdown_list-deploy.py"
 # 引入函数
 .  ${SH_PATH}/function.sh
 
