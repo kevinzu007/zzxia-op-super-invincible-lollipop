@@ -138,16 +138,16 @@ case "${DO}" in
         ansible ${ANSIBLE_HOST_FOR_NGINX_CERT_REQUEST} -m command -a "bash  ${NGINX_CONFIG_SH_HOME}/nginx-cert-letsencrypt-a.sh  ${CMD_ARG}"
         ;;
     "ngx-cert-w")
-        bash ${SH_PATH}/op/cert-letsencrypt-wildcart.sh  ${CMD_ARG}
+        bash ${SH_PATH}/tools/cert-letsencrypt-wildcart.sh  ${CMD_ARG}
         ;;
     "pg-b-r")
         ansible ${ANSIBLE_HOST_FOR_PG_BACKUP_RESTORE} -m shell  -a "bash ${PG_MANAGE_SH_HOME}/pg_list_backup_or_restore.sh  ${CMD_ARG}"
         ;;
     "aliyun-dns")
-        bash ${SH_PATH}/op/aliyun-dns.sh  ${CMD_ARG}
+        bash ${SH_PATH}/tools/aliyun-dns.sh  ${CMD_ARG}
         ;;
     "godaddy-dns.sh")
-        bash ${SH_PATH}/op/godaddy-dns.sh  ${CMD_ARG}
+        bash ${SH_PATH}/tools/godaddy-dns.sh  ${CMD_ARG}
         ;;
     *)
         echo -e "\n骚年，请输入正确的脚本命令参数！【请查看帮助：\$0 --help】\n"

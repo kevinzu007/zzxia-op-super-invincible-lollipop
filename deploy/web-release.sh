@@ -24,10 +24,12 @@ cd "${SH_PATH}"
 #ANSIBLE_HOST_FOR_LOGFILE=
 # 来自 ${MY_PRIVATE_ENVS_DIR} 目录下的 *.sec
 #USER_DB_FILE=
+#USER_DB_FILE_APPEND_1=
 #DINGDING_API=
 
 # 本地env
 GAN_WHAT_FUCK='Web_Release'
+NEED_PRIVILEGES='deploy'                   #-- 运行此程序需要的权限，如果需要多个权限，则用【&】分隔
 TIME=${TIME:-`date +%Y-%m-%dT%H:%M:%S`}
 TIME_START=${TIME}
 DATE_TIME=`date -d "${TIME}" +%Y%m%dT%H%M%S`
@@ -62,24 +64,10 @@ if [[ -z ${USER_INFO_FROM} ]]; then
     USER_INFO_FROM=${HOOK_USER_INFO_FROM:-'local'}     #--【local|hook_hand|hook_gitlab】，默认：local
 fi
 # sh
-FORMAT_TABLE_SH="${SH_PATH}/../op/format_table.sh"
-DINGDING_MARKDOWN_PY="${SH_PATH}/../op/dingding_conver_to_markdown_list-deploy.py"
-
-# echo颜色定义
-export ECHO_CLOSE="\033[0m"
-#
-export ECHO_RED="\033[31;1m"
-export ECHO_ERROR=${ECHO_RED}
-#
-export ECHO_GREEN="\033[32;1m"
-export ECHO_SUCCESS=${ECHO_GREEN}
-#
-export ECHO_BLUE="\033[34;1m"
-export ECHO_NORMAL=${ECHO_BLUE}
-#
-export ECHO_BLACK_GREEN="\033[30;42;1m"
-export ECHO_BLACK_CYAN="\033[30;46;1m"
-export ECHO_REPORT=${ECHO_BLACK_CYAN}
+FORMAT_TABLE_SH="${SH_PATH}/../tools/format_table.sh"
+DINGDING_MARKDOWN_PY="${SH_PATH}/../tools/dingding_conver_to_markdown_list-deploy.py"
+# 引入函数
+.  ${SH_PATH}/function.sh
 
 
 
@@ -139,62 +127,6 @@ F_HELP()
         $0  -M function  -r  项目a 项目b    #---  函数调用方式发布【项目a、项目b】
 
     "
-}
-
-
-# 时间差计算函数
-F_TimeDiff ()
-{
-    # 时间格式：2019-01-08T19:41:59
-    FV_StartTime=$1
-    FV_EndTime=$2
-    #
-    FV_ST=$(date -d "${FV_StartTime}" +%s)
-    FV_ET=$(date -d "${FV_EndTime}"   +%s)
-    #
-    FV_SecondsDiff=$((FV_ET - FV_ST))
-    #
-    if [ ${FV_SecondsDiff} -ge 0 ];then
-        #
-        FV_Days=$(( FV_SecondsDiff / 86400 ))
-        FV_Hours=$((FV_SecondsDiff/3600%24))
-        FV_Minutes=$((FV_SecondsDiff/60%60))
-        FV_Seconds=$((FV_SecondsDiff%60))
-
-        echo "耗时: ${FV_Days} Days ${FV_Hours} Hours ${FV_Minutes} Minutes ${FV_Seconds} Seconds"
-        return 0
-    else
-        echo "Error, 请检查。 ---可能原因：1、时间格式不合格； 2、date2小于date1 ！"
-        return 1
-    fi
-}
-
-
-
-# 用户搜索
-# F_USER_SEARCH  [用户名|姓名]
-F_USER_SEARCH()
-{
-    F_USER_NAME=$1
-    while read U_LINE
-    do
-        # 跳过以#开头的行或空行
-        [[ "$U_LINE" =~ ^# ]] || [[ "$U_LINE" =~ ^[\ ]*$ ]] && continue
-        #
-        CURRENT_USER_ID=`echo $U_LINE | cut -d '|' -f 2`
-        CURRENT_USER_ID=`echo ${CURRENT_USER_ID}`
-        CURRENT_USER_NAME=`echo $U_LINE | cut -d '|' -f 3`
-        CURRENT_USER_NAME=`echo ${CURRENT_USER_NAME}`
-        CURRENT_USER_XINGMING=`echo $U_LINE | cut -d '|' -f 4`
-        CURRENT_USER_XINGMING=`echo ${CURRENT_USER_XINGMING}`
-        CURRENT_USER_EMAIL=`echo $U_LINE | cut -d '|' -f 5`
-        CURRENT_USER_EMAIL=`echo ${CURRENT_USER_EMAIL}`
-        if [ "${F_USER_NAME}" = "${CURRENT_USER_ID}"  -o  "${F_USER_NAME}" = "${CURRENT_USER_NAME}" ]; then
-            echo "${CURRENT_USER_XINGMING} ${CURRENT_USER_EMAIL}"
-            return 0
-        fi
-    done < "${USER_DB_FILE}"
-    return 3
 }
 
 
@@ -272,30 +204,69 @@ if [[ -n ${HOOK_GAN_ENV} ]] && [[ ${HOOK_GAN_ENV} != 'NOT_CHECK' ]] && [[ ${HOOK
 fi
 
 
-# 用户信息
+# 获取用户信息
 if [[ -z ${MY_USER_NAME} ]]; then
     if [[ ${USER_INFO_FROM} == 'local' ]]; then
         # if sudo -i 取${SUDO_USER}；
         # if sudo cmd 取${LOGNAME}
         export MY_USER_NAME=${SUDO_USER:-"${LOGNAME}"}
         #
-        F_USER_SEARCH ${MY_USER_NAME} > /dev/null
-        if [ $? -eq 0 ]; then
-            R=`F_USER_SEARCH ${MY_USER_NAME}`
-            export MY_USER_EMAIL=${MY_USER_EMAIL:-"`echo $R | cut -d ' ' -f 2`"}
-            export MY_USER_XINGMING=`echo $R | cut -d ' ' -f 1`
+        R=$(F_SEARCH_USER ${MY_USER_NAME})
+        R_1=$(echo $R | awk -F '|' '{print $1}' | awk '{print $1}')
+        if [[ ${R_1} == 0 ]]; then
+            R_3=$(echo $R | awk -F '|' '{print $3}' | awk '{print $1}')
+            R_4=$(echo $R | awk -F '|' '{print $4}' | awk '{print $1}')
+            export MY_USER_XINGMING=${R_3}
+            export MY_USER_EMAIL=${MY_USER_EMAIL:-"${R_4}"}
         else
-            export MY_USER_XINGMING='x-Man'
+            export MY_USER_XINGMING="x-Man"
             export MY_USER_EMAIL
         fi
-    elif [[ ${USER_INFO_FROM} =~ hook_gitlab|hook_hand ]]; then
+    elif [[ ${USER_INFO_FROM} =~ hook_hand ]]; then
+        #
         export MY_USER_NAME=${HOOK_USER_NAME}
         export MY_USER_XINGMING=${HOOK_USER_XINGMING}
         export MY_USER_EMAIL=${HOOK_USER_EMAIL}
+    elif [[ ${USER_INFO_FROM} =~ hook_gitlab ]]; then
+        #
+        R=$(F_SEARCH_GITLAB_USER ${HOOK_USER_NAME})
+        R_1=$(echo $R | awk -F '|' '{print $1}' | awk '{print $1}')
+        if [[ ${R_1} == 0 ]]; then
+            R_2=$(echo $R | awk -F '|' '{print $2}' | awk '{print $1}')
+            export MY_USER_NAME=${R_2}
+        else
+            echo -e "\n猪猪侠警告：Gitlab用户不存在【${HOOK_USER_NAME}】\n"
+            exit 52
+        fi
+        export MY_USER_XINGMING=${HOOK_USER_XINGMING}      #-- 使用gitlab上的
+        export MY_USER_EMAIL=${HOOK_USER_EMAIL}            #-- 使用gitlab上的
     else
         echo -e "\n猪猪侠警告：未知参数值【\${USER_INFO_FROM} = ${USER_INFO_FROM}】\n"
         exit  51
     fi
+fi
+
+
+# 检查用户权限
+if [[ ! ${MY_USER_XINGMING} =~ x-Man ]]; then
+    #
+    NEED_PRIVILEGES=${NEED_PRIVILEGES// /}
+    NEED_PRIVILEGES_NUM=$(echo ${NEED_PRIVILEGES} | grep -o '&' | wc -l)
+    #
+    for ((j=PRIVILEGES_env_priv_NUM; j>=0; j--))
+    do
+        #
+        FIELD_J=$((j+1))
+        NEED_PRIVILEGES_x=`echo ${NEED_PRIVILEGES} | cut -d '&' -f ${FIELD_J}`
+        #
+        R=$(F_SEARCH_USER_PRIV  ${MY_USER_NAME}  ${NEED_PRIVILEGES_x})
+        R_1=$(echo $R | awk -F '|' '{print $1}' | awk '{print $1}')
+        if [[ ${R_1} != 0 ]]; then
+            # 必须全部匹配
+            echo -e "\n猪猪侠警告：用户【${MY_USER_NAME}】无【${NEED_PRIVILEGES}】权限！\n"
+            exit 52
+        fi
+    done
 fi
 
 
@@ -464,7 +435,8 @@ case ${SH_RUN_MODE} in
         echo -e "${ECHO_REPORT}========================== WEB 站点${WEB_ACTION}报告 ==========================${ECHO_CLOSE}"
         #
         echo "所在环境：${RUN_ENV}" | tee -a ${WEB_RELEASE_HISTORY_CURRENT_FILE}
-        echo "造 浪 者：${MY_USER_XINGMING}@${USER_INFO_FROM}" | tee -a ${WEB_RELEASE_HISTORY_CURRENT_FILE}
+        echo "造 浪 者：${MY_USER_XINGMING}" | tee -a ${WEB_RELEASE_HISTORY_CURRENT_FILE}
+        echo "造浪账号：${MY_USER_NAME}@${USER_INFO_FROM}" | tee -a ${WEB_RELEASE_HISTORY_CURRENT_FILE}
         echo "发送邮箱：${MY_USER_EMAIL}" | tee -a ${WEB_RELEASE_HISTORY_CURRENT_FILE}
         echo "开始时间：${TIME}" | tee -a ${WEB_RELEASE_HISTORY_CURRENT_FILE}
         echo "结束时间：${TIME_END}" | tee -a ${WEB_RELEASE_HISTORY_CURRENT_FILE}

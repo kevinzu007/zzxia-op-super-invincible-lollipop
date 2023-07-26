@@ -5,7 +5,7 @@
     - ZZXIA_OP_SUPER_INVINCIBLE_LOLLIPOP_HOME: "{{ lookup('env','ZZXIA_OP_SUPER_INVINCIBLE_LOLLIPOP_HOME') }}"
   tasks:
     - name: crontab - rm-image
-      cron: name=deploy backup=yes state=present minute=0 hour=0 day=*  month=* weekday=*/1 user=root job='{{ ZZXIA_OP_SUPER_INVINCIBLE_LOLLIPOP_HOME }}/op/docker/rm-docker-image.sh -q -k gclife -d 7  >/dev/null'
+      cron: name=deploy backup=yes state=present minute=0 hour=0 day=*  month=* weekday=*/1 user=root job='{{ ZZXIA_OP_SUPER_INVINCIBLE_LOLLIPOP_HOME }}/tools/docker/rm-docker-image.sh -q -k gclife -d 7  >/dev/null'
 
 
 - hosts: swarm,k8s,compose

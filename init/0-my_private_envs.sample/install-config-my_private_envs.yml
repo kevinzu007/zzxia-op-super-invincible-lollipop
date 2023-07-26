@@ -28,6 +28,7 @@
         - { srcc: './user-token-update.sh', destt: '{{ MY_PRIVATE_ENVS_DIR }}/' }
         - { srcc: './user-manage.sh', destt: '{{ MY_PRIVATE_ENVS_DIR }}/' }
         - { srcc: './user.db', destt: '{{ MY_PRIVATE_ENVS_DIR }}/' }
+        - { srcc: './user.db.append.1', destt: '{{ MY_PRIVATE_ENVS_DIR }}/' }
     - name: crontab - user-token-update
       cron: name=user-token-update backup=yes state=present minute=0 hour=0 day=*  month=* weekday=* user=root job='{{ MY_PRIVATE_ENVS_DIR }}/user-token-update.sh --update >/dev/null'
     - name: 拷贝 - maven-settings.xml

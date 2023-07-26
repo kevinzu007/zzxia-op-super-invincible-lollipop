@@ -405,7 +405,7 @@ def hook_gitlab():
 
 
     # 检查设置env
-    if GITLAB_GIT_COMMIT_ENV_CHECK == True:
+    if GITLAB_GIT_COMMIT_ENV_CHECK == 'YES':
         # 必须参数
         if gan_env == '':
             # 退出
@@ -446,21 +446,44 @@ def hook_gitlab():
     #    gan_cmd = gan_cmd + ' --email ' + gan_user_email
     #
     gan_cmd = gan_cmd + ' --branch ' + gan_project_branch + ' ' + '^' + gan_project + '$'
-    # 调试
-    print("运行命令：")
-    print(gan_cmd_0 + ' ; ' + gan_cmd)
 
 
-    # 运行shell脚本
+    ## 运行shell脚本
     #
     # hook/gitlab
-    webhook_logfile = GAN_LOG_HOME + '/webhook_gitlab--' + hook_time + '--' + gan_project + '.log'
-    run_result = os.system(gan_cmd_0 + ' ; ' + gan_cmd +
-                           ' > ' + webhook_logfile + ' 2>&1')
+    #
+    webhook_logfile = GAN_LOG_HOME  +  '/webhook_gitlab--'  +  \
+        hook_time  +  '--'  +  gan_project  +  '.log'
+    gan_cmd_full = gan_cmd_0  +  ' ; '  +  gan_cmd  +  ' > '  +  webhook_logfile  +  ' 2>&1'
     
+    # 调试
+    print("运行命令：")
+    print(gan_cmd_full)
+    
+    # 执行
+    run_result = os.system(gan_cmd_full)
+    
+
+    # 生成删除控制字符的日志文件
+    webhook_logfile_txt = webhook_logfile + '.txt'
+    #
+    gan_cmd_copy = 'cp ' + webhook_logfile + ' ' + webhook_logfile_txt
+    gan_cmd_sed = 'sed  -i -E  -e "s/\\x1B\[([0-9]{1,2}(;[0-9]{1,2})?){0,2}[m|A-Z]//g"  -e "s/\\x0D//g" ' + \
+        webhook_logfile_txt
+    # 
+    os.system(gan_cmd_copy + ' ; ' + gan_cmd_sed)
+
+    ## 邮件
+    if GITLAB_HOOK_SEND_EMAIL == 'YES':
+        gan_cmd_send_mail = GAN_CMD_HOME + '/tools/send_mail.sh' + ' --subject "webhook_gitlab日志" ' +  \
+            ' --content "$(cat ' + webhook_logfile_txt + ')" ' + gan_user_email
+        # 
+        os.system(gan_cmd_send_mail)
+
+
     # 返回详细信息没用：
-    #return send_file(web_hook_logfile, mimetype='text/plain')
-    return jsonify({"Status": "OK", "Logfile": webhook_logfile})
+    #return send_file(webhook_logfile_txt, mimetype='text/plain')
+    return jsonify({"Status": "OK", "Logfile": webhook_logfile_txt})
 
 
 
@@ -474,7 +497,7 @@ def hook_hand():
     # 1 header ：
     # 【"token: sdlffsekwodksdlfolsefksdfpofefpsefop34pfsdf"】
     # 或
-    # 【"user: kevin", "sec: sha1(用户名+密码)"】
+    # 【"user: kevin", "sec: sha1(用户名+密码)"】 --- 已经关闭用户密码验证，只开启token验证
     #
     # 2 body
     # 2.1 build body ：
@@ -615,14 +638,14 @@ def hook_hand():
             print('Token验证成功')
         else:
             return jsonify(auth_user_token_result)
-    elif user != '' and sec != '':
-        # 校验用户名密码
-        auth_result = auth_user_pw(user, sec)
-        #auth_result = json.loads(auth_result)
-        print(auth_result)
-        auth_result_status = extract_element_from_json(auth_result, ["Status"])[0]
-        if auth_result_status == 'Error':
-            return jsonify(auth_result)
+    #elif user != '' and sec != '':
+    #    # 校验用户名密码
+    #    auth_result = auth_user_pw(user, sec)
+    #    #auth_result = json.loads(auth_result)
+    #    print(auth_result)
+    #    auth_result_status = extract_element_from_json(auth_result, ["Status"])[0]
+    #    if auth_result_status == 'Error':
+    #        return jsonify(auth_result)
     else:
         return jsonify({"Status": "Error", "Message": "请提供登录信息"})
     
@@ -636,7 +659,7 @@ def hook_hand():
     # body处理
     #
     # 完整性签名验证
-    if X_ZZXIA_SIGN_CHECK == True:
+    if X_ZZXIA_SIGN_CHECK == 'YES':
         x_server_sign = digest_hmac_sha1(X_ZZXIA_SIGN_SECRET, recive_raw_body)
         if x_user_sign != x_server_sign:
             return jsonify({"Status": "Error", "Message": "X-ZZXia-Signature 验证失败"})
@@ -731,14 +754,36 @@ def hook_hand():
 
     
 
-    # 运行shell脚本
+    ## 运行shell脚本
     #
     # hook/hand
+    #
     webhook_logfile = GAN_LOG_HOME + '/webhook_hand--' + hook_time + '.log'
-    run_result = os.system(gan_cmd_0 + ' ; ' + gan_cmd +
-                           ' > ' + webhook_logfile + ' 2>&1')
+    gan_cmd_full = gan_cmd_0 + ' ; ' + gan_cmd + ' > ' + webhook_logfile + ' 2>&1'
+    # 调试
+    print("运行命令：")
+    print(gan_cmd_full)
+    # 执行
+    os.system(gan_cmd_full)
     
-    return send_file(webhook_logfile, mimetype='text/plain')
+    # 生成删除控制字符的日志文件
+    webhook_logfile_txt = webhook_logfile + '.txt'
+    #
+    gan_cmd_copy = 'cp ' + webhook_logfile + ' ' + webhook_logfile_txt
+    gan_cmd_sed = 'sed  -i -E  -e "s/\\x1B\[([0-9]{1,2}(;[0-9]{1,2})?){0,2}[m|A-Z]//g"  -e "s/\\x0D//g" ' + \
+        webhook_logfile_txt
+    #.
+    os.system(gan_cmd_copy + ' ; ' + gan_cmd_sed)
+
+    ## 邮件
+    if HAND_HOOK_SEND_EMAIL == 'YES':
+        gan_cmd_send_mail = GAN_CMD_HOME + '/tools/send_mail.sh' + ' --subject "webhook_hand日志" ' +  \
+            ' --content "$(cat ' + webhook_logfile_txt + ')" ' + gan_user_email
+        #.
+        os.system(gan_cmd_send_mail)
+
+    # 返回页面信息
+    return send_file(webhook_logfile_txt, mimetype='text/plain')
 
 
 

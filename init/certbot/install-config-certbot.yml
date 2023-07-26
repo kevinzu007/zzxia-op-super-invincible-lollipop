@@ -21,9 +21,9 @@
     - ZZXIA_OP_SUPER_INVINCIBLE_LOLLIPOP_HOME: "{{ lookup('env','ZZXIA_OP_SUPER_INVINCIBLE_LOLLIPOP_HOME') }}"
   tasks:
     - name: crontab - letsencrypt-wildcart
-      cron: name=letsencrypt-wildcart backup=yes state=present minute=0 hour=0 day=*  month=* weekday=* user=root job="python -c 'import random; import time; time.sleep(random.random() * 3600)' && {{ ZZXIA_OP_SUPER_INVINCIBLE_LOLLIPOP_HOME }}/op/cert-letsencrypt-wildcart.sh -y aly -u > /dev/null"
+      cron: name=letsencrypt-wildcart backup=yes state=present minute=0 hour=0 day=*  month=* weekday=* user=root job="python -c 'import random; import time; time.sleep(random.random() * 3600)' && {{ ZZXIA_OP_SUPER_INVINCIBLE_LOLLIPOP_HOME }}/tools/cert-letsencrypt-wildcart.sh -y aly -u > /dev/null"
       when: RUN_ENV == "stag"
     - name: crontab - letsencrypt-wildcart
-      cron: name=letsencrypt-wildcart backup=yes state=present minute=0 hour=0 day=*  month=* weekday=* user=root job="python -c 'import random; import time; time.sleep(random.random() * 3600)' && {{ ZZXIA_OP_SUPER_INVINCIBLE_LOLLIPOP_HOME }}/op/cert-letsencrypt-wildcart.sh -y godaddy -u > /dev/null"
+      cron: name=letsencrypt-wildcart backup=yes state=present minute=0 hour=0 day=*  month=* weekday=* user=root job="python -c 'import random; import time; time.sleep(random.random() * 3600)' && {{ ZZXIA_OP_SUPER_INVINCIBLE_LOLLIPOP_HOME }}/tools/cert-letsencrypt-wildcart.sh -y godaddy -u > /dev/null"
       when: RUN_ENV == "prod"
 

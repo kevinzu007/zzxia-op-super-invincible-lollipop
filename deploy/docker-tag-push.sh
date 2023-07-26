@@ -26,7 +26,7 @@ PROJECT_LIST_FILE="${SH_PATH}/project.list"
 PROJECT_LIST_FILE_TMP="/tmp/${SH_NAME}-project.tmp.list.$(date +%S)"
 PROJECT_LIST_FILE_APPEND_1="${SH_PATH}/project.list.append.1"
 # sh
-FORMAT_TABLE_SH="${SH_PATH}/../op/format_table.sh"
+FORMAT_TABLE_SH="${SH_PATH}/../tools/format_table.sh"
 
 
 # 删除空行（以及只有tab、空格的行）

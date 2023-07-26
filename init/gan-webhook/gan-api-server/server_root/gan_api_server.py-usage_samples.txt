@@ -73,7 +73,19 @@ curl -X POST  \
 猪猪侠警告：【Build】时，没有找到类别为【java】的项目【pj1】，请检查！
 
 
-# 4 手动gitlab hook模拟
+# 4 gitlab测试
+
+## 4.1 gitlab钩子测试
+
+> git commit msg包含信息:.
+> 全部： {env=dev|stag|prod|其他,do=build|gogogo,skiptest=yes,version=5.5,gray=yes}
+> 最少： {env=dev|stag|prod|其他}     #-- 默认：do=gogogo
+
+1. 设置gitlab中项目的webhooks，比如 Secret token：QQQQQ12345 ; 网址：http://192.168.11.81:9527/hook/gitlab
+2. git commit信息包含上面信息，等待看结果
+
+
+## 4.2 另：手动gitlab hook模拟
 # 命令：
 curl  -X POST  \
         -H "Content-Type: application/json"  \

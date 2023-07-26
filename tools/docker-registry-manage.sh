@@ -25,7 +25,7 @@ SERVICE_LIST_FILE="${SH_PATH}/docker-cluster-service.list"
 SERVICE_LIST_FILE_TMP="/tmp/${SH_NAME}-docker-cluster-service.tmp.list.$(date +%S)"
 SEARCH_RESULT_FILE="/tmp/${SH_NAME}-result.txt"
 # sh
-FORMAT_TABLE_SH="${SH_PATH}/../op/format_table.sh"
+FORMAT_TABLE_SH="${SH_PATH}/../tools/format_table.sh"
 
 
 # 删除空行（以及只有tab、空格的行）
@@ -345,15 +345,18 @@ case ${ACTION} in
             exit 1
         fi
         #
+        N=0
         while read R
         do
+            let N=$N+1
             REPO_TAG_LIST_TMP="/tmp/${SH_NAME}-repo-tag.list.tmp"
             #
             echo "=================================================="
-            echo "仓库：${R}:"
+            echo "$N 仓库：${R}"
+            R_SED=${R//\//_}
             #
-            > ${REPO_TAG_LIST_TMP}--${R}
-            F_GET_REPO_TAG  ${R}  ${LIKE_THIS_TAG}  > ${REPO_TAG_LIST_TMP}--${R}
+            > ${REPO_TAG_LIST_TMP}--${R_SED}
+            F_GET_REPO_TAG  ${R}  ${LIKE_THIS_TAG}  > ${REPO_TAG_LIST_TMP}--${R_SED}
             if [[ $? != 0 ]]; then
                 echo -e "\n猪猪侠警告：出错了！\n"
                 exit 1
@@ -361,7 +364,7 @@ case ${ACTION} in
             #
             while read T
             do
-                echo "++++++++++++++++++++++++++++++++++++++++"
+                echo "++++++++++++++++++++++++++++++"
                 echo "删除：仓库【${R}】- tag【${T}】"
                 #
                 F_DELETE_REPO_TAG  ${R}  ${T}
@@ -370,7 +373,7 @@ case ${ACTION} in
                     exit 1
                 fi
                 echo "OK"
-            done < ${REPO_TAG_LIST_TMP}--${R}
+            done < ${REPO_TAG_LIST_TMP}--${R_SED}
         done < ${REPO_LIST_TMP}
         #
         ;;
