@@ -25,12 +25,14 @@ if [ ! -f "${LOG_FILE}" ]; then
     touch "${LOG_FILE}"
     chmod 0666 "${LOG_FILE}"
 fi
+# sh
+DINGDING_MARKDOWN_LOGIN_PY='/usr/local/bin/dingding_send_markdown-login.py'
 
 
 # 钉钉
 F_SEND_DINGDING()
 {
-    /usr/local/bin/dingding_send_markdown-login.py  \
+    ${DINGDING_MARKDOWN_LOGIN_PY}  \
         --title "【Alert:SSH登录:${RUN_ENV}】"  \
         --message "$( echo -e "### `echo ${USER} \(sudo:${SUDO_USER}\) ` \n### `echo ${IP}` \n### `echo ${AREA}` \n\n---\n\n` w | sed '1,2d' `" )"
 }
@@ -84,7 +86,7 @@ F_OTHER_IP()
 # 必须软件jq
 if [ "`which jq >/dev/null 2>&1 ; echo $?`" != "0" ]; then
     echo -e "| `date +'%FT%T'` | ${HOSTNAME} | 用户名: ${USER}(sudo:${SUDO_USER}) | echo $0 | echo '请安装软件jq' |" >> ${LOG_FILE}
-    /usr/local/bin/dingding_send_markdown-login.py  \
+    ${DINGDING_MARKDOWN_LOGIN_PY}  \
         --title "【Error:用户登录:${RUN_ENV}】"  \
         --message "$( echo -e "### 请安装软件jq" )"
 fi
