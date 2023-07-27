@@ -39,19 +39,20 @@ else
 fi
 
 
-# 2 MY
-NET_INTERFACE='eth0'
-MY_IP=$(ip addres show | grep -A 3 ${NET_INTERFACE} | grep 'inet ' | awk '{print $2}' | awk -F '/' '{print $1}')
-MY_USER_NAME=${SUDO_USER:-"${LOGNAME}"}
-
-# 3 output
-echo.
-tty
-echo
-echo '########################################'
-echo
-df -h 2>/dev/null | grep -E -v '^文件系统|^tmpfs|^devtmpfs|loop|udev' | awk -v MY_IP=${MY_IP} -v MY_USER_NAME=${MY_USER_NAME}  'BEGIN{printf("IP地址: %s\n用户名: %s\n磁  盘:\n 已用 | 剩余  | 容量  | 挂载\n", MY_IP, MY_USER_NAME)} {printf(" %4s | %5s | %5s | %-s \n", $5, $4, $2, $6)}'
-echo
-echo '########################################'
+# 信息输出会造成无法scp、rsync等问题
+## 2 MY
+#NET_INTERFACE='eth0'
+#MY_IP=$(ip addres show | grep -A 3 ${NET_INTERFACE} | grep 'inet ' | awk '{print $2}' | awk -F '/' '{print $1}')
+#MY_USER_NAME=${SUDO_USER:-"${LOGNAME}"}
+#
+## 3 output
+#echo.
+#tty
+#echo
+#echo '########################################'
+#echo
+#df -h 2>/dev/null | grep -E -v '^文件系统|^tmpfs|^devtmpfs|loop|udev' | awk -v MY_IP=${MY_IP} -v MY_USER_NAME=${MY_USER_NAME}  'BEGIN{printf("IP地址: %s\n用户名: %s\n磁  盘:\n 已用 | 剩余  | 容量  | 挂载\n", MY_IP, MY_USER_NAME)} {printf(" %4s | %5s | %5s | %-s \n", $5, $4, $2, $6)}'
+#echo
+#echo '########################################'
 
 
