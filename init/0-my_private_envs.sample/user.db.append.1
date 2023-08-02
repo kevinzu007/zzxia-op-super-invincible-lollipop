@@ -13,15 +13,17 @@
 ###    用于定义用户在指定运行环境下的权限，多个运行环境之间用逗号分隔，多个权限之间用&分隔
 ###    参数解释：
 ###      * 运行环境   1 ALL         : 代表所有运行环境
-###                   2 自定义名称  : 代表指定名称的运行环境
+###                   2 自定义名称  : 代表指定名称的运行环境，比如：dev、prod等
 ###      * 权限       1 ALL         : 代表所有权限，权限包括：build、deploy，以后也许会增加
 ###                   2 build       : 构建权限
 ###                   3 deploy      : 部署发布权限
+###                   4 gan         : 运行gan.sh权限
 ###    示例：
 ###      【ALL:ALL】                : 代表在所有运行环境具有全部权限
 ###      【ALL:build】              : 代表在所有运行环境具有build权限
 ###      【dev:ALL, prod:build】    : 代表在dev运行环境具有全部权限，在prod运行环境具有build权限
 ###      【dev:build&deploy】       : 代表在dev运行环境具有build及deploy权限
+###      【dev:gan】                : 代表在dev运行环境具有gan权限
 ### 
 ### 
 #| USER_ID | USER_NAME     | GITLAB_USER_NAME | USER_PRIVILEGES                       |
