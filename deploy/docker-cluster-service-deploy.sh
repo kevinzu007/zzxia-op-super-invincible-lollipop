@@ -1319,68 +1319,18 @@ fi
 
 
 # 获取用户信息
-if [[ -z ${MY_USER_NAME} ]]; then
-    if [[ ${USER_INFO_FROM} == 'local' ]]; then
-        # if sudo -i 取${SUDO_USER}；
-        # if sudo cmd 取${LOGNAME}
-        export MY_USER_NAME=${SUDO_USER:-"${LOGNAME}"}
-        #
-        R=$(F_SEARCH_USER ${MY_USER_NAME})
-        R_1=$(echo $R | awk -F '|' '{print $1}' | awk '{print $1}')
-        if [[ ${R_1} == 0 ]]; then
-            R_3=$(echo $R | awk -F '|' '{print $3}' | awk '{print $1}')
-            R_4=$(echo $R | awk -F '|' '{print $4}' | awk '{print $1}')
-            export MY_USER_XINGMING=${R_3}
-            export MY_USER_EMAIL=${MY_USER_EMAIL:-"${R_4}"}
-        else
-            export MY_USER_XINGMING="x-Man"
-            export MY_USER_EMAIL
-        fi
-    elif [[ ${USER_INFO_FROM} =~ hook_hand ]]; then
-        #
-        export MY_USER_NAME=${HOOK_USER_NAME}
-        export MY_USER_XINGMING=${HOOK_USER_XINGMING}
-        export MY_USER_EMAIL=${HOOK_USER_EMAIL}
-    elif [[ ${USER_INFO_FROM} =~ hook_gitlab ]]; then
-        #
-        R=$(F_SEARCH_GITLAB_USER ${HOOK_USER_NAME})
-        R_1=$(echo $R | awk -F '|' '{print $1}' | awk '{print $1}')
-        if [[ ${R_1} == 0 ]]; then
-            R_2=$(echo $R | awk -F '|' '{print $2}' | awk '{print $1}')
-            export MY_USER_NAME=${R_2}
-        else
-            echo -e "\n猪猪侠警告：Gitlab用户不存在【${HOOK_USER_NAME}】\n"
-            exit 52
-        fi
-        export MY_USER_XINGMING=${HOOK_USER_XINGMING}      #-- 使用gitlab上的
-        export MY_USER_EMAIL=${HOOK_USER_EMAIL}            #-- 使用gitlab上的
-    else
-        echo -e "\n猪猪侠警告：未知参数值【\${USER_INFO_FROM} = ${USER_INFO_FROM}】\n"
-        exit  51
-    fi
+F_get_user_info
+r=$?
+if [[ $r != 0 ]]; then
+    exit $r
 fi
 
 
 # 检查用户权限
-if [[ ! ${MY_USER_XINGMING} =~ x-Man ]]; then
-    #
-    NEED_PRIVILEGES=${NEED_PRIVILEGES// /}
-    NEED_PRIVILEGES_NUM=$(echo ${NEED_PRIVILEGES} | grep -o '&' | wc -l)
-    #
-    for ((j=PRIVILEGES_env_priv_NUM; j>=0; j--))
-    do
-        #
-        FIELD_J=$((j+1))
-        NEED_PRIVILEGES_x=`echo ${NEED_PRIVILEGES} | cut -d '&' -f ${FIELD_J}`
-        #
-        R=$(F_SEARCH_USER_PRIV  ${MY_USER_NAME}  ${NEED_PRIVILEGES_x})
-        R_1=$(echo $R | awk -F '|' '{print $1}' | awk '{print $1}')
-        if [[ ${R_1} != 0 ]]; then
-            # 必须全部匹配
-            echo -e "\n猪猪侠警告：用户【${MY_USER_NAME}】无【${NEED_PRIVILEGES}】权限！\n"
-            exit 52
-        fi
-    done
+F_check_user_priv
+r=$?
+if [[ $r != 0 ]]; then
+    exit $r
 fi
 
 

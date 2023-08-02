@@ -18,10 +18,20 @@ cd ${SH_PATH}
 #PG_MANAGE_SH_HOME=
 
 # 引入env.sh
+.  ${SH_PATH}/deploy/env.sh
+# 来自 ${MY_PRIVATE_ENVS_DIR} 目录下的 *.sec
+#USER_DB_FILE=
+#USER_DB_FILE_APPEND_1=
 
 # 本地env
 ANSIBLE_HOST_FOR_PG_BACKUP_RESTORE='pg_m'
 ANSIBLE_HOST_FOR_NGINX_CERT_REQUEST='nginx_letsencrypt'
+NEED_PRIVILEGES='gan'                   #-- 运行此程序需要的权限，如果需要多个权限，则用【&】分隔
+if [[ -z ${USER_INFO_FROM} ]]; then
+    USER_INFO_FROM=${HOOK_USER_INFO_FROM:-'local'}     #--【local|hook_hand|hook_gitlab】，默认：local
+fi
+# 引入函数
+.  ${SH_PATH}/deploy/function.sh
 
 
 
@@ -98,6 +108,32 @@ case "$1" in
         exit 1
         ;;
 esac
+
+
+
+# 运行环境匹配for Hook
+if [[ -n ${HOOK_GAN_ENV} ]] && [[ ${HOOK_GAN_ENV} != 'NOT_CHECK' ]] && [[ ${HOOK_GAN_ENV} != ${RUN_ENV} ]]; then
+    echo -e "\n猪猪侠警告：运行环境不匹配，跳过（这是正常情况）\n"
+    exit
+fi
+
+
+
+# 获取用户信息
+F_get_user_info
+r=$?
+if [[ $r != 0 ]]; then
+    exit $r
+fi
+
+
+# 检查用户权限
+F_check_user_priv
+r=$?
+if [[ $r != 0 ]]; then
+    exit $r
+fi
+
 
 
 # go
