@@ -15,6 +15,8 @@ cd ${SH_PATH}
 .  /etc/profile        #-- 非终端界面不会自动引入，必须主动引入
 #RUN_ENV=
 #DOMAIN=
+#USER_DB_FILE=
+#USER_DB_FILE_APPEND_1=
 
 # 引入env.sh
 . ${SH_PATH}/env.sh
@@ -25,8 +27,6 @@ cd ${SH_PATH}
 #BUILD_SKIP_TEST=
 #GIT_DEFAULT_BRANCH=
 # 来自 ${MY_PRIVATE_ENVS_DIR} 目录下的 *.sec
-#USER_DB_FILE=
-#USER_DB_FILE_APPEND_1=
 #DINGDING_API=
 
 

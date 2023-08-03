@@ -78,6 +78,10 @@ export PYTHON_SERVICES_BASE='/srv/python_services'
 
 # IRBD - 私密变量存放目录
 export MY_PRIVATE_ENVS_DIR="/root/.my_sec"
+#
+export USER_DB_FILE="${MY_PRIVATE_ENVS_DIR}/user.db"
+export USER_DB_FILE_APPEND_1="${MY_PRIVATE_ENVS_DIR}/user.db.append.1"
+export USER_TOKEN_FILE="${MY_PRIVATE_ENVS_DIR}/user.db.token"
 
 # IRD - Postgresql备份恢复脚本路径（cp pg/manage到pg服务器上）
 export PG_MANAGE_SH_HOME="/manage/pg--${LOLLIPOP_PLATFORM_NAME}"
