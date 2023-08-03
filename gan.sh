@@ -16,12 +16,10 @@ cd ${SH_PATH}
 .  /etc/profile
 #NGINX_CONFIG_SH_HOME=
 #PG_MANAGE_SH_HOME=
-
-# 引入env.sh
-.  ${SH_PATH}/deploy/env.sh
-# 来自 ${MY_PRIVATE_ENVS_DIR} 目录下的 *.sec
 #USER_DB_FILE=
 #USER_DB_FILE_APPEND_1=
+
+# 引入env.sh
 
 # 本地env
 ANSIBLE_HOST_FOR_PG_BACKUP_RESTORE='pg_m'
