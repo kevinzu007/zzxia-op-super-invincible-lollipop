@@ -118,20 +118,25 @@ F_GET_REPO()
     fi
     #
     cat ${F_REPO_LIST_FILE} | jq .repositories[] | sed 's/"//g' | sed '/^\s*$/d' > ${F_REPO_LIST_FILE}.1
+    #
     # 过滤
     if [[ -n ${F_REPO_NAME} ]]; then
+        # 输出
         grep -E "${F_REPO_NAME}"  ${F_REPO_LIST_FILE}.1
         if [[ $? != 0 ]]; then
             return 55
+        else
+            return 0
         fi
     else
         if [[ $(cat ${F_REPO_LIST_FILE}.1 | wc -l) == 0 ]]; then
             return 55
+        else
+            # 输出
+            cat  ${F_REPO_LIST_FILE}.1
+            return 0
         fi
     fi
-    #
-    cat  ${F_REPO_LIST_FILE}.1
-    return 0
 }
 
 
@@ -156,20 +161,25 @@ F_GET_REPO_TAG()
     fi
     #
     cat ${F_REPO_TAG_LIST_FILE} | jq .tags[] | grep -v 'latest' | sed 's/"//g' | sed '/^\s*$/d'  > ${F_REPO_TAG_LIST_FILE}.1
+    #
     # 过滤
     if [[ -n ${F_REPO_TAG} ]]; then
+        # 输出
         grep -E "${F_REPO_TAG}"  ${F_REPO_TAG_LIST_FILE}.1
         if [[ $? != 0 ]]; then
             return 55
+        else
+            return 0
         fi
     else
         if [[ ! -s ${F_REPO_TAG_LIST_FILE}.1 ]]; then
             return 55
+        else
+            # 输出
+            cat  ${F_REPO_TAG_LIST_FILE}.1
+            return 0
         fi
     fi
-    #
-    cat  ${F_REPO_TAG_LIST_FILE}.1
-    return 0
 }
 
 
