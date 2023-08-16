@@ -117,6 +117,8 @@ F_GET_REPO()
         return 53
     fi
     #
+    # 仓库极少可能为空
+    #
     cat ${F_REPO_LIST_FILE} | jq .repositories[] | sed 's/"//g' | sed '/^\s*$/d' > ${F_REPO_LIST_FILE}.1
     #
     # 过滤
@@ -155,9 +157,16 @@ F_GET_REPO_TAG()
         return 53
     fi
     #
-    if [[ $(cat ${F_REPO_TAG_LIST_FILE} | grep -q '404 page not found' ; echo $?) == 0 ]]; then
-        echo -e "\n猪猪侠警告：仓库不存在\n" 1>&2
+    # 理论上不会出现下面情况
+    #if [[ $(cat ${F_REPO_TAG_LIST_FILE} | grep -q '404 page not found' ; echo $?) == 0 ]]; then
+    if [[ $(cat ${F_REPO_TAG_LIST_FILE} | grep -q 'repository name not known to registry' ; echo $?) == 0 ]]; then
+        echo -e "\n猪猪侠警告：仓库【${F_REPO_NAME}】不存在\n" 1>&2
         return 53
+    fi
+    #
+    if [[ $(cat ${F_REPO_TAG_LIST_FILE} | grep -q '"tags":null' ; echo $?) == 0 ]]; then
+        # tags 为空
+        return 55
     fi
     #
     cat ${F_REPO_TAG_LIST_FILE} | jq .tags[] | grep -v 'latest' | sed 's/"//g' | sed '/^\s*$/d'  > ${F_REPO_TAG_LIST_FILE}.1
