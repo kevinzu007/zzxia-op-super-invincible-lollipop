@@ -262,7 +262,7 @@ F_DELETE_REPO_TAG()
     #    return 53
     #fi
     #
-    # 如果两个tag对应的是同一个 blob及manifest ，则第一个tag删除成功后，第二个tag就不存在了，所以再删除第二个会失败
+    # 如果两个tag对应的是同一个镜像id【即实体：blob及manifest相同】，则第一个tag删除成功后，第二个tag就不存在了，所以再删除第二个会失败
     # del blob
     curl  -s -X DELETE  \
         -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD}  \
@@ -419,9 +419,10 @@ case ${ACTION} in
             while read T
             do
                 echo "++++++++++++++++++++++++++++++"
-                echo "删除：仓库【${R}】- tag【${T}】"
+                #echo "删除：仓库【${R}】- tag【${T}】"
+                echo "删除：【${R}:${T}】"
                 #
-                # 如果两个tag对应的是同一个 blob及manifest ，则第一个tag删除成功后，第二个tag就不存在了，所以再删除第二个会失败
+                # 如果两个tag对应的是同一个镜像id【即实体：blob及manifest相同】，则第一个tag删除成功后，第二个tag就不存在了，所以再删除第二个会失败
                 # 所以，如何确保正确删除？
                 # 以后有时间再解决！！！
                 F_DELETE_REPO_TAG  ${R}  ${T}
