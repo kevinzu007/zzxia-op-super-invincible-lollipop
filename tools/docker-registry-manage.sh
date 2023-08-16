@@ -360,10 +360,12 @@ case ${ACTION} in
             exit 1
         fi
         #
+        N=0
         while read R
         do
+            let N=$N+1
             echo "=================================================="
-            echo "仓库：${R}:"
+            echo "$N 仓库：${R}:"
             #
             F_GET_REPO_TAG  ${R}  ${LIKE_THIS_TAG}
             r=$?
