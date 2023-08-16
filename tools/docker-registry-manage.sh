@@ -215,12 +215,12 @@ F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST()
     sed  -i -E  -e "s/\\x1B\[([0-9]{1,2}(;[0-9]{1,2})?){0,2}[m|A-Z]//g"  -e "s/\\x0D//g"  ${F_GET_REPO_TAG_HEAD_FILE}
     #
     if [[ $(cat ${F_GET_REPO_TAG_BODY_FILE} | grep -q '404 page not found' ; echo $?) == 0 ]]; then
-        echo -e "\n猪猪侠警告：仓库不存在\n" 1>&2
+        echo -e "\n猪猪侠警告：仓库不存在，提示：【404 page not found】\n" 1>&2
         return 53
     fi
     #
     if [[ $(cat ${F_GET_REPO_TAG_BODY_FILE} | grep -q 'MANIFEST_UNKNOWN' ; echo $?) == 0 ]]; then
-        echo -e "\n猪猪侠警告：仓库tag不存在\n" 1>&2
+        echo -e "\n猪猪侠警告：仓库tag不存在，提示：【MANIFEST_UNKNOWN】\n" 1>&2
         return 53
     fi
     #
@@ -373,7 +373,7 @@ case ${ACTION} in
                 echo -e "\n猪猪侠警告：匹配TAG【${LIKE_THIS_TAG}】结果为空！\n"
             elif [[ $r != 0 ]]; then
                 echo -e "\n猪猪侠警告：匹配TAG【${LIKE_THIS_TAG}】时出错了！\n"
-                exit 1
+                #exit 1
             fi
         done < ${REPO_LIST_TMP}
         #
