@@ -108,8 +108,8 @@ F_HELP()
 F_GET_REPO()
 {
     F_REPO_NAME=$1
-    F_REPO_LIST_FILE="/tmp/${SH_NAME}-F_GET_REPO-list.txt"
-    F_GET_ERR_FILE="/tmp/${SH_NAME}-F_GET_REPO-err.txt"
+    F_REPO_LIST_FILE="/tmp/${SH_NAME}-F_GET_REPO-list.txt--${F_REPO_NAME}"
+    F_GET_ERR_FILE="/tmp/${SH_NAME}-F_GET_REPO-err.txt--${F_REPO_NAME}"
     > ${F_REPO_LIST_FILE}
     curl -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD} -s -X GET ${DOCKER_REPO_URL_BASE}/_catalog  > ${F_REPO_LIST_FILE}
     if [[ $? -ne 0 ]]; then
@@ -148,8 +148,8 @@ F_GET_REPO_TAG()
 {
     F_REPO_NAME=$1
     F_REPO_TAG=$2
-    F_REPO_TAG_LIST_FILE="/tmp/${SH_NAME}-F_GET_REPO_TAG-list.txt"
-    F_REPO_TAG_ERR_FILE="/tmp/${SH_NAME}-F_GET_REPO_TAG-err.txt"
+    F_REPO_TAG_LIST_FILE="/tmp/${SH_NAME}-F_GET_REPO_TAG-list.txt--${F_REPO_NAME}"
+    F_REPO_TAG_ERR_FILE="/tmp/${SH_NAME}-F_GET_REPO_TAG-err.txt--${F_REPO_NAME}"
     > ${F_REPO_TAG_LIST_FILE}
     curl -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD} -s -X GET ${DOCKER_REPO_URL_BASE}/${F_REPO_NAME}/tags/list  > ${F_REPO_TAG_LIST_FILE}
     if [[ $? -ne 0 ]]; then
@@ -199,8 +199,8 @@ F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST()
 {
     F_REPO_NAME=$1
     F_REPO_TAG=$2
-    F_GET_REPO_TAG_HEAD_FILE="/tmp/${SH_NAME}-F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST-head.txt"
-    F_GET_REPO_TAG_BODY_FILE="/tmp/${SH_NAME}-F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST-body.txt"
+    F_GET_REPO_TAG_HEAD_FILE="/tmp/${SH_NAME}-F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST-head.txt--${F_REPO_NAME}"
+    F_GET_REPO_TAG_BODY_FILE="/tmp/${SH_NAME}-F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST-body.txt--${F_REPO_NAME}"
     > ${F_GET_REPO_TAG_HEAD_FILE}
     > ${F_GET_REPO_TAG_BODY_FILE}
     curl -s -v -X GET  \
@@ -248,7 +248,7 @@ F_DELETE_REPO_TAG()
 {
     F_REPO_NAME=$1
     F_REPO_TAG=$2
-    F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST_FILE='/tmp/digest-and-blob.txt'
+    F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST_FILE="/tmp/digest-and-blob.txt--${F_REPO_NAME}"
     F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST  ${F_REPO_NAME}  ${F_REPO_TAG}  > ${F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST_FILE}
     ERR_NO=$?
     if [[ ${ERR_NO} != 0 ]]; then
@@ -261,6 +261,8 @@ F_DELETE_REPO_TAG()
     #    echo -e "\n猪猪侠警告：仓库tag不存在\n" 1>&2
     #    return 53
     #fi
+    #
+    # 如果两个tag对应的是同一个 blob及manifest ，则第一个tag删除成功后，第二个tag就不存在了，所以再删除第二个会失败
     # del blob
     curl  -s -X DELETE  \
         -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD}  \
@@ -419,6 +421,9 @@ case ${ACTION} in
                 echo "++++++++++++++++++++++++++++++"
                 echo "删除：仓库【${R}】- tag【${T}】"
                 #
+                # 如果两个tag对应的是同一个 blob及manifest ，则第一个tag删除成功后，第二个tag就不存在了，所以再删除第二个会失败
+                # 所以，如何确保正确删除？
+                # 以后有时间再解决！！！
                 F_DELETE_REPO_TAG  ${R}  ${T}
                 if [[ $? != 0 ]]; then
                     echo -e "\n猪猪侠警告：删除【${R}:${T}】时出错了！\n"
