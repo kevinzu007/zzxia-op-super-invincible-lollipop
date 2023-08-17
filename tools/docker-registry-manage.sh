@@ -422,6 +422,7 @@ case ${ACTION} in
                 #echo "删除：仓库【${R}】- tag【${T}】"
                 echo "删除：【${R}:${T}】"
                 #
+                # Blob digest == 镜像id
                 # 如果两个tag对应的是同一个镜像id【即实体：blob及manifest相同】，则第一个tag删除成功后，第二个tag就不存在了，所以再删除第二个会失败
                 # 所以，如何确保正确删除？
                 # 以后有时间再解决！！！
