@@ -25,7 +25,8 @@ TIME=`date +%Y-%m-%dT%H:%M:%S`
 TIME_START=${TIME}
 SERVICE_LIST_FILE="${SH_PATH}/docker-cluster-service.list"
 SERVICE_LIST_FILE_TMP="/tmp/${SH_NAME}-docker-cluster-service.tmp.list.$(date +%S)"
-SEARCH_RESULT_FILE="/tmp/${SH_NAME}-result.txt"
+SEARCH_RESULT_PREFILE="/tmp/${SH_NAME}-result.txt"
+SEARCH_RESULT_ERR_PREFILE="/tmp/${SH_NAME}-result-err.txt"
 # sh
 FORMAT_TABLE_SH="${SH_PATH}/../tools/format_table.sh"
 
@@ -67,7 +68,7 @@ F_HELP()
     用法:
         $0 [-h|--help]
         $0 [-l|--list]
-        $0  <-e|--exclude {%镜像版本%}>  <-t|--tag {%镜像版本%}>  <-I|--image-pre-name {镜像前置名称}>  <-n|--newest {第几新版本}>  <-o|--output {路径/文件}>  <{服务1} ... {服务2} ...>
+        $0  <-I|--image-pre-name {镜像前置名称}>  <-t|--tag {%镜像版本%}>  <-e|--exclude {%镜像版本%}>  <-A|--time-ago {时间}>  <-n|--newest {第几新版本}>  <-o|--output {路径/文件}>  <{服务1} ... {服务2} ...>
     参数说明：
         \$0   : 代表脚本本身
         []   : 代表是必选项
@@ -78,9 +79,10 @@ F_HELP()
         #
         -h|--help       此帮助
         -l|--list       清单
-        -e|--exclude    排除指定镜像版本，支持模糊定义，一般用于排除今天打包的镜像版本，用于部署回滚
-        -t|--tag        镜像版本(tag)。支持模糊查找
         -I|--image-pre-name  指定镜像前置名称【DOCKER_IMAGE_PRE_NAME】，默认来自env.sh。注：镜像完整名称：\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${DOCKER_IMAGE_NAME}:\${DOCKER_IMAGE_TAG}
+        -t|--tag        镜像版本(tag)。支持模糊查找
+        -e|--exclude    排除指定镜像版本，支持模糊定义，一般用于排除今天打包的镜像版本，用于部署回滚
+        -A|--time-ago   输出指定时间之前的版本（一般用于回滚），比如1d、24h、30m、100s
         -n|--newest     取第几新的镜像版本，例如： -n 1 ：代表取最新的那个镜像版本，-n 2：代表第二新的镜像，有-n参数时输出格式为：【服务名  tag版本 tag版本2 ...】；无-n参数时输出为服务名 \ntag版本 \ntag版本2 \n...
         -o|--output     输出搜索结果不为空的服务名称 到 指定【路径/文件】
     示例：
@@ -105,70 +107,113 @@ F_HELP()
         # 今日发布与回滚：
         $0  -t 2021.01.22  -n 1  -o /root/1.txt     #--- 返回所有服务，且tag名称包含【2021.01.22】(今天)，最新的镜像tag版本，将服务清单输出到文件/root/1.txt，一般用于发布今天打包的服务清单
         $0  -e 2021.01.22  -n 1  -o /root/1.txt     #--- 返回所有服务，且tag名称不包含【2021.01.22】(今天)，最新的镜像tag版本，将服务清单输出到文件/root/1.txt，一般用于今日发布失败后的回滚
+        #
+        $0  -A 2h  -n 1  服务1   #--- 返回服务名为【服务1】，且 2小时前 最新的镜像tag版本
     "
 }
 
 
-# 搜索
-# 用法：F_SEARCH 镜像名
+# 搜索镜像名返回匹配条件的tag版本
+# 用法：F_SEARCH  {镜像名}
 F_SEARCH()
 {
-    F_SEARCH_RESULT_FILE="/tmp/${SH_NAME}-F_SEARCH-result.txt"
-    F_SEARCH_RESULT_ERR_FILE="/tmp/${SH_NAME}-F_SEARCH-result-err.txt"
     F_DOCKER_IMAGE_NAME=$1
-    curl -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD} -s -X GET ${DOCKER_REPO_URL_BASE}/${DOCKER_IMAGE_PRE_NAME}/${F_DOCKER_IMAGE_NAME}/tags/list | jq .tags[] > ${F_SEARCH_RESULT_FILE}  2>${F_SEARCH_RESULT_ERR_FILE}
-    if [[ $? -ne 0 ]] || [[ $(cat ${F_SEARCH_RESULT_ERR_FILE} | grep -q 'NAME_UNKNOWN'; echo $?) -eq 0 ]]; then
+    F_SEARCH_RESULT_PREFILE="/tmp/${SH_NAME}-F_SEARCH-result.txt--${F_DOCKER_IMAGE_NAME}"
+    F_SEARCH_RESULT_ERR_PREFILE="/tmp/${SH_NAME}-F_SEARCH-result-err.txt--${F_DOCKER_IMAGE_NAME}"
+    #
+    curl -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD} -s -X GET ${DOCKER_REPO_URL_BASE}/${DOCKER_IMAGE_PRE_NAME}/${F_DOCKER_IMAGE_NAME}/tags/list | jq .tags[] > ${F_SEARCH_RESULT_PREFILE}  2>${F_SEARCH_RESULT_ERR_PREFILE}
+    if [[ $? -ne 0 ]] || [[ $(cat ${F_SEARCH_RESULT_ERR_PREFILE} | grep -q 'NAME_UNKNOWN'; echo $?) -eq 0 ]]; then
         echo -e "\n猪猪侠警告：项目镜像不存在，或者访问【${DOCKER_REPO_SERVER}】服务器异常\n" 1>&2
         return 53
     fi
-    sed -i 's/\"//g'    ${F_SEARCH_RESULT_FILE}
-    # latest
-    if [[ "x${LIKE_THIS_DOCKER_IMAGE_TAG}" = 'xlatest' ]]; then
-        cat ${F_SEARCH_RESULT_FILE}  | grep ${LIKE_THIS_DOCKER_IMAGE_TAG}
-        return 0
-    fi
-    # 倒排序，数字开头的自动标记版本
-    sed -i '/latest/d'  ${F_SEARCH_RESULT_FILE}
-    cat  ${F_SEARCH_RESULT_FILE} | sort -n -r >  ${F_SEARCH_RESULT_FILE}.sort
     #
-    if [[ -z ${NUMBER_NEWEST} ]]; then
-        # 无第几新
-        if [[ -z ${LIKE_THIS_DOCKER_IMAGE_TAG} ]]; then
-            if [[ -z "${EXCLUDE_THIS_DOCKER_IMAGE_TAG}" ]]; then
-                cat ${F_SEARCH_RESULT_FILE}.sort
-            else
-                cat ${F_SEARCH_RESULT_FILE}.sort | grep -v ${EXCLUDE_THIS_DOCKER_IMAGE_TAG}
-            fi
+    # 删除引号
+    sed -i 's/\"//g'   ${F_SEARCH_RESULT_PREFILE}
+    # 去掉空行
+    sed -i '/^\s*$/d'  ${F_SEARCH_RESULT_PREFILE}
+    #
+    # 返回latest版本
+    if [[ "x${LIKE_THIS_DOCKER_IMAGE_TAG}" = 'xlatest' ]]; then
+        cat ${F_SEARCH_RESULT_PREFILE}  | grep  -q 'latest'
+        if [[ $? != 0 ]]; then
+            echo  -e "\n猪猪侠警告：项目镜像tag【latest】未找到\n"  1>&2
+            return 55
         else
-            if [[ -z "${EXCLUDE_THIS_DOCKER_IMAGE_TAG}" ]]; then
-                cat ${F_SEARCH_RESULT_FILE}.sort   | grep ${LIKE_THIS_DOCKER_IMAGE_TAG}
-            else
-                cat ${F_SEARCH_RESULT_FILE}.sort   | grep ${LIKE_THIS_DOCKER_IMAGE_TAG} | grep -v ${EXCLUDE_THIS_DOCKER_IMAGE_TAG}
-            fi
-        fi
-    else
-        # 第几新
-        if [[ -z "${LIKE_THIS_DOCKER_IMAGE_TAG}" ]]; then
-            if [[ -z "${EXCLUDE_THIS_DOCKER_IMAGE_TAG}" ]]; then
-                cat ${F_SEARCH_RESULT_FILE}.sort | sed -n ${NUMBER_NEWEST}p
-            else
-                cat ${F_SEARCH_RESULT_FILE}.sort | grep -v ${EXCLUDE_THIS_DOCKER_IMAGE_TAG} | sed -n ${NUMBER_NEWEST}p
-            fi
-        else
-            if [[ -z "${EXCLUDE_THIS_DOCKER_IMAGE_TAG}" ]]; then
-                cat ${F_SEARCH_RESULT_FILE}.sort   | grep ${LIKE_THIS_DOCKER_IMAGE_TAG} | sed -n ${NUMBER_NEWEST}p
-            else
-                cat ${F_SEARCH_RESULT_FILE}.sort   | grep ${LIKE_THIS_DOCKER_IMAGE_TAG} | grep -v ${EXCLUDE_THIS_DOCKER_IMAGE_TAG} | sed -n ${NUMBER_NEWEST}p
-            fi
+            echo  'latest'
+            return 0
         fi
     fi
-    return 0
+    #
+    # 删除latest
+    sed -i '/latest/d'  ${F_SEARCH_RESULT_PREFILE}
+    #
+    # 倒排序sort
+    cat  ${F_SEARCH_RESULT_PREFILE} | sort -n -r >  ${F_SEARCH_RESULT_PREFILE}.sort
+    #
+    # 过滤like
+    if [[ -n ${LIKE_THIS_DOCKER_IMAGE_TAG} ]]; then
+        cat ${F_SEARCH_RESULT_PREFILE}.sort  |  grep -E ${LIKE_THIS_DOCKER_IMAGE_TAG}
+    else
+        cat ${F_SEARCH_RESULT_PREFILE}.sort
+    fi > ${F_SEARCH_RESULT_PREFILE}.sort.like
+    #
+    # 过滤not_like
+    if [[ -n "${EXCLUDE_THIS_DOCKER_IMAGE_TAG}" ]]; then
+        cat ${F_SEARCH_RESULT_PREFILE}.sort.like | grep -E -v ${EXCLUDE_THIS_DOCKER_IMAGE_TAG}
+    else
+        cat ${F_SEARCH_RESULT_PREFILE}.sort.like
+    fi > ${F_SEARCH_RESULT_PREFILE}.sort.like.not_like
+    #
+    # 过滤time ago
+    if [[ -n ${TIME_AGO_S} ]]; then
+        # 删除非标准版本的行，仅保留数字开头的自动标记版本
+        # 注：只有自动标记的版本可以计算时间，示例：2023.05.11.090746
+        cat ${F_SEARCH_RESULT_PREFILE}.sort.like.not_like  |  sed -n -E '/[0-9]{4}\.[0-9]{2}\.[0-9]{2}\.[0-9]{4}/p'  > ${F_SEARCH_RESULT_PREFILE}.sort.like.not_like.x_time_ago
+        n=0
+        MAX=$(cat ${F_SEARCH_RESULT_PREFILE}.sort.like.not_like.x_time_ago | wc -l)
+        while true
+        do
+            let n=${n}+1
+            if [[ ${n} > ${MAX} ]]; then
+                break
+            fi
+            LINE=$(sed -n "${n}p"  ${F_SEARCH_RESULT_PREFILE}.sort.like.not_like.x_time_ago)
+            LINE_DATE=$(echo ${LINE:0:4}-${LINE:5:2}-${LINE:8:2} ${LINE:11:2}:${LINE:13:2}:${LINE:15:2})
+            LINE_S=$(date -d "${LINE_DATE}" +%s)
+            NOW_S=$(date +%s)
+            let LINE_S_ADD=${LINE_S}+${TIME_AGO_S}
+            if [[ ${LINE_S_ADD} -lt ${NOW_S} ]]; then
+                sed -n "${n}p"  ${F_SEARCH_RESULT_PREFILE}.sort.like.not_like.x_time_ago
+            fi
+        done
+    else
+        cat ${F_SEARCH_RESULT_PREFILE}.sort.like.not_like
+    fi > ${F_SEARCH_RESULT_PREFILE}.sort.like.not_like.time_ago
+    #
+    # 过滤第几新
+    if [[ -n ${NUMBER_NEWEST} ]]; then
+        # 删除非标准版本的行，仅保留数字开头的自动标记版本
+        # 只有自动标记的版本取第几新才有意义，示例：2023.05.11.090746
+        sed -i -n -E '/[0-9]{4}\.[0-9]{2}\.[0-9]{2}\.[0-9]{4}/p'  ${F_SEARCH_RESULT_PREFILE}.sort.like.not_like.time_ago
+        cat ${F_SEARCH_RESULT_PREFILE}.sort.like.not_like.time_ago | sed -n ${NUMBER_NEWEST}p
+    else
+        cat ${F_SEARCH_RESULT_PREFILE}.sort.like.not_like.time_ago
+    fi > ${F_SEARCH_RESULT_PREFILE}.sort.like.not_like.time_ago.newest
+    #
+    # 输出
+    if [[ -s ${F_SEARCH_RESULT_PREFILE}.sort.like.not_like.time_ago.newest ]]; then
+        cat  ${F_SEARCH_RESULT_PREFILE}.sort.like.not_like.time_ago.newest
+        return 0
+    else
+        echo  -e "\n猪猪侠警告：项目镜像tag搜索结果为空\n"  1>&2
+        echo 55
+    fi
 }
 
 
 
 # 参数检查
-TEMP=`getopt -o hle:t:I:n:o:  -l help,list,exclude:,tag:,image-pre-name:,newest:,output: -- "$@"`
+TEMP=`getopt -o hlI:t:e:A:n:o:  -l help,list,image-pre-name:,tag:,exclude:,time-ago:,newest:,output: -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
     exit 51
@@ -194,25 +239,50 @@ do
             ${FORMAT_TABLE_SH}  --delimeter '|'  --file /tmp/docker-image-search-for-list.txt
             exit
             ;;
-        -e|--exclude)
-            EXCLUDE_THIS_DOCKER_IMAGE_TAG=$2
+        -I|--image-pre-name)
+            IMAGE_PRE_NAME=$2
+            IMAGE_PRE_NAME_ARG="--image-pre-name ${IMAGE_PRE_NAME}"
             shift 2
             ;;
         -t|--tag)
             LIKE_THIS_DOCKER_IMAGE_TAG=$2
             shift 2
             ;;
-        -I|--image-pre-name)
-            IMAGE_PRE_NAME=$2
-            IMAGE_PRE_NAME_ARG="--image-pre-name ${IMAGE_PRE_NAME}"
+        -e|--exclude)
+            EXCLUDE_THIS_DOCKER_IMAGE_TAG=$2
             shift 2
+            ;;
+        -A|--time_ago)
+            TIME_AGO=$2
+            shift 2
+            grep -E -q '[1-9]+[0-9]*[dhms]$' <<< ${TIME_AGO}
+            if [ $? -ne 0 ]; then
+                echo -e "\n猪猪侠警告：参数【-A|--time_ago】参数不合法，请查看帮助【$0 --help】\n"
+                exit 51
+            fi
+            TIME_AGO_UNIT=${TIME_AGO:0-1:1}
+            TIME_AGO_NUM=${TIME_AGO:0:-1}
+            case ${TIME_AGO_UNIT} in
+                d)
+                    let TIME_AGO_S=${TIME_AGO_NUM}*24*60*60
+                    ;;
+                h)
+                    let TIME_AGO_S=${TIME_AGO_NUM}*60*60
+                    ;;
+                m)
+                    let TIME_AGO_S=${TIME_AGO_NUM}*60
+                    ;;
+                s)
+                    let TIME_AGO_S=${TIME_AGO_NUM}
+                    ;;
+            esac
             ;;
         -n|--newest)
             NUMBER_NEWEST=$2
             shift 2
             grep -q '^[[:digit:]]\+$' <<< ${NUMBER_NEWEST}
             if [ $? -ne 0 ]; then
-                echo '参数：{第几新版本} 必须为整数！当前值为：${NUMBER_NEWEST}'
+                echo -e "\n猪猪侠警告：参数【-n|--newest】参数不合法，请查看帮助【$0 --help】\n"
                 exit 51
             fi
             ;;
@@ -266,8 +336,20 @@ fi
 
 
 
+# 输出到指定文件目录准备
+if [ -n "${OUTPUT_FILE}" ]; then
+    echo  ${OUTPUT_FILE} | grep -q \/
+    if [[ $? -eq 0 ]]; then
+        if [ ! -d `echo ${OUTPUT_FILE%/*}` ]; then
+            echo -e  "\n猪猪侠警告：文件目录【`echo ${OUTPUT_FILE%/*}`】不存在，请创建先。\n"
+            exit 51
+        fi
+    fi
+fi
+
+
+
 # 开始
-> ${SEARCH_RESULT_FILE}
 NUM=0
 while read LINE
 do
@@ -293,46 +375,33 @@ do
         continue
     fi
     #
-    > ${SEARCH_RESULT_FILE}.${SERVICE_NAME}.tmp
+    > ${SEARCH_RESULT_PREFILE}.${SERVICE_NAME}.tmp
+    > ${SEARCH_RESULT_ERR_PREFILE}.${SERVICE_NAME}.tmp
     # 写入文件
-    F_SEARCH ${DOCKER_IMAGE_NAME}  > ${SEARCH_RESULT_FILE}.${SERVICE_NAME}.tmp  2>/tmp/${SH_NAME}-error.txt
-    #if [ $? -eq 53 ]; then
-    #    echo -e "\n猪猪侠警告：项目镜像不存在\n"
-    #fi
-    # 显示输出
+    F_SEARCH ${DOCKER_IMAGE_NAME}  > ${SEARCH_RESULT_PREFILE}.${SERVICE_NAME}.tmp  2>${SEARCH_RESULT_ERR_PREFILE}.${SERVICE_NAME}.tmp
+    r=$?
+    #
+    # 输出
     if [ -z "${OUTPUT_FILE}" ]; then
+        # 输出到屏幕
         let NUM=${NUM}+1
         echo -e "${ECHO_NORMAL}# ---------------------------------------------------${ECHO_CLOSE}"
         echo -e "${ECHO_NORMAL}# ${NUM} - 服务名：${SERVICE_NAME} - 镜像名：${DOCKER_IMAGE_NAME} ${ECHO_CLOSE}"
         echo -e "${ECHO_NORMAL}# ---------------------------------------------------${ECHO_CLOSE}"
-        cat  ${SEARCH_RESULT_FILE}.${SERVICE_NAME}.tmp
-        cat  /tmp/${SH_NAME}-error.txt
+        cat  ${SEARCH_RESULT_PREFILE}.${SERVICE_NAME}.tmp
+        cat  ${SEARCH_RESULT_ERR_PREFILE}.${SERVICE_NAME}.tmp  1>&2
         echo ''
         echo ''
     else
+        # 输出到文件
+        R=`cat ${SEARCH_RESULT_PREFILE}.${SERVICE_NAME}.tmp`
+        echo ${SERVICE_NAME} ${DOCKER_IMAGE_NAME} $R >> ${OUTPUT_FILE}
         # 错误信息
-        cat  /tmp/${SH_NAME}-error.txt
-    fi
-    # 文件输出
-    if [ `cat ${SEARCH_RESULT_FILE}.${SERVICE_NAME}.tmp | wc -l` -ne 0 ]; then
-        R=`cat ${SEARCH_RESULT_FILE}.${SERVICE_NAME}.tmp`
-        echo ${SERVICE_NAME} ${DOCKER_IMAGE_NAME} $R >> ${SEARCH_RESULT_FILE}
+        if [[ $r != 0 ]]; then
+            E=$(cat ${SEARCH_RESULT_ERR_PREFILE}.${SERVICE_NAME}.tmp)
+            echo "${SERVICE_NAME} ${DOCKER_IMAGE_NAME} $E"  1>&2
+        fi
     fi
 done < ${SERVICE_LIST_FILE_TMP}
 
-
-
-# 输出到指定文件
-if [ ! -z "${OUTPUT_FILE}" ]; then
-    echo  ${OUTPUT_FILE} | grep -q \/
-    if [ $? -ne 0 ]; then
-        cp  ${SEARCH_RESULT_FILE}  ${OUTPUT_FILE}
-    else
-        if [ -d `echo ${OUTPUT_FILE%/*}` ]; then
-            cp  ${SEARCH_RESULT_FILE}  ${OUTPUT_FILE}
-        else
-            echo -e  "\n猪猪侠警告：文件目录【`echo ${OUTPUT_FILE%/*}`】不存在，请创建先。\n"
-        fi
-    fi
-fi
 
