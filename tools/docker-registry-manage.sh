@@ -64,10 +64,10 @@ F_HELP()
         * 输入命令时，参数顺序不分先后
     用法:
         $0 [-h|--help]
-        $0 [-l|--list-repo]  <-n|--name {%仓库名%}>                        #-- 列出仓库
-        $0 [-L|--list-tag]   [-n|--name {%仓库名%}]  <-t {%镜像版本%}>     #-- 列出仓库tag
-        $0 [-r|--rm-repo]    <-n|--name {%仓库名%}>                        #-- 删除仓库
-        $0 [-R|--rm-tag]     [-n|--name {%仓库名%}]  <-t {%镜像版本%}>     #-- 删除仓库tag
+        $0 [-l|--list-repo]  <-n|--name {%仓库名%}>                              #-- 列出仓库
+        $0 [-L|--list-tag]   [-n|--name {%仓库名%}]  <-t|--tag {%镜像版本%}>     #-- 列出仓库tag
+        $0 [-r|--rm-repo]    <-n|--name {%仓库名%}>                              #-- 删除仓库
+        $0 [-R|--rm-tag]     [-n|--name {%仓库名%}]  <-t|--tag {%镜像版本%}>  <-k|--keep {数量}>     #-- 删除仓库tag
     参数说明：
         \$0   : 代表脚本本身
         []   : 代表是一个整体，是必选项，默认是必选项（即没有括号【[]、<>】时也是必选项），一般用于表示参数对，此时不可乱序，单个参数也可以使用括号
@@ -83,7 +83,7 @@ F_HELP()
         -R|--rm-tag     删除仓库tag
         -n|--name       仓库(镜像)名，支持正则
         -t|--tag        版本tag，支持正则
-        -o|--output     输出搜索结果到指定【路径/文件】
+        -k|--keep       保留最新tag数量
     示例：
         $0  -h
         # 列出
@@ -96,7 +96,8 @@ F_HELP()
         $0  -r  -n imageX                  #-- 删除正则匹配【imageX】的仓库
         $0  -R  -n imageX                  #-- 删除正则匹配【imageX】的仓库的tag
         $0  -R  -n imageX  -t 2023.04      #-- 删除正则匹配【imageX】的仓库里，正则匹配【2023.04】的tag
-        $0  -R  -n ^imageX  -t 2023.04.*tt$      #-- 删除正则匹配【^imageX】的仓库里，正则匹配【2023.04.*tt$】的tag
+        $0  -R  -n ^imageX  -t 2023.04.*tt$    #-- 删除正则匹配【^imageX】的仓库里，正则匹配【2023.04.*tt$】的tag
+        $0  -R  -n imageX  -k 3                #-- 删除正则匹配【imageX】的仓库的tag，但保留最近3个tag
     "
 }
 
@@ -280,7 +281,7 @@ F_DELETE_REPO_TAG()
 
 
 # 参数检查
-TEMP=`getopt -o hlLrRn:t:  -l help,list-repo,list-tag,rm-repo,rm-tag,name:,tag:  -- "$@"`
+TEMP=`getopt -o hlLrRn:t:k:  -l help,list-repo,list-tag,rm-repo,rm-tag,name:,tag:,keep:  -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
     exit 51
@@ -323,9 +324,14 @@ do
             LIKE_THIS_TAG=$2
             shift 2
             ;;
-        -o|--output)
-            OUTPUT_FILE=$2
+        -k|--keep)
+            KEEP_TAG_NUM=$2
             shift 2
+            grep -q '^[[:digit:]]\+$' <<< ${KEEP_TAG_NUM}
+            if [ $? -ne 0 ]; then
+                echo -e "\n猪猪侠警告：参数【-k|--keep】参数不合法，请查看帮助【$0 --help】\n"
+                exit 51
+            fi
             ;;
         --)
             shift
@@ -418,17 +424,24 @@ case ${ACTION} in
                 exit 1
             fi
             #
+            LINE_TOTAL=$(cat ${REPO_TAG_LIST_TMP}--${R_SED} | wc -l)
+            KEEP_TAG_NUM=${KEEP_TAG_NUM:-0}
+            LINE=0
             while read T
             do
-                echo "++++++++++++++++++++++++++++++"
-                #echo "删除：仓库【${R}】- tag【${T}】"
-                echo "删除：【${R}:${T}】"
-                F_DELETE_REPO_TAG  ${R}  ${T}
-                if [[ $? != 0 ]]; then
-                    echo -e "\n猪猪侠警告：删除【${R}:${T}】时出错了！\n"
-                    exit 1
+                #echo "++++++++++++++++++++++++++++++"
+                let LINE=${LINE}+1
+                let DEL_REMAIN_NUM=${LINE_TOTAL}-${LINE}
+                if [[ ${DEL_REMAIN_NUM} -ge ${KEEP_TAG_NUM} ]]; then
+                    echo "OK  删除【${R}:${T}】"
+                    F_DELETE_REPO_TAG  ${R}  ${T}
+                    if [[ $? != 0 ]]; then
+                        echo -e "\n猪猪侠警告：删除【${R}:${T}】时出错了！\n"
+                        exit 1
+                    fi
+                else
+                    break
                 fi
-                echo "OK"
             done < ${REPO_TAG_LIST_TMP}--${R_SED}
         done < ${REPO_LIST_TMP}
         #
