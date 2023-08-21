@@ -262,11 +262,13 @@ F_DELETE_REPO_TAG()
     #    return 53
     #fi
     #
-    # 如果两个tag对应的是同一个镜像id【即实体：blob及manifest相同】，则第一个tag删除成功后，第二个tag就不存在了，所以再删除第二个会失败
-    # del blob
-    curl  -s -X DELETE  \
-        -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD}  \
-        ${DOCKER_REPO_URL_BASE}/${F_REPO_NAME}/blobs/${F_REPO_TAG_BLOB_DIGEST}
+    # 如果两个tag【manifest】对应的是同一个镜像id【即实体：blob】，当我们删除第一个tag的blob成功后，第二个tag对应的实体就不存在了，这是我们不愿看到的，所以，这里我们一般只删除【manifest】，【blob】我们通过在docker registry服务器端执行`docker exec -ti docker_registry_srv  registry garbage-collect /etc/docker/registry/config.yml`实现自动清理没有关联【manifest】的【blob】
+    # 另外：如果你非要手动删除blob，则你需要先删除blob，再删除manifest，否则会出错！！！
+    #
+    ## del blob
+    #curl  -s -X DELETE  \
+    #    -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD}  \
+    #    ${DOCKER_REPO_URL_BASE}/${F_REPO_NAME}/blobs/${F_REPO_TAG_BLOB_DIGEST}
     # del manifest
     curl  -s -X DELETE  \
         -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD}  \
@@ -421,11 +423,6 @@ case ${ACTION} in
                 echo "++++++++++++++++++++++++++++++"
                 #echo "删除：仓库【${R}】- tag【${T}】"
                 echo "删除：【${R}:${T}】"
-                #
-                # Blob digest == 镜像id
-                # 如果两个tag对应的是同一个镜像id【即实体：blob及manifest相同】，则第一个tag删除成功后，第二个tag就不存在了，所以再删除第二个会失败
-                # 所以，如何确保正确删除？
-                # 以后有时间再解决！！！
                 F_DELETE_REPO_TAG  ${R}  ${T}
                 if [[ $? != 0 ]]; then
                     echo -e "\n猪猪侠警告：删除【${R}:${T}】时出错了！\n"
