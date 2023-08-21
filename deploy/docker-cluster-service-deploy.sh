@@ -128,11 +128,11 @@ F_HELP()
         $0 [-l|--list]                            #--- 列出配置文件中的服务清单
         $0 [-L|--list-run swarm|k8s|compose]      #--- 列出指定集群类型中运行的所有服务
         # 创建、修改
-        $0 <-M|--mode [normal|function]>  [-c|--create|-m|--modify]  <-D|--debug-port>  <-A|--time-ago {时间}>  <<-t|--tag {模糊镜像tag版本}> | <-T|--TAG {精确镜像tag版本}>>  <-I|--image-pre-name {镜像前置名称}>  <-n|--number {副本数}>  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
+        $0 <-M|--mode [normal|function]>  [-c|--create|-m|--modify]  <-D|--debug-port>  <-I|--image-pre-name {镜像前置名称}>  <<-T|--TAG {精确镜像tag版本}> | <<-t|--tag {模糊镜像tag版本}> <-A|--time-ago {时间}>>>  <-n|--number {副本数}>  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
         # 更新
-        $0 <-M|--mode [normal|function]>  [-u|--update]  <-A|--time-ago {时间}>  <<-t|--tag {模糊镜像tag版本}> | <-T|--TAG {精确镜像tag版本}>>  <-I|--image-pre-name {镜像前置名称}>  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
+        $0 <-M|--mode [normal|function]>  [-u|--update]  <-I|--image-pre-name {镜像前置名称}>  <<-T|--TAG {精确镜像tag版本}> | <<-t|--tag {模糊镜像tag版本}> <-A|--time-ago {时间}>>>  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
         # 回滚
-        $0 <-M|--mode [normal|function]>  [--b|rollback]  <-V|--release-version {版本号}>  <-G|--gray>  <-A|--time-ago {时间}>  <-I|--image-pre-name {镜像前置名称}>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
+        $0 <-M|--mode [normal|function]>  [--b|rollback]  <-I|--image-pre-name {镜像前置名称}>  <<-T|--TAG {精确镜像tag版本}> | <<-t|--tag {模糊镜像tag版本}> <-A|--time-ago {时间}>>>  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
         #
         # 扩缩容
         $0 <-M|--mode [normal|function]>  [-S|--scale]  [-n|--number {副本数}]  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名或灰度服务名1} {服务名或灰度服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
@@ -160,17 +160,17 @@ F_HELP()
         -c|--create    ：创建服务，基于服务清单参数
         -m|--modify    ：修改服务，基于服务清单参数
         -u|--update    ：更新镜像版本
-        -b|--rollback  ：回滚服务（回滚到非今天构建的上一个版本）
+        -b|--rollback  ：回滚服务（默认回滚到非今天构建的最新版本），回滚到匹配的第一个版本
         -S|--scale     ：副本数设置
         -r|--rm        ：删除服务
         -s|--status    : 获取服务运行状态
         -d|--detail    : 获取服务详细信息
         -o|--logs      : 获取服务运行日志
         -D|--debug-port: 开启开发者Debug-port模式，目前用于开放所有容器内部服务端口
-        -t|--tag       ：模糊镜像tag版本
+        -t|--tag       ：模糊镜像tag版本，支持正则
         -T|--TAG       ：精确镜像tag版本
         -I|--image-pre-name  指定镜像前置名称【DOCKER_IMAGE_PRE_NAME】，默认来自env.sh。注：镜像完整名称：\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${DOCKER_IMAGE_NAME}:\${DOCKER_IMAGE_TAG}
-        -A|--time-ago  ：某时间之前的镜像版本，比如1d、24h、30m、100s
+        -A|--time-ago  ：某时间之前的镜像版本，比如1d、24h、30m、100s，有此参数时会剔除自定义tag版本（比如：v1.2），只保留基于时间自动标记的tag版本（比如：2023.05.11.090746）
         -n|--number    ：Pod副本数
         -G|--gray      : 设置灰度标志为：gray，默认：normal
         -V|--release-version : 发布版本号
@@ -401,47 +401,6 @@ F_SEARCH_IMAGE_TAG()
     done
     # 找到否
     if [ "${F_GET_IT}" = "YES" ]; then
-        return 0
-    else
-        return 3
-    fi
-}
-
-
-
-##### 已经弃用，因为子脚本异常不方便展示 #####
-# 搜索镜像模糊版本最新的一个
-# 返回是否找到，并输出镜像版本号
-# F_SEARCH_IMAGE_LIKE_TAG  [服务名]  [%镜像版本%]
-F_SEARCH_IMAGE_LIKE_TAG()
-{
-    F_SERVICE_NAME=$1
-    F_LIKE_THIS_TAG=$2
-    ${DOCKER_IMAGE_SEARCH_SH}  ${IMAGE_PRE_NAME_ARG}  --tag ${F_LIKE_THIS_TAG}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_LIKE_TAG-result.txt  ${F_SERVICE_NAME}  1>/dev/null 2>/dev/null   #--- 需要关闭任何输出，方便取的结果，以结果是否为空作为成功失败的标志
-    search_like_r=$(cat ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_LIKE_TAG-result.txt | cut -d " " -f 3)
-    #
-    if [[ ! -z ${search_like_r} ]]; then
-        echo ${search_like_r}
-        return 0
-    else
-        return 3
-    fi
-}
-
-
-
-# 搜索镜像排除模糊版本后最新的一个
-# 返回是否找到，并输出镜像版本号
-# F_SEARCH_IMAGE_NOT_LIKE_TAG  [服务名]  [%镜像版本%]
-F_SEARCH_IMAGE_NOT_LIKE_TAG()
-{
-    F_SERVICE_NAME=$1
-    F_NOT_LIKE_THIS_TAG=$2
-    ${DOCKER_IMAGE_SEARCH_SH}  ${IMAGE_PRE_NAME_ARG}  --exclude ${F_NOT_LIKE_THIS_TAG}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_NOT_LIKE_TAG-result.txt  ${F_SERVICE_NAME}  2>/dev/null
-    search_not_like_r=$(cat ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_NOT_LIKE_TAG-result.txt | cut -d " " -f 3)
-    # 
-    if [[ ! -z ${search_not_like_r} ]]; then
-        echo ${search_not_like_r}
         return 0
     else
         return 3
@@ -1075,7 +1034,7 @@ F_FUCK()
 
 
 # 参数检查
-TEMP=`getopt -o hlL:FPcmubSrsdoDA:t:T:I:n:GV:aM:  -l help,list,list-run:,fuck,by-step,create,modify,update,rollback,scale,rm,status,detail,logs,debug-port,time-ago:,tag:,TAG:,image-pre-name:,number:,gray,release-version:,all-release,mode: -- "$@"`
+TEMP=`getopt -o hlL:FPcmubSrsdoDI:T:t:A:n:GV:aM:  -l help,list,list-run:,fuck,by-step,create,modify,update,rollback,scale,rm,status,detail,logs,debug-port,image-pre-name:,TAG:,tag:,time-ago:,number:,gray,release-version:,all-release,mode: -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
     exit 51
@@ -1235,6 +1194,20 @@ do
             ENABLE_DEBUG_PORT='YES'
             shift
             ;;
+        -I|--image-pre-name)
+            IMAGE_PRE_NAME=$2
+            IMAGE_PRE_NAME_ARG="--image-pre-name ${IMAGE_PRE_NAME}"
+            shift 2
+            ;;
+        -T|--TAG)
+            THIS_TAG=$2
+            shift 2
+            ;;
+        -t|--tag)
+            LIKE_THIS_TAG=$2
+            shift 2
+            LIKE_THIS_TAG_ARG="--tag ${LIKE_THIS_TAG}"
+            ;;
         -A|--time_ago)
             TIME_AGO=$2
             shift 2
@@ -1243,35 +1216,8 @@ do
                 echo -e "\n猪猪侠警告：参数【-A|--time_ago】参数不合法，请查看帮助【$0 --help】\n"
                 exit 51
             fi
-            TIME_AGO_UNIT=${TIME_AGO:0-1:1}
-            TIME_AGO_NUM=${TIME_AGO:0:-1}
-            case ${TIME_AGO_UNIT} in
-                d)
-                    let TIME_AGO_S=${TIME_AGO_NUM}*24*60*60
-                    ;;
-                h)
-                    let TIME_AGO_S=${TIME_AGO_NUM}*60*60
-                    ;;
-                m)
-                    let TIME_AGO_S=${TIME_AGO_NUM}*60
-                    ;;
-                s)
-                    let TIME_AGO_S=${TIME_AGO_NUM}
-                    ;;
-            esac
-            ;;
-        -t|--tag)
-            LIKE_THIS_TAG=$2
-            shift 2
-            ;;
-        -T|--TAG)
-            THIS_TAG=$2
-            shift 2
-            ;;
-        -I|--image-pre-name)
-            IMAGE_PRE_NAME=$2
-            IMAGE_PRE_NAME_ARG="--image-pre-name ${IMAGE_PRE_NAME}"
-            shift 2
+            #
+            TIME_AGO_ARG="--time_ago ${TIME_AGO}"
             ;;
         -n|--number)
             POD_REPLICAS_NEW=$2
@@ -1752,35 +1698,38 @@ do
             # 3 组装image
             DOCKER_IMAGE_TAG=${DOCKER_IMAGE_TAG:-'latest'}
             # 命令参数指定版本
-            if [ ! -z "${THIS_TAG}" ]; then
+            if [ -n "${THIS_TAG}" ]; then
                 # 完全匹配服务镜像
                 F_SEARCH_IMAGE_TAG  ${SERVICE_NAME}  ${THIS_TAG}
                 if [ $? -ne 0 ]; then
-                    echo "${SERVICE_NAME} : 失败，镜像版本【${THIS_TAG}】未找到"
-                    echo "${SERVICE_NAME} : 失败，镜像版本【${THIS_TAG}】未找到" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                    echo "${SERVICE_NAME} : 失败，镜像版本【${THIS_TAG}】未找到" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                     ERROR_CODE=54
                     continue
                 fi
                 DOCKER_IMAGE_TAG="${THIS_TAG}"
                 #
-            elif [ ! -z "${LIKE_THIS_TAG}" ]; then
-                # LIKE匹配镜像最新的一个
-                ${DOCKER_IMAGE_SEARCH_SH}  ${IMAGE_PRE_NAME_ARG}  --tag ${LIKE_THIS_TAG}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-image-search.${SERVICE_OPERATION}  ${SERVICE_NAME}
-                search_r=`cat ${LOG_HOME}/${SH_NAME}-image-search.${SERVICE_OPERATION} | awk '{print $3}'`
-                if [ "x${search_r}" = "x" ]; then
-                    echo "${SERVICE_NAME} : 失败，镜像版本【%${LIKE_THIS_TAG}%】未找到"
-                    echo "${SERVICE_NAME} : 失败，镜像版本【%${LIKE_THIS_TAG}%】未找到" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+            elif [[ -n ${TIME_AGO} ]]; then
+                ${DOCKER_IMAGE_SEARCH_SH}  ${IMAGE_PRE_NAME_ARG}  ${LIKE_THIS_TAG_ARG}  ${TIME_AGO_ARG}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_TIME_AGO_TAG-result.txt--${SERVICE_NAME}  ${SERVICE_NAME}
+                DOCKER_IMAGE_TAG=$(cat ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_TIME_AGO_TAG-result.txt--${SERVICE_NAME} | cut -d " " -f 3)
+                if [[ -z ${DOCKER_IMAGE_TAG} ]]; then
+                    echo "${SERVICE_NAME} : 失败，无匹配镜像【${LIKE_THIS_TAG_ARG} ${TIME_AGO_ARG}】" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                     ERROR_CODE=54
                     continue
                 fi
-                DOCKER_IMAGE_TAG=`cat ${LOG_HOME}/${SH_NAME}-image-search.${SERVICE_OPERATION} | cut -d ' ' -f 3`
-                #
+            elif [[ -z ${TIME_AGO} ]] && [[ -n ${LIKE_THIS_TAG} ]]; then
+                ${DOCKER_IMAGE_SEARCH_SH}  ${IMAGE_PRE_NAME_ARG}  ${LIKE_THIS_TAG_ARG}  --output ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_THIS_TAG-result.txt--${SERVICE_NAME}  ${SERVICE_NAME}
+                # 可能有多个，但只取第一个
+                DOCKER_IMAGE_TAG=$(cat ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_THIS_TAG-result.txt--${SERVICE_NAME} | cut -d " " -f 3)
+                if [[ -z ${DOCKER_IMAGE_TAG} ]]; then
+                    echo "${SERVICE_NAME} : 失败，无匹配镜像【${LIKE_THIS_TAG_ARG}】" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                    ERROR_CODE=54
+                    continue
+                fi
             else
                 # 默认镜像版本
                 F_SEARCH_IMAGE_TAG  ${SERVICE_NAME}  ${DOCKER_IMAGE_TAG}
                 if [ $? -ne 0 ]; then
-                    echo "${SERVICE_NAME} : 失败，镜像版本【${DOCKER_IMAGE_TAG}】未找到"
-                    echo "${SERVICE_NAME} : 失败，镜像版本【${DOCKER_IMAGE_TAG}】未找到" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                    echo "${SERVICE_NAME} : 失败，镜像版本【${DOCKER_IMAGE_TAG}】未找到" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                     ERROR_CODE=54
                     continue
                 fi
@@ -2338,50 +2287,49 @@ do
             [[ $? -eq 0 ]] && SERVICE_RUN_STATUS='YES' || SERVICE_RUN_STATUS='NO'
             #
             if [[ ${SERVICE_RUN_STATUS} == 'NO' ]]; then
-                echo "${SERVICE_X_NAME} : 失败，服务不在运行中"
-                echo "${SERVICE_X_NAME} : 失败，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                echo "${SERVICE_X_NAME} : 失败，服务不在运行中" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                 ERROR_CODE=53
                 continue
             fi
             #
-            if [ ! -z "${THIS_TAG}" ]; then
+            if [ -n "${THIS_TAG}" ]; then
                 # 更新指定完全匹配服务镜像
                 F_SEARCH_IMAGE_TAG  ${SERVICE_NAME}  ${THIS_TAG}
                 if [ $? -ne 0 ]; then
-                    echo "${SERVICE_X_NAME} : 失败，镜像版本【${THIS_TAG}】未找到"
-                    echo "${SERVICE_X_NAME} : 失败，镜像版本【${THIS_TAG}】未找到" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                    echo "${SERVICE_X_NAME} : 失败，镜像版本【${THIS_TAG}】未找到" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                     ERROR_CODE=54
                     continue
                 fi
                 #
                 DOCKER_IMAGE_TAG_UPDATE=${THIS_TAG}
                 #
-            elif [ ! -z "${LIKE_THIS_TAG}" ]; then
-                # 更新指定LIKE匹配镜像
-                #DOCKER_IMAGE_TAG_UPDATE=$(F_SEARCH_IMAGE_LIKE_TAG  ${SERVICE_NAME}  ${LIKE_THIS_TAG})
-                ${DOCKER_IMAGE_SEARCH_SH}  ${IMAGE_PRE_NAME_ARG}  --tag ${LIKE_THIS_TAG}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt  ${SERVICE_NAME}
-                DOCKER_IMAGE_TAG_UPDATE=$(cat ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt | cut -d " " -f 3)
-                #
+            elif [[ -n ${TIME_AGO} ]]; then
+                ${DOCKER_IMAGE_SEARCH_SH}  ${IMAGE_PRE_NAME_ARG}  ${LIKE_THIS_TAG_ARG}  ${TIME_AGO_ARG}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_TIME_AGO_TAG-result.txt--${SERVICE_NAME}  ${SERVICE_NAME}
+                DOCKER_IMAGE_TAG_UPDATE=$(cat ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_TIME_AGO_TAG-result.txt--${SERVICE_NAME} | cut -d " " -f 3)
                 if [[ -z ${DOCKER_IMAGE_TAG_UPDATE} ]]; then
-                    echo "${SERVICE_X_NAME} : 失败，镜像版本【%${LIKE_THIS_TAG}%】未找到"
-                    echo "${SERVICE_X_NAME} : 失败，镜像版本【%${LIKE_THIS_TAG}%】未找到" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                    echo "${SERVICE_X_NAME} : 失败，无匹配镜像【${LIKE_THIS_TAG_ARG} ${TIME_AGO_ARG}】" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                     ERROR_CODE=54
                     continue
                 fi
-                #
+            elif [[ -z ${TIME_AGO} ]] && [[ -n ${LIKE_THIS_TAG} ]]; then
+                ${DOCKER_IMAGE_SEARCH_SH}  ${IMAGE_PRE_NAME_ARG}  ${LIKE_THIS_TAG_ARG}  --output ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_THIS_TAG-result.txt--${SERVICE_NAME}  ${SERVICE_NAME}
+                # 可能有多个，但只取第一个
+                DOCKER_IMAGE_TAG_UPDATE=$(cat ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_THIS_TAG-result.txt--${SERVICE_NAME} | cut -d " " -f 3)
+                if [[ -z ${DOCKER_IMAGE_TAG_UPDATE} ]]; then
+                    echo "${SERVICE_X_NAME} : 失败，无匹配镜像【${LIKE_THIS_TAG_ARG}】" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                    ERROR_CODE=54
+                    continue
+                fi
             else
                 # 更新今日发布的服务镜像
                 TODAY=`date +%Y.%m.%d`
-                #DOCKER_IMAGE_TAG_UPDATE=$(F_SEARCH_IMAGE_LIKE_TAG  ${SERVICE_NAME}  ${TODAY})
-                ${DOCKER_IMAGE_SEARCH_SH}  ${IMAGE_PRE_NAME_ARG}  --tag ${TODAY}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt  ${SERVICE_NAME}
-                DOCKER_IMAGE_TAG_UPDATE=$(cat ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt | cut -d " " -f 3)
+                ${DOCKER_IMAGE_SEARCH_SH}  ${IMAGE_PRE_NAME_ARG}  --tag ${TODAY}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_TODAY_TAG-result.txt--${SERVICE_NAME}  ${SERVICE_NAME}
+                DOCKER_IMAGE_TAG_UPDATE=$(cat ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_TODAY_TAG-result.txt--${SERVICE_NAME} | cut -d " " -f 3)
                 if [[ -z ${DOCKER_IMAGE_TAG_UPDATE} ]]; then
-                    echo "${SERVICE_X_NAME} : 跳过，今日无更新"
-                    echo "${SERVICE_X_NAME} : 跳过，今日无更新" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                    echo "${SERVICE_X_NAME} : 跳过，今日无更新" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                     ERROR_CODE=55
                     continue
                 fi
-                #
             fi
             #
             DOCKER_IMAGE_FULL_URL="${DOCKER_REPO_SERVER}/${DOCKER_IMAGE_PRE_NAME}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG_UPDATE}"
@@ -2460,28 +2408,54 @@ do
             [[ $? -eq 0 ]] && SERVICE_RUN_STATUS='YES' || SERVICE_RUN_STATUS='NO'
             #
             if [[ ${SERVICE_RUN_STATUS} == 'NO' ]]; then
-                echo "${SERVICE_X_NAME} : 失败，服务不在运行中"
-                echo "${SERVICE_X_NAME} : 失败，服务不在运行中" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                echo "${SERVICE_X_NAME} : 失败，服务不在运行中" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                 ERROR_CODE=53
                 continue
             fi
             #
             TODAY=`date +%Y.%m.%d`
-            #DOCKER_IMAGE_TAG_TODAY=$(F_SEARCH_IMAGE_LIKE_TAG  ${SERVICE_NAME}  ${TODAY})
-            ${DOCKER_IMAGE_SEARCH_SH}  ${IMAGE_PRE_NAME_ARG}  --tag ${TODAY}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt  ${SERVICE_NAME}
-            DOCKER_IMAGE_TAG_TODAY=$(cat ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TAG-result.txt | cut -d " " -f 3)
+            ${DOCKER_IMAGE_SEARCH_SH}  ${IMAGE_PRE_NAME_ARG}  --tag ${TODAY}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TODAY_TAG-result.txt--${SERVICE_NAME}  ${SERVICE_NAME}
+            DOCKER_IMAGE_TAG_TODAY=$(cat ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_TODAY_TAG-result.txt--${SERVICE_NAME} | cut -d " " -f 3)
+            #
             if [[ -z ${DOCKER_IMAGE_TAG_TODAY} ]]; then
-                echo "${SERVICE_X_NAME} : 跳过，今日无更新"
-                echo "${SERVICE_X_NAME} : 跳过，今日无更新" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                echo "${SERVICE_X_NAME} : 跳过，今日无更新" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
                 ERROR_CODE=55
                 continue
             else
-                DOCKER_IMAGE_TAG_ROLLBACK=$(F_SEARCH_IMAGE_NOT_LIKE_TAG  ${SERVICE_NAME}  ${TODAY})
-                if [[ -z ${DOCKER_IMAGE_TAG_ROLLBACK} ]]; then
-                    echo "${SERVICE_X_NAME} : 跳过，无历史镜像"
-                    echo "${SERVICE_X_NAME} : 跳过，无历史镜像" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
-                    ERROR_CODE=55
-                    continue
+                if [[ -n ${THIS_TAG} ]]; then
+                    # 完全匹配服务镜像
+                    F_SEARCH_IMAGE_TAG  ${SERVICE_NAME}  ${THIS_TAG}
+                    if [ $? -ne 0 ]; then
+                        echo "${SERVICE_NAME} : 失败，镜像版本【${THIS_TAG}】未找到" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                        ERROR_CODE=54
+                        continue
+                    fi
+                    DOCKER_IMAGE_TAG_ROLLBACK=${THIS_TAG}
+                elif [[ -n ${TIME_AGO} ]]; then
+                    ${DOCKER_IMAGE_SEARCH_SH}  ${IMAGE_PRE_NAME_ARG}  ${LIKE_THIS_TAG_ARG}  ${TIME_AGO_ARG}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_TIME_AGO_TAG-result.txt--${SERVICE_NAME}  ${SERVICE_NAME}
+                    DOCKER_IMAGE_TAG_ROLLBACK=$(cat ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_TIME_AGO_TAG-result.txt--${SERVICE_NAME} | cut -d " " -f 3)
+                    if [[ -z ${DOCKER_IMAGE_TAG_ROLLBACK} ]]; then
+                        echo "${SERVICE_X_NAME} : 失败，无历史匹配镜像【${LIKE_THIS_TAG_ARG} ${TIME_AGO_ARG}】" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                        ERROR_CODE=54
+                        continue
+                    fi
+                elif [[ -z ${TIME_AGO} ]] && [[ -n ${LIKE_THIS_TAG} ]]; then
+                    ${DOCKER_IMAGE_SEARCH_SH}  ${IMAGE_PRE_NAME_ARG}  ${LIKE_THIS_TAG_ARG}  --output ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_THIS_TAG-result.txt--${SERVICE_NAME}  ${SERVICE_NAME}
+                    # 可能有多个，但只取第一个
+                    DOCKER_IMAGE_TAG_ROLLBACK=$(cat ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_LIKE_THIS_TAG-result.txt--${SERVICE_NAME} | cut -d " " -f 3)
+                    if [[ -z ${DOCKER_IMAGE_TAG_ROLLBACK} ]]; then
+                        echo "${SERVICE_X_NAME} : 失败，无历史匹配镜像【${LIKE_THIS_TAG_ARG}】" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                        ERROR_CODE=54
+                        continue
+                    fi
+                else
+                    ${DOCKER_IMAGE_SEARCH_SH}  ${IMAGE_PRE_NAME_ARG}  --exclude ${TODAY}  --newest 1  --output ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_NOT_TODAY_TAG-result.txt--${SERVICE_NAME}  ${SERVICE_NAME}
+                    DOCKER_IMAGE_TAG_ROLLBACK=$(cat ${LOG_HOME}/${SH_NAME}-SEARCH_IMAGE_NOT_TODAY_TAG-result.txt--${SERVICE_NAME} | cut -d " " -f 3)
+                    if [[ -z ${DOCKER_IMAGE_TAG_ROLLBACK} ]]; then
+                        echo "${SERVICE_X_NAME} : 跳过，无历史镜像" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                        ERROR_CODE=55
+                        continue
+                    fi
                 fi
             fi
             #
