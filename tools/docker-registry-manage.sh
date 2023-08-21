@@ -65,9 +65,9 @@ F_HELP()
     用法:
         $0 [-h|--help]
         $0 [-l|--list-repo]  <-n|--name {%仓库名%}>                              #-- 列出仓库
-        $0 [-L|--list-tag]   [-n|--name {%仓库名%}]  <-t|--tag {%镜像版本%}>     #-- 列出仓库tag
+        $0 [-L|--list-tag]   <-n|--name {%仓库名%}>  <-t|--tag {%镜像版本%}>     #-- 列出仓库tag
         $0 [-r|--rm-repo]    <-n|--name {%仓库名%}>                              #-- 删除仓库
-        $0 [-R|--rm-tag]     [-n|--name {%仓库名%}]  <-t|--tag {%镜像版本%}>  <-k|--keep {数量}>     #-- 删除仓库tag
+        $0 [-R|--rm-tag]     <-n|--name {%仓库名%}>  <-t|--tag {%镜像版本%}>  <-k|--keep {数量}>     #-- 删除仓库tag
     参数说明：
         \$0   : 代表脚本本身
         []   : 代表是一个整体，是必选项，默认是必选项（即没有括号【[]、<>】时也是必选项），一般用于表示参数对，此时不可乱序，单个参数也可以使用括号
@@ -98,6 +98,7 @@ F_HELP()
         $0  -R  -n imageX  -t 2023.04      #-- 删除正则匹配【imageX】的仓库里，正则匹配【2023.04】的tag
         $0  -R  -n ^imageX  -t 2023.04.*tt$    #-- 删除正则匹配【^imageX】的仓库里，正则匹配【2023.04.*tt$】的tag
         $0  -R  -n imageX  -k 3                #-- 删除正则匹配【imageX】的仓库的tag，但保留最近3个tag
+        $0  -R  -k 3                           #-- 删除所有仓库的tag，但保留最近3个tag
     "
 }
 
@@ -317,14 +318,17 @@ do
             shift
             ;;
         -n|--name)
+            # ${LIKE_THIS_NAME} 为空，则匹配所有
             LIKE_THIS_NAME=$2
             shift 2
             ;;
         -t|--tag)
+            # ${LIKE_THIS_TAG} 为空，则匹配所有
             LIKE_THIS_TAG=$2
             shift 2
             ;;
         -k|--keep)
+            # ${KEEP_TAG_NUM}为空，则保留0个
             KEEP_TAG_NUM=$2
             shift 2
             grep -q '^[[:digit:]]\+$' <<< ${KEEP_TAG_NUM}
