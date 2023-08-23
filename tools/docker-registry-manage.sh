@@ -11,6 +11,10 @@ SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
+# 引入/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
+.  /etc/profile        #-- 非终端界面不会自动引入，必须主动引入
+#MY_PRIVATE_ENVS_DIR=
+
 # 引入env
 . ${SH_PATH}/../deploy/env.sh
 #DOCKER_REPO_USER=
