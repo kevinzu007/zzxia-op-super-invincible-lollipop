@@ -11,6 +11,10 @@ SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
+# 引入/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
+.  /etc/profile        #-- 非终端界面不会自动引入，必须主动引入
+#MY_PRIVATE_ENVS_DIR=
+
 # 引入env
 . ${SH_PATH}/../deploy/env.sh
 #DOCKER_REPO_USER=
@@ -64,10 +68,10 @@ F_HELP()
         * 输入命令时，参数顺序不分先后
     用法:
         $0 [-h|--help]
-        $0 [-l|--list-repo]  <-n|--name {%仓库名%}>                        #-- 列出仓库
-        $0 [-L|--list-tag]   [-n|--name {%仓库名%}]  <-t {%镜像版本%}>     #-- 列出仓库tag
-        $0 [-r|--rm-repo]    <-n|--name {%仓库名%}>                        #-- 删除仓库
-        $0 [-R|--rm-tag]     [-n|--name {%仓库名%}]  <-t {%镜像版本%}>     #-- 删除仓库tag
+        $0 [-l|--list-repo]  <-n|--name {%仓库名%}>                              #-- 列出仓库
+        $0 [-L|--list-tag]   <-n|--name {%仓库名%}>  <-t|--tag {%镜像版本%}>     #-- 列出仓库tag
+        $0 [-r|--rm-repo]    <-n|--name {%仓库名%}>                              #-- 删除仓库
+        $0 [-R|--rm-tag]     <-n|--name {%仓库名%}>  <-t|--tag {%镜像版本%}>  <-k|--keep {数量}>     #-- 删除仓库tag
     参数说明：
         \$0   : 代表脚本本身
         []   : 代表是一个整体，是必选项，默认是必选项（即没有括号【[]、<>】时也是必选项），一般用于表示参数对，此时不可乱序，单个参数也可以使用括号
@@ -83,7 +87,7 @@ F_HELP()
         -R|--rm-tag     删除仓库tag
         -n|--name       仓库(镜像)名，支持正则
         -t|--tag        版本tag，支持正则
-        -o|--output     输出搜索结果到指定【路径/文件】
+        -k|--keep       保留最新tag数量
     示例：
         $0  -h
         # 列出
@@ -96,7 +100,9 @@ F_HELP()
         $0  -r  -n imageX                  #-- 删除正则匹配【imageX】的仓库
         $0  -R  -n imageX                  #-- 删除正则匹配【imageX】的仓库的tag
         $0  -R  -n imageX  -t 2023.04      #-- 删除正则匹配【imageX】的仓库里，正则匹配【2023.04】的tag
-        $0  -R  -n ^imageX  -t 2023.04.*tt$      #-- 删除正则匹配【^imageX】的仓库里，正则匹配【2023.04.*tt$】的tag
+        $0  -R  -n ^imageX  -t 2023.04.*tt$    #-- 删除正则匹配【^imageX】的仓库里，正则匹配【2023.04.*tt$】的tag
+        $0  -R  -n imageX  -k 3                #-- 删除正则匹配【imageX】的仓库的tag，但保留最近3个tag
+        $0  -R  -k 3                           #-- 删除所有仓库的tag，但保留最近3个tag
     "
 }
 
@@ -117,14 +123,28 @@ F_GET_REPO()
         return 53
     fi
     #
-    cat ${F_REPO_LIST_FILE} | jq .repositories[] | sed 's/"//g' > ${F_REPO_LIST_FILE}.1
+    # 仓库极少可能为空
+    #
+    cat ${F_REPO_LIST_FILE} | jq .repositories[] | sed 's/"//g' | sed '/^\s*$/d' > ${F_REPO_LIST_FILE}.1
+    #
     # 过滤
     if [[ -n ${F_REPO_NAME} ]]; then
+        # 输出
         grep -E "${F_REPO_NAME}"  ${F_REPO_LIST_FILE}.1
+        if [[ $? != 0 ]]; then
+            return 55
+        else
+            return 0
+        fi
     else
-        cat  ${F_REPO_LIST_FILE}.1
+        if [[ $(cat ${F_REPO_LIST_FILE}.1 | wc -l) == 0 ]]; then
+            return 55
+        else
+            # 输出
+            cat  ${F_REPO_LIST_FILE}.1
+            return 0
+        fi
     fi
-    return 0
 }
 
 
@@ -143,31 +163,50 @@ F_GET_REPO_TAG()
         return 53
     fi
     #
-    if [[ $(cat ${F_REPO_TAG_LIST_FILE} | grep -q '404 page not found' ; echo $?) == 0 ]]; then
-        echo -e "\n猪猪侠警告：仓库不存在\n" 1>&2
+    # 理论上不会出现下面情况
+    #if [[ $(cat ${F_REPO_TAG_LIST_FILE} | grep -q '404 page not found' ; echo $?) == 0 ]]; then
+    if [[ $(cat ${F_REPO_TAG_LIST_FILE} | grep -q 'repository name not known to registry' ; echo $?) == 0 ]]; then
+        echo -e "\n猪猪侠警告：仓库【${F_REPO_NAME}】不存在\n" 1>&2
         return 53
     fi
     #
-    cat ${F_REPO_TAG_LIST_FILE} | jq .tags[] | grep -v 'latest' | sed 's/"//g'  > ${F_REPO_TAG_LIST_FILE}.1
+    if [[ $(cat ${F_REPO_TAG_LIST_FILE} | grep -q '"tags":null' ; echo $?) == 0 ]]; then
+        # tags 为空
+        return 55
+    fi
+    #
+    cat ${F_REPO_TAG_LIST_FILE} | jq .tags[] | grep -v 'latest' | sed 's/"//g' | sed '/^\s*$/d'  > ${F_REPO_TAG_LIST_FILE}.1
+    #
     # 过滤
     if [[ -n ${F_REPO_TAG} ]]; then
+        # 输出
         grep -E "${F_REPO_TAG}"  ${F_REPO_TAG_LIST_FILE}.1
+        if [[ $? != 0 ]]; then
+            return 55
+        else
+            return 0
+        fi
     else
-        cat  ${F_REPO_TAG_LIST_FILE}.1
+        if [[ ! -s ${F_REPO_TAG_LIST_FILE}.1 ]]; then
+            return 55
+        else
+            # 输出
+            cat  ${F_REPO_TAG_LIST_FILE}.1
+            return 0
+        fi
     fi
-    return 0
 }
 
 
 
-# 输出仓库 tag digest 及 tag blob
-# 用法：F_GET_REPO_TAG_DIGEST_AND_BLOB  [{仓库名}]  [{tag}]
-F_GET_REPO_TAG_DIGEST_AND_BLOB()
+# 输出仓库 tag digest 及 tag blob digest
+# 用法：F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST  [{仓库名}]  [{tag}]
+F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST()
 {
     F_REPO_NAME=$1
     F_REPO_TAG=$2
-    F_GET_REPO_TAG_HEAD_FILE="/tmp/${SH_NAME}-F_GET_REPO_TAG_DIGEST_AND_BLOB-head.txt"
-    F_GET_REPO_TAG_BODY_FILE="/tmp/${SH_NAME}-F_GET_REPO_TAG_DIGEST_AND_BLOB-body.txt"
+    F_GET_REPO_TAG_HEAD_FILE="/tmp/${SH_NAME}-F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST-head.txt"
+    F_GET_REPO_TAG_BODY_FILE="/tmp/${SH_NAME}-F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST-body.txt"
     > ${F_GET_REPO_TAG_HEAD_FILE}
     > ${F_GET_REPO_TAG_BODY_FILE}
     curl -s -v -X GET  \
@@ -178,21 +217,23 @@ F_GET_REPO_TAG_DIGEST_AND_BLOB()
         echo -e "\n猪猪侠警告：访问【${DOCKER_REPO_SERVER}】服务器异常\n" 1>&2
         return 53
     fi
+    # 删除特殊字符【^M】等
+    sed  -i -E  -e "s/\\x1B\[([0-9]{1,2}(;[0-9]{1,2})?){0,2}[m|A-Z]//g"  -e "s/\\x0D//g"  ${F_GET_REPO_TAG_HEAD_FILE}
     #
     if [[ $(cat ${F_GET_REPO_TAG_BODY_FILE} | grep -q '404 page not found' ; echo $?) == 0 ]]; then
-        echo -e "\n猪猪侠警告：仓库不存在\n" 1>&2
+        echo -e "\n猪猪侠警告：仓库不存在，提示：【404 page not found】\n" 1>&2
         return 53
     fi
     #
     if [[ $(cat ${F_GET_REPO_TAG_BODY_FILE} | grep -q 'MANIFEST_UNKNOWN' ; echo $?) == 0 ]]; then
-        echo -e "\n猪猪侠警告：仓库tag不存在\n" 1>&2
+        echo -e "\n猪猪侠警告：仓库tag不存在，提示：【MANIFEST_UNKNOWN】\n" 1>&2
         return 53
     fi
     #
-    F_REPO_TAG_BLOB_DIGEST=$(cat ${F_GET_REPO_TAG_BODY_FILE} | grep 'digest' | head -n 1 | awk '{print $2}' | sed 's/"//g')
     F_REPO_TAG_DIGEST=$(cat ${F_GET_REPO_TAG_HEAD_FILE} | grep 'Docker-Content-Digest' | head -n 1 | awk '{print $3}')
+    F_REPO_TAGBLOB_DIGEST=$(cat ${F_GET_REPO_TAG_BODY_FILE} | grep 'digest' | head -n 1 | awk '{print $2}' | sed 's/"//g')
     #
-    echo  ${F_GET_REPO_TAG_DIGEST}  ${F_GET_REPO_TAG_BLOB_DIGEST}
+    echo  ${F_REPO_TAG_DIGEST}  ${F_REPO_TAGBLOB_DIGEST}
     return 0
 }
 
@@ -213,23 +254,27 @@ F_DELETE_REPO_TAG()
 {
     F_REPO_NAME=$1
     F_REPO_TAG=$2
-    F_GET_REPO_TAG_DIGEST_AND_BLOB_FILE='/tmp/digest-and-blob.txt'
-    F_GET_REPO_TAG_DIGEST_AND_BLOB  ${F_REPO_NAME}  ${F_REPO_TAG}  > ${F_GET_REPO_TAG_DIGEST_AND_BLOB_FILE}
+    F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST_FILE="/tmp/digest-and-blob.txt"
+    F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST  ${F_REPO_NAME}  ${F_REPO_TAG}  > ${F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST_FILE}
     ERR_NO=$?
     if [[ ${ERR_NO} != 0 ]]; then
         return ${ERR_NO}
     fi
     #
-    F_REPO_TAG_DIGEST=$(cat ${F_GET_REPO_TAG_DIGEST_AND_BLOB_FILE} | awk '{print $1}')
-    F_REPO_TAG_BLOB_DIGEST=$(cat ${F_GET_REPO_TAG_DIGEST_AND_BLOB_FILE} | awk '{print $2}')
+    F_REPO_TAG_DIGEST=$(cat ${F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST_FILE} | awk '{print $1}')
+    F_REPO_TAG_BLOB_DIGEST=$(cat ${F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST_FILE} | awk '{print $2}')
     #if [[ -z ${F_REPO_TAG_DIGEST} ]] || [[ -z ${F_REPO_TAG_BLOB_DIGEST} ]]; then
     #    echo -e "\n猪猪侠警告：仓库tag不存在\n" 1>&2
     #    return 53
     #fi
-    # del blob
-    curl  -s -X DELETE  \
-        -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD}  \
-        ${DOCKER_REPO_URL_BASE}/${F_REPO_NAME}/blobs/${F_REPO_TAG_BLOB_DIGEST}
+    #
+    # 如果两个tag【manifest】对应的是同一个镜像id【即实体：blob】，当我们删除第一个tag的blob成功后，第二个tag对应的实体就不存在了，这是我们不愿看到的，所以，这里我们一般只删除【manifest】，【blob】我们通过在docker registry服务器端执行`docker exec -ti docker_registry_srv  registry garbage-collect /etc/docker/registry/config.yml`实现自动清理没有关联【manifest】的【blob】
+    # 另外：如果你非要手动删除blob，则你需要先删除blob，再删除manifest，否则会出错！！！
+    #
+    ## del blob
+    #curl  -s -X DELETE  \
+    #    -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD}  \
+    #    ${DOCKER_REPO_URL_BASE}/${F_REPO_NAME}/blobs/${F_REPO_TAG_BLOB_DIGEST}
     # del manifest
     curl  -s -X DELETE  \
         -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD}  \
@@ -241,7 +286,7 @@ F_DELETE_REPO_TAG()
 
 
 # 参数检查
-TEMP=`getopt -o hlLrRn:t:  -l help,list-repo,list-tag,rm-repo,rm-tag,name:,tag:  -- "$@"`
+TEMP=`getopt -o hlLrRn:t:k:  -l help,list-repo,list-tag,rm-repo,rm-tag,name:,tag:,keep:  -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
     exit 51
@@ -277,16 +322,24 @@ do
             shift
             ;;
         -n|--name)
+            # ${LIKE_THIS_NAME} 为空，则匹配所有
             LIKE_THIS_NAME=$2
             shift 2
             ;;
         -t|--tag)
+            # ${LIKE_THIS_TAG} 为空，则匹配所有
             LIKE_THIS_TAG=$2
             shift 2
             ;;
-        -o|--output)
-            OUTPUT_FILE=$2
+        -k|--keep)
+            # ${KEEP_TAG_NUM}为空，则保留0个
+            KEEP_TAG_NUM=$2
             shift 2
+            grep -q '^[[:digit:]]\+$' <<< ${KEEP_TAG_NUM}
+            if [ $? -ne 0 ]; then
+                echo -e "\n猪猪侠警告：参数【-k|--keep】参数不合法，请查看帮助【$0 --help】\n"
+                exit 51
+            fi
             ;;
         --)
             shift
@@ -304,8 +357,11 @@ done
 case ${ACTION} in
     list-repo)
         F_GET_REPO  ${LIKE_THIS_NAME}
-        if [[ $? != 0 ]]; then
-            echo -e "\n猪猪侠警告：出错了！\n"
+        r=$?
+        if [[ $r == 55 ]]; then
+            echo -e "\n猪猪侠警告：匹配仓库【${LIKE_THIS_NAME}】结果为空！\n"
+        elif [[ $r != 0 ]]; then
+            echo -e "\n猪猪侠警告：匹配仓库【${LIKE_THIS_NAME}】时出错了！\n"
             exit 1
         fi
         ;;
@@ -314,20 +370,28 @@ case ${ACTION} in
         > ${REPO_LIST_TMP}
         #
         F_GET_REPO  ${LIKE_THIS_NAME}  > ${REPO_LIST_TMP}
-        if [[ $? != 0 ]]; then
-            echo -e "\n猪猪侠警告：出错了！\n"
+        r=$?
+        if [[ $r == 55 ]]; then
+            echo -e "\n猪猪侠警告：匹配仓库【${LIKE_THIS_NAME}】结果为空！\n"
+        elif [[ $r != 0 ]]; then
+            echo -e "\n猪猪侠警告：匹配仓库【${LIKE_THIS_NAME}】时出错了！\n"
             exit 1
         fi
         #
+        N=0
         while read R
         do
+            let N=$N+1
             echo "=================================================="
-            echo "仓库：${R}:"
+            echo "$N 仓库：${R}:"
             #
             F_GET_REPO_TAG  ${R}  ${LIKE_THIS_TAG}
-            if [[ $? != 0 ]]; then
-                echo -e "\n猪猪侠警告：出错了！\n"
-                exit 1
+            r=$?
+            if [[ $r == 55 ]]; then
+                echo -e "\n猪猪侠警告：匹配TAG【${LIKE_THIS_TAG}】结果为空！\n"
+            elif [[ $r != 0 ]]; then
+                echo -e "\n猪猪侠警告：匹配TAG【${LIKE_THIS_TAG}】时出错了！\n"
+                #exit 1
             fi
         done < ${REPO_LIST_TMP}
         #
@@ -340,8 +404,11 @@ case ${ACTION} in
         > ${REPO_LIST_TMP}
         #
         F_GET_REPO  ${LIKE_THIS_NAME}  > ${REPO_LIST_TMP}
-        if [[ $? != 0 ]]; then
-            echo -e "\n猪猪侠警告：出错了！\n"
+        r=$?
+        if [[ $r == 55 ]]; then
+            echo -e "\n猪猪侠警告：匹配仓库【${LIKE_THIS_NAME}】结果为空！\n"
+        elif [[ $r != 0 ]]; then
+            echo -e "\n猪猪侠警告：匹配仓库【${LIKE_THIS_NAME}】时出错了！\n"
             exit 1
         fi
         #
@@ -357,22 +424,32 @@ case ${ACTION} in
             #
             > ${REPO_TAG_LIST_TMP}--${R_SED}
             F_GET_REPO_TAG  ${R}  ${LIKE_THIS_TAG}  > ${REPO_TAG_LIST_TMP}--${R_SED}
-            if [[ $? != 0 ]]; then
-                echo -e "\n猪猪侠警告：出错了！\n"
+            r=$?
+            if [[ $r == 55 ]]; then
+                echo -e "\n猪猪侠警告：匹配TAG【${LIKE_THIS_TAG}】结果为空！\n"
+            elif [[ $r != 0 ]]; then
+                echo -e "\n猪猪侠警告：匹配TAG【${LIKE_THIS_TAG}】时出错了！\n"
                 exit 1
             fi
             #
+            LINE_TOTAL=$(cat ${REPO_TAG_LIST_TMP}--${R_SED} | wc -l)
+            KEEP_TAG_NUM=${KEEP_TAG_NUM:-0}
+            LINE=0
             while read T
             do
-                echo "++++++++++++++++++++++++++++++"
-                echo "删除：仓库【${R}】- tag【${T}】"
-                #
-                F_DELETE_REPO_TAG  ${R}  ${T}
-                if [[ $? != 0 ]]; then
-                    echo -e "\n猪猪侠警告：出错了！\n"
-                    exit 1
+                #echo "++++++++++++++++++++++++++++++"
+                let LINE=${LINE}+1
+                let DEL_REMAIN_NUM=${LINE_TOTAL}-${LINE}
+                if [[ ${DEL_REMAIN_NUM} -ge ${KEEP_TAG_NUM} ]]; then
+                    echo "OK  删除【${R}:${T}】"
+                    F_DELETE_REPO_TAG  ${R}  ${T}
+                    if [[ $? != 0 ]]; then
+                        echo -e "\n猪猪侠警告：删除【${R}:${T}】时出错了！\n"
+                        exit 1
+                    fi
+                else
+                    break
                 fi
-                echo "OK"
             done < ${REPO_TAG_LIST_TMP}--${R_SED}
         done < ${REPO_LIST_TMP}
         #
