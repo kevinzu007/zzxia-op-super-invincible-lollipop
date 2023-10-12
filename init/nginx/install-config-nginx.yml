@@ -13,7 +13,7 @@
       synchronize: src=./nginx-config/nginx.list      dest={{ NGINX_CONFIG_SH_HOME }}/nginx.list      rsync_opts="--perms=yes,--times=yes"
     - name: 拷贝 nginx - nginx-cert-letsencrypt-a.sh
       synchronize: src=./nginx-config/nginx-cert-letsencrypt-a.sh  dest={{ NGINX_CONFIG_SH_HOME }}/nginx-cert-letsencrypt-a.sh  rsync_opts="--perms=yes,--times=yes"
-    - name: 拷贝 nginx - web-release.sh
+    - name: 拷贝 nginx - web-release-on-nginx.sh
       synchronize: src=./nginx-config/web-release-on-nginx.sh  dest={{ NGINX_CONFIG_SH_HOME }}/web-release-on-nginx.sh  rsync_opts="--perms=yes,--times=yes"
 
 
