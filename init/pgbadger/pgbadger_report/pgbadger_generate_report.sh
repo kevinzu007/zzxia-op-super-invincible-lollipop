@@ -24,8 +24,8 @@ fi
 #DEST_CP_PATH=
 
 # 本地env
-PGBADGER_HOME='/root/pgbadger_report'
-PGBADGER_REPORT_PATH="${PGBADGER_HOME}/pg_report"
+PGBADGER_REPORT_PATH="${SH_PATH}/pg_report"
+[[ -d ${PGBADGER_REPORT_PATH} ]] || mkdir  ${PGBADGER_REPORT_PATH}
 
 
 
