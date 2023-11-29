@@ -2542,9 +2542,9 @@ do
             #
             if [ -z "${POD_REPLICAS_NEW}" ]; then
                 echo -e "\n猪猪侠警告：参数【-n|--number】使用错误！\n"
-                echo "跳过，配置文件错误"
-                echo "${SERVICE_X_NAME} : 跳过，配置文件错误" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
-                ERROR_CODE=52
+                echo "跳过，脚本参数错误"
+                echo "${SERVICE_X_NAME} : 跳过，脚本参数错误" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                ERROR_CODE=51
                 continue
             fi
             #
@@ -2917,6 +2917,7 @@ fi
 # rm:
 # 53  "失败，服务不在运行中"
 # scale
+# 51  "跳过，脚本参数错误"
 # 53  "失败，服务不在运行中"
 # rollback:
 # 53  "失败，服务不在运行中"
