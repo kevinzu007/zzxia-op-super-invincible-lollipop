@@ -1125,7 +1125,7 @@ BUILD_ERROR_COUNT=`cat ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE} | grep -o '构�
 let  NOT_BUILD_RELEASE_COUNT=${TOTAL_PJS}-${RELEASE_CHECK_COUNT}
 TIME_END=`date +%Y-%m-%dT%H:%M:%S`
 MESSAGE_END="项目构建已完成！ 共企图构建发布${TOTAL_PJS}个项目，成功构建发布${RELEASE_SUCCESS_COUNT}个项目，成功构建但失败发布${RELEASE_ERROR_COUNT}个项目，跳过发布${RELEASE_SKIP_COUNT}个项目，失败构建${BUILD_ERROR_COUNT}个项目，${NOT_BUILD_RELEASE_COUNT}个项目因其他原因退出构建发布。"
-# 消息回显拼接
+# 输出到屏幕及文件
 > ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 echo "干：**${GAN_WHAT_FUCK}**" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 echo "===== 构建与发布报告 =====" >> ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
@@ -1146,10 +1146,11 @@ echo "构建与发布清单：" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURR
 echo "----------------------------------------------------------------------" >> ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}   #--- 70 (80-70-60)
 cat  ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}            >> ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 echo "----------------------------------------------------------------------" >> ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
-# 输出屏幕
+# 输出到屏幕
 ${FORMAT_TABLE_SH}  --delimeter ':'  --title '**项目名称**:**构建**:**发布**:**耗时**'  --file ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
 #
 F_TimeDiff  "${TIME_START}" "${TIME_END}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
+#
 echo "日志Web地址：${LOG_DOWNLOAD_SERVER}/file/${DATE_TIME}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 echo "日志Local地址：${LOG_HOME}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 #

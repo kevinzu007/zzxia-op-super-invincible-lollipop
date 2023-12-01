@@ -388,8 +388,9 @@ F_SEARCH_IMAGE_TAG()
 {
     F_SERVICE_NAME=$1
     F_THIS_TAG=$2
-    ${DOCKER_IMAGE_SEARCH_SH}  ${IMAGE_PRE_NAME_ARG}  --tag ${F_THIS_TAG}  --output ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_TAG-result.txt  ${F_SERVICE_NAME}
-    search_r=$(cat ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_TAG-result.txt | cut -d " " -f 3-)
+    F_SEARCH_IMAGE_TAG_RESULT_FILE="${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_TAG-result--${F_SERVICE_NAME}.txt"
+    ${DOCKER_IMAGE_SEARCH_SH}  ${IMAGE_PRE_NAME_ARG}  --tag ${F_THIS_TAG}  --output ${F_SEARCH_IMAGE_TAG_RESULT_FILE}  ${F_SERVICE_NAME}
+    search_r=$(cat ${F_SEARCH_IMAGE_TAG_RESULT_FILE} | cut -d " " -f 3-)
     F_GET_IT=""
     # 这个其实不可能有多行
     for i in ${search_r}
@@ -2937,7 +2938,7 @@ case ${SH_RUN_MODE} in
     normal)
         #
         MESSAGE_END="DOCKER SERVICE ${SERVICE_OPERATION} 已完成！ 共企图 ${SERVICE_OPERATION} ${TOTAL_SERVICES} 个项目，成功 ${SERVICE_OPERATION} ${SUCCESS_DO_COUNT} 个项目，跳过 ${NOTNEED_DO_COUNT} 个项目，${ERROR_DO_COUNT} 个项目失败，因其他原因未执行 ${SERVICE_OPERATION} ${NOT_DO_COUNT} 个项目。"
-        # 消息回显拼接
+        # 输出到屏幕及文件
         > ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         echo "干：**${GAN_WHAT_FUCK}**" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         echo "== DOCKER SERVICE ${SERVICE_OPERATION} 报告 ==" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
@@ -2957,8 +2958,11 @@ case ${SH_RUN_MODE} in
         echo "--------------------------------------------------" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         cat  ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}            >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         echo "--------------------------------------------------" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
-        # 输出屏幕
+        # 输出到屏幕
         ${FORMAT_TABLE_SH}  --delimeter ':'  --title "**服务名称**:**${SERVICE_OPERATION}**"  --file ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+        #
+        echo "日志Local地址：${LOG_HOME}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
+        #echo "日志Web地址：${LOG_DOWNLOAD_SERVER}/file/${DATE_TIME}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         #
         F_TimeDiff  "${TIME_START}" "${TIME_END}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         #
