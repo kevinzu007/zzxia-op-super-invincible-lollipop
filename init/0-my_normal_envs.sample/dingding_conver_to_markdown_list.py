@@ -80,23 +80,6 @@ def msg(a):
     print(requests.post(api_url,json.dumps(json_text),headers=headers).content)
 
 if __name__ == '__main__':
-
-#    tt1 = sys.argv[1]
-#    tt2 = sys.argv[2]
-#    tt3 = sys.argv[3]
-#    tt3 = ""
-#    #msg(tt1,tt2," ")
-#    #msg(tt1,tt2,"")
-#    #if tt3
-#    msg(tt1,tt2,tt3)
-#
-#
-#    i = 1
-#    for arg in sys.argv :
-#        text[i] = sys.argv[i]
-#        i += 1
-#    msg(text)
-
     msg(sys.argv)
 
 
