@@ -135,7 +135,6 @@ F_HELP()
 TEMP=`getopt -o hlrbM:  -l help,list,release,rollback,mode: -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
-    F_HELP
     exit 51
 fi
 #
