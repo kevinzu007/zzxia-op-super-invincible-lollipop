@@ -975,14 +975,14 @@ F_FUCK()
             SH_ERROR_CODE=$?
         else
             # 执行命令，并写日志
-            DEPLOY_LOG_file="${DEPLOY_LOG}--${PJ}.log"
+            DEPLOY_LOG_file="${DEPLOY_LOG}--${SERVICE_NAME}.log"
             echo "正在执行，请等待......"
             echo  ${DOCKER_FULL_CMD} | bash  > ${DEPLOY_LOG_file}  2>&1
             SH_ERROR_CODE=$?
             cat  ${DEPLOY_LOG_file}
             # mail
             if [[ ${SH_ERROR_CODE} != 0 && -n "${MY_USER_EMAIL}" ]]; then
-                ${SEND_MAIL}  --subject "【${RUN_ENV}】${GAN_WHAT_FUCK} Log - ${PJ}"  --content "请看附件\n"  --attach "${DEPLOY_LOG_file}"  "${MY_USER_EMAIL}"
+                ${SEND_MAIL}  --subject "【${RUN_ENV}】${GAN_WHAT_FUCK} Log - ${SERVICE_NAME}"  --content "请看附件\n"  --attach "${DEPLOY_LOG_file}"  "${MY_USER_EMAIL}"
             fi
         fi
         #
