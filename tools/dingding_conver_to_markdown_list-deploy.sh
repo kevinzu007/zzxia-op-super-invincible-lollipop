@@ -12,8 +12,8 @@
 
 
 # 钉钉api --- 引入环境变量
-api_url=$DINGDING_API
-#api_url = "https://oapi.dingtalk.com/robot/send?access_token=你自己的钉钉机器人token"
+dingding_api_url=$DINGDING_API
+#dingding_api_url="https://oapi.dingtalk.com/robot/send?access_token=你自己的钉钉机器人token"
 
 
 
@@ -40,7 +40,7 @@ msg() {
 
     local json_text="{\"msgtype\": \"markdown\", \"markdown\": {\"title\": \"$title\", \"text\": \"$text\"}, \"at\": {\"atMobiles\": [\"1860021887\"], \"isAtAll\": true}}"
 
-    curl -s -X POST -H "$headers" -d "$json_text" "$api_url" || { echo "Error sending message"; exit 1; }
+    curl -s -X POST -H "$headers" -d "$json_text" "$dingding_api_url" || { echo "Error sending message"; exit 1; }
 }
 
 if [ "$#" -eq 0 ]; then

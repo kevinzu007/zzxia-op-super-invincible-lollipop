@@ -24,8 +24,8 @@ import time
 
 # 钉钉api --- 引入OS变量
 ENV_DIST = os.environ
-api_url = ENV_DIST.get('DINGDING_API')
-#api_url = "https://oapi.dingtalk.com/robot/send?access_token=f75b4e5582c3720dxxxxxxxxxxxx849eba76bd3bffcccc"
+dingding_api_url = ENV_DIST.get('DINGDING_API')
+#dingding_api_url = "https://oapi.dingtalk.com/robot/send?access_token=f75b4e5582c3720dxxxxxxxxxxxx849eba76bd3bffcccc"
 
 
 # 获取主机名
@@ -64,7 +64,7 @@ def msg(a):
     # https://blog.csdn.net/wangato/article/details/71104173
     json_text = eval(json_text)
 
-    print(requests.post(api_url,json.dumps(json_text),headers=headers).content)
+    print(requests.post(dingding_api_url,json.dumps(json_text),headers=headers).content)
 
 if __name__ == '__main__':
     msg(sys.argv)
