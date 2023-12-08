@@ -9,7 +9,7 @@
 # 用途：用户登录时发送消息通知
 # 注意：脚本拷贝到/etc/profile.d/下
 # 依赖：/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
-#       /usr/local/bin/dingding_send_markdown-login.py
+#       /usr/local/bin/dingding_send_markdown-login.sh
 
 
 
@@ -26,13 +26,13 @@ if [ ! -f "${LOG_FILE}" ]; then
     chmod 0666 "${LOG_FILE}"
 fi
 # sh
-DINGDING_MARKDOWN_LOGIN_PY='/usr/local/bin/dingding_send_markdown-login.py'
+DINGDING_MARKDOWN_LOGIN_SH='/usr/local/bin/dingding_send_markdown-login.sh'
 
 
 # 钉钉
 F_SEND_DINGDING()
 {
-    ${DINGDING_MARKDOWN_LOGIN_PY}  \
+    ${DINGDING_MARKDOWN_LOGIN_SH}  \
         --title "【Alert:SSH登录:${RUN_ENV}】"  \
         --message "$( echo -e "### `echo ${USER} \(sudo:${SUDO_USER}\) ` \n### `echo ${IP}` \n### `echo ${AREA}` \n\n---\n\n` w | sed '1,2d' `" )"
 }
@@ -86,7 +86,7 @@ F_OTHER_IP()
 # 必须软件jq
 if [ "`which jq >/dev/null 2>&1 ; echo $?`" != "0" ]; then
     echo -e "| `date +'%FT%T'` | ${HOSTNAME} | 用户名: ${USER}(sudo:${SUDO_USER}) | echo $0 | echo '请安装软件jq' |" >> ${LOG_FILE}
-    ${DINGDING_MARKDOWN_LOGIN_PY}  \
+    ${DINGDING_MARKDOWN_LOGIN_SH}  \
         --title "【Error:用户登录:${RUN_ENV}】"  \
         --message "$( echo -e "### 请安装软件jq" )"
 fi

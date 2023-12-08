@@ -95,7 +95,7 @@ fi
 SEND_MAIL="${SH_PATH}/../tools/send_mail.sh"
 DOCKER_IMAGE_SEARCH_SH="${SH_PATH}/docker-image-search.sh"
 FORMAT_TABLE_SH="${SH_PATH}/../tools/format_table.sh"
-DINGDING_MARKDOWN_PY="${SH_PATH}/../tools/dingding_conver_to_markdown_list-deploy.py"
+DINGDING_SEND_DEPLOY_SH="${SH_PATH}/../tools/dingding_conver_to_markdown_list-deploy.sh"
 # 引入函数
 .  ${SH_PATH}/function.sh
 
@@ -118,7 +118,7 @@ F_HELP()
         ${SEND_MAIL}
         ${DOCKER_IMAGE_SEARCH_SH}
         ${FORMAT_TABLE_SH}
-        ${DINGDING_MARKDOWN_PY}
+        ${DINGDING_SEND_DEPLOY_SH}
     注意：
         * 名称正则表达式完全匹配，会自动在正则表达式的头尾加上【^ $】，请规避
         * 一般服务名（非灰度服务名）为项目清单中的服务名，灰度服务名为为【项目清单服务名】+【--】+【灰度版本号】
@@ -2982,7 +2982,7 @@ case ${SH_RUN_MODE} in
             #echo ${MSG[$t]}
             let  t=$t+1
         done < ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
-        ${DINGDING_MARKDOWN_PY}  "【Info:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "${MSG[@]}" > /dev/null
+        ${DINGDING_SEND_DEPLOY_SH}  "【Info:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "${MSG[@]}" > /dev/null
         ;;
     function)
         #

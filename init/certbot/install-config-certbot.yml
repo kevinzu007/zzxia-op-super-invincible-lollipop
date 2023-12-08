@@ -9,7 +9,7 @@
     - RUN_ENV: "{{ lookup('env','RUN_ENV') }}"
   tasks:
     - name: crontab - letsencrypt
-      cron: name=letsencrypt backup=yes state=present minute=11 hour=0 day=* month=* weekday=* user=root job="sleep $(let S=${RANDOM}%3600 ; echo $S) && /usr/bin/certbot renew > /dev/null && /usr/bin/systemctl reload nginx.service || /usr/local/bin/dingding_conver_to_markdown_list.py '【Error:证书更新:nginx】' '证书renew失败，请检查' > /dev/null "
+      cron: name=letsencrypt backup=yes state=present minute=11 hour=0 day=* month=* weekday=* user=root job="sleep $(let S=${RANDOM}%3600 ; echo $S) && /usr/bin/certbot renew > /dev/null && /usr/bin/systemctl reload nginx.service || /usr/local/bin/dingding_conver_to_markdown_list.sh '【Error:证书更新:nginx】' '证书renew失败，请检查' > /dev/null "
       when: RUN_ENV != "dev"
 
 

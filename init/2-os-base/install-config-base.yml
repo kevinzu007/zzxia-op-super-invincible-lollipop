@@ -49,9 +49,9 @@
           mode: 0755
           backup: no
       with_items: 
-        - { src: './dingding_send_markdown.py', dest: '/usr/local/bin/' }
-        - { src: './dingding_send_markdown-login.py', dest: '/usr/local/bin/' }
-        - { src: './dingding_conver_to_markdown_list.py', dest: '/usr/local/bin/' }
+        - { src: './dingding_send_markdown.sh', dest: '/usr/local/bin/' }
+        - { src: './dingding_send_markdown-login.sh', dest: '/usr/local/bin/' }
+        - { src: './dingding_conver_to_markdown_list.sh', dest: '/usr/local/bin/' }
 
 
 

@@ -77,7 +77,7 @@ fi
 BUILD_SH="${SH_PATH}/build.sh"
 DRAW_TABLE_SH="${SH_PATH}/../tools/draw_table.sh"
 FORMAT_TABLE_SH="${SH_PATH}/../tools/format_table.sh"
-DINGDING_MARKDOWN_PY="${SH_PATH}/../tools/dingding_conver_to_markdown_list-deploy.py"
+DINGDING_SEND_DEPLOY_SH="${SH_PATH}/../tools/dingding_conver_to_markdown_list-deploy.sh"
 # 引入函数
 .  ${SH_PATH}/function.sh
 
@@ -101,7 +101,7 @@ F_HELP()
         ${PARA_PROJECT_LIST_FILE}
         ${BUILD_SH}
         ${FORMAT_TABLE_SH}
-        ${DINGDING_MARKDOWN_PY}
+        ${DINGDING_SEND_DEPLOY_SH}
     注意：
         * 名称正则表达式完全匹配，会自动在正则表达式的头尾加上【^ $】，请规避
         * 输入命令时，参数顺序不分先后
@@ -365,7 +365,7 @@ else
         F_FIND_PROJECT ${THIS_LANGUAGE_CATEGORY} >> ${PARA_PROJECT_LIST_FILE_TMP}
         if [[ $? -ne 0 ]]; then
             echo -e "\n${ECHO_ERROR}猪猪侠警告：【${LOLLIPOP_PLATFORM_NAME}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！${ECHO_CLOSE}\n"
-            ${DINGDING_MARKDOWN_PY}  "【Info:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${LOLLIPOP_PLATFORM_NAME}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！" > /dev/null
+            ${DINGDING_SEND_DEPLOY_SH}  "【Info:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${LOLLIPOP_PLATFORM_NAME}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！" > /dev/null
             exit 51
         fi
     else
@@ -375,7 +375,7 @@ else
             F_FIND_PROJECT ${THIS_LANGUAGE_CATEGORY} $i >> ${PARA_PROJECT_LIST_FILE_TMP}
             if [[ $? -ne 0 ]]; then
                 echo -e "\n${ECHO_ERROR}猪猪侠警告：【${LOLLIPOP_PLATFORM_NAME}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目【$i】，请检查！${ECHO_CLOSE}\n"
-                ${DINGDING_MARKDOWN_PY}  "【Info:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${LOLLIPOP_PLATFORM_NAME}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目【$i】，请检查！" > /dev/null
+                ${DINGDING_SEND_DEPLOY_SH}  "【Info:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${LOLLIPOP_PLATFORM_NAME}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目【$i】，请检查！" > /dev/null
                 exit 51
             fi
         done
@@ -540,7 +540,7 @@ do
     #echo ${MSG[$t]}
     let  t=$t+1
 done < ${PARA_BUILD_HISTORY_CURRENT_FILE}
-${DINGDING_MARKDOWN_PY}  "【Info:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "${MSG[@]}" > /dev/null
+${DINGDING_SEND_DEPLOY_SH}  "【Info:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "${MSG[@]}" > /dev/null
 
 
 

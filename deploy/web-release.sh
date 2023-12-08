@@ -65,7 +65,7 @@ if [[ -z ${USER_INFO_FROM} ]]; then
 fi
 # sh
 FORMAT_TABLE_SH="${SH_PATH}/../tools/format_table.sh"
-DINGDING_MARKDOWN_PY="${SH_PATH}/../tools/dingding_conver_to_markdown_list-deploy.py"
+DINGDING_SEND_DEPLOY_SH="${SH_PATH}/../tools/dingding_conver_to_markdown_list-deploy.sh"
 # 引入函数
 .  ${SH_PATH}/function.sh
 
@@ -86,7 +86,7 @@ F_HELP()
     依赖：
         ${WEB_PROJECT_LIST_FILE}
         ${FORMAT_TABLE_SH}
-        ${DINGDING_MARKDOWN_PY}
+        ${DINGDING_SEND_DEPLOY_SH}
         ${SH_PATH}/env.sh
         nginx上：/root/nginx-config/web-release-on-nginx.sh
     注意：运行在nginx节点上
@@ -248,7 +248,7 @@ else
         #
         if [[ $GET_IT != 'YES' ]]; then
             echo -e "\n${ECHO_ERROR}猪猪侠警告：【${GAN_WHAT_FUCK}】时，项目【${i}】正则不匹配项目列表【${WEB_PROJECT_LIST_FILE}】中任何项目，请检查！${ECHO_CLOSE}\n"
-            ${DINGDING_MARKDOWN_PY}  "【Error:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_WHAT_FUCK}】时，项目【${i}】正则不匹配项目列表【${WEB_PROJECT_LIST_FILE}】中任何项目，请检查！" > /dev/null
+            ${DINGDING_SEND_DEPLOY_SH}  "【Error:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_WHAT_FUCK}】时，项目【${i}】正则不匹配项目列表【${WEB_PROJECT_LIST_FILE}】中任何项目，请检查！" > /dev/null
             exit 51
         fi
     done
@@ -416,7 +416,7 @@ case ${SH_RUN_MODE} in
             #echo ${MSG[$t]}
             let  t=$t+1
         done < ${WEB_RELEASE_HISTORY_CURRENT_FILE}
-        ${DINGDING_MARKDOWN_PY}  "【Info:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "${MSG[@]}" > /dev/null
+        ${DINGDING_SEND_DEPLOY_SH}  "【Info:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "${MSG[@]}" > /dev/null
         ;;
     function)
         #

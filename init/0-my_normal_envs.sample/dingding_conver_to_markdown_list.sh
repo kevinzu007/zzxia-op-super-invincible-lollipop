@@ -13,7 +13,7 @@
 
 # 钉钉api --- 引入环境变量
 #api_url=$DINGDING_API
-api_url = "https://oapi.dingtalk.com/robot/send?access_token=你自己的钉钉机器人token"
+api_url="https://oapi.dingtalk.com/robot/send?access_token=你自己的钉钉机器人token"
 
 
 

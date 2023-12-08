@@ -94,7 +94,7 @@ fi
 SEND_MAIL="${SH_PATH}/../tools/send_mail.sh"
 DOCKER_TAG_PUSH_SH="${SH_PATH}/docker-tag-push.sh"
 FORMAT_TABLE_SH="${SH_PATH}/../tools/format_table.sh"
-DINGDING_MARKDOWN_PY="${SH_PATH}/../tools/dingding_conver_to_markdown_list-deploy.py"
+DINGDING_SEND_DEPLOY_SH="${SH_PATH}/../tools/dingding_conver_to_markdown_list-deploy.sh"
 # 引入函数
 .  ${SH_PATH}/function.sh
 
@@ -119,7 +119,7 @@ F_HELP()
         ${SEND_MAIL}
         ${DOCKER_TAG_PUSH_SH}
         ${FORMAT_TABLE_SH}
-        ${DINGDING_MARKDOWN_PY}
+        ${DINGDING_SEND_DEPLOY_SH}
     注意：
         * 名称正则表达式完全匹配，会自动在正则表达式的头尾加上【^ $】，请规避
         * 输入命令时，参数顺序不分先后
@@ -277,7 +277,7 @@ ERR_SHOW()
         MESSAGE_ERR="猪猪侠警告：【${GAN_WHAT_FUCK}】时，【${PJ}】出错了，请检查！ 代码分支：${GIT_BRANCH}。将继续构建后续项目！"
     fi
     echo -e "${ECHO_ERROR}${MESSAGE_ERR}${ECHO_CLOSE}"
-    ${DINGDING_MARKDOWN_PY}  "【Error:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "${MESSAGE_ERR}" > /dev/null
+    ${DINGDING_SEND_DEPLOY_SH}  "【Error:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "${MESSAGE_ERR}" > /dev/null
 }
 
 
@@ -1280,7 +1280,7 @@ else
         F_FIND_PROJECT "${THIS_LANGUAGE_CATEGORY}" >> ${PROJECT_LIST_FILE_TMP}
         if [[ $? -ne 0 ]]; then
             echo -e "\n${ECHO_ERROR}猪猪侠警告：【${GAN_WHAT_FUCK}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！${ECHO_CLOSE}\n"
-            ${DINGDING_MARKDOWN_PY}  "【Error:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_WHAT_FUCK}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！" > /dev/null
+            ${DINGDING_SEND_DEPLOY_SH}  "【Error:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_WHAT_FUCK}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！" > /dev/null
             exit 51
         fi
     else
@@ -1291,7 +1291,7 @@ else
             F_FIND_PROJECT "${THIS_LANGUAGE_CATEGORY}" "$i" >> ${PROJECT_LIST_FILE_TMP}
             if [[ $? -ne 0 ]]; then
                 echo -e "\n${ECHO_ERROR}猪猪侠警告：【${GAN_WHAT_FUCK}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目【$i】，请检查！${ECHO_CLOSE}\n"
-                ${DINGDING_MARKDOWN_PY}  "【Error:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_WHAT_FUCK}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目【$i】，请检查！" > /dev/null
+                ${DINGDING_SEND_DEPLOY_SH}  "【Error:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_WHAT_FUCK}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目【$i】，请检查！" > /dev/null
                 exit 51
             fi
         done
@@ -1449,7 +1449,7 @@ do
     if [[ ${grep_N} > 2 ]]; then
         echo "${PJ} : 失败，其他用户正在构建中 : x" >> ${BUILD_OK_LIST_FILE}
         echo -e "${ECHO_ERROR}【${GAN_WHAT_FUCK}】时，【${PJ}】失败了，其他用户正在构建中${ECHO_CLOSE}"
-        ${DINGDING_MARKDOWN_PY}  "【Error:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "【${GAN_WHAT_FUCK}】时，【${PJ}】失败了，其他用户正在构建中" > /dev/null
+        ${DINGDING_SEND_DEPLOY_SH}  "【Error:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "【${GAN_WHAT_FUCK}】时，【${PJ}】失败了，其他用户正在构建中" > /dev/null
         [ "x${ERROR_EXIT}" = 'xYES' ] && break
         ERROR_CODE=53
         continue
@@ -1649,7 +1649,7 @@ case ${SH_RUN_MODE} in
             #echo ${MSG[$t]}
             let  t=$t+1
         done < ${BUILD_HISTORY_CURRENT_FILE}
-        ${DINGDING_MARKDOWN_PY}  "【Info:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "${MSG[@]}" > /dev/null
+        ${DINGDING_SEND_DEPLOY_SH}  "【Info:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "${MSG[@]}" > /dev/null
         exit 0
         ;;
     function)
