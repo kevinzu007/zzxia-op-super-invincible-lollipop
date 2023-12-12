@@ -12,8 +12,8 @@
 #       /usr/local/bin/dingding_send_markdown.sh
 
 
-# 引入/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
-.  /etc/profile        #-- 非终端界面不会自动引入，必须主动引入
+# 引入env
+# 自动从/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh引入以下变量
 RUN_ENV=${RUN_ENV:-'xxx'}
 EMAIL=${EMAIL:-"kevinzu@yyy.com"}
 TRUST_IPS=${TRUST_IPS:-'办公室:111.111.111., 家:222.222.22'}
