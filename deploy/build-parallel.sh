@@ -17,6 +17,8 @@ cd ${SH_PATH}
 #DOMAIN=
 #USER_DB_FILE=
 #USER_DB_FILE_APPEND_1=
+#DINGDING_WEBHOOK_API_deploy=
+export DINGDING_WEBHOOK_API_2=${DINGDING_WEBHOOK_API_deploy}
 
 # 引入env.sh
 . ${SH_PATH}/env.sh
@@ -27,7 +29,6 @@ cd ${SH_PATH}
 #BUILD_SKIP_TEST=
 #GIT_DEFAULT_BRANCH=
 # 来自 ${MY_PRIVATE_ENVS_DIR} 目录下的 *.sec
-#DINGDING_API=
 
 
 # 本地env
@@ -77,7 +78,7 @@ fi
 BUILD_SH="${SH_PATH}/build.sh"
 DRAW_TABLE_SH="${SH_PATH}/../tools/draw_table.sh"
 FORMAT_TABLE_SH="${SH_PATH}/../tools/format_table.sh"
-DINGDING_SEND_DEPLOY_SH="${SH_PATH}/../tools/dingding_conver_to_markdown_list-deploy.sh"
+DINGDING_SEND_DEPLOY_SH="/usr/local/bin/dingding_conver_to_markdown_list.sh"
 # 引入函数
 .  ${SH_PATH}/function.sh
 

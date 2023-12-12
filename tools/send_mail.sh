@@ -6,8 +6,8 @@
 #############################################################################
 
 
-# sh
-DINGDING_BY_MARKDOWN_FILE_SH="/usr/local/bin/dingding_send_markdown.sh"
+# 本地env
+DINGDING_SEND_LIST_SH="/usr/local/bin/dingding_conver_to_markdown_list.sh"
 
 
 
@@ -17,7 +17,7 @@ F_HELP()
     用途：使用mailx发送邮件
     依赖：
         mailx
-        ${DINGDING_BY_MARKDOWN_FILE_SH}
+        ${DINGDING_SEND_LIST_SH}
     注意：
         * 输入命令时，参数顺序不分先后
     用法：
@@ -102,9 +102,7 @@ done
 
 # 必须软件mailx
 if [ "`which mailx >/dev/null 2>&1 ; echo $?`" != "0" ]; then
-    ${DINGDING_BY_MARKDOWN_FILE_SH}  \
-        --title "【Error:邮件:${RUN_ENV}】"  \
-        --message "$( echo -e "### 请安装软件mailx" )"
+    ${DINGDING_SEND_LIST_SH}  "【Error:邮件:${RUN_ENV}】"  "$( echo -e "### 请安装软件mailx" )"
     echo -e "\n猪猪侠警告：请安装软件mailx\n"
     exit 1
 fi

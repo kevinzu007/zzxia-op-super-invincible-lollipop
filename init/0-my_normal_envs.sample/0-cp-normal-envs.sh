@@ -48,9 +48,6 @@ F_CP ()
     cp -f  ./zzxia-op-super-invincible-lollipop.run-env.sh---${R_ENV}    ${DEST_DIR}/init/2-os-base/zzxia-op-super-invincible-lollipop.run-env.sh
     cp -f  ./host-ip.list---${R_ENV}                                     ${DEST_DIR}/init/host-ip.list
     cp -f  ./mailrc---${R_ENV}                                           ${DEST_DIR}/init/2-os-base/mailrc
-    cp -f  ./dingding_send_markdown-login.sh                             ${DEST_DIR}/init/2-os-base/
-    cp -f  ./dingding_send_markdown.sh                                   ${DEST_DIR}/init/2-os-base/
-    cp -f  ./dingding_conver_to_markdown_list.sh                         ${DEST_DIR}/init/2-os-base/
     
     # cp到deploy目录
     cp -f  ./project.list                                                ${DEST_DIR}/deploy/

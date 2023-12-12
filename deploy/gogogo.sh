@@ -18,6 +18,8 @@ cd ${SH_PATH}
 #NGINX_CONFIG_SH_HOME=
 #USER_DB_FILE=
 #USER_DB_FILE_APPEND_1=
+#DINGDING_WEBHOOK_API_deploy=
+export DINGDING_WEBHOOK_API_2=${DINGDING_WEBHOOK_API_deploy}
 
 # 引入env.sh
 . ${SH_PATH}/env.sh
@@ -36,7 +38,6 @@ cd ${SH_PATH}
 #SWARM_DEFAULT_NETWORK=
 #COMPOSE_DEFAULT_NETWORK=
 # 来自 ${MY_PRIVATE_ENVS_DIR} 目录下的 *.sec
-#DINGDING_API=
 #DOCKER_REPO_SERVER=
 
 
@@ -94,7 +95,7 @@ fi
 BUILD_SH="${SH_PATH}/build.sh"
 DOCKER_CLUSTER_SERVICE_DEPLOY_SH="${SH_PATH}/docker-cluster-service-deploy.sh"
 FORMAT_TABLE_SH="${SH_PATH}/../tools/format_table.sh"
-DINGDING_SEND_DEPLOY_SH="${SH_PATH}/../tools/dingding_conver_to_markdown_list-deploy.sh"
+DINGDING_SEND_DEPLOY_SH="/usr/local/bin/dingding_conver_to_markdown_list.sh"
 # 引入函数
 .  ${SH_PATH}/function.sh
 

@@ -128,12 +128,12 @@
 |  1   | deploy/docker-image-search.sh                 | 从私有docker仓库搜索docker镜像    | docker；docker仓库                       |
 |  2   | deploy/docker-tag-push.sh                     | 推送docker镜像到私有docker仓库    | docker；docker仓库                       |
 |  3   | op/aliyun-dns.sh                              | 用阿里云dns做解析的域名修改工具   | 阿里云CLI；阿里云dns                     |
-|  4   | op/godaddy-dns.sh                             | 用Godaddy dns做解析的域名修改工具 | curl；godaddy                            |
-|  5   | op/cert-letsencrypt-wildcart.sh               | 在Let'sencrypt上申请泛域名证书    | certbot                                  |
-|  6   | op/send_mail.sh                               | 发送邮件                          | mailx；邮件服务器账号                    |
-|  7   | op/dingding_conver_to_markdown_list-deploy.sh | 发送钉钉消息                      | python；钉钉机器人                       |
-|  8   | op/format_table.sh                            | 格式化表格                        | awk                                      |
-|  9   | op/draw_table.sh                              | 严格格式化表格                    | awk                                      |
+|  4   | tools/godaddy-dns.sh                          | 用Godaddy dns做解析的域名修改工具 | curl；godaddy                            |
+|  5   | tools/cert-letsencrypt-wildcart.sh            | 在Let'sencrypt上申请泛域名证书    | certbot                                  |
+|  6   | tools/send_mail.sh                            | 发送邮件                          | mailx；邮件服务器账号                    |
+|  7   | tools/dingding_conver_to_markdown_list.sh     | 发送钉钉消息                      | python；钉钉机器人                       |
+|  8   | tools/format_table.sh                         | 格式化表格                        | awk                                      |
+|  9   | tools/draw_table.sh                           | 严格格式化表格                    | awk                                      |
 |  10  | init/1-sshkey-copy.sh                         | 免密登录                          | sshpass                                  |
 |  11  | init/send_login_alert_msg.sh                  | 发送用户登录警报消息              | python；钉钉机器人                       |
 |  12  | init/send_mail_attach_my_log.sh               | 发送自定义日志到邮箱              | mailx；邮件服务器账号                    |
@@ -1775,7 +1775,7 @@ $ ./init/send_login_alert_msg.sh
        # EMAIL=${EMAIL:-"kevinzu@xxx.com"}
        # TRUST_IPS=${TRUST_IPS:-'办公室:111.111.111., 家:222.222.22'}
 # 依赖：/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
-#       /usr/local/bin/dingding_send_markdown-login.sh
+#       /usr/local/bin/dingding_send_markdown.sh
 # 用法：
 #      用户登录时自动执行/etc/profile.d/下的脚本，包含本程序
 ```

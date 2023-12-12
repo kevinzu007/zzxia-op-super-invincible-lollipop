@@ -19,6 +19,8 @@ cd "${SH_PATH}"
 #PYTHON_SERVICES_BASE=
 #USER_DB_FILE=
 #USER_DB_FILE_APPEND_1=
+#DINGDING_WEBHOOK_API_deploy=
+export DINGDING_WEBHOOK_API_2=${DINGDING_WEBHOOK_API_deploy}
 
 # 引入env.sh
 . "${SH_PATH}/env.sh"
@@ -35,7 +37,6 @@ cd "${SH_PATH}"
 #GIT_DEFAULT_NAMESPACE=
 #GIT_DEFAULT_BRANCH=
 # 来自 ${MY_PRIVATE_ENVS_DIR}目录下的 *.sec
-#DINGDING_API=
 #DOCKER_REPO_SERVER=
 #DOCKER_IMAGE_DEFAULT_PRE_NAME=
 PROJECT_CODE_VERIFY=${PROJECT_CODE_VERIFY:-'NO'}    #--- YES|NO，请提供相关sonarQube地址用户名密码
@@ -94,7 +95,7 @@ fi
 SEND_MAIL="${SH_PATH}/../tools/send_mail.sh"
 DOCKER_TAG_PUSH_SH="${SH_PATH}/docker-tag-push.sh"
 FORMAT_TABLE_SH="${SH_PATH}/../tools/format_table.sh"
-DINGDING_SEND_DEPLOY_SH="${SH_PATH}/../tools/dingding_conver_to_markdown_list-deploy.sh"
+DINGDING_SEND_DEPLOY_SH="/usr/local/bin/dingding_conver_to_markdown_list.sh"
 # 引入函数
 .  ${SH_PATH}/function.sh
 
