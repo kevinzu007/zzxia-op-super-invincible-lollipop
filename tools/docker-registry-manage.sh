@@ -28,7 +28,7 @@ TIME_START=${TIME}
 SERVICE_LIST_FILE="${SH_PATH}/docker-cluster-service.list"
 SERVICE_LIST_FILE_TMP="/tmp/${SH_NAME}-docker-cluster-service.tmp.list.$(date +%S)"
 SEARCH_RESULT_FILE="/tmp/${SH_NAME}-result.txt"
-FORCE_OPT='N'          #-- 多个标签关联同一个镜像ID时，不强制删除
+SAFETY_OPT='N'          #-- 一个镜像ID与多个标签关联时，仍然删除，无API支持
 # sh
 FORMAT_TABLE_SH="${SH_PATH}/../tools/format_table.sh"
 
@@ -72,7 +72,7 @@ F_HELP()
         $0 [-l|--list-repo]  <-n|--name {%仓库名%}>                                                                #-- 列出仓库
         $0 [-L|--list-tag]   <-n|--name {%仓库名%}>  <-t|--tag {%镜像标签%}>                                       #-- 列出仓库tag
         $0 [-r|--rm-repo]    <-n|--name {%仓库名%}>                                                                #-- 删除仓库，无API，假的
-        $0 [-R|--rm-tag]     <-n|--name {%仓库名%}>  <-t|--tag {%镜像标签%}>  <-k|--keep {数量}>  <-f|--force>     #-- 删除仓库tag
+        $0 [-R|--rm-tag]     <-n|--name {%仓库名%}>  <-t|--tag {%镜像标签%}>  <-k|--keep {数量}>  <-s|--safety>    #-- 删除仓库tag
     参数说明：
         \$0   : 代表脚本本身
         []   : 代表是一个整体，是必选项，默认是必选项（即没有括号【[]、<>】时也是必选项），一般用于表示参数对，此时不可乱序，单个参数也可以使用括号
@@ -89,7 +89,7 @@ F_HELP()
         -n|--name       仓库(镜像)名，支持正则
         -t|--tag        版本tag，支持正则
         -k|--keep       保留最新tag数量
-        -f|--force      强制执行，默认：如果镜像标签的manifest镜像ID与多个镜像标签关联，则跳过，但如果添加此参数可以强制执行，无API，假的
+        -s|--safety     安全执行，默认：直接删除镜像标签对应的【manifest】镜像ID，如果镜像标签的manifest镜像ID与多个镜像标签关联，则相关标签也会一并删除。如果启用此参数，则会跳过。悲剧是无相关API支持，假的。但是如果你一定要安全执行的化，你可以直接登录到 docker registry 服务器上，直接删除相关仓库目录，比如删除【redis】的【7.0】镜像标签： rm -f {docker_registry的data路径}/docker/registry/v2/repositories/public/redis/_manifests/tags/7.0，删除之后，在服务器上运行资源回收命令就会清理掉相关的Blob资源，实现空间释放！
     示例：
         $0  -h
         # 列出
@@ -105,7 +105,7 @@ F_HELP()
         $0  -R  -n ^imageX  -t 2023.04.*tt$    #-- 删除正则匹配【^imageX】的仓库里，正则匹配【2023.04.*tt$】的tag
         $0  -R  -n imageX  -k 3                #-- 删除正则匹配【imageX】的仓库的tag，但保留最近3个tag
         $0  -R  -k 3                           #-- 删除所有仓库的tag，但保留最近3个tag
-        $0  -R  -k 3  -f                       #-- 删除所有仓库的tag，但保留最近3个tag，强制删除，无API，假的
+        $0  -R  -k 3  -f                       #-- 删除所有仓库的tag，但保留最近3个tag，安全方式执行，无API支持，假的
     "
 }
 
@@ -291,7 +291,7 @@ F_DELETE_REPO_TAG()
     #
     ## 这些是ChatGPT给我瞎胡闹的，docker registry并没有提供相关API，服了，注释掉他
     ## 镜像ID关联多个标签时，是否强制删除
-    #if [[ ${FORCE_OPT} != "Y" ]]; then
+    #if [[ ${SAFETY_OPT} = "Y" ]]; then
     #    # 获取所有指向相同镜像 ID 的标签
     #    F_RELATED_TAGS=$(curl -s -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD} -X GET ${DOCKER_REPO_URL_BASE}/${F_REPO_NAME}/manifests/${F_REPO_TAG_DIGEST} | jq -r '.tag[]' | grep -v "${F_REPO_TAG}")
     #    # 检查是否有其他标签指向相同的镜像 ID
@@ -310,7 +310,7 @@ F_DELETE_REPO_TAG()
 
 
 # 参数检查
-TEMP=`getopt -o hlLrRn:t:k:f  -l help,list-repo,list-tag,rm-repo,rm-tag,name:,tag:,keep:,force  -- "$@"`
+TEMP=`getopt -o hlLrRn:t:k:s  -l help,list-repo,list-tag,rm-repo,rm-tag,name:,tag:,keep:,safety  -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
     exit 51
@@ -340,6 +340,10 @@ do
         -r|--rm-repo)
             ACTION='rm-repo'
             shift
+            echo "Docker registry未提供相关API，搞不了！"
+            echo 
+            echo "但是，你可以直接登录到 docker registry 服务器上，直接删除相关仓库目录，比如redis： rm -rf {docker_registry的data路径}/docker/registry/v2/repositories/public/redis，删除之后，在服务器上运行资源回收命令就会清理掉相关的Blob资源，实现空间释放！"
+            exit
             ;;
         -R|--rm-tag)
             ACTION='rm-tag'
@@ -365,9 +369,13 @@ do
                 exit 51
             fi
             ;;
-        -f|--force)
-            FORCE_OPT='Y'
+        -s|--safety)
+            SAFETY_OPT='Y'
             shift
+            echo "Docker registry未提供相关API，搞不了！"
+            echo.
+            echo "但是，你可以直接登录到 docker registry 服务器上，直接删除相关仓库目录，比如删除【redis】的【7.0】镜像标签： rm -rf {docker_registry的data路径}/docker/registry/v2/repositories/public/redis/_manifests/tags/7.0，删除之后，在服务器上运行资源回收命令就会清理掉相关的Blob资源，实现空间释放！"
+            exit
             ;;
         --)
             shift
@@ -425,7 +433,7 @@ case ${ACTION} in
         #
         ;;
     rm-repo)
-        echo "Docker registry未提供相关API，搞不了！"
+        echo "Docker registry未提供相关API"
         ;;
     rm-tag)
         REPO_LIST_TMP="/tmp/${SH_NAME}-repo.list.tmp"
