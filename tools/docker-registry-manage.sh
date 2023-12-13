@@ -120,7 +120,7 @@ F_GET_REPO()
     curl -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD} -s -X GET ${DOCKER_REPO_URL_BASE}/_catalog  > ${F_REPO_LIST_FILE}
     if [[ $? -ne 0 ]]; then
         echo -e "\n猪猪侠警告：访问【${DOCKER_REPO_SERVER}】服务器异常\n" 1>&2
-        return 53
+        return 54
     fi
     #
     # 仓库极少可能为空
@@ -160,7 +160,7 @@ F_GET_REPO_TAG()
     curl -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD} -s -X GET ${DOCKER_REPO_URL_BASE}/${F_REPO_NAME}/tags/list  > ${F_REPO_TAG_LIST_FILE}
     if [[ $? -ne 0 ]]; then
         echo -e "\n猪猪侠警告：访问【${DOCKER_REPO_SERVER}】服务器异常\n" 1>&2
-        return 53
+        return 54
     fi
     #
     # 理论上不会出现下面情况
@@ -215,7 +215,7 @@ F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST()
         ${DOCKER_REPO_URL_BASE}/${F_REPO_NAME}/manifests/${F_REPO_TAG}  > ${F_GET_REPO_TAG_BODY_FILE}  2>${F_GET_REPO_TAG_HEAD_FILE}
     if [[ $? -ne 0 ]]; then
         echo -e "\n猪猪侠警告：访问【${DOCKER_REPO_SERVER}】服务器异常\n" 1>&2
-        return 53
+        return 54
     fi
     # 删除特殊字符【^M】等
     sed  -i -E  -e "s/\\x1B\[([0-9]{1,2}(;[0-9]{1,2})?){0,2}[m|A-Z]//g"  -e "s/\\x0D//g"  ${F_GET_REPO_TAG_HEAD_FILE}
@@ -226,7 +226,7 @@ F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST()
     fi
     #
     if [[ $(cat ${F_GET_REPO_TAG_BODY_FILE} | grep -q 'MANIFEST_UNKNOWN' ; echo $?) == 0 ]]; then
-        echo -e "\n猪猪侠警告：仓库tag不存在，提示：【MANIFEST_UNKNOWN】\n" 1>&2
+        echo -e "\n猪猪侠警告：仓库tag不存在，提示：【MANIFEST_UNKNOWN】，可能此TAG与其他已删除的TAG关联到同一个镜像ID造成\n" 1>&2
         return 53
     fi
     #
@@ -258,24 +258,32 @@ F_DELETE_REPO_TAG()
     F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST  ${F_REPO_NAME}  ${F_REPO_TAG}  > ${F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST_FILE}
     ERR_NO=$?
     if [[ ${ERR_NO} != 0 ]]; then
-        return ${ERR_NO}
+        # 如果仓库或标签不存在，直接返回
+        if [[ ${ERR_NO} == 53 ]]; then
+            #echo -e "\n猪猪侠警告：仓库或标签TAG不存在\n" 1>&2
+            return 0
+        else
+            return ${ERR_NO}
+        fi
     fi
     #
-    F_REPO_TAG_DIGEST=$(cat ${F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST_FILE} | awk '{print $1}')
-    F_REPO_TAG_BLOB_DIGEST=$(cat ${F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST_FILE} | awk '{print $2}')
-    #if [[ -z ${F_REPO_TAG_DIGEST} ]] || [[ -z ${F_REPO_TAG_BLOB_DIGEST} ]]; then
-    #    echo -e "\n猪猪侠警告：仓库tag不存在\n" 1>&2
-    #    return 53
-    #fi
     #
-    # 如果两个tag【manifest】对应的是同一个镜像id【即实体：blob】，当我们删除第一个tag的blob成功后，第二个tag对应的实体就不存在了，这是我们不愿看到的，所以，这里我们一般只删除【manifest】，【blob】我们通过在docker registry服务器端执行`docker exec -ti docker_registry_srv  registry garbage-collect /etc/docker/registry/config.yml`实现自动清理没有关联【manifest】的【blob】
-    # 另外：如果你非要手动删除blob，则你需要先删除blob，再删除manifest，否则会出错！！！
+    # 多个标签TAG可以关联同一个【manifest】镜像ID；一个【manifest】镜像ID关联多个镜像实体Blob层（实际数据，非常占空间）；多个【manifest】镜像ID可能共享部分Blob层，这个理解很重要！
     #
-    ## del blob
+    # 如果一个【manifest】镜像ID与两个标签TAG关联，此时执行删除这个【manifest】镜像ID，那么与之对应的这两个标签TAG也会被删除。
+    # 删除标签的【manifest】镜像ID对应的【blob】，就是删除镜像ID对应的所有实体Blob层。如果这些Blob层有一些被其他【manifest】镜像ID关联，那么关联的其他镜像将会异常，所以不推荐使用这种方式清理镜像实体Blob来达到清理空间的目的，而是在服务器上运行`docker exec -it docker_registry_container_id  registry garbage-collect /etc/docker/registry/config.yml`，实现自动清理没有关联【manifest】的【blob】，实现垃圾回收。
+    #
+    # 注意：如果你非要手动删除blob，则你需要先删除blob，再删除manifest，否则会出错！！！
+    # 所以：我们只需要删除标签的【manifest】镜像ID，【blob】由服务器自动处理就好了；还有，如果连个标签TAG关联同一个镜像ID，删除其中一个标签TAG，另外一个也会消失，这个你必须要知道，官方没有好的解决办法！
+    #
+    ## 删除【blob】
+    #F_REPO_TAG_BLOB_DIGEST=$(cat ${F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST_FILE} | awk '{print $2}')
     #curl  -s -X DELETE  \
     #    -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD}  \
     #    ${DOCKER_REPO_URL_BASE}/${F_REPO_NAME}/blobs/${F_REPO_TAG_BLOB_DIGEST}
-    # del manifest
+    #
+    # 删除【manifest】镜像ID
+    F_REPO_TAG_DIGEST=$(cat ${F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST_FILE} | awk '{print $1}')
     curl  -s -X DELETE  \
         -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD}  \
         ${DOCKER_REPO_URL_BASE}/${F_REPO_NAME}/manifests/${F_REPO_TAG_DIGEST}
@@ -397,7 +405,7 @@ case ${ACTION} in
         #
         ;;
     rm-repo)
-        echo "没搞"
+        echo "Docker registry未提供相关API，搞不了！"
         ;;
     rm-tag)
         REPO_LIST_TMP="/tmp/${SH_NAME}-repo.list.tmp"
