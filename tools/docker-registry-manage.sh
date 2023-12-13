@@ -28,6 +28,7 @@ TIME_START=${TIME}
 SERVICE_LIST_FILE="${SH_PATH}/docker-cluster-service.list"
 SERVICE_LIST_FILE_TMP="/tmp/${SH_NAME}-docker-cluster-service.tmp.list.$(date +%S)"
 SEARCH_RESULT_FILE="/tmp/${SH_NAME}-result.txt"
+FORCE_OPT='N'          #-- 多个标签关联同一个镜像ID时，不强制删除
 # sh
 FORMAT_TABLE_SH="${SH_PATH}/../tools/format_table.sh"
 
@@ -60,7 +61,7 @@ export ECHO_REPORT=${ECHO_BLACK_CYAN}
 F_HELP()
 {
     echo "
-    用途：查询仓库清单、tag清单，删除仓库或tag
+    用途：查询仓库清单或tag清单，删除仓库或tag
     依赖：
         ${SH_PATH}/env.sh
         ${SERVICE_LIST_FILE}
@@ -68,10 +69,10 @@ F_HELP()
         * 输入命令时，参数顺序不分先后
     用法:
         $0 [-h|--help]
-        $0 [-l|--list-repo]  <-n|--name {%仓库名%}>                              #-- 列出仓库
-        $0 [-L|--list-tag]   <-n|--name {%仓库名%}>  <-t|--tag {%镜像版本%}>     #-- 列出仓库tag
-        $0 [-r|--rm-repo]    <-n|--name {%仓库名%}>                              #-- 删除仓库
-        $0 [-R|--rm-tag]     <-n|--name {%仓库名%}>  <-t|--tag {%镜像版本%}>  <-k|--keep {数量}>     #-- 删除仓库tag
+        $0 [-l|--list-repo]  <-n|--name {%仓库名%}>                                                                #-- 列出仓库
+        $0 [-L|--list-tag]   <-n|--name {%仓库名%}>  <-t|--tag {%镜像标签%}>                                       #-- 列出仓库tag
+        $0 [-r|--rm-repo]    <-n|--name {%仓库名%}>                                                                #-- 删除仓库
+        $0 [-R|--rm-tag]     <-n|--name {%仓库名%}>  <-t|--tag {%镜像标签%}>  <-k|--keep {数量}>  <-f|--force>     #-- 删除仓库tag
     参数说明：
         \$0   : 代表脚本本身
         []   : 代表是一个整体，是必选项，默认是必选项（即没有括号【[]、<>】时也是必选项），一般用于表示参数对，此时不可乱序，单个参数也可以使用括号
@@ -88,6 +89,7 @@ F_HELP()
         -n|--name       仓库(镜像)名，支持正则
         -t|--tag        版本tag，支持正则
         -k|--keep       保留最新tag数量
+        -f|--force      强制执行，默认：如果镜像标签的manifest镜像ID与多个镜像标签关联，则跳过，但如果添加此参数可以强制执行
     示例：
         $0  -h
         # 列出
@@ -103,6 +105,7 @@ F_HELP()
         $0  -R  -n ^imageX  -t 2023.04.*tt$    #-- 删除正则匹配【^imageX】的仓库里，正则匹配【2023.04.*tt$】的tag
         $0  -R  -n imageX  -k 3                #-- 删除正则匹配【imageX】的仓库的tag，但保留最近3个tag
         $0  -R  -k 3                           #-- 删除所有仓库的tag，但保留最近3个tag
+        $0  -R  -k 3  -f                       #-- 删除所有仓库的tag，但保留最近3个tag，强制删除
     "
 }
 
@@ -267,7 +270,6 @@ F_DELETE_REPO_TAG()
         fi
     fi
     #
-    #
     # 多个标签TAG可以关联同一个【manifest】镜像ID；一个【manifest】镜像ID关联多个镜像实体Blob层（实际数据，非常占空间）；多个【manifest】镜像ID可能共享部分Blob层，这个理解很重要！
     #
     # 如果一个【manifest】镜像ID与两个标签TAG关联，此时执行删除这个【manifest】镜像ID，那么与之对应的这两个标签TAG也会被删除。
@@ -275,15 +277,28 @@ F_DELETE_REPO_TAG()
     #
     # 注意：如果你非要手动删除blob，则你需要先删除blob，再删除manifest，否则会出错！！！
     # 所以：我们只需要删除标签的【manifest】镜像ID，【blob】由服务器自动处理就好了；还有，如果连个标签TAG关联同一个镜像ID，删除其中一个标签TAG，另外一个也会消失，这个你必须要知道，官方没有好的解决办法！
+
+    # 删除【blob】
     #
-    ## 删除【blob】
     #F_REPO_TAG_BLOB_DIGEST=$(cat ${F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST_FILE} | awk '{print $2}')
     #curl  -s -X DELETE  \
     #    -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD}  \
     #    ${DOCKER_REPO_URL_BASE}/${F_REPO_NAME}/blobs/${F_REPO_TAG_BLOB_DIGEST}
-    #
+
     # 删除【manifest】镜像ID
+    #
     F_REPO_TAG_DIGEST=$(cat ${F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST_FILE} | awk '{print $1}')
+    # 镜像ID关联多个标签时，是否强制删除
+    if [[ ${FORCE_OPT} != "Y" ]]; then
+        # 获取所有指向相同镜像 ID 的标签
+        F_RELATED_TAGS=$(curl -s -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD} -X GET ${DOCKER_REPO_URL_BASE}/${F_REPO_NAME}/manifests/${F_REPO_TAG_DIGEST} | jq -r '.tag[]' | grep -v "${F_REPO_TAG}")
+        # 检查是否有其他标签指向相同的镜像 ID
+        if [[ -n "${F_RELATED_TAGS}" ]]; then
+            echo -e "\n猪猪侠警告：跳过删除标签${F_REPO_TAG}，因为有其他标签指向相同的镜像 ID。相关标签：${F_RELATED_TAGS}\n" 1>&2
+            return 0
+        fi
+    fi
+    #
     curl  -s -X DELETE  \
         -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD}  \
         ${DOCKER_REPO_URL_BASE}/${F_REPO_NAME}/manifests/${F_REPO_TAG_DIGEST}
@@ -292,9 +307,8 @@ F_DELETE_REPO_TAG()
 
 
 
-
 # 参数检查
-TEMP=`getopt -o hlLrRn:t:k:  -l help,list-repo,list-tag,rm-repo,rm-tag,name:,tag:,keep:  -- "$@"`
+TEMP=`getopt -o hlLrRn:t:k:f  -l help,list-repo,list-tag,rm-repo,rm-tag,name:,tag:,keep:,force  -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
     exit 51
@@ -348,6 +362,10 @@ do
                 echo -e "\n猪猪侠警告：参数【-k|--keep】参数不合法，请查看帮助【$0 --help】\n"
                 exit 51
             fi
+            ;;
+        -f|--force)
+            FORCE_OPT='Y'
+            shift
             ;;
         --)
             shift
