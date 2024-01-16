@@ -57,6 +57,11 @@ export EMAIL='admin@zzxia.com'
 # R - 信任IP前缀（用于警报异常ssh登录ip）
 export TRUST_IPS='office:16.24.7, 亚运城1:120.85.12, 亚运城2:120.85.13'
 
+# R - 钉钉 Webhook API
+DINGDING_WEBHOOK_API="https://oapi.dingtalk.com/robot/send?access_token=0bf5368250c2d7852386b0cb2afbe157f7cee你的token"
+DINGDING_WEBHOOK_API_deploy="https://oapi.dingtalk.com/robot/send?access_token=0bf5368250c2d7852386b0cb2afbe157f7cee你的token"
+DINGDING_WEBHOOK_API_login="https://oapi.dingtalk.com/robot/send?access_token=0bf5368250c2d7852386b0cb2afbe157f7cee你的token"
+
 
 
 # ==============================

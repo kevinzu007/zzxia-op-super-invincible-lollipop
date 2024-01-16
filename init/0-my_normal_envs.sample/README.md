@@ -25,9 +25,8 @@ zzxia-om-super-invincible-lollipop/init/envs.sample$ tree
 ├── bash_aliases---dev                           #--- 可选，命令别名
 ├── container-hosts-pub.list---dev               #--- 可选，定义docker容器中的/etc/hosts
 ├── env.sh---dev                             #--- 必选，最关键的环境变量文件
-├── dingding_conver_to_markdown_list.py          #--- 可选，将消息转换成markdown list格式发出来，你需要设置自己的token
-├── dingding_send_markdown-login.py              #--- 可选，发送markdown格式消息，用户登录报警用，你需要设置自己的token
-├── dingding_send_markdown.py                    #--- 可选，发送markdown格式消息，你需要设置自己的token
+├── dingding_conver_to_markdown_list.sh          #--- 可选，将消息转换成markdown list格式发出来，你需要设置自己的token
+├── dingding_send_markdown.sh                    #--- 可选，发送markdown格式消息，你需要设置自己的token
 ├── docker-arg-pub.list---dev                    #--- 可选，一般使用swarm集群是必要的
 ├── docker-cluster-service.list---dev            #--- 必选，关键参数，这是部署发布用服务清单
 ├── elasticsearch-srv-env---dev                  #--- 可选，一般用不上

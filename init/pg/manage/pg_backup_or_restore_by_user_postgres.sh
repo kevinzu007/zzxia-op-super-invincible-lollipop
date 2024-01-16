@@ -27,7 +27,7 @@ TIME=`date +%Y-%m-%dT%H:%M:%S`
 TIME_START=${TIME}
 
 # sh
-DINGDING_MARKDOWN_PY="/usr/local/bin/dingding_conver_to_markdown_list.py"
+DINGDING_SEND_LIST_SH="/usr/local/bin/dingding_conver_to_markdown_list.sh"
 PGSQL_CMD_BASE='/usr/local/pgsql/bin'
 
 
@@ -39,7 +39,7 @@ F_HELP()
     用途：用于pg数据库备份or还原，一次仅处理一个数据库。
     依赖：
         /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
-        ${DINGDING_MARKDOWN_PY}
+        ${DINGDING_SEND_LIST_SH}
     注意：必须在postgres账户下运行
     用法:
         $0  [-h|--help]
@@ -214,14 +214,14 @@ do
                 # send msg
                 TIME_END=`date +%Y-%m-%dT%H:%M:%S`
                 TIME_COST=`F_TimeDiff "${TIME_START}" "${TIME_END}"`
-                ${DINGDING_MARKDOWN_PY}  "【Info:PG备份:${RUN_ENV}】"  "数据库${DB_NAME}备份成功！ ${TIME_COST}"
+                ${DINGDING_SEND_LIST_SH}  "【Info:PG备份:${RUN_ENV}】"  "数据库${DB_NAME}备份成功！ ${TIME_COST}"
                 exit
             else
                 echo -e "\n猪猪侠警告：数据库【${DB_NAME}】备份失败\n"
                 # send msg
                 TIME_END=`date +%Y-%m-%dT%H:%M:%S`
                 TIME_COST=`F_TimeDiff "${TIME_START}" "${TIME_END}"`
-                ${DINGDING_MARKDOWN_PY}  "【Info:PG备份:${RUN_ENV}】"  "数据库${DB_NAME}备份失败！ ${TIME_COST}"
+                ${DINGDING_SEND_LIST_SH}  "【Info:PG备份:${RUN_ENV}】"  "数据库${DB_NAME}备份失败！ ${TIME_COST}"
                 exit 1
             fi
             ;;
@@ -241,14 +241,14 @@ do
                 # send msg
                 TIME_END=`date +%Y-%m-%dT%H:%M:%S`
                 TIME_COST=`F_TimeDiff "${TIME_START}" "${TIME_END}"`
-                ${DINGDING_MARKDOWN_PY}  "【Info:PG还原:${RUN_ENV}】"  "数据库${DB_NAME}还原成功！ ${TIME_COST}"
+                ${DINGDING_SEND_LIST_SH}  "【Info:PG还原:${RUN_ENV}】"  "数据库${DB_NAME}还原成功！ ${TIME_COST}"
                 exit
             else
                 echo -e "\n猪猪侠警告：数据库【${DB_NAME}】还原失败\n"
                 # send msg
                 TIME_END=`date +%Y-%m-%dT%H:%M:%S`
                 TIME_COST=`F_TimeDiff "${TIME_START}" "${TIME_END}"`
-                ${DINGDING_MARKDOWN_PY}  "【Info:PG还原:${RUN_ENV}】"  "数据库${DB_NAME}还原失败！ ${TIME_COST}"
+                ${DINGDING_SEND_LIST_SH}  "【Info:PG还原:${RUN_ENV}】"  "数据库${DB_NAME}还原失败！ ${TIME_COST}"
                 exit 1
             fi
             ;;

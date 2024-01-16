@@ -14,7 +14,7 @@ cd ${SH_PATH}
 # env
 YEAR=`date +%Y`
 TIME_START=`date +%Y-%m-%dT%H:%M:%S`
-DINGDING_MARKDOWN_PY='/usr/local/bin/dingding_conver_to_markdown_list.py'
+DINGDING_SEND_LIST_SH='/usr/local/bin/dingding_conver_to_markdown_list.sh'
 
 
 
@@ -56,7 +56,7 @@ echo '#######################################################'
 ${BACKUP_CMD}
 if [ $? != 0 ]; then
     echo  "gitlab备份：gitlab:backup:create备份出错，请检查！"
-    ${DINGDING_MARKDOWN_PY}  "【Error:备份:gitlab】" "gitlab备份：gitlab:backup:create备份出错，请检查！"
+    ${DINGDING_SEND_LIST_SH}  "【Error:备份:gitlab】" "gitlab备份：gitlab:backup:create备份出错，请检查！"
     exit 1
 fi
 
@@ -65,7 +65,7 @@ THIS_BACKUP_FILE=${BACKUP_DIR}/${THIS_BACKUP_FILE}
 #THIS_BACKUP_FILE=$(find  ${BACKUP_DIR}  -maxdepth 1  -type f  -size +2G  -mtime 0 | head -n 1)
 if [[ -z ${THIS_BACKUP_FILE} ]]; then
     echo  "gitlab备份：gitlab:backup:create备份出错，文件为空，请检查！"
-    ${DINGDING_MARKDOWN_PY}  "【Error:备份:gitlab】" "gitlab备份：gitlab:backup:create备份出错
+    ${DINGDING_SEND_LIST_SH}  "【Error:备份:gitlab】" "gitlab备份：gitlab:backup:create备份出错
 ，文件为空，请检查！"
     exit 2
 fi
@@ -75,7 +75,7 @@ fi
 df -h | grep ossfs > /dev/null 2>&1
 if [ $? != 0 ]; then
     echo "gitlab备份：ossfs没有挂载，请检查！"
-    ${DINGDING_MARKDOWN_PY}  "【Error:备份:gitlab】"  "gitlab备份：ossfs没有挂载，请检查！"
+    ${DINGDING_SEND_LIST_SH}  "【Error:备份:gitlab】"  "gitlab备份：ossfs没有挂载，请检查！"
     exit
 fi
 
@@ -91,7 +91,7 @@ cp  ${THIS_BACKUP_FILE}  ${BACKUP_REMOTE_DIR}/${YEAR}/
 
 if [ $? != 0 ]; then
     echo "gitlab备份：备份文件拷贝不成功，请检查！"
-    ${DINGDING_MARKDOWN_PY}  "【Error:备份:gitlab】"  "gitlab备份：备份文件拷贝不成功，请检查！"
+    ${DINGDING_SEND_LIST_SH}  "【Error:备份:gitlab】"  "gitlab备份：备份文件拷贝不成功，请检查！"
     exit 3
 fi
 
@@ -104,7 +104,7 @@ TIME_COST=`F_TimeDiff "${TIME_START}" "${TIME_END}"`
 
 # 每周一发通知
 if [ `date +%w` = 1 ]; then
-    ${DINGDING_MARKDOWN_PY}  "【Info:备份:gitlab】"  "gitlab备份：成功！ ${TIME_COST}"
+    ${DINGDING_SEND_LIST_SH}  "【Info:备份:gitlab】"  "gitlab备份：成功！ ${TIME_COST}"
 fi
 
 

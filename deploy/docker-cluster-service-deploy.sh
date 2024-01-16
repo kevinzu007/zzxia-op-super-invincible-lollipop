@@ -17,6 +17,8 @@ cd ${SH_PATH}
 #DOCKER_COMPOSE_BASE=
 #USER_DB_FILE=
 #USER_DB_FILE_APPEND_1=
+#DINGDING_WEBHOOK_API_deploy=
+export DINGDING_WEBHOOK_API_2=${DINGDING_WEBHOOK_API_deploy}
 
 # 引入env.sh
 . ${SH_PATH}/env.sh
@@ -36,7 +38,6 @@ cd ${SH_PATH}
 #COMPOSE_DEFAULT_DOCKER_HOST=
 #COMPOSE_DEFAULT_NETWORK=
 # 来自 ${MY_PRIVATE_ENVS_DIR} 目录下的 *.sec
-#DINGDING_API=
 #DOCKER_REPO_SERVER=
 #DOCKER_IMAGE_DEFAULT_PRE_NAME=
 
@@ -95,7 +96,7 @@ fi
 SEND_MAIL="${SH_PATH}/../tools/send_mail.sh"
 DOCKER_IMAGE_SEARCH_SH="${SH_PATH}/docker-image-search.sh"
 FORMAT_TABLE_SH="${SH_PATH}/../tools/format_table.sh"
-DINGDING_MARKDOWN_PY="${SH_PATH}/../tools/dingding_conver_to_markdown_list-deploy.py"
+DINGDING_SEND_DEPLOY_SH="/usr/local/bin/dingding_conver_to_markdown_list.sh"
 # 引入函数
 .  ${SH_PATH}/function.sh
 
@@ -118,7 +119,7 @@ F_HELP()
         ${SEND_MAIL}
         ${DOCKER_IMAGE_SEARCH_SH}
         ${FORMAT_TABLE_SH}
-        ${DINGDING_MARKDOWN_PY}
+        ${DINGDING_SEND_DEPLOY_SH}
     注意：
         * 名称正则表达式完全匹配，会自动在正则表达式的头尾加上【^ $】，请规避
         * 一般服务名（非灰度服务名）为项目清单中的服务名，灰度服务名为为【项目清单服务名】+【--】+【灰度版本号】
@@ -388,8 +389,9 @@ F_SEARCH_IMAGE_TAG()
 {
     F_SERVICE_NAME=$1
     F_THIS_TAG=$2
-    ${DOCKER_IMAGE_SEARCH_SH}  ${IMAGE_PRE_NAME_ARG}  --tag ${F_THIS_TAG}  --output ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_TAG-result.txt  ${F_SERVICE_NAME}
-    search_r=$(cat ${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_TAG-result.txt | cut -d " " -f 3-)
+    F_SEARCH_IMAGE_TAG_RESULT_FILE="${LOG_HOME}/${SH_NAME}-F_SEARCH_IMAGE_TAG-result--${F_SERVICE_NAME}.txt"
+    ${DOCKER_IMAGE_SEARCH_SH}  ${IMAGE_PRE_NAME_ARG}  --tag ${F_THIS_TAG}  --output ${F_SEARCH_IMAGE_TAG_RESULT_FILE}  ${F_SERVICE_NAME}
+    search_r=$(cat ${F_SEARCH_IMAGE_TAG_RESULT_FILE} | cut -d " " -f 3-)
     F_GET_IT=""
     # 这个其实不可能有多行
     for i in ${search_r}
@@ -974,14 +976,14 @@ F_FUCK()
             SH_ERROR_CODE=$?
         else
             # 执行命令，并写日志
-            DEPLOY_LOG_file="${DEPLOY_LOG}--${PJ}.log"
+            DEPLOY_LOG_file="${DEPLOY_LOG}--${SERVICE_NAME}.log"
             echo "正在执行，请等待......"
             echo  ${DOCKER_FULL_CMD} | bash  > ${DEPLOY_LOG_file}  2>&1
             SH_ERROR_CODE=$?
             cat  ${DEPLOY_LOG_file}
             # mail
             if [[ ${SH_ERROR_CODE} != 0 && -n "${MY_USER_EMAIL}" ]]; then
-                ${SEND_MAIL}  --subject "【${RUN_ENV}】${GAN_WHAT_FUCK} Log - ${PJ}"  --content "请看附件\n"  --attach "${DEPLOY_LOG_file}"  "${MY_USER_EMAIL}"
+                ${SEND_MAIL}  --subject "【${RUN_ENV}】${GAN_WHAT_FUCK} Log - ${SERVICE_NAME}"  --content "请看附件\n"  --attach "${DEPLOY_LOG_file}"  "${MY_USER_EMAIL}"
             fi
         fi
         #
@@ -2542,9 +2544,9 @@ do
             #
             if [ -z "${POD_REPLICAS_NEW}" ]; then
                 echo -e "\n猪猪侠警告：参数【-n|--number】使用错误！\n"
-                echo "跳过，配置文件错误"
-                echo "${SERVICE_X_NAME} : 跳过，配置文件错误" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
-                ERROR_CODE=52
+                echo "跳过，脚本参数错误"
+                echo "${SERVICE_X_NAME} : 跳过，脚本参数错误" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+                ERROR_CODE=51
                 continue
             fi
             #
@@ -2917,6 +2919,7 @@ fi
 # rm:
 # 53  "失败，服务不在运行中"
 # scale
+# 51  "跳过，脚本参数错误"
 # 53  "失败，服务不在运行中"
 # rollback:
 # 53  "失败，服务不在运行中"
@@ -2936,7 +2939,7 @@ case ${SH_RUN_MODE} in
     normal)
         #
         MESSAGE_END="DOCKER SERVICE ${SERVICE_OPERATION} 已完成！ 共企图 ${SERVICE_OPERATION} ${TOTAL_SERVICES} 个项目，成功 ${SERVICE_OPERATION} ${SUCCESS_DO_COUNT} 个项目，跳过 ${NOTNEED_DO_COUNT} 个项目，${ERROR_DO_COUNT} 个项目失败，因其他原因未执行 ${SERVICE_OPERATION} ${NOT_DO_COUNT} 个项目。"
-        # 消息回显拼接
+        # 输出到屏幕及文件
         > ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         echo "干：**${GAN_WHAT_FUCK}**" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         echo "== DOCKER SERVICE ${SERVICE_OPERATION} 报告 ==" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
@@ -2956,8 +2959,11 @@ case ${SH_RUN_MODE} in
         echo "--------------------------------------------------" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         cat  ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}            >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         echo "--------------------------------------------------" >> ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
-        # 输出屏幕
+        # 输出到屏幕
         ${FORMAT_TABLE_SH}  --delimeter ':'  --title "**服务名称**:**${SERVICE_OPERATION}**"  --file ${DOCKER_CLUSTER_SERVICE_DEPLOY_OK_LIST_FILE}
+        #
+        echo "日志Local地址：${LOG_HOME}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
+        #echo "日志Web地址：${LOG_DOWNLOAD_SERVER}/file/${DATE_TIME}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         #
         F_TimeDiff  "${TIME_START}" "${TIME_END}" | tee -a ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
         #
@@ -2977,7 +2983,7 @@ case ${SH_RUN_MODE} in
             #echo ${MSG[$t]}
             let  t=$t+1
         done < ${DOCKER_CLUSTER_SERVICE_DEPLOY_HISTORY_CURRENT_FILE}
-        ${DINGDING_MARKDOWN_PY}  "【Info:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "${MSG[@]}" > /dev/null
+        ${DINGDING_SEND_DEPLOY_SH}  "【Info:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "${MSG[@]}" > /dev/null
         ;;
     function)
         #

@@ -18,6 +18,8 @@ cd ${SH_PATH}
 #NGINX_CONFIG_SH_HOME=
 #USER_DB_FILE=
 #USER_DB_FILE_APPEND_1=
+#DINGDING_WEBHOOK_API_deploy=
+export DINGDING_WEBHOOK_API_2=${DINGDING_WEBHOOK_API_deploy}
 
 # 引入env.sh
 . ${SH_PATH}/env.sh
@@ -36,7 +38,6 @@ cd ${SH_PATH}
 #SWARM_DEFAULT_NETWORK=
 #COMPOSE_DEFAULT_NETWORK=
 # 来自 ${MY_PRIVATE_ENVS_DIR} 目录下的 *.sec
-#DINGDING_API=
 #DOCKER_REPO_SERVER=
 
 
@@ -94,7 +95,7 @@ fi
 BUILD_SH="${SH_PATH}/build.sh"
 DOCKER_CLUSTER_SERVICE_DEPLOY_SH="${SH_PATH}/docker-cluster-service-deploy.sh"
 FORMAT_TABLE_SH="${SH_PATH}/../tools/format_table.sh"
-DINGDING_MARKDOWN_PY="${SH_PATH}/../tools/dingding_conver_to_markdown_list-deploy.py"
+DINGDING_SEND_DEPLOY_SH="/usr/local/bin/dingding_conver_to_markdown_list.sh"
 # 引入函数
 .  ${SH_PATH}/function.sh
 
@@ -123,7 +124,7 @@ F_HELP()
         ${GOGOGO_SERVICE_LIST_FILE_APPEND_2}
         ${DOCKER_CLUSTER_SERVICE_DEPLOY_SH}
         ${FORMAT_TABLE_SH}
-        ${DINGDING_MARKDOWN_PY}
+        ${DINGDING_SEND_DEPLOY_SH}
     注意：
         - 构建完成后的发布：如果目标服务不在运行中，则执行【create】；如果已经存在，则执行【update】。如果是以【create】方式执行，则【-G|--gray】参数有效
     用法:
@@ -843,7 +844,7 @@ if [[ -z ${THIS_LANGUAGE_CATEGORY} ]]; then
             #
             if [[ $GET_IT != 'YES' ]]; then
                 echo -e "\n${ECHO_ERROR}猪猪侠警告：【${GAN_WHAT_FUCK}】时，项目【${i}】正则不匹配项目列表【${GOGOGO_PROJECT_LIST_FILE}】中任何项目，请检查！${ECHO_CLOSE}\n"
-                ${DINGDING_MARKDOWN_PY}  "【Error:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_WHAT_FUCK}】时，项目【${i}】正则不匹配项目列表【${GOGOGO_PROJECT_LIST_FILE}】中任何项目，请检查！" > /dev/null
+                ${DINGDING_SEND_DEPLOY_SH}  "【Error:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_WHAT_FUCK}】时，项目【${i}】正则不匹配项目列表【${GOGOGO_PROJECT_LIST_FILE}】中任何项目，请检查！" > /dev/null
                 exit 51
             fi
         done
@@ -863,7 +864,7 @@ else
         F_FIND_PROJECT ${THIS_LANGUAGE_CATEGORY} >> ${GOGOGO_PROJECT_LIST_FILE_TMP}
         if [[ $? -ne 0 ]]; then
             echo -e "\n${ECHO_ERROR}猪猪侠警告：【${GAN_WHAT_FUCK}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！${ECHO_CLOSE}\n"
-            ${DINGDING_MARKDOWN_PY}  "【Error:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_WHAT_FUCK}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！" > /dev/null
+            ${DINGDING_SEND_DEPLOY_SH}  "【Error:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_WHAT_FUCK}】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】的项目，请检查！" > /dev/null
             exit 51
         fi
     else
@@ -874,7 +875,7 @@ else
             F_FIND_PROJECT ${THIS_LANGUAGE_CATEGORY} $i >> ${GOGOGO_PROJECT_LIST_FILE_TMP}
             if [[ $? -ne 0 ]]; then
                 echo -e "\n${ECHO_ERROR}猪猪侠警告：【GAN_WHAT_FUCK】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】且正则匹配【$i】的项目，请检查！${ECHO_CLOSE}\n"
-                ${DINGDING_MARKDOWN_PY}  "【Error:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【GAN_WHAT_FUCK】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】且正则匹配【$i】的项目，请检查！" > /dev/null
+                ${DINGDING_SEND_DEPLOY_SH}  "【Error:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【GAN_WHAT_FUCK】时，没有找到类别为【${THIS_LANGUAGE_CATEGORY}】且正则匹配【$i】的项目，请检查！" > /dev/null
                 exit 51
             fi
         done
@@ -1125,7 +1126,7 @@ BUILD_ERROR_COUNT=`cat ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE} | grep -o '构�
 let  NOT_BUILD_RELEASE_COUNT=${TOTAL_PJS}-${RELEASE_CHECK_COUNT}
 TIME_END=`date +%Y-%m-%dT%H:%M:%S`
 MESSAGE_END="项目构建已完成！ 共企图构建发布${TOTAL_PJS}个项目，成功构建发布${RELEASE_SUCCESS_COUNT}个项目，成功构建但失败发布${RELEASE_ERROR_COUNT}个项目，跳过发布${RELEASE_SKIP_COUNT}个项目，失败构建${BUILD_ERROR_COUNT}个项目，${NOT_BUILD_RELEASE_COUNT}个项目因其他原因退出构建发布。"
-# 消息回显拼接
+# 输出到屏幕及文件
 > ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 echo "干：**${GAN_WHAT_FUCK}**" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 echo "===== 构建与发布报告 =====" >> ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
@@ -1146,10 +1147,11 @@ echo "构建与发布清单：" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURR
 echo "----------------------------------------------------------------------" >> ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}   #--- 70 (80-70-60)
 cat  ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}            >> ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 echo "----------------------------------------------------------------------" >> ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
-# 输出屏幕
+# 输出到屏幕
 ${FORMAT_TABLE_SH}  --delimeter ':'  --title '**项目名称**:**构建**:**发布**:**耗时**'  --file ${GOGOGO_BUILD_AND_RELEASE_OK_LIST_FILE}
 #
 F_TimeDiff  "${TIME_START}" "${TIME_END}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
+#
 echo "日志Web地址：${LOG_DOWNLOAD_SERVER}/file/${DATE_TIME}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 echo "日志Local地址：${LOG_HOME}" | tee -a ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
 #
@@ -1169,7 +1171,7 @@ do
     #echo ${MSG[$t]}
     let  t=$t+1
 done < ${GOGOGO_BUILD_AND_RELEASE_HISTORY_CURRENT_FILE}
-${DINGDING_MARKDOWN_PY}  "【Info:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "${MSG[@]}" > /dev/null
+${DINGDING_SEND_DEPLOY_SH}  "【Info:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "${MSG[@]}" > /dev/null
 
 
 

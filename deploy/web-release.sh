@@ -17,6 +17,8 @@ cd "${SH_PATH}"
 #NGINX_CONFIG_SH_HOME=
 #USER_DB_FILE=
 #USER_DB_FILE_APPEND_1=
+#DINGDING_WEBHOOK_API_deploy=
+export DINGDING_WEBHOOK_API_2=${DINGDING_WEBHOOK_API_deploy}
 
 # 引入env.sh
 . ${SH_PATH}/env.sh
@@ -25,7 +27,6 @@ cd "${SH_PATH}"
 #LOLLIPOP_LOG_BASE=
 #ANSIBLE_HOST_FOR_LOGFILE=
 # 来自 ${MY_PRIVATE_ENVS_DIR} 目录下的 *.sec
-#DINGDING_API=
 
 # 本地env
 GAN_WHAT_FUCK='Web_Release'
@@ -65,7 +66,7 @@ if [[ -z ${USER_INFO_FROM} ]]; then
 fi
 # sh
 FORMAT_TABLE_SH="${SH_PATH}/../tools/format_table.sh"
-DINGDING_MARKDOWN_PY="${SH_PATH}/../tools/dingding_conver_to_markdown_list-deploy.py"
+DINGDING_SEND_DEPLOY_SH="/usr/local/bin/dingding_conver_to_markdown_list.sh"
 # 引入函数
 .  ${SH_PATH}/function.sh
 
@@ -86,7 +87,7 @@ F_HELP()
     依赖：
         ${WEB_PROJECT_LIST_FILE}
         ${FORMAT_TABLE_SH}
-        ${DINGDING_MARKDOWN_PY}
+        ${DINGDING_SEND_DEPLOY_SH}
         ${SH_PATH}/env.sh
         nginx上：/root/nginx-config/web-release-on-nginx.sh
     注意：运行在nginx节点上
@@ -135,7 +136,6 @@ F_HELP()
 TEMP=`getopt -o hlrbM:  -l help,list,release,rollback,mode: -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
-    F_HELP
     exit 51
 fi
 #
@@ -249,7 +249,7 @@ else
         #
         if [[ $GET_IT != 'YES' ]]; then
             echo -e "\n${ECHO_ERROR}猪猪侠警告：【${GAN_WHAT_FUCK}】时，项目【${i}】正则不匹配项目列表【${WEB_PROJECT_LIST_FILE}】中任何项目，请检查！${ECHO_CLOSE}\n"
-            ${DINGDING_MARKDOWN_PY}  "【Error:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_WHAT_FUCK}】时，项目【${i}】正则不匹配项目列表【${WEB_PROJECT_LIST_FILE}】中任何项目，请检查！" > /dev/null
+            ${DINGDING_SEND_DEPLOY_SH}  "【Error:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "猪猪侠警告：【${GAN_WHAT_FUCK}】时，项目【${i}】正则不匹配项目列表【${WEB_PROJECT_LIST_FILE}】中任何项目，请检查！" > /dev/null
             exit 51
         fi
     done
@@ -417,7 +417,7 @@ case ${SH_RUN_MODE} in
             #echo ${MSG[$t]}
             let  t=$t+1
         done < ${WEB_RELEASE_HISTORY_CURRENT_FILE}
-        ${DINGDING_MARKDOWN_PY}  "【Info:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "${MSG[@]}" > /dev/null
+        ${DINGDING_SEND_DEPLOY_SH}  "【Info:${LOLLIPOP_PLATFORM_NAME}:${RUN_ENV}】" "${MSG[@]}" > /dev/null
         ;;
     function)
         #

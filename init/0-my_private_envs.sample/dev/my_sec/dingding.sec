@@ -1,3 +1,0 @@
-# 钉钉api（目前仅用于deploy）
-export DINGDING_API="https://oapi.dingtalk.com/robot/send?access_token=你的钉钉机器人token"
-

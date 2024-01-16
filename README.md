@@ -1,6 +1,15 @@
-# zzxia-op-super-invincible-lollipop
+# zzxia-op-super-invincible-lollipop (for short: lollipop)
 
 中文名：猪猪侠之运维超级无敌棒棒糖（简称：棒棒糖）
+
+**如果有使用上的问题或其他，可以加wx：`zzxia_ggbond` 解决。加好友时请注明你来自哪个平台！**
+
+
+
+[toc]
+
+
+
 
 ## 1 介绍
 
@@ -119,12 +128,12 @@
 |  1   | deploy/docker-image-search.sh                 | 从私有docker仓库搜索docker镜像    | docker；docker仓库                       |
 |  2   | deploy/docker-tag-push.sh                     | 推送docker镜像到私有docker仓库    | docker；docker仓库                       |
 |  3   | op/aliyun-dns.sh                              | 用阿里云dns做解析的域名修改工具   | 阿里云CLI；阿里云dns                     |
-|  4   | op/godaddy-dns.sh                             | 用Godaddy dns做解析的域名修改工具 | curl；godaddy                            |
-|  5   | op/cert-letsencrypt-wildcart.sh               | 在Let'sencrypt上申请泛域名证书    | certbot                                  |
-|  6   | op/send_mail.sh                               | 发送邮件                          | mailx；邮件服务器账号                    |
-|  7   | op/dingding_conver_to_markdown_list-deploy.py | 发送钉钉消息                      | python；钉钉机器人                       |
-|  8   | op/format_table.sh                            | 格式化表格                        | awk                                      |
-|  9   | op/draw_table.sh                              | 严格格式化表格                    | awk                                      |
+|  4   | tools/godaddy-dns.sh                          | 用Godaddy dns做解析的域名修改工具 | curl；godaddy                            |
+|  5   | tools/cert-letsencrypt-wildcart.sh            | 在Let'sencrypt上申请泛域名证书    | certbot                                  |
+|  6   | tools/send_mail.sh                            | 发送邮件                          | mailx；邮件服务器账号                    |
+|  7   | tools/dingding_conver_to_markdown_list.sh     | 发送钉钉消息                      | python；钉钉机器人                       |
+|  8   | tools/format_table.sh                         | 格式化表格                        | awk                                      |
+|  9   | tools/draw_table.sh                           | 严格格式化表格                    | awk                                      |
 |  10  | init/1-sshkey-copy.sh                         | 免密登录                          | sshpass                                  |
 |  11  | init/send_login_alert_msg.sh                  | 发送用户登录警报消息              | python；钉钉机器人                       |
 |  12  | init/send_mail_attach_my_log.sh               | 发送自定义日志到邮箱              | mailx；邮件服务器账号                    |
@@ -817,7 +826,7 @@ $ ./deploy/build.sh --help
         /root/deploy-bmp/deploy/../tools/send_mail.sh
         /root/deploy-bmp/deploy/docker-tag-push.sh
         /root/deploy-bmp/deploy/../tools/format_table.sh
-        /root/deploy-bmp/deploy/../tools/dingding_conver_to_markdown_list-deploy.py
+        /root/deploy-bmp/deploy/../tools/dingding_conver_to_markdown_list-deploy.sh
     注意：
         * 名称正则表达式完全匹配，会自动在正则表达式的头尾加上【^ $】，请规避
         * 输入命令时，参数顺序不分先后
@@ -905,7 +914,7 @@ $ ./deploy/build-parallel.sh --help
         /root/deploy-bmp/deploy/project.list
         /root/deploy-bmp/deploy/build.sh
         /root/deploy-bmp/deploy/../tools/format_table.sh
-        /root/deploy-bmp/deploy/../tools/dingding_conver_to_markdown_list-deploy.py
+        /root/deploy-bmp/deploy/../tools/dingding_conver_to_markdown_list-deploy.sh
     注意：
         * 名称正则表达式完全匹配，会自动在正则表达式的头尾加上【^ $】，请规避
         * 输入命令时，参数顺序不分先后
@@ -973,7 +982,7 @@ $ ./deploy/docker-cluster-service-deploy.sh --help
         /root/deploy-bmp/deploy/env.sh
         /root/deploy-bmp/deploy/docker-image-search.sh
         /root/deploy-bmp/deploy/../tools/format_table.sh
-        /root/deploy-bmp/deploy/../tools/dingding_conver_to_markdown_list-deploy.py
+        /root/deploy-bmp/deploy/../tools/dingding_conver_to_markdown_list-deploy.sh
     注意：
         * 名称正则表达式完全匹配，会自动在正则表达式的头尾加上【^ $】，请规避
         * 一般服务名（非灰度服务名）为项目清单中的服务名，灰度服务名为为【项目清单服务名】+【--】+【灰度版本号】
@@ -1113,7 +1122,7 @@ $ ./deploy/web-release.sh --help
     依赖：
         /root/deploy-bmp/deploy/nginx.list
         /root/deploy-bmp/deploy/../tools/format_table.sh
-        /root/deploy-bmp/deploy/../tools/dingding_conver_to_markdown_list-deploy.py
+        /root/deploy-bmp/deploy/../tools/dingding_conver_to_markdown_list-deploy.sh
         /root/deploy-bmp/deploy/env.sh
         nginx上：/root/nginx-config/web-release-on-nginx.sh
     注意：运行在nginx节点上
@@ -1181,7 +1190,7 @@ $ ./deploy/gogogo.sh --help
         /root/deploy-bmp/deploy/docker-cluster-service.list
         /root/deploy-bmp/deploy/docker-cluster-service-deploy.sh
         /root/deploy-bmp/deploy/../tools/format_table.sh
-        /root/deploy-bmp/deploy/../tools/dingding_conver_to_markdown_list-deploy.py
+        /root/deploy-bmp/deploy/../tools/dingding_conver_to_markdown_list-deploy.sh
     注意：
         - 构建完成后的发布：如果目标服务不在运行中，则执行【create】；如果已经存在，则执行【update】。如果是以【create】方式执行，则【-G|--gray】参数有效
     用法:
@@ -1591,7 +1600,7 @@ $ ./tools/send_mail.sh --help
     用途：使用mailx发送邮件
     依赖：
         mailx
-        /usr/local/bin/dingding_send_markdown.py
+        /usr/local/bin/dingding_send_markdown.sh
     注意：
         * 输入命令时，参数顺序不分先后
     用法：
@@ -1736,19 +1745,19 @@ $ ./tools/draw_table.sh --help
 #### 5.6.8 钉钉消息发送工具
 
 ```bash
-$ ./init/envs.sample/dingding_send_markdown.py
-# 用法： ./dingding_send_markdown.py  --title='sssss'  --message="`cat mmm.txt`"
-#        ./dingding_send_markdown.py  --title 'sssss'  --message "$( echo -e "### 用户：${USER} \n### 时间：${TIME} \n\n" )"
-#        ./dingding_send_markdown.py  --title 'sssss'  --message "$( echo -e "### 用户：${USER} \n### 时间：`date` \n\n" )"
+$ ./init/envs.sample/dingding_send_markdown.sh
+# 用法： ./dingding_send_markdown.sh  --title='sssss'  --message="`cat mmm.txt`"
+#        ./dingding_send_markdown.sh  --title 'sssss'  --message "$( echo -e "### 用户：${USER} \n### 时间：${TIME} \n\n" )"
+#        ./dingding_send_markdown.sh  --title 'sssss'  --message "$( echo -e "### 用户：${USER} \n### 时间：`date` \n\n" )"
 # 请将变量【dingding_api_url】修改为你自己的
 ```
 
 ```bash
-$ ./init/envs.sample/dingding_conver_to_markdown_list.py
-# 用法： ./dingding_conver_to_markdown_list.py "[Title]"
-#        ./dingding_conver_to_markdown_list.py "[Title]" "aaa"
-#        ./dingding_conver_to_markdown_list.py "[Title]" "aaa" "bbb"
-#        ./dingding_conver_to_markdown_list.py "[Title]" "aaa" "bbb" ... "<list>"
+$ ./init/envs.sample/dingding_conver_to_markdown_list.sh
+# 用法： ./dingding_conver_to_markdown_list.sh "[Title]"
+#        ./dingding_conver_to_markdown_list.sh "[Title]" "aaa"
+#        ./dingding_conver_to_markdown_list.sh "[Title]" "aaa" "bbb"
+#        ./dingding_conver_to_markdown_list.sh "[Title]" "aaa" "bbb" ... "<list>"
 # 请将变量【api_url】修改为你自己的
 ```
 
@@ -1766,7 +1775,7 @@ $ ./init/send_login_alert_msg.sh
        # EMAIL=${EMAIL:-"kevinzu@xxx.com"}
        # TRUST_IPS=${TRUST_IPS:-'办公室:111.111.111., 家:222.222.22'}
 # 依赖：/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
-#       /usr/local/bin/dingding_send_markdown-login.py
+#       /usr/local/bin/dingding_send_markdown.sh
 # 用法：
 #      用户登录时自动执行/etc/profile.d/下的脚本，包含本程序
 ```
