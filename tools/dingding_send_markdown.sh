@@ -11,14 +11,10 @@ SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 #cd "${SH_PATH}"
 
 
-# 引入/etc/profile
-. /etc/profile
-dingding_api_url=${DINGDING_WEBHOOK_API}
-
 # 引入env
-[[ -n ${DINGDING_WEBHOOK_API_1} ]]  &&  dingding_api_url=${DINGDING_WEBHOOK_API_1}
-[[ -n ${DINGDING_WEBHOOK_API_2} ]]  &&  dingding_api_url=${DINGDING_WEBHOOK_API_2}
-[[ -n ${DINGDING_WEBHOOK_API_3} ]]  &&  dingding_api_url=${DINGDING_WEBHOOK_API_3}
+[[ -f /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh ]] && . /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
+#DINGDING_WEBHOOK_API=
+dingding_api_url=${DINGDING_WEBHOOK_API_NEW:-"${DINGDING_WEBHOOK_API}"}
 
 # 本地env
 HOSTNAME=$(hostname)    #-- 获取主机名
@@ -32,8 +28,8 @@ F_HELP()
 {
     echo "
     用途：将markdown格式的文本通过钉钉机器人发送出去
-    依赖：
-    注意：输入命令时，参数顺序不分先后
+    依赖：/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
+    注意：
     用法:
         $0  [-h|--help]
         $0  <-w|--webhook {Webhook地址}>  [-t|--title {消息标题}  -m|--message {消息内容}]
@@ -61,13 +57,20 @@ F_HELP()
 
 
 # 参数检查
-TEMP=`getopt -o hw:t:m:  -l help,webhook:,title:,message: -- "$@"`
-if [ $? != 0 ]; then
-    echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
-    exit 51
-fi
+# 检查参数是否符合要求，会对参数进行重新排序，列出的参数会放在其他参数的前面，这样你在输入脚本参数时，不需要关注脚本参数的输入顺序，例如：'$0 aa bb -w wwww ccc'
+# 但除了参数列表中指定的参数之外，脚本参数中不能出现以'-'开头的其他参数，例如按照下面的参数要求，这个命令是不能正常运行的：'$0 -w wwww  aaa --- bbb ccc'
+# 如果想要在命令中正确运行上面以'-'开头的其他参数，你可以在'-'参数前加一个'--'参数，这个可以正确运行：'$0 -w wwww  aaa -- --- bbb ccc'
+# 你可以通过'bash -x'方式运行脚本观察'--'的运行规律
 #
-eval set -- "${TEMP}"
+#TEMP=`getopt -o hw:t:m:  -l help,webhook:,title:,message: -- "$@"`
+#if [ $? != 0 ]; then
+#    echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
+#    exit 51
+#fi
+##
+#eval set -- "${TEMP}"
+#
+# 因为输入参数可能有以'-'开头的，必须关闭参数检查
 
 
 
@@ -91,14 +94,14 @@ while [[ $# -gt 0 ]]; do
             shift
             shift
             ;;
-        --)
-            shift
-            break
-            ;;
-        *)
-            echo -e "\n猪猪侠警告：未知参数，请查看帮助【$0 --help】\n"
-            exit 51
-            ;;
+#        --)
+#            shift
+#            break
+#            ;;
+#        *)
+#            echo -e "\n猪猪侠警告：未知参数，请查看帮助【$0 --help】\n"
+#            exit 51
+#            ;;
     esac
 done
 

@@ -12,13 +12,13 @@ SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd "${SH_PATH}"
 
 # 引入/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
-.  /etc/profile        #-- 非终端界面不会自动引入，必须主动引入
+#.  /etc/profile        #-- 非终端界面不会自动引入，必须主动引入
 #RUN_ENV=
 #NGINX_CONFIG_SH_HOME=
 #USER_DB_FILE=
 #USER_DB_FILE_APPEND_1=
 #DINGDING_WEBHOOK_API_deploy=
-export DINGDING_WEBHOOK_API_2=${DINGDING_WEBHOOK_API_deploy}
+export DINGDING_WEBHOOK_API_NEW=${DINGDING_WEBHOOK_API_deploy}
 
 # 引入env.sh
 . ${SH_PATH}/env.sh
@@ -133,6 +133,11 @@ F_HELP()
 
 
 # 参数检查
+# 检查参数是否符合要求，会对参数进行重新排序，列出的参数会放在其他参数的前面，这样你在输入脚本参数时，不需要关注脚本参数的输入顺序，例如：'$0 aa bb -w wwww ccc'
+# 但除了参数列表中指定的参数之外，脚本参数中不能出现以'-'开头的其他参数，例如按照下面的参数要求，这个命令是不能正常运行的：'$0 -w wwww  aaa --- bbb ccc'
+# 如果想要在命令中正确运行上面以'-'开头的其他参数，你可以在'-'参数前加一个'--'参数，这个可以正确运行：'$0 -w wwww  aaa -- --- bbb ccc'
+# 你可以通过'bash -x'方式运行脚本观察'--'的运行规律
+#
 TEMP=`getopt -o hlrbM:  -l help,list,release,rollback,mode: -- "$@"`
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"

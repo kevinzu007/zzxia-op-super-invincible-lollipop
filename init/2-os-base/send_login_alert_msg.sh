@@ -13,12 +13,12 @@
 
 
 # 引入env
-# 自动从/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh引入以下变量
+[[ -f /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh ]] && . /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
 RUN_ENV=${RUN_ENV:-'xxx'}
 EMAIL=${EMAIL:-"kevinzu@yyy.com"}
 TRUST_IPS=${TRUST_IPS:-'办公室:111.111.111., 家:222.222.22'}
 #DINGDING_WEBHOOK_API_login=
-export DINGDING_WEBHOOK_API_3=${DINGDING_WEBHOOK_API_login}
+export DINGDING_WEBHOOK_API_NEW=${DINGDING_WEBHOOK_API_login}
 
 # 本地env
 LOG_FILE='/tmp/my.log'
@@ -73,9 +73,8 @@ F_TRUST_IP()
 F_OTHER_IP()
 {
     AREA=` curl -s "http://www.cip.cc/${IP}" | grep '数据二' | awk -F ":" '{print $2}' | awk '{gsub(/^\s+|\s+$/, ""); print}' | awk '{gsub(/\s+/, ""); print}' `
-    #AREA=` curl -s https://api.ip.sb/geoip/${IP} | jq '.country,.region,.city' 2>/dev/null | sed -n 's/\"/ /gp' | awk 'NR == 1{printf "%s->",$0} NR == 2{printf "%s->",$0} NR == 3{printf     "%s\n",$0}' `
     if [ "x${AREA}" = "x" -o "x${AREA}" = "xnull" ]; then
-        AREA="获取地理位置失败【IP：${F_IP}】"
+        AREA="地理位置获取失败"
     fi
     AREA=`echo ${AREA} | sed 's/\"//g'`
     F_MY_LOG
