@@ -75,7 +75,7 @@ F_OTHER_IP()
     AREA=` curl -s "http://www.cip.cc/${IP}" | grep '数据二' | awk -F ":" '{print $2}' | awk '{gsub(/^\s+|\s+$/, ""); print}' | awk '{gsub(/\s+/, ""); print}' `
     #AREA=` curl -s https://api.ip.sb/geoip/${IP} | jq '.country,.region,.city' 2>/dev/null | sed -n 's/\"/ /gp' | awk 'NR == 1{printf "%s->",$0} NR == 2{printf "%s->",$0} NR == 3{printf     "%s\n",$0}' `
     if [ "x${AREA}" = "x" -o "x${AREA}" = "xnull" ]; then
-        AREA="获取地理位置失败【IP：${F_IP}】"
+        AREA="获取地理位置失败【IP：${IP}】"
     fi
     AREA=`echo ${AREA} | sed 's/\"//g'`
     F_MY_LOG
