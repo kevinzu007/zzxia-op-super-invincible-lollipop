@@ -6,7 +6,7 @@ SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
 # 引入/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
-.  /etc/profile
+#.  /etc/profile
 RUN_ENV=${RUN_ENV:-'dev'}
 
 # 引入env
