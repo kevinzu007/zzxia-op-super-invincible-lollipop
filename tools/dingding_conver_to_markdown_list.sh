@@ -59,7 +59,7 @@ F_HELP()
 #
 #TEMP=`getopt -o hw:  -l help,webhook: -- "$@"`
 #if [ $? != 0 ]; then
-#    echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
+#    echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"  >&2
 #    exit 51
 #fi
 ##
@@ -73,6 +73,7 @@ while [[ $# -gt 0 ]]; do
         -h|--help)
             shift
             F_HELP
+            exit 0
             ;;
         -w|--webhook)
             dingding_api_url="$2"
@@ -83,7 +84,7 @@ while [[ $# -gt 0 ]]; do
 #            break
 #            ;;
 #        *)
-#            echo -e "\n猪猪侠警告：未知参数，请查看帮助【$0 --help】\n"
+#            echo -e "\n猪猪侠警告：未知参数，请查看帮助【$0 --help】\n"  >&2
 #            exit 51
 #            ;;
     esac
@@ -92,12 +93,12 @@ done
 
 
 if [[ $# -lt 2 ]]; then
-    echo -e "\n猪猪侠警告：参数不足，请查看帮助【$0 --help】\n"
+    echo -e "\n猪猪侠警告：参数不足，请查看帮助【$0 --help】\n"  >&2
     exit 51
 fi
 
 if [[ -z ${dingding_api_url} ]]; then
-    echo -e "\n猪猪侠警告：参数dingding_api_url为空，请引入变量或使用【-w|--webhook】参数设置\n"
+    echo -e "\n猪猪侠警告：参数dingding_api_url为空，请引入变量或使用【-w|--webhook】参数设置\n"  >&2
     exit 51
 fi
 
@@ -126,6 +127,6 @@ send_data=$(cat <<EOF
 EOF
 )
 
-curl -s -X POST -H "${send_header}" -d "${send_data}" "${dingding_api_url}" || { echo "Error sending message"; exit 1; }
+curl -s -X POST -H "${send_header}" -d "${send_data}" "${dingding_api_url}" || { echo "Error sending message" >&2 ; exit 1; }
 
 
