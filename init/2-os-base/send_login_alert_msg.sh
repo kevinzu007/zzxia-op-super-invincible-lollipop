@@ -33,15 +33,17 @@ DINGDING_MARKDOWN_LOGIN_SH='/usr/local/bin/dingding_send_markdown.sh'
 # 钉钉
 F_SEND_DINGDING()
 {
-    ${DINGDING_MARKDOWN_LOGIN_SH}  \
+    timeout 5  ${DINGDING_MARKDOWN_LOGIN_SH}  \
         --title "【Alert:SSH登录:${RUN_ENV}】"  \
-        --message "$( echo -e "### `echo ${USER} \(sudo:${SUDO_USER}\) ` \n### `echo ${IP}` \n### `echo ${AREA}` \n\n---\n\n` w | sed '1,2d' `" )"
+        --message "$( echo -e "### `echo 用户名：${USER} \(sudo:${SUDO_USER}\) ` \n### `echo 用户IP：${IP}` \n### `echo 来自：${AREA}` \n\n---\n\n` w | sed '1,2d' `" )"  \
+        > /tmp/send_login_alert_msg.sh.dingding.log 2>&1
 }
 
 # 邮件
 F_SEND_MAIL()
 {
-    echo -e " 用户名：${USER} \n 用户IP：${IP} \n 来  自：${AREA}\n---\n` w | sed '1,2d' `" | mailx  -s "【${RUN_ENV}】SSH登录：${USER} (sudo:${SUDO_USER})"  ${EMAIL}  >/dev/null 2>&1
+    echo -e " 用户名：${USER} \n 用户IP：${IP} \n 来自：${AREA}\n---\n` w | sed '1,2d' `" | mailx  -s "【${RUN_ENV}】SSH登录：${USER} (sudo:${SUDO_USER})"  ${EMAIL}  \
+        > /tmp/send_login_alert_msg.sh.mail.log 2>&1
 }
 
 # 日志
@@ -63,7 +65,7 @@ F_TRUST_IP()
     F_MY_LOG
     WEEK_N=`date +%w`
     if [ ${WEEK_N} = 6 -o ${WEEK_N} = 0 ]; then
-        F_SEND_DINGDING & >/dev/null 2>&1
+        F_SEND_DINGDING
     else
         F_ECHO
     fi
@@ -78,7 +80,7 @@ F_OTHER_IP()
     fi
     AREA=`echo ${AREA} | sed 's/\"//g'`
     F_MY_LOG
-    F_SEND_DINGDING & >/dev/null 2>&1
+    F_SEND_DINGDING
 }
 
 
