@@ -68,7 +68,7 @@ F_HELP()
 # 因为输入参数可能有以'-'开头的，必须关闭参数检查
 
 
-while [[ $# -gt 0 ]]; do
+while true; do
     case "$1" in
         -h|--help)
             shift
@@ -83,10 +83,9 @@ while [[ $# -gt 0 ]]; do
 #            shift
 #            break
 #            ;;
-#        *)
-#            echo -e "\n猪猪侠警告：未知参数，请查看帮助【$0 --help】\n"  >&2
-#            exit 51
-#            ;;
+        *)
+            break
+            ;;
     esac
 done
 

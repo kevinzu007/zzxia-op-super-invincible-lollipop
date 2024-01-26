@@ -410,6 +410,8 @@ def hook_gitlab():
         if gan_env == '':
             # 退出
             return jsonify({"Status": "Error", "Message": "Webhook信息之【env】不存在"})
+        elif gan_env != GAN_RUN_ENV:
+            return jsonify({"Status": "Info", "Message": "Webhook信息之【env】与当前环境不匹配，跳过"})
         #
     else:
         gan_env = 'NOT_CHECK'
