@@ -98,10 +98,9 @@ while [[ $# -gt 0 ]]; do
 #            shift
 #            break
 #            ;;
-#        *)
-#            echo -e "\n猪猪侠警告：未知参数，请查看帮助【$0 --help】\n"  >&2
-#            exit 51
-#            ;;
+        *)
+            break
+            ;;
     esac
 done
 
