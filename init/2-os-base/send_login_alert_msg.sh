@@ -18,7 +18,6 @@ RUN_ENV=${RUN_ENV:-'xxx'}
 EMAIL=${EMAIL:-"kevinzu@yyy.com"}
 TRUST_IPS=${TRUST_IPS:-'办公室:111.111.111., 家:222.222.22'}
 #DINGDING_WEBHOOK_API_login=
-export DINGDING_WEBHOOK_API_NEW=${DINGDING_WEBHOOK_API_login}
 
 # 本地env
 LOG_FILE='/tmp/my.log'
@@ -27,7 +26,7 @@ if [ ! -f "${LOG_FILE}" ]; then
     chmod 0666 "${LOG_FILE}"
 fi
 # sh
-DINGDING_MARKDOWN_LOGIN_SH='/usr/local/bin/dingding_send_markdown.sh'
+DINGDING_MARKDOWN_LOGIN_SH="/usr/local/bin/dingding_send_markdown.sh    --webhook ${DINGDING_WEBHOOK_API_login}"
 
 
 # 钉钉

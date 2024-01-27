@@ -18,7 +18,6 @@ cd ${SH_PATH}
 #USER_DB_FILE=
 #USER_DB_FILE_APPEND_1=
 #DINGDING_WEBHOOK_API_deploy=
-export DINGDING_WEBHOOK_API_NEW=${DINGDING_WEBHOOK_API_deploy}
 
 # 引入env.sh
 . ${SH_PATH}/env.sh
@@ -78,7 +77,7 @@ fi
 BUILD_SH="${SH_PATH}/build.sh"
 DRAW_TABLE_SH="${SH_PATH}/../tools/draw_table.sh"
 FORMAT_TABLE_SH="${SH_PATH}/../tools/format_table.sh"
-DINGDING_SEND_DEPLOY_SH="/usr/local/bin/dingding_conver_to_markdown_list.sh"
+DINGDING_SEND_DEPLOY_SH="/usr/local/bin/dingding_conver_to_markdown_list.sh  --webhook ${DINGDING_WEBHOOK_API_deploy}"
 # 引入函数
 .  ${SH_PATH}/function.sh
 
