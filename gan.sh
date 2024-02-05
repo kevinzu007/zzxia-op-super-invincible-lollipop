@@ -13,7 +13,7 @@ cd ${SH_PATH}
 
 
 # 引入/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
-.  /etc/profile
+#.  /etc/profile        #-- 非终端界面不会自动引入，必须主动引入
 #NGINX_CONFIG_SH_HOME=
 #PG_MANAGE_SH_HOME=
 #USER_DB_FILE=
