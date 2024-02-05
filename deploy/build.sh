@@ -437,6 +437,8 @@ DOCKER_BUILD()
                 DOCKER_BUILD_OPT="build"
             else
                 echo -e "\n猪猪侠警告：这是你新添加的docker构建方法，你自己搞下！\n"  2>&1 | tee -a ${BUILD_LOG_file}
+                ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
+                return 52
             fi
             #
             # build
@@ -529,6 +531,9 @@ JAVA_BUILD()
                 MVN_OPT=" deploy "
             else
                 echo -e "\n猪猪侠警告：这是你新添加的mvn构建方法，你自己搞下！\n"  2>&1 | tee -a ${BUILD_LOG_file}
+                # copy
+                ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
+                return 52
             fi
             #
             # 跳过测试
@@ -685,24 +690,41 @@ NODE_BUILD()
     fi
     #
     # 构建方法
+    NPM_ERR=''
     case "${BUILD_METHOD}" in
         npm_install)
             if [[ -f "./routes/index---${RUN_ENV}.js" ]]; then
                 cp -f "./routes/index---${RUN_ENV}.js"  ./routes/index.js
             fi
+            #
+            grep -E 'Error|ERR!'  ${BUILD_LOG_file}
+            if [[ $? -eq 0 ]]; then
+                NPM_ERR='Y'
+            else
+                NPM_ERR='N'
+            fi
             ;;
         npm_build)
             npm run build:${RUN_ENV}   2>&1 | tee -a ${BUILD_LOG_file}
+            #
+            grep -E 'Error|ERR!|error'  ${BUILD_LOG_file}
+            if [[ $? -eq 0 ]] || [[ ! -f ./dist/index.html ]]; then
+                NPM_ERR='Y'
+            else
+                NPM_ERR='N'
+            fi
             ;;
         *)
             echo -e "\n猪猪侠警告：【 ${LANGUAGE_CATEGORY} 之 ${BUILD_METHOD} 】这个构建方法我没弄，你自己搞下！\n"  2>&1 | tee -a ${BUILD_LOG_file}
+            # copy
+            ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
+            return 52
             ;;
     esac
     # copy
     ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
     #
-    grep -E 'Error|ERR!'  ${BUILD_LOG_file}
-    if [ $? -eq 0 ]; then
+    if [ ${NPM_ERR} == 'Y' ]; then
         echo ""
         echo -e "${ECHO_ERROR}失败！请检查日志文件：${BUILD_LOG_file}  ${ECHO_CLOSE}"  2>&1 | tee -a ${BUILD_LOG_file}
         echo -e "项目【${PJ}】已经添加到重试清单：${PROJECT_LIST_RETRY_FILE}"  2>&1 | tee -a ${BUILD_LOG_file}
@@ -827,6 +849,9 @@ HTML_BUILD()
             ;;
         *)
             echo -e "\n猪猪侠警告：【 ${LANGUAGE_CATEGORY} 之 ${BUILD_METHOD} 】这个构建方法我没弄，你自己搞下！\n"  2>&1 | tee -a ${BUILD_LOG_file}
+            # copy
+            ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
+            return 52
             ;;
     esac
     # copy
@@ -944,6 +969,9 @@ PYTHON_BUILD()
             ;;
         *)
             echo -e "\n猪猪侠警告：【 ${LANGUAGE_CATEGORY} 之 ${BUILD_METHOD} 】这个构建方法我没弄，你自己搞下！\n"  2>&1 | tee -a ${BUILD_LOG_file}
+            # copy
+            ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m copy -a "src=${BUILD_LOG_file} dest=${WEBSITE_BASE}/build-log/releases/current/file/${DATE_TIME}/ owner=root group=root mode=644 backup=no"
+            return 52
             ;;
     esac
     # copy
