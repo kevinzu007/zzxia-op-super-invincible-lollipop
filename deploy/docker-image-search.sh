@@ -23,10 +23,11 @@ cd ${SH_PATH}
 # 本地env
 TIME=`date +%Y-%m-%dT%H:%M:%S`
 TIME_START=${TIME}
+LOG_HOME="/tmp/${SH_NAME}"
 SERVICE_LIST_FILE="${SH_PATH}/docker-cluster-service.list"
-SERVICE_LIST_FILE_TMP="/tmp/${SH_NAME}-docker-cluster-service.tmp.list.$(date +%S)"
-SEARCH_RESULT_PREFILE="/tmp/${SH_NAME}-result.txt"
-SEARCH_RESULT_ERR_PREFILE="/tmp/${SH_NAME}-result-err.txt"
+SERVICE_LIST_FILE_TMP="${LOG_HOME}/docker-cluster-service.tmp.list.$(date +%S)"
+SEARCH_RESULT_PREFILE="${LOG_HOME}/result.txt"
+SEARCH_RESULT_ERR_PREFILE="${LOG_HOME}/result-err.txt"
 # sh
 FORMAT_TABLE_SH="${SH_PATH}/../tools/format_table.sh"
 
@@ -118,8 +119,8 @@ F_HELP()
 F_SEARCH()
 {
     F_DOCKER_IMAGE_NAME=$1
-    F_SEARCH_RESULT_PREFILE="/tmp/${SH_NAME}-F_SEARCH-result.txt--${F_DOCKER_IMAGE_NAME}"
-    F_SEARCH_RESULT_ERR_PREFILE="/tmp/${SH_NAME}-F_SEARCH-result-err.txt--${F_DOCKER_IMAGE_NAME}"
+    F_SEARCH_RESULT_PREFILE="${LOG_HOME}/F_SEARCH-result.txt--${F_DOCKER_IMAGE_NAME}"
+    F_SEARCH_RESULT_ERR_PREFILE="${LOG_HOME}/F_SEARCH-result-err.txt--${F_DOCKER_IMAGE_NAME}"
     #
     curl -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD} -s -X GET ${DOCKER_REPO_URL_BASE}/${DOCKER_IMAGE_PRE_NAME}/${F_DOCKER_IMAGE_NAME}/tags/list | jq .tags[] > ${F_SEARCH_RESULT_PREFILE}  2>${F_SEARCH_RESULT_ERR_PREFILE}
     if [[ $? -ne 0 ]] || [[ $(cat ${F_SEARCH_RESULT_ERR_PREFILE} | grep -q 'NAME_UNKNOWN'; echo $?) -eq 0 ]]; then
@@ -131,21 +132,6 @@ F_SEARCH()
     sed -i 's/\"//g'   ${F_SEARCH_RESULT_PREFILE}
     # 去掉空行
     sed -i '/^\s*$/d'  ${F_SEARCH_RESULT_PREFILE}
-    #
-    # 返回latest版本
-    if [[ "x${LIKE_THIS_DOCKER_IMAGE_TAG}" = 'xlatest' ]]; then
-        cat ${F_SEARCH_RESULT_PREFILE}  | grep  -q 'latest'
-        if [[ $? != 0 ]]; then
-            echo  -e "\n猪猪侠警告：项目镜像tag【latest】未找到\n"  1>&2
-            return 55
-        else
-            echo  'latest'
-            return 0
-        fi
-    fi
-    #
-    # 删除latest
-    sed -i '/latest/d'  ${F_SEARCH_RESULT_PREFILE}
     #
     # 倒排序sort
     cat  ${F_SEARCH_RESULT_PREFILE} | sort -n -r >  ${F_SEARCH_RESULT_PREFILE}.sort
@@ -306,6 +292,10 @@ do
     esac
 done
 
+
+
+# 建立base目录
+[ -d "${LOG_HOME}" ] || mkdir -p  "${LOG_HOME}"
 
 
 # 待搜索的服务清单
