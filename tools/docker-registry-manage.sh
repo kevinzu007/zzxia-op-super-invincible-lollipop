@@ -143,8 +143,10 @@ F_GET_REPO_TAG()
 {
     F_REPO_NAME=$1
     F_REPO_TAG=$2      #-- 可以为空
-    F_REPO_TAG_LIST_FILE="${LOG_HOME}/F_GET_REPO_TAG-list.txt--${F_REPO_NAME}"
-    F_REPO_TAG_ERR_FILE="${LOG_HOME}/F_GET_REPO_TAG-err.txt--${F_REPO_NAME}"
+    #
+    F_REPO_NAME_SED=${R//\//_}
+    F_REPO_TAG_LIST_FILE="${LOG_HOME}/F_GET_REPO_TAG-list.txt--${F_REPO_NAME_SED}"
+    F_REPO_TAG_ERR_FILE="${LOG_HOME}/F_GET_REPO_TAG-err.txt--${F_REPO_NAME_SED}"
     > ${F_REPO_TAG_LIST_FILE}
     curl -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD} -s -X GET ${DOCKER_REPO_URL_BASE}/${F_REPO_NAME}/tags/list  > ${F_REPO_TAG_LIST_FILE}
     if [[ $? -ne 0 ]]; then
