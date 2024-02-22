@@ -134,7 +134,8 @@ F_SEARCH()
     sed -i '/^\s*$/d'  ${F_SEARCH_RESULT_PREFILE}
     #
     # 倒排序sort
-    cat  ${F_SEARCH_RESULT_PREFILE} | sort -n -r >  ${F_SEARCH_RESULT_PREFILE}.sort
+    #cat  ${F_SEARCH_RESULT_PREFILE} | sort -n -r >  ${F_SEARCH_RESULT_PREFILE}.sort
+    cat  ${F_SEARCH_RESULT_PREFILE} | sort -r >  ${F_SEARCH_RESULT_PREFILE}.sort
     #
     # 过滤like
     if [[ -n ${LIKE_THIS_DOCKER_IMAGE_TAG} ]]; then
