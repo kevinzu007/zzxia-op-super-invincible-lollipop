@@ -11,9 +11,6 @@ SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
-# 引入/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
-.  /etc/profile        #-- 非终端界面不会自动引入，必须主动引入
-#MY_PRIVATE_ENVS_DIR=
 
 # 引入env
 . ${SH_PATH}/../deploy/env.sh
@@ -25,18 +22,8 @@ cd ${SH_PATH}
 # 本地env
 TIME=`date +%Y-%m-%dT%H:%M:%S`
 TIME_START=${TIME}
-SERVICE_LIST_FILE="${SH_PATH}/docker-cluster-service.list"
-SERVICE_LIST_FILE_TMP="/tmp/${SH_NAME}-docker-cluster-service.tmp.list.$(date +%S)"
-SEARCH_RESULT_FILE="/tmp/${SH_NAME}-result.txt"
 SAFETY_OPT='N'          #-- 一个镜像ID与多个标签关联时，仍然删除，无API支持
-# sh
-FORMAT_TABLE_SH="${SH_PATH}/../tools/format_table.sh"
-
-
-# 删除空行（以及只有tab、空格的行）
-#sed -i '/^\s*$/d'  ${SERVICE_LIST_FILE}
-## 删除行中的空格
-#sed -i 's/[ \t]*//g'  ${SERVICE_LIST_FILE}
+LOG_HOME="/tmp/${SH_NAME}"
 
 
 # echo颜色定义
@@ -64,7 +51,6 @@ F_HELP()
     用途：查询仓库清单或tag清单，删除仓库或tag
     依赖：
         ${SH_PATH}/env.sh
-        ${SERVICE_LIST_FILE}
     注意：
         * 输入命令时，参数顺序不分先后
     用法:
@@ -116,9 +102,9 @@ F_HELP()
 # 用法：F_GET_REPO <%仓库名%>
 F_GET_REPO()
 {
-    F_REPO_NAME=$1
-    F_REPO_LIST_FILE="/tmp/${SH_NAME}-F_GET_REPO-list.txt"
-    F_GET_ERR_FILE="/tmp/${SH_NAME}-F_GET_REPO-err.txt"
+    F_REPO_NAME=$1      #-- 可以为空
+    F_REPO_LIST_FILE="${LOG_HOME}/F_GET_REPO-list.txt"
+    F_GET_ERR_FILE="${LOG_HOME}/F_GET_REPO-err.txt"
     > ${F_REPO_LIST_FILE}
     curl -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD} -s -X GET ${DOCKER_REPO_URL_BASE}/_catalog  > ${F_REPO_LIST_FILE}
     if [[ $? -ne 0 ]]; then
@@ -128,7 +114,7 @@ F_GET_REPO()
     #
     # 仓库极少可能为空
     #
-    cat ${F_REPO_LIST_FILE} | jq .repositories[] | sed 's/"//g' | sed '/^\s*$/d' > ${F_REPO_LIST_FILE}.1
+    cat ${F_REPO_LIST_FILE} | jq .repositories[] | sed 's/"//g' | sed '/^\s*$/d' | sort  > ${F_REPO_LIST_FILE}.1
     #
     # 过滤
     if [[ -n ${F_REPO_NAME} ]]; then
@@ -156,9 +142,11 @@ F_GET_REPO()
 F_GET_REPO_TAG()
 {
     F_REPO_NAME=$1
-    F_REPO_TAG=$2
-    F_REPO_TAG_LIST_FILE="/tmp/${SH_NAME}-F_GET_REPO_TAG-list.txt"
-    F_REPO_TAG_ERR_FILE="/tmp/${SH_NAME}-F_GET_REPO_TAG-err.txt"
+    F_REPO_TAG=$2      #-- 可以为空
+    #
+    F_REPO_NAME_SED=${R//\//_}
+    F_REPO_TAG_LIST_FILE="${LOG_HOME}/F_GET_REPO_TAG-list.txt--${F_REPO_NAME_SED}"
+    F_REPO_TAG_ERR_FILE="${LOG_HOME}/F_GET_REPO_TAG-err.txt--${F_REPO_NAME_SED}"
     > ${F_REPO_TAG_LIST_FILE}
     curl -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD} -s -X GET ${DOCKER_REPO_URL_BASE}/${F_REPO_NAME}/tags/list  > ${F_REPO_TAG_LIST_FILE}
     if [[ $? -ne 0 ]]; then
@@ -178,7 +166,7 @@ F_GET_REPO_TAG()
         return 55
     fi
     #
-    cat ${F_REPO_TAG_LIST_FILE} | jq .tags[] | grep -v 'latest' | sed 's/"//g' | sed '/^\s*$/d'  > ${F_REPO_TAG_LIST_FILE}.1
+    cat ${F_REPO_TAG_LIST_FILE} | jq .tags[] | sed 's/"//g' | sed '/^\s*$/d' | sort  > ${F_REPO_TAG_LIST_FILE}.1
     #
     # 过滤
     if [[ -n ${F_REPO_TAG} ]]; then
@@ -208,8 +196,8 @@ F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST()
 {
     F_REPO_NAME=$1
     F_REPO_TAG=$2
-    F_GET_REPO_TAG_HEAD_FILE="/tmp/${SH_NAME}-F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST-head.txt"
-    F_GET_REPO_TAG_BODY_FILE="/tmp/${SH_NAME}-F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST-body.txt"
+    F_GET_REPO_TAG_HEAD_FILE="${LOG_HOME}/F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST-head.txt--${F_REPO_NAME}"
+    F_GET_REPO_TAG_BODY_FILE="${LOG_HOME}/F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST-body.txt--${F_REPO_NAME}"
     > ${F_GET_REPO_TAG_HEAD_FILE}
     > ${F_GET_REPO_TAG_BODY_FILE}
     curl -s -v -X GET  \
@@ -257,7 +245,8 @@ F_DELETE_REPO_TAG()
 {
     F_REPO_NAME=$1
     F_REPO_TAG=$2
-    F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST_FILE="/tmp/digest-and-blob.txt"
+    F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST_FILE="${LOG_HOME}/repo-tag-digest-and-blob.txt"
+    > ${F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST_FILE}
     F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST  ${F_REPO_NAME}  ${F_REPO_TAG}  > ${F_GET_REPO_TAG_DIGEST_AND_TAGBLOB_DIGEST_FILE}
     ERR_NO=$?
     if [[ ${ERR_NO} != 0 ]]; then
@@ -389,7 +378,11 @@ do
 done
 
 
+# 建立base目录
+[ -d "${LOG_HOME}" ] || mkdir -p  "${LOG_HOME}"
 
+
+#
 case ${ACTION} in
     list-repo)
         F_GET_REPO  ${LIKE_THIS_NAME}
@@ -402,7 +395,7 @@ case ${ACTION} in
         fi
         ;;
     list-tag)
-        REPO_LIST_TMP="/tmp/${SH_NAME}-repo.list.tmp"
+        REPO_LIST_TMP="${LOG_HOME}/repo.list.tmp"
         > ${REPO_LIST_TMP}
         #
         F_GET_REPO  ${LIKE_THIS_NAME}  > ${REPO_LIST_TMP}
@@ -436,7 +429,7 @@ case ${ACTION} in
         echo "Docker registry未提供相关API"
         ;;
     rm-tag)
-        REPO_LIST_TMP="/tmp/${SH_NAME}-repo.list.tmp"
+        REPO_LIST_TMP="${LOG_HOME}/repo.list.tmp"
         > ${REPO_LIST_TMP}
         #
         F_GET_REPO  ${LIKE_THIS_NAME}  > ${REPO_LIST_TMP}
@@ -452,7 +445,7 @@ case ${ACTION} in
         while read R
         do
             let N=$N+1
-            REPO_TAG_LIST_TMP="/tmp/${SH_NAME}-repo-tag.list.tmp"
+            REPO_TAG_LIST_TMP="${LOG_HOME}/repo-tag.list.tmp"
             #
             echo "=================================================="
             echo "$N 仓库：${R}"
