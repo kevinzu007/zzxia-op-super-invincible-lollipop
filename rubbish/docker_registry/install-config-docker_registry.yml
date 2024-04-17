@@ -12,5 +12,5 @@
   become: yes
   tasks:
     - name: crontab - clean-docker-registry-no-use-blob
-      cron: name=clean-docker-registry-no-use-blob backup=yes state=present minute=0 hour=1 day=*  month=* weekday=* user=root job='docker exec -ti dockerregistry_docker-registry_1 registry garbage-collect /etc/docker/registry/config.yml > /dev/null'
+      cron: name=clean-docker-registry-no-use-blob backup=yes state=present minute=0 hour=1 day=*  month=* weekday=* user=root job='docker exec dockerregistrysrv_docker-registry_1 registry garbage-collect /etc/docker/registry/config.yml > /dev/null'
 
