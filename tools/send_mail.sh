@@ -53,7 +53,7 @@ F_HELP()
 
 
 
-TEMP=`getopt -o hs:c:a:o:  -l help,subject:,content:,attach:,origin-option -- "$@"`
+TEMP=$(getopt -o hs:c:a:o:  -l help,subject:,content:,attach:,origin-option -- "$@")
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
     exit 1
@@ -101,7 +101,7 @@ done
 
 
 # 必须软件mailx
-if [ "`which mailx >/dev/null 2>&1 ; echo $?`" != "0" ]; then
+if [ "$(command -v mailx >/dev/null 2>&1 ; echo $?)" != "0" ]; then
     ${DINGDING_SEND_LIST_SH}  "【Error:邮件:${RUN_ENV}】"  "$( echo -e "### 请安装软件mailx" )"
     echo -e "\n猪猪侠警告：请安装软件mailx\n"
     exit 1
@@ -110,16 +110,16 @@ fi
 
 
 # 不能为空
-if [ -z "${MAIL_SUBJECT}"  -o  -z "${MAIL_CONTENT}"  -o  -z "$@" ]; then
+if [[ -z "${MAIL_SUBJECT}" ]] || [[ -z "${MAIL_CONTENT}" ]] || [[ -z "$*" ]]; then
     echo "猪猪侠警告：邮件主题、内容、收件人 都不允许为空，当前信息如下："
-    echo -e "\n主题：${MAIL_SUBJECT}  \n内容：${MAIL_CONTENT}  \n收件人：$@  \n"
+    echo -e "\n主题：${MAIL_SUBJECT}  \n内容：${MAIL_CONTENT}  \n收件人：$*  \n"
     exit 1
 fi
 
 
 #echo "邮件发送给：-- $@"
 #echo  "${MAIL_CONTENT}" | mailx  -s "${MAIL_SUBJECT}"  ${MAIL_OPTION_S}  ${MAIL_ATTACH_S}  $@
-echo -e "${MAIL_CONTENT}" | mailx  -s "${MAIL_SUBJECT}"  ${MAIL_OPTION_S}  ${MAIL_ATTACH_S}  $@  >/tmp/send_mail.sh.log 2>&1
+echo -e "${MAIL_CONTENT}" | mailx  -s "${MAIL_SUBJECT}"  "${MAIL_OPTION_S}"  "${MAIL_ATTACH_S}"  "$@"  >/tmp/send_mail.sh.log 2>&1
 # mailx命令出错会直接退出，下面的语句是无效的
 #[ $? != 0 ] && echo -e "\n  邮件发送失败，请检查日志：/tmp/send_mail.sh.log\n"
 

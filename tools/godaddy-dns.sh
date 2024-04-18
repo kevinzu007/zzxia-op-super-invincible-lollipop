@@ -70,14 +70,14 @@
 # sh
 SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
-cd ${SH_PATH}
+cd "${SH_PATH}" || echo -e "\n猪猪侠警告：这个错误是不可能的，这里是为了规避语法警告！\n" ; exit 53
 
 # 自动从/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh引入以下变量
 
 # 引入env
 
 # 本地env
-TIME=`date +%Y-%m-%dT%H:%M:%S`
+TIME=$(date +%Y-%m-%dT%H:%M:%S)
 TIME_START=${TIME}
 
 
