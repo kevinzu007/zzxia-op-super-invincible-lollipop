@@ -486,7 +486,7 @@ case ${ACTION} in
         ;;
     *)
         echo -e "\n猪猪侠警告：缺少主要运行参数或参数不合法，请看帮助！\n"
-        return 52
+        exit 52
         ;;
 esac
 
