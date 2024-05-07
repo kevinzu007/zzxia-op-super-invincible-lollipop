@@ -31,7 +31,7 @@
     - PG_MANAGE_SH_HOME: "{{ lookup('env','PG_MANAGE_SH_HOME') }}"
   tasks:
     - name: crontab - pg_list_backup
-      cron: name=pg-list-backup backup=yes state=present minute=0 hour=2 day=*  month=* weekday=* user=postgres  job='. /etc/profile; bash {{ PG_MANAGE_SH_HOME }}/pg_list_backup_or_restore_by_user_postgres.sh -b -c  >/tmp/pg_list_backup_or_restore_by_user_postgres.sh.log 2>&1'
+      cron: name=pg-list-backup backup=yes state=present minute=0 hour=2 day=*  month=* weekday=* user=postgres  job='. /etc/profile; bash {{ PG_MANAGE_SH_HOME }}/pg_list_backup_or_restore_by_user_postgres.sh -b -c  >/tmp/pg_list_backup_or_restore_by_user_postgres.sh.log'
       when: RUN_ENV == "prod"
       #when: ansible_default_ipv4.address == '10.1.1.182'
     - name: crontab - 清理备份
