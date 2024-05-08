@@ -15,7 +15,7 @@ fi
 # sh
 SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
-cd ${SH_PATH}
+cd "${SH_PATH}" || echo -e "\n猪猪侠警告：这个错误是不可能的，这里是为了规避语法警告！\n" ; exit 53
 
 # 引入env
 # 自动从/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh引入以下变量
@@ -52,7 +52,7 @@ F_HELP ()
     依赖：
         /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
         ${PG_DB_LIST}
-        ${DINGDING_SEND_SH}
+        ${DINGDING_SEND_LIST_SH}
     注意：需在root账户下运行，在还原时会自动设置访问限制、删库、创建、导入、取消限制。
     用法：
         $0  [-h|--help]
@@ -153,7 +153,7 @@ F_BACKUP()
         ${PGSQL_CMD_BASE}/pg_dump ${DB} | gzip > ${FV_BACKUP_PATH_DIR}/${DB}.gz
         if [ $? != 0 ]; then
             echo  "猪猪侠警告：备份数据库 ${DB} 时出错，请检查！继续下一个。"
-            ${DINGDING_SEND_SH}  "【Err:pg-${BAKCUP_NAME}备份:${RUN_ENV}】" "备份数据库 ${DB} 时出错，请检查！继续下一个。"
+            ${DINGDING_SEND_LIST_SH}  "【Err:pg-${BAKCUP_NAME}备份:${RUN_ENV}】" "备份数据库 ${DB} 时出错，请检查！继续下一个。"
         fi
     done
     #
@@ -191,7 +191,7 @@ F_RESTORE()
         echo "${DB} :"
         if [ ! -f "${FV_BACKUP_PATH_DIR}/${DB}.gz" ]; then
             echo -e "\n猪猪侠警告：备份文件【${FV_BACKUP_PATH_DIR}/${DB}.gz】不存在\n"
-            ${DINGDING_SEND_SH}  "【Err:pg-${BAKCUP_NAME}还原:${RUN_ENV}】" "数据库备份文件不存在（${FV_BACKUP_PATH_DIR}/${DB}.gz），已退出，请检查！"
+            ${DINGDING_SEND_LIST_SH}  "【Err:pg-${BAKCUP_NAME}还原:${RUN_ENV}】" "数据库备份文件不存在（${FV_BACKUP_PATH_DIR}/${DB}.gz），已退出，请检查！"
             return 3
         fi
         #
@@ -201,7 +201,7 @@ F_RESTORE()
         createdb ${DB}
         gunzip -c ${FV_BACKUP_PATH_DIR}/${DB}.gz | psql ${DB}
         if [ $? != 0 ]; then
-            ${DINGDING_SEND_SH}  "【Err:pg-${BAKCUP_NAME}还原:${RUN_ENV}】" "数据库 ${DB} 还原失败，已退出，请检查！"
+            ${DINGDING_SEND_LIST_SH}  "【Err:pg-${BAKCUP_NAME}还原:${RUN_ENV}】" "数据库 ${DB} 还原失败，已退出，请检查！"
             return 4
         fi
     done
@@ -222,7 +222,7 @@ F_COPY_TO ()
         return 0
     else
         echo -e "\n猪猪侠警告：备份拷贝到副本路径时出错，请检查！\n"
-        ${DINGDING_SEND_SH}  "【Err:pg-${BAKCUP_NAME}备份:${RUN_ENV}】"   "备份拷贝到副本路径时出错，请检查！"
+        ${DINGDING_SEND_LIST_SH}  "【Err:pg-${BAKCUP_NAME}备份:${RUN_ENV}】"   "备份拷贝到副本路径时出错，请检查！"
         return 1
     fi
     #
@@ -269,7 +269,8 @@ fi
 SH_ARGS_NUM=$#
 SH_ARGS[0]="占位"
 for ((i=1;i<=SH_ARGS_NUM;i++)); do
-    eval K=\${${i}}
+    # eval "K=\${${i}}"     #-- 用 K=${!i} 能避免安全问题
+    K=${!i}
     SH_ARGS[${i}]=${K}
     #echo 调试：   SH_ARGS数组${i}列的值是: ${SH_ARGS[${i}]}
 done
@@ -344,19 +345,19 @@ do
                 TIME_END=`date +%Y-%m-%dT%H:%M:%S`
                 TIME_COST=`F_TimeDiff "${TIME_START}" "${TIME_END}"`
                 # 每周一发通知
-                if [ `date +%w` = 1 ]; then
-                    ${DINGDING_SEND_SH}  "【Info:pg-${BAKCUP_NAME}备份:${RUN_ENV}】"  "数据库备份任务完成！ ${TIME_COST}"
+                if [ "$(date +%w)" = 1 ]; then
+                    ${DINGDING_SEND_LIST_SH}  "【Info:pg-${BAKCUP_NAME}备份:${RUN_ENV}】"  "数据库备份任务完成！ ${TIME_COST}"
                 fi
             else
-                ${DINGDING_SEND_SH}  "【Err:pg-${BAKCUP_NAME}备份:${RUN_ENV}】"   "数据库备份任务失败，请检查！"
+                ${DINGDING_SEND_LIST_SH}  "【Err:pg-${BAKCUP_NAME}备份:${RUN_ENV}】"   "数据库备份任务失败，请检查！"
             fi
             exit
             ;;
         -r|--restore)
             # 必须包含参数：-d|--path-dir
-            echo ${SH_ARGS[@]} | grep '\-d' >/dev/null 2>&1
+            echo "${SH_ARGS[@]}" | grep '\-d' >/dev/null 2>&1
             R1=$?
-            echo ${SH_ARGS[@]} | grep '\-\-path\-dir' >/dev/null 2>&1
+            echo "${SH_ARGS[@]}" | grep '\-\-path\-dir' >/dev/null 2>&1
             R2=$?
             if [[ ${R1} -ne 0 && ${R2} -ne 0 ]]; then
                 echo -e "\n猪猪侠警告：必须使用【-d|--path-dir】参数，请查看帮助！\n"
@@ -377,16 +378,16 @@ do
                 exit
             fi
             #
-            ${DINGDING_SEND_SH}  "【Info:pg-${BAKCUP_NAME}还原:${RUN_ENV}】"   "我要开始还原数据库啦！skr skr skr"
+            ${DINGDING_SEND_LIST_SH}  "【Info:pg-${BAKCUP_NAME}还原:${RUN_ENV}】"   "我要开始还原数据库啦！skr skr skr"
             #
             F_RESTORE ${BACKUP_PATH_DIR}
             if [[ $? -eq 0 ]]; then
                 # send msg
                 TIME_END=`date +%Y-%m-%dT%H:%M:%S`
                 TIME_COST=`F_TimeDiff "${TIME_START}" "${TIME_END}"`
-                ${DINGDING_SEND_SH}  "【Info:pg-${BAKCUP_NAME}还原:${RUN_ENV}】"  "数据库还原任务完成！ ${TIME_COST}"
+                ${DINGDING_SEND_LIST_SH}  "【Info:pg-${BAKCUP_NAME}还原:${RUN_ENV}】"  "数据库还原任务完成！ ${TIME_COST}"
             else
-                ${DINGDING_SEND_SH}  "【Err:pg-${BAKCUP_NAME}还原:${RUN_ENV}】"   "数据库还原任务失败，请检查！"
+                ${DINGDING_SEND_LIST_SH}  "【Err:pg-${BAKCUP_NAME}还原:${RUN_ENV}】"   "数据库还原任务失败，请检查！"
             fi
             exit
             ;;

@@ -6,11 +6,11 @@
     - ZZXIA_OP_SUPER_INVINCIBLE_LOLLIPOP_HOME: "{{ lookup('env','ZZXIA_OP_SUPER_INVINCIBLE_LOLLIPOP_HOME') }}"
   tasks:
     - name: crontab - delete-docker-registry-history-tag
-      cron: name=delete-docker-registry-history-tag backup=yes state=present minute=0 hour=0 day=*  month=* weekday=* user=root job='{{ ZZXIA_OP_SUPER_INVINCIBLE_LOLLIPOP_HOME }}/tools/docker-registry-manage.sh  -R  -t ^[0-9]{4}\.[0-9]{2}\.[0-9]{2}\.[0-9]{6}  -k 10  > /dev/null'
+      cron: name=delete-docker-registry-history-tag backup=yes state=present minute=0 hour=0 day=*  month=* weekday=* user=root job='. /etc/profile ; {{ ZZXIA_OP_SUPER_INVINCIBLE_LOLLIPOP_HOME }}/tools/docker-registry-manage.sh  -R  -t ^[0-9]{4}\.[0-9]{2}\.[0-9]{2}\.[0-9]{6}  -k 10  > /dev/null'
 
 - hosts: repo_docker
   become: yes
   tasks:
     - name: crontab - clean-docker-registry-no-use-blob
-      cron: name=clean-docker-registry-no-use-blob backup=yes state=present minute=0 hour=1 day=*  month=* weekday=* user=root job='docker exec -ti dockerregistry_docker-registry_1 registry garbage-collect /etc/docker/registry/config.yml > /dev/null'
+      cron: name=clean-docker-registry-no-use-blob backup=yes state=present minute=0 hour=1 day=*  month=* weekday=* user=root job='docker exec dockerregistrysrv_docker-registry_1 registry garbage-collect /etc/docker/registry/config.yml > /dev/null'
 

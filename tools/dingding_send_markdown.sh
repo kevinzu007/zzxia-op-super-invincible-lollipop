@@ -48,9 +48,9 @@ F_HELP()
     示例:
         $0  -t 'sssss'       -m \"\`cat xxx.md\`\"
         $0  --title 'sssss'  --message \"\`cat xxx.md\`\"                                               #-- 从文件获取
-        $0  --title 'sssss'  --message \"### 用户：${USER}\"                                            #-- 简单输出
-        $0  --title 'sssss'  --message \"$( echo -e "### 用户：${USER} \n### 时间：`date` \n\n" )\"     #-- 从命令获取
-        $0  -w \"https://oapi.dingtalk.com/robot/send?access_token=你自己的钉钉机器人token\"  -t 'sssss'  -m \"### 用户：${USER}\"
+        $0  --title 'sssss'  --message \"### 用户：\${USER}\"                                            #-- 简单输出
+        $0  --title 'sssss'  --message \"\$( echo -e "### 用户：\${USER} \n### 时间：\`date\` \n\n" )\"     #-- 从命令获取
+        $0  -w \"https://oapi.dingtalk.com/robot/send?access_token=你自己的钉钉机器人token\"  -t 'sssss'  -m \"### 用户：\${USER}\"
     "
 }
 
@@ -79,6 +79,7 @@ while [[ $# -gt 0 ]]; do
         -h|--help)
             shift
             F_HELP
+            exit 0
             ;;
         -w|--webhook)
             dingding_api_url="$2"
