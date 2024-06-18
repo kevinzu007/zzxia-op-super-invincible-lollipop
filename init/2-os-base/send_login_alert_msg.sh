@@ -34,7 +34,7 @@ F_SEND_DINGDING()
 {
     timeout 5  ${DINGDING_MARKDOWN_LOGIN_SH}  \
         --title "【Alert:SSH登录:${RUN_ENV}】"  \
-        --message "$( echo -e "### `echo 用户名：${USER} \(sudo:${SUDO_USER}\) ` \n### `echo 用户IP：${IP}` \n### `echo 来自：${AREA}` \n\n---\n\n` w | sed '1,2d' `" )"
+        --message "$( echo -e "### `echo 用户名：${USER} \(sudo:${SUDO_USER}\) ` \n### `echo 用户IP：${IP}` \n### `echo 来自：${AREA}` \n\n---\n\n` w | sed '1,2d' `" )" > /dev/null
 }
 
 # 邮件
