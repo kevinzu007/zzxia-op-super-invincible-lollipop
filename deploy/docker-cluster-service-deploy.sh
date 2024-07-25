@@ -542,7 +542,7 @@ services:
     # 必须有
     ports:
     networks:
-      - default
+      - ${COMPOSE_NETWORK}
     extra_hosts:
       - somehost:1.1.1.1
     #depends_on:
@@ -557,16 +557,15 @@ services:
     #mem_limit: 1000000000
     #privileged: true
 networks:
-  default:
+  ${COMPOSE_NETWORK}:
     # 二选一
     # 1 自动创建网络
     #driver: bridge
     # 2 使用外部网络，需要手动预先创建 -- for v1.x ，如果是v2.x，会有警告
-    external:
-      name: ${COMPOSE_NETWORK}
+    #external:
+    #  name: ${COMPOSE_NETWORK}
     # 3 使用外部网络，需要手动预先创建 -- for v2.x
     #external: true
-    #name: ${COMPOSE_NETWORK}
     "
 }
 
@@ -1601,8 +1600,8 @@ do
                 compose)
                     F_DOCKER_COMPOSE_MODEL_YAML > ${YAML_HOME}/docker-compose.yaml
                     if [[ ${COMPOSE_NETWORK_IS_EXT} == 'YES' ]]; then
-                        sed -i "s/^    #external:/    external:/"       ${YAML_HOME}/docker-compose.yaml
-                        sed -i "s/^    #  name:/      name:/"           ${YAML_HOME}/docker-compose.yaml
+                        sed -i "s/^    #external:/    external:$/"       ${YAML_HOME}/docker-compose.yaml
+                        sed -i "s/^    #  name:/      name:/"            ${YAML_HOME}/docker-compose.yaml
                     else
                         sed -i "s/^    #driver: bridge/    driver: bridge/"  ${YAML_HOME}/docker-compose.yaml
                     fi
@@ -2237,18 +2236,37 @@ do
                     DOCKER_FULL_CMD="kubectl apply -f ${YAML_HOME}/${SERVICE_X_NAME}.yaml"
                     ;;
                 compose)
-                    DOCKER_FULL_CMD="echo  \
-                        ; ssh -p ${COMPOSE_SSH_PORT} ${COMPOSE_SSH_HOST_OR_WITH_USER}  \
-                            \"[ ! -d ${COMPOSE_SERVICE_HOME} ] && mkdir -p ${COMPOSE_SERVICE_HOME}\"  \
-                        ; rsync -r  -e \"ssh -p ${COMPOSE_SSH_PORT}\"  \
-                            ${YAML_HOME}/docker-compose.yaml  \
-                            ${COMPOSE_SSH_HOST_OR_WITH_USER}:${COMPOSE_SERVICE_HOME}/  \
-                        && ssh -p ${COMPOSE_SSH_PORT} ${COMPOSE_SSH_HOST_OR_WITH_USER}  \
-                            \"cd ${COMPOSE_SERVICE_HOME}  \
-                            &&  docker-compose pull  \
-                            &&  ${DOCKER_SERVICE_RM}  \
-                            &&  docker-compose up -d\"
-                       "
+                    #DOCKER_FULL_CMD="echo  \
+                    #    ; ssh -p ${COMPOSE_SSH_PORT} ${COMPOSE_SSH_HOST_OR_WITH_USER}  \
+                    #        \"[ ! -d ${COMPOSE_SERVICE_HOME} ] && mkdir -p ${COMPOSE_SERVICE_HOME}\"  \
+                    #    ; rsync -r  -e \"ssh -p ${COMPOSE_SSH_PORT}\"  \
+                    #        ${YAML_HOME}/docker-compose.yaml  \
+                    #        ${COMPOSE_SSH_HOST_OR_WITH_USER}:${COMPOSE_SERVICE_HOME}/  \
+                    #    && ssh -p ${COMPOSE_SSH_PORT} ${COMPOSE_SSH_HOST_OR_WITH_USER}  \
+                    #        \"cd ${COMPOSE_SERVICE_HOME}  \
+                    #        &&  docker-compose pull  \
+                    #        &&  ${DOCKER_SERVICE_RM}  \
+                    #        &&  docker-compose up -d\"
+                    #   "
+                    #
+                    # 初始命令构建
+                    DOCKER_FULL_CMD="ssh -p ${COMPOSE_SSH_PORT} ${COMPOSE_SSH_HOST_OR_WITH_USER} \
+                        '[ ! -d ${COMPOSE_SERVICE_HOME} ] && mkdir -p ${COMPOSE_SERVICE_HOME}' \
+                        ; rsync -r -e 'ssh -p ${COMPOSE_SSH_PORT}' \
+                        ${YAML_HOME}/docker-compose.yaml \
+                        ${COMPOSE_SSH_HOST_OR_WITH_USER}:${COMPOSE_SERVICE_HOME}/ \
+                        && ssh -p ${COMPOSE_SSH_PORT} ${COMPOSE_SSH_HOST_OR_WITH_USER} \
+                        'cd ${COMPOSE_SERVICE_HOME} "
+
+                    # 检查并添加网络创建命令
+                    if [ "${COMPOSE_NETWORK_IS_EXT}" = 'YES' ]; then
+                        DOCKER_FULL_CMD+="&& if ! docker network ls --format '{{.Name}}' | grep -q '^${COMPOSE_NETWORK}$'; then docker network create ${COMPOSE_NETWORK}; fi "
+                    fi
+
+                    # 添加后续命令
+                    DOCKER_FULL_CMD+="&& docker-compose pull \
+                        && ${DOCKER_SERVICE_RM} \
+                        && docker-compose up -d'"
                     ;;
                 *)
                     echo -e "\n猪猪侠警告：未定义的集群类型\n"
