@@ -1600,7 +1600,9 @@ do
                 compose)
                     F_DOCKER_COMPOSE_MODEL_YAML > ${YAML_HOME}/docker-compose.yaml
                     if [[ ${COMPOSE_NETWORK_IS_EXT} == 'YES' ]]; then
-                        sed -i "s/^    #external:/    external:$/"       ${YAML_HOME}/docker-compose.yaml
+                        sed -i "s/^    #external:$/    external:/"       ${YAML_HOME}/docker-compose.yaml
+                        # docker-compose v2.x 用下面这个，此时用上面那个会有警告（语法变了），不过不影响使用
+                        #sed -i "s/^    #external: true/    external: true/"       ${YAML_HOME}/docker-compose.yaml
                         sed -i "s/^    #  name:/      name:/"            ${YAML_HOME}/docker-compose.yaml
                     else
                         sed -i "s/^    #driver: bridge/    driver: bridge/"  ${YAML_HOME}/docker-compose.yaml
