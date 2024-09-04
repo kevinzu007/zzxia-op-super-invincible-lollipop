@@ -205,14 +205,20 @@ do
         DOMAIN_IPS_SET=`echo ${DOMAIN_IPS} | cut -d , -f ${FIELD}`
         DOMAIN_IPS_SET=`echo ${DOMAIN_IPS_SET}`
         #
+        if [[ ${RUN_ENV} = 'prod' ]]; then
+            FULL_DOMAIN_A="${DOMAIN_A}"
+        else
+            FULL_DOMAIN_A="${RUN_ENV}-${DOMAIN_A}"
+        fi
+        #
         case "$i" in
             0)
                 # 第一个用替换的方式（他一般会删除所有匹配的DOMAIN_A记录，然后追加）
-                ${DNS_PROVIDER_SH}  --Action replace  --domain ${DOMAIN}  --type A  --name ${RUN_ENV}-${DOMAIN_A}  --value ${DOMAIN_IPS_SET}
+                ${DNS_PROVIDER_SH}  --Action replace  --domain ${DOMAIN}  --type A  --name ${FULL_DOMAIN_A}  --value ${DOMAIN_IPS_SET}
                 ;;
             *)
                 # 多个则后面的用追加方式
-                ${DNS_PROVIDER_SH}  --Action append   --domain ${DOMAIN}  --type A  --name ${RUN_ENV}-${DOMAIN_A}  --value ${DOMAIN_IPS_SET}
+                ${DNS_PROVIDER_SH}  --Action append   --domain ${DOMAIN}  --type A  --name ${FULL_DOMAIN_A}  --value ${DOMAIN_IPS_SET}
                 ;;
         esac
     done
