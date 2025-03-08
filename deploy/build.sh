@@ -803,7 +803,7 @@ NODE_BUILD()
                 # 可以拷贝软连接，还会自动创建父目录（仅目录拷贝时）
                 CP_FROM_DIR='./dist'
                 CP_TO_DIR="${WEBSITE_BASE}/${PJ}/releases/$(date +%Y%m%d)"
-                ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m synchronize -a "src=${CP_FROM_DIR}/  dest=${CP_TO_DIR}/  rsync_opts=--perms=yes,--times=yes"
+                ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m synchronize -a "src=${CP_FROM_DIR}/  dest=${CP_TO_DIR}/  rsync_opts=--perms,--times"
                 # echo
                 echo 'Build and Deploy 成功！'  2>&1 | tee -a ${BUILD_LOG_file}
                 # copy
@@ -928,7 +928,7 @@ HTML_BUILD()
                 # 可以拷贝软连接，还会自动创建父目录（仅目录拷贝时）
                 CP_FROM_DIR='./'
                 CP_TO_DIR="${WEBSITE_BASE}/${PJ}/releases/$(date +%Y%m%d)"
-                ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m synchronize -a "src=${CP_FROM_DIR}/  dest=${CP_TO_DIR}/  rsync_opts=--perms=yes,--times=yes"
+                ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m synchronize -a "src=${CP_FROM_DIR}/  dest=${CP_TO_DIR}/  rsync_opts=--perms,--times"
                 # echo
                 echo 'Build and Deploy 成功！'  2>&1 | tee -a ${BUILD_LOG_file}
                 # copy
@@ -1048,7 +1048,7 @@ PYTHON_BUILD()
                 # 可以拷贝软连接，还会自动创建父目录（仅目录拷贝时）
                 CP_FROM_DIR='./'
                 CP_TO_DIR="${WEBSITE_BASE}/${PJ}/releases/$(date +%Y%m%d)"
-                ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m synchronize -a "src=${CP_FROM_DIR}/  dest=${CP_TO_DIR}/  rsync_opts=--perms=yes,--times=yes"
+                ansible ${ANSIBLE_HOST_FOR_LOGFILE} -m synchronize -a "src=${CP_FROM_DIR}/  dest=${CP_TO_DIR}/  rsync_opts=--perms,--times"
                 # echo
                 echo 'Build and Deploy 成功！'  2>&1 | tee -a ${BUILD_LOG_file}
                 # copy

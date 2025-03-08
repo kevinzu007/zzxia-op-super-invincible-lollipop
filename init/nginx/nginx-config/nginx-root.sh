@@ -201,11 +201,11 @@ cd -
 
 # copy to server
 if [ -d "${TMP_WEBSITE_BASE}/realserver" ]; then
-    ansible nginx_real  -m synchronize -a "src=${TMP_WEBSITE_BASE}/realserver/  dest=${WEBSITE_BASE}/  rsync_opts=--perms=yes,--times=yes"
+    ansible nginx_real  -m synchronize -a "src=${TMP_WEBSITE_BASE}/realserver/  dest=${WEBSITE_BASE}/  rsync_opts=--perms,--times"
 fi
 #
 if [ -d "${TMP_WEBSITE_BASE}/proxyserver" ]; then
-    ansible nginx_proxy -m synchronize -a "src=${TMP_WEBSITE_BASE}/proxyserver/ dest=${WEBSITE_BASE}/  rsync_opts=--perms=yes,--times=yes"
+    ansible nginx_proxy -m synchronize -a "src=${TMP_WEBSITE_BASE}/proxyserver/ dest=${WEBSITE_BASE}/  rsync_opts=--perms,--times"
 fi
 
 
