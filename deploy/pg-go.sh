@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 # Create By: 猪猪侠
 # License: GNU GPLv3
 # Test On: CentOS 7
