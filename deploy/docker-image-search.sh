@@ -122,11 +122,14 @@ F_SEARCH()
     F_SEARCH_RESULT_PREFILE="${LOG_HOME}/F_SEARCH-result.txt--${F_DOCKER_IMAGE_NAME}"
     F_SEARCH_RESULT_ERR_PREFILE="${LOG_HOME}/F_SEARCH-result-err.txt--${F_DOCKER_IMAGE_NAME}"
     #
-    curl -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD} -s -X GET ${DOCKER_REPO_URL_BASE}/${DOCKER_IMAGE_PRE_NAME}/${F_DOCKER_IMAGE_NAME}/tags/list | jq .tags[] > ${F_SEARCH_RESULT_PREFILE}  2>${F_SEARCH_RESULT_ERR_PREFILE}
+    #curl -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD} -s -X GET ${DOCKER_REPO_URL_BASE}/${DOCKER_IMAGE_PRE_NAME}/${F_DOCKER_IMAGE_NAME}/tags/list | jq .tags[] > ${F_SEARCH_RESULT_PREFILE}  2>${F_SEARCH_RESULT_ERR_PREFILE}
+    curl -u ${DOCKER_REPO_USER}:${DOCKER_REPO_PASSWORD} -s -X GET ${DOCKER_REPO_URL_BASE}/${DOCKER_IMAGE_PRE_NAME}/${F_DOCKER_IMAGE_NAME}/tags/list  > ${F_SEARCH_RESULT_PREFILE}.origin  2>${F_SEARCH_RESULT_ERR_PREFILE}
     if [[ $? -ne 0 ]] || [[ $(cat ${F_SEARCH_RESULT_ERR_PREFILE} | grep -q 'NAME_UNKNOWN'; echo $?) -eq 0 ]]; then
         echo -e "\n猪猪侠警告：项目镜像不存在，或者访问【${DOCKER_REPO_SERVER}】服务器异常\n" 1>&2
         return 53
     fi
+    # 格式化
+    cat ${F_SEARCH_RESULT_PREFILE}.origin | jq .tags[]  > ${F_SEARCH_RESULT_PREFILE}
     #
     # 删除引号
     sed -i 's/\"//g'   ${F_SEARCH_RESULT_PREFILE}
@@ -300,12 +303,12 @@ done
 
 
 # 待搜索的服务清单
-> ${SERVICE_LIST_FILE_TMP}
+true > "${SERVICE_LIST_FILE_TMP}"
 # 参数个数为
 if [[ $# -eq 0 ]]; then
     cp ${SERVICE_LIST_FILE}  ${SERVICE_LIST_FILE_TMP}
 else
-    for i in $@
+    for i in "$@"
     do
         #
         GET_IT='N'
@@ -336,7 +339,7 @@ fi
 if [ -n "${OUTPUT_FILE}" ]; then
     echo  ${OUTPUT_FILE} | grep -q \/
     if [[ $? -eq 0 ]]; then
-        if [ ! -d `echo ${OUTPUT_FILE%/*}` ]; then
+        if [ ! -d "`echo ${OUTPUT_FILE%/*}`" ]; then
             echo -e  "\n猪猪侠警告：文件目录【`echo ${OUTPUT_FILE%/*}`】不存在，请创建先。\n"
             exit 51
         fi
