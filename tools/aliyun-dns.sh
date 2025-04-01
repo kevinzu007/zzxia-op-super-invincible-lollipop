@@ -77,7 +77,7 @@ F_HELP()
         $0 -h|--help
         $0 [-A query_domain]  [-d {主域名}]                                                                    #-- 查询域信息
         $0 [-A query_record]  [-d {主域名}]  <-t [A|TXT|RNAME|...]>  <<-n {dns记录名}>|<-w {关键字}>>          #-- 查询域记录
-        $0 [-A delete]        [-d {主域名}]  <-t [A|TXT|RNAME|...]>  <-n {dns记录名}>                          #-- 删除记录，未实现
+        $0 [-A delete]        [-d {主域名}]  <-t [A|TXT|RNAME|...]>  <-n {dns记录名}>                          #-- 删除记录
         $0 [-A replace|append]  [-d {主域名}]  <-t [A|TXT|RNAME|...]>  <-n {dns记录名}>  <-v {dns记录值}>      #-- 替换或追加域名记录
     参数说明：
         \$0   : 代表脚本本身
@@ -97,6 +97,8 @@ F_HELP()
     示例:
         # 增加与修改：
         $0 -A [replace|append]  <-d 域名>  [-t [A|TXT|CNAME|...]]  [-n dns记录名]  [-v dns记录值]     #--- replace：删除现有后新增； append：增加多一条
+        # 删除：
+        $0 -A [delete]  <-d 域名>  [-t [A|TXT|CNAME|...]]  [-n dns记录名]    #--- 删除
         # 查询：
         $0 -A query_domain  -d 域名                                          #--- 查询域名信息
         $0 -A query_record  -d 域名                                          #--- 查询域名下所有记录
@@ -229,7 +231,8 @@ do
             case "${R_ACTION}" in
                 replace)
                     # 删除匹配并追加
-                    echo -e "以下记录将被删除：\n"
+                    #
+                    echo -e "删除以下记录：\n"
                     aliyun alidns DescribeDomainRecords  --DomainName=${MASTER_DOMAIN}  --Type=${R_TYPE}  --RRKeyWord ${R_NAME} | jq '.DomainRecords.Record[] | select (.RR=="'"${R_NAME}"'")'
                     aliyun alidns DescribeDomainRecords  --DomainName=${MASTER_DOMAIN}  --Type=${R_TYPE}  --RRKeyWord ${R_NAME} | jq '.DomainRecords.Record[] | select (.RR=="'"${R_NAME}"'") | .RecordId' > /tmp/${SH_NAME}.RID
                     while read LINE
@@ -237,7 +240,8 @@ do
                         RID=`echo ${LINE} | sed 's/\"//g'`
                         aliyun alidns DeleteDomainRecord  --RecordId=${RID}
                     done < /tmp/${SH_NAME}.RID
-                    # 追加
+                    #
+                    echo -e "添加以下记录：\n"
                     aliyun alidns AddDomainRecord  --DomainName=${MASTER_DOMAIN}  --Type=${R_TYPE} --RR=${R_NAME} --Value=${R_VALUE}
                     ;;
                 append)
