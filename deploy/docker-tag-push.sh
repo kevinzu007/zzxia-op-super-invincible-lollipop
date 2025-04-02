@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 #############################################################################
 # Create By: 猪猪侠
 # License: GNU GPLv3
@@ -145,7 +145,7 @@ done
 
 
 # 待搜索项目清单
-> "${PROJECT_LIST_FILE_TMP}"
+true > "${PROJECT_LIST_FILE_TMP}"
 ## 参数个数
 if [[ $# -eq 0 ]]; then
     cp  ${PROJECT_LIST_FILE}  ${PROJECT_LIST_FILE_TMP}

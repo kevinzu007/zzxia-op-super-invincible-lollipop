@@ -34,7 +34,7 @@ F_SEND_DINGDING()
 {
     timeout 5  ${DINGDING_MARKDOWN_LOGIN_SH}  \
         --title "【Alert:SSH登录:${RUN_ENV}】"  \
-        --message "$( echo -e "### `echo 用户名：${USER} \(sudo:${SUDO_USER}\) ` \n### `echo 用户IP：${IP}` \n### `echo 来自：${AREA}` \n\n---\n\n` w | sed '1,2d' `" )"
+        --message "$( echo -e "### `echo 用户名：${USER} \(sudo:${SUDO_USER}\) ` \n### `echo 用户IP：${IP}` \n### `echo 来自：${AREA}` \n\n---\n\n` w | sed '1,2d' `" )" > /dev/null
 }
 
 # 邮件
@@ -100,7 +100,7 @@ if [ "x${IP}" = "x" ]; then
     IP='IP为空'
     AREA="本机"
     F_MY_LOG
-elif [[ "${IP}" =~ ^10\.|^172\.1[6-9]|^172\.2[0-9]|^172\.3[01]|^192\.168 ]]; then
+elif [[ "${IP}" =~ ^10\.|^172\.1[6-9]|^172\.2[0-9]|^172\.3[01]|^192\.168|^127\.0\.0\.1 ]]; then
     # 非本机登录
     # 私网登录：内网登录及ansible时，为避免信息风暴，不发消息
     AREA="私网地址"

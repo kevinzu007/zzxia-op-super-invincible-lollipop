@@ -1,10 +1,9 @@
 # .bashrc
 
-# User specific aliases and functions
+# 如果是 非交互方式 ，则返回
+[ -z "$PS1" ] && return
+#[[ $- != *i* ]] && return
 
-alias rm='rm -i'
-alias cp='cp -i'
-alias mv='mv -i'
 
 # Source global definitions
 if [ -f /etc/bashrc ]; then
@@ -19,40 +18,46 @@ fi
 
 ## ZZXia
 
+# 安全
+alias rm='rm -i'
+alias cp='cp -i'
+alias mv='mv -i'
+# grep
+alias grep='grep --color=auto'
 # ls
+alias ls='ls --color=auto'
 alias ll='ls -aF -l       --time-style=long-iso'   # 列出【./和../】，  目录末尾加【/】，长列表格式，长日期
 alias la='ls -AF'                                  # 不列出【./和../】
 alias lx='ls -AF -l  -Sr  --time-style=long-iso'   # 按照大小排序(反序)
 alias lt='ls -AF -lh -tr  --time-style=long-iso'   # 按照修改时间排序(反序)
 
 
-# 1 terminal color_prompt
+# 1 终端颜色
 if [[ ${RUN_ENV} == prod ]]; then
     # 红色
-    PS1='[${debian_chroot:+($debian_chroot)}\[\033[01;34m\]\u\[\033[00m\]\[\033[01;31m\]@\[\033[00m\]\[\033[01;34m\]\h\[\033[00m\]:\[\033[01;31m\]\w\[\033[00m\]]\$ '
+    PS1="[${debian_chroot:+($debian_chroot)}\[\033[01;34m\]\u\[\033[00m\]\[\033[01;31m\]@\[\033[00m\]\[\033[01;34m\]\h\[\033[00m\]:\[\033[01;31m\]\w\[\033[00m\]]\$ "
 elif [[ ${RUN_ENV} == stag ]]; then
     # 黄色
-    PS1='[${debian_chroot:+($debian_chroot)}\[\033[01;34m\]\u\[\033[00m\]\[\033[01;33m\]@\[\033[00m\]\[\033[01;34m\]\h\[\033[00m\]:\[\033[01;33m\]\w\[\033[00m\]]\$ '
+    PS1="[${debian_chroot:+($debian_chroot)}\[\033[01;34m\]\u\[\033[00m\]\[\033[01;33m\]@\[\033[00m\]\[\033[01;34m\]\h\[\033[00m\]:\[\033[01;33m\]\w\[\033[00m\]]\$ "
 else
     # 白色
-    PS1='[${debian_chroot:+($debian_chroot)}\[\033[01;34m\]\u\[\033[00m\]\[\033[01;37m\]@\[\033[00m\]\[\033[01;34m\]\h\[\033[00m\]:\[\033[01;37m\]\w\[\033[00m\]]\$ '
+    PS1="[${debian_chroot:+($debian_chroot)}\[\033[01;34m\]\u\[\033[00m\]\[\033[01;37m\]@\[\033[00m\]\[\033[01;34m\]\h\[\033[00m\]:\[\033[01;37m\]\w\[\033[00m\]]\$ "
 fi
 
 
-# 信息输出会造成无法scp、rsync等问题
-## 2 MY
-#NET_INTERFACE='eth0'
-#MY_IP=$(ip addres show | grep -A 3 ${NET_INTERFACE} | grep 'inet ' | awk '{print $2}' | awk -F '/' '{print $1}')
-#MY_USER_NAME=${SUDO_USER:-"${LOGNAME}"}
-#
-## 3 output
-#echo.
-#tty
-#echo
-#echo '########################################'
-#echo
-#df -h 2>/dev/null | grep -E -v '^文件系统|^tmpfs|^devtmpfs|loop|udev' | awk -v MY_IP=${MY_IP} -v MY_USER_NAME=${MY_USER_NAME}  'BEGIN{printf("IP地址: %s\n用户名: %s\n磁  盘:\n 已用 | 剩余  | 容量  | 挂载\n", MY_IP, MY_USER_NAME)} {printf(" %4s | %5s | %5s | %-s \n", $5, $4, $2, $6)}'
-#echo
-#echo '########################################'
+# 2 基本定义
+NET_INTERFACE='eth0'
+MY_IP=$(ip addres show | grep -A 3 ${NET_INTERFACE} | grep 'inet ' | awk '{print $2}' | awk -F '/' '{print $1}')
+MY_USER_NAME=${SUDO_USER:-"${LOGNAME}"}
+
+# 3 输出
+echo.
+tty
+echo
+echo '########################################'
+echo
+df -h 2>/dev/null | grep -E -v '^文件系统|^tmpfs|^devtmpfs|loop|udev|overlay|shm' | awk -v MY_IP=${MY_IP} -v MY_USER_NAME=${MY_USER_NAME}  'BEGIN{printf("IP地址: %s\n用户名: %s\n磁  盘:\n 已用 | 剩余  | 容量  | 挂载\n", MY_IP, MY_USER_NAME)} {printf(" %4s | %5s | %5s | %-s \n", $5, $4, $2, $6)}'
+echo
+echo '########################################'
 
 

@@ -22,3 +22,31 @@ log/*
 _*
 
 
+# env
+init/gan-webhook/gan-api-server/server_root/gan_api_var.py
+deploy/container-hosts-pub.list
+deploy/docker-arg-pub.list
+deploy/docker-cluster-service.list
+deploy/docker-cluster-service.list.append.1
+deploy/docker-cluster-service.list.append.2
+deploy/env.sh
+deploy/java-options-pub.list
+deploy/nginx.list
+deploy/project.list
+deploy/project.list.append.1
+deploy/project.list.retry
+init/2-os-base/mailrc
+init/2-os-base/zzxia-op-super-invincible-lollipop.run-env.sh
+init/host-ip.list
+init/nginx/nginx-config/nginx.list
+init/pg/manage/pg_db.list
+init/pgbadger/pgbadger_report/pgbadger.env
+rubbish/backup-center/backup-center-project.list
+rubbish/elasticsearch/elasticsearch-srv/.env
+rubbish/fluentd/fluentd-srv/conf/fluent.conf
+rubbish/install-hosts.yml
+rubbish/kibana/kibana-srv/.env
+rubbish/ossfs/ossfs-backup.service
+rubbish/ossfs/ossfs-internal-backup.service
+
+
