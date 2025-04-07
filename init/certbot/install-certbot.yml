@@ -2,6 +2,15 @@
 - hosts: deploy,nginx_letsencrypt
   become: yes
   tasks:
-    - name: certbot install
-      shell: "[ -x /usr/bin/certbot ] || (dnf install epel-release -y &&  dnf install certbot python3-certbot-nginx -y)"
+    - name: Install EPEL repository
+      dnf:
+        name: epel-release
+        state: present
+
+    - name: Install certbot and python3-certbot-nginx
+      dnf:
+        name:
+          - certbot
+          - python3-certbot-nginx
+        state: present
 
