@@ -29,7 +29,7 @@
           - python3-pip
           - rsync
           - jq
-          - mailx
+          - s-nail  # 使用 s-nail 替代 mailx
         state: present
         update_cache: yes  # 相当于 yum update -y
 
