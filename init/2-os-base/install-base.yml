@@ -1,19 +1,61 @@
-
-# base soft
-- hosts: all
+---
+- name: Install and configure base software on Rocky Linux 9
+  hosts: all
   become: yes
   tasks:
-  - name: ntp install
-    yum:  name=ntp state=present disable_gpg_check=yes
-  - name: enable ntpd service
-    service:  name=ntpd.service enabled=yes
-  - name: restart ntpd service
-    service:  name=ntpd.service state=restarted
-  - name: yum update and install
-    shell: yum update -y ;  yum install -y  bash-completion iotop bzip2 unzip  python3-pip rsync jq mailx
-  - name: install pip
-    shell: pip3 install --quiet requests
-  - name: set selinux
-    shell: getenforce | grep -i enforcing >/dev/null 2>&1 && ( sed -i --follow-symlinks 's/SELINUX=enforcing/SELINUX=disabled/g'  /etc/selinux/config ; setenforce 0 ) || echo ''
+    - name: Install chrony for time synchronization
+      dnf:
+        name: chrony
+        state: present
+        disable_gpg_check: yes
 
+    - name: Enable chronyd service
+      service:
+        name: chronyd
+        enabled: yes
+
+    - name: Restart chronyd service
+      service:
+        name: chronyd
+        state: restarted
+
+    - name: Update system and install base packages
+      dnf:
+        name:
+          - bash-completion
+          - iotop
+          - bzip2
+          - unzip
+          - python3-pip
+          - rsync
+          - jq
+          - yq
+          - mailx
+        state: present
+        update_cache: yes  # 相当于 yum update -y
+
+    - name: Install Python requests library via pip
+      pip:
+        name: requests
+        state: present
+        executable: pip3
+
+    - name: Disable SELinux if currently enforcing
+      block:
+        - name: Check SELinux status
+          command: getenforce
+          register: selinux_status
+          changed_when: false
+          failed_when: false
+
+        - name: Modify SELinux configuration to disabled
+          lineinfile:
+            path: /etc/selinux/config
+            regexp: '^SELINUX='
+            line: SELINUX=disabled
+          when: selinux_status.stdout == "Enforcing"
+
+        - name: Set SELinux to permissive mode immediately
+          command: setenforce 0
+          when: selinux_status.stdout == "Enforcing"
 
