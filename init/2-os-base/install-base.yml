@@ -59,10 +59,10 @@
           when: selinux_status.stdout == "Enforcing"
 
 
-- name: Install yq binary from GitHub
-  become: yes
-  ansible.builtin.get_url:
-    url: https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
-    dest: /usr/local/bin/yq
-    mode: '0755'
+    - name: Install yq binary from GitHub
+      become: yes
+      ansible.builtin.get_url:
+        url: https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+        dest: /usr/local/bin/yq
+        mode: '0755'
 
