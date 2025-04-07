@@ -29,7 +29,6 @@
           - python3-pip
           - rsync
           - jq
-          - yq
           - mailx
         state: present
         update_cache: yes  # 相当于 yum update -y
@@ -58,4 +57,12 @@
         - name: Set SELinux to permissive mode immediately
           command: setenforce 0
           when: selinux_status.stdout == "Enforcing"
+
+
+- name: Install yq binary from GitHub
+  become: yes
+  ansible.builtin.get_url:
+    url: https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+    dest: /usr/local/bin/yq
+    mode: '0755'
 
