@@ -214,6 +214,8 @@ fi
 case ${WORK} in
     request)
         # 申请证书
+        EXIST_CERT_OUTPUT=${SH_PATH}/all_exist_cert.txt
+        certbot certificates  >  ${EXIST_CERT_OUTPUT}
         i=0
         while read LINE
         do
@@ -245,7 +247,7 @@ case ${WORK} in
                 continue
             fi
             # 检查现有
-            certbot certificates -d "${FQDN}" | grep "${FQDN}"  > /dev/null 2>&1
+            cat ${EXIST_CERT_OUTPUT} | grep "${FQDN}"  > /dev/null 2>&1
             if [[ $? -eq 0 ]]; then
                 echo  "证书【${FQDN}】已经存在，跳过！"
                 echo
