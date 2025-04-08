@@ -1,16 +1,38 @@
 
-# repo-docker
-- hosts: deploy
+---
+- name: Configure Docker registry tag cleanup on deploy hosts
+  hosts: deploy
   become: yes
   vars:
-    - ZZXIA_OP_SUPER_INVINCIBLE_LOLLIPOP_HOME: "{{ lookup('env','ZZXIA_OP_SUPER_INVINCIBLE_LOLLIPOP_HOME') }}"
+    zzxia_op_super_invincible_lollipop_home: "{{ lookup('env', 'ZZXIA_OP_SUPER_INVINCIBLE_LOLLIPOP_HOME') | default('/opt/zzxia-op-super-invincible-lollipop', true) }}"
   tasks:
-    - name: crontab - delete-docker-registry-history-tag
-      cron: name=delete-docker-registry-history-tag backup=yes state=present minute=0 hour=0 day=*  month=* weekday=* user=root job='. /etc/profile ; {{ ZZXIA_OP_SUPER_INVINCIBLE_LOLLIPOP_HOME }}/tools/docker-registry-manage.sh  -R  -t ^[0-9]{4}\.[0-9]{2}\.[0-9]{2}\.[0-9]{6}  -k 10  > /dev/null'
+    - name: Set cron job to delete old Docker registry tags
+      cron:
+        name: "Delete old Docker registry tags"
+        state: present
+        minute: "0"
+        hour: "0"
+        day: "*"
+        month: "*"
+        weekday: "*"
+        user: root
+        job: ". /etc/profile; {{ zzxia_op_super_invincible_lollipop_home }}/tools/docker-registry-manage.sh -R -t '^[0-9]{4}\\.[0-9]{2}\\.[0-9]{2}\\.[0-9]{6}' -k 10 > /dev/null"
+        backup: yes
 
-- hosts: repo_docker
+- name: Configure Docker registry cleanup on repo_docker hosts
+  hosts: repo_docker
   become: yes
   tasks:
-    - name: crontab - clean-docker-registry-no-use-blob
-      cron: name=clean-docker-registry-no-use-blob backup=yes state=present minute=0 hour=1 day=*  month=* weekday=* user=root job='docker exec dockerregistrysrv_docker-registry_1 registry garbage-collect /etc/docker/registry/config.yml > /dev/null'
+    - name: Set cron job to clean unused Docker registry blobs
+      cron:
+        name: "Clean unused Docker registry blobs"
+        state: present
+        minute: "0"
+        hour: "1"
+        day: "*"
+        month: "*"
+        weekday: "*"
+        user: root
+        job: "docker exec dockerregistrysrv_docker-registry_1 registry garbage-collect /etc/docker/registry/config.yml > /dev/null"
+        backup: yes
 
