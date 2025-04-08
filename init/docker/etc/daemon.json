@@ -1,7 +1,9 @@
 {
-  "registry-mirrors": ["https://a4i57xiw.mirror.aliyuncs.com"],
+  "registry-mirrors": ["http://dockerhub-mirror.gc.cn:55001"],
+  "insecure-registries": ["dockerhub-mirror.gc.cn:55001"],
   "exec-opts": ["native.cgroupdriver=systemd"],
   "log-driver":"json-file",
   "log-opts": {"max-size":"1000m", "max-file":"3"}
 }
+
 
