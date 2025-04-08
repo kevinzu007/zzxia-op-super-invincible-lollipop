@@ -1,13 +1,51 @@
 
-# docker
-- hosts: docker,deploy
+---
+- name: Install and configure Docker on Rocky Linux 9
+  hosts: docker,deploy
   become: yes
   tasks:
-    - name: docker install
-      shell: yum install -y yum-utils  device-mapper-persistent-data  lvm2;  yum-config-manager --add-repo  https://download.docker.com/linux/centos/docker-ce.repo;  yum install -y docker-ce docker-compose
-    - name: docker config
-      copy: src=./etc/daemon.json dest=/etc/docker/   owner=root group=root mode=644 backup=yes
-    - name: docker run
-      shell: systemctl enable docker;  systemctl restart docker
+    - name: Install prerequisite packages
+      dnf:
+        name:
+          - yum-utils
+          - device-mapper-persistent-data
+          - lvm2
+        state: present
 
+    - name: Add Docker CE repository
+      command: dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+      args:
+        creates: /etc/yum.repos.d/docker-ce.repo
+      register: repo_result
+      changed_when: repo_result.rc == 0
+
+    - name: Install Docker CE and Docker Compose
+      dnf:
+        name:
+          - docker-ce
+          - docker-compose-plugin  # Rocky Linux 9 使用 docker-compose-plugin 替代独立的 docker-compose
+        state: present
+
+    - name: Ensure /etc/docker directory exists
+      file:
+        path: /etc/docker
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Configure Docker daemon
+      copy:
+        src: ./etc/daemon.json
+        dest: /etc/docker/daemon.json
+        owner: root
+        group: root
+        mode: '0644'
+        backup: yes
+
+    - name: Enable and start Docker service
+      systemd:
+        name: docker
+        state: restarted
+        enabled: yes
 
