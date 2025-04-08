@@ -1,5 +1,4 @@
 
----
 - name: Configure Nginx scripts on Rocky Linux 9
   hosts: nginx
   become: yes
@@ -42,7 +41,6 @@
         mode: '0755'  # 可执行脚本需要执行权限
 
 
----
 - name: Configure cron jobs for Nginx on Rocky Linux 9
   hosts: nginx
   become: yes
