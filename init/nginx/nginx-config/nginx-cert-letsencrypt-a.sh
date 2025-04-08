@@ -20,6 +20,9 @@ TIME_START=${TIME}
 WEB_PROJECT_LIST_FILE="${SH_PATH}/nginx.list"
 WEB_PROJECT_LIST_FILE_TMP="/tmp/${SH_NAME}-nginx.tmp.list"
 #
+SUCCESS_MSG='Successfully received certificate'
+EXISTING_MSG='You have an existing certificate'
+#
 [ -d "./log" ] || mkdir log
 rm -f ./log/*
 
@@ -181,7 +184,7 @@ if [[ $# -eq 0 ]]; then
 else
     # 指定项目
     echo '#| **项目名** | **域名A记录** | **http端口** | **https端口** | **方式** | **后端协议端口** | **附加项** | **域名A记录IP** |' > ${WEB_PROJECT_LIST_FILE_TMP}
-    for i in $@
+    for i in "$@"
     do
         #
         GET_IT='N'
@@ -227,6 +230,9 @@ case ${WORK} in
             else
                 FQDN="${RUN_ENV}-${DOMAIN_A}.${DOMAIN}"
             fi
+            #
+            REQUEST_LOG_FILE="./log/cert-only-${FQDN}.log"
+            #
             # go
             i=`expr $i + 1`
             echo
@@ -252,26 +258,29 @@ case ${WORK} in
                 --webroot  \
                 -w ${WEBSITE_BASE}/${FQDN}  \
                 -d ${FQDN} 2>&1  \
-                | tee -a ./log/cert-only-${FQDN}.log"
+                | tee -a ${REQUEST_LOG_FILE}
             certbot  certonly  ${CERTBOT_OPT}  \
                 -m ${EMAIL}  \
                 --agree-tos  \
                 --webroot  \
                 -w ${WEBSITE_BASE}/${FQDN}  \
                 -d ${FQDN} 2>&1  \
-                | tee -a ./log/cert-only-${FQDN}.log
+                | tee -a ${REQUEST_LOG_FILE}
             #
-            grep 'Your\ certificate\ and\ chain\ have\ been\ saved\ at'  ./log/cert-only-${FQDN}.log
-            ERR1=$?
-            grep 'You\ have\ an\ existing\ certificate\ that\ has\ exactly\ the\ same\ domains\ or\ certificate\ name'   ./log/cert-only-${FQDN}.log
-            ERR2=$?
-            if [ ${ERR1} != 0 ] && [ ${ERR2} != 0 ]; then
-                echo -e "${ECHO_ERROR}证书【${FQDN}】申请失败，请检查！${ECHO_CLOSE}"
+            # 检查日志文件是否存在
+            if [ ! -f "${REQUEST_LOG_FILE}" ]; then
+                echo -e "${ECHO_ERROR}证书【${FQDN}】日志文件 ${REQUEST_LOG_FILE} 不存在，请检查！${ECHO_CLOSE}" >&2
                 continue
+            fi
+            #
+            # 检查证书申请结果
+            if grep -q "$SUCCESS_MSG" "${REQUEST_LOG_FILE}" || grep -q "$EXISTING_MSG" "${REQUEST_LOG_FILE}"; then
+                echo "OK"
                 echo
             else
-                echo  "OK"
+                echo -e "${ECHO_ERROR}证书【${FQDN}】申请失败，请检查！${ECHO_CLOSE}" >&2
                 echo
+                continue
             fi
         done < "${WEB_PROJECT_LIST_FILE_TMP}"
         exit
@@ -283,10 +292,9 @@ case ${WORK} in
             echo  "OK，证书全部更新成功"
             exit 0
         else
-            echo -e "${ECHO_ERROR}证书更新失败${ECHO_CLOSE}"
+            echo -e "${ECHO_ERROR}证书更新失败${ECHO_CLOSE}"  >&2
             exit 54
         fi
         ;;
 esac
-
 
