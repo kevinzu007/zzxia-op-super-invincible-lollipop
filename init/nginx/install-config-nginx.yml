@@ -1,32 +1,81 @@
 
-# nginx-config
-- hosts: nginx
+---
+- name: Configure Nginx scripts on Rocky Linux 9
+  hosts: nginx
   become: yes
   vars:
-    - NGINX_CONFIG_SH_HOME: "{{ lookup('env','NGINX_CONFIG_SH_HOME') }}"
-    - WEBSITE_BASE: "{{ lookup('env','WEBSITE_BASE') }}"
-    - NGINX_CONF_DEFAULT_DIR: "{{ lookup('env','NGINX_CONF_DEFAULT_DIR') }}"
+    nginx_config_sh_home: "{{ lookup('env', 'NGINX_CONFIG_SH_HOME') | default('/etc/nginx/scripts', true) }}"
+    website_base: "{{ lookup('env', 'WEBSITE_BASE') | default('/var/www', true) }}"
+    nginx_conf_default_dir: "{{ lookup('env', 'NGINX_CONF_DEFAULT_DIR') | default('/etc/nginx/conf.d', true) }}"
+
   tasks:
-    - name: 新建目录 nginx-config
-      file: path={{ NGINX_CONFIG_SH_HOME }}  state=directory  mode=0755
-    - name: 拷贝 nginx - nginx.list
-      synchronize: src=./nginx-config/nginx.list      dest={{ NGINX_CONFIG_SH_HOME }}/nginx.list      rsync_opts="--perms,--times"
-    - name: 拷贝 nginx - nginx-cert-letsencrypt-a.sh
-      synchronize: src=./nginx-config/nginx-cert-letsencrypt-a.sh  dest={{ NGINX_CONFIG_SH_HOME }}/nginx-cert-letsencrypt-a.sh  rsync_opts="--perms,--times"
-    - name: 拷贝 nginx - web-release-on-nginx.sh
-      synchronize: src=./nginx-config/web-release-on-nginx.sh  dest={{ NGINX_CONFIG_SH_HOME }}/web-release-on-nginx.sh  rsync_opts="--perms,--times"
+    - name: Create nginx-config directory
+      file:
+        path: "{{ nginx_config_sh_home }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Copy nginx.list to target
+      copy:
+        src: ./nginx-config/nginx.list
+        dest: "{{ nginx_config_sh_home }}/nginx.list"
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Copy nginx-cert-letsencrypt-a.sh to target
+      copy:
+        src: ./nginx-config/nginx-cert-letsencrypt-a.sh
+        dest: "{{ nginx_config_sh_home }}/nginx-cert-letsencrypt-a.sh"
+        owner: root
+        group: root
+        mode: '0755'  # 可执行脚本需要执行权限
+
+    - name: Copy web-release-on-nginx.sh to target
+      copy:
+        src: ./nginx-config/web-release-on-nginx.sh
+        dest: "{{ nginx_config_sh_home }}/web-release-on-nginx.sh"
+        owner: root
+        group: root
+        mode: '0755'  # 可执行脚本需要执行权限
 
 
-# cron
-- hosts: nginx
+---
+- name: Configure cron jobs for Nginx on Rocky Linux 9
+  hosts: nginx
   become: yes
   vars:
-    - WEBSITE_BASE: "{{ lookup('env','WEBSITE_BASE') }}"
-    - NGINX_CONF_DEFAULT_DIR: "{{ lookup('env','NGINX_CONF_DEFAULT_DIR') }}"
+    website_base: "{{ lookup('env', 'WEBSITE_BASE') | default('/var/www', true) }}"
+    nginx_conf_default_dir: "{{ lookup('env', 'NGINX_CONF_DEFAULT_DIR') | default('/etc/nginx/conf.d', true) }}"
+
   tasks:
-    - name: crontab - htpass
-      cron: name=htpass backup=yes state=present minute=0 hour=0 day=*  month=* weekday=* user=root job='echo "adm33$(date +\%y\%-m\%-d)" | htpasswd -i -c {{ NGINX_CONF_DEFAULT_DIR }}/pass.db adm > /dev/null'
-    - name: crontab - 清理build-log
-      cron: name=清理build-log backup=yes state=present minute=0 hour=0 day=*  month=* weekday=* user=root job='find {{ WEBSITE_BASE }}/build-log/releases/current/file/ -type d -ctime +3 | xargs rm -rf {} \; >/dev/null'
+    - name: Set daily htpasswd update cron job
+      cron:
+        name: "Update htpasswd"
+        state: present
+        minute: "0"
+        hour: "0"
+        day: "*"
+        month: "*"
+        weekday: "*"
+        user: root
+        job: 'echo "adm33$(date +\\%y\\%m\\%d)" | htpasswd -i -c {{ nginx_conf_default_dir }}/pass.db adm > /dev/null'
+        backup: yes
+
+    - name: Set daily build-log cleanup cron job
+      cron:
+        name: "Clean build-log"
+        state: present
+        minute: "0"
+        hour: "0"
+        day: "*"
+        month: "*"
+        weekday: "*"
+        user: root
+        job: 'find {{ website_base }}/build-log/releases/current/file/ -type d -ctime +3 -exec rm -rf {} + > /dev/null'
+        backup: yes
+
 
 
