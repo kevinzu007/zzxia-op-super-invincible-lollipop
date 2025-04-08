@@ -1,5 +1,4 @@
 
----
 - name: Install and start Docker Registry service on Rocky Linux 9
   hosts: repo_docker
   become: yes
@@ -22,11 +21,10 @@
         directory_mode: '0755'
         backup: yes
 
-    - name: Start docker_registry-srv with Docker Compose
-      docker_compose:
-        project_src: /srv/docker_compose_services/docker_registry-srv
-        state: present
-        build: no
+    - name: Start docker_registry-srv with legacy docker-compose
+      shell: cd /srv/docker_compose_services/docker_registry-srv && /usr/local/bin/docker-compose up -d
+      args:
+        executable: /bin/bash
       register: compose_result
 
     - name: Display startup message
