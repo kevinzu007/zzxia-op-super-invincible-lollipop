@@ -1,16 +1,25 @@
 
-#
-- hosts: nginx
+---
+- name: Install and configure Nginx on Rocky Linux 9
+  hosts: nginx
   become: yes
   tasks:
-    - name: nginx install
-      yum: name=nginx state=present disable_gpg_check=yes
-    - name: nginx enable
-      service: name=nginx enabled=true
-    - name: nginx start
-      service: name=nginx state=started
-    - name: htpasswd install
-      yum: name=httpd-tools state=present disable_gpg_check=yes
+    - name: Install Nginx
+      dnf:
+        name: nginx
+        state: present
+        disable_gpg_check: yes
 
+    - name: Enable and start Nginx service
+      systemd:
+        name: nginx
+        state: started
+        enabled: yes
+
+    - name: Install httpd-tools for htpasswd
+      dnf:
+        name: httpd-tools
+        state: present
+        disable_gpg_check: yes
 
 
