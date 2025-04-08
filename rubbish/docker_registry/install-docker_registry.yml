@@ -1,10 +1,36 @@
 
-- hosts: repo_docker
+---
+- name: Install and start Docker Registry service on Rocky Linux 9
+  hosts: repo_docker
   become: yes
   tasks:
-    - name: cp docker_registry-srv
-      copy: src=./docker_registry-srv/  dest=/srv/docker_compose_services/docker_registry-srv/   owner=root group=root mode=644 backup=yes
-    - name: 启动 docker_registry-srv
-      shell: cd /srv/docker_compose_services/docker_registry-srv/ && docker-compose up -d && echo 已启动，请检查是否征程；根据readme修改默认密码
+    - name: Ensure target directory exists
+      file:
+        path: /srv/docker_compose_services/docker_registry-srv
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
 
+    - name: Copy docker_registry-srv directory
+      copy:
+        src: ./docker_registry-srv/
+        dest: /srv/docker_compose_services/docker_registry-srv/
+        owner: root
+        group: root
+        mode: '0644'
+        directory_mode: '0755'
+        backup: yes
+
+    - name: Start docker_registry-srv with Docker Compose
+      docker_compose:
+        project_src: /srv/docker_compose_services/docker_registry-srv
+        state: present
+        build: no
+      register: compose_result
+
+    - name: Display startup message
+      debug:
+        msg: "Docker Registry 已启动，请检查是否正常运行；根据 README 修改默认密码"
+      when: compose_result.changed
 
