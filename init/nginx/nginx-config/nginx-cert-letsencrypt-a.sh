@@ -260,7 +260,8 @@ case ${WORK} in
                 --webroot  \
                 -w ${WEBSITE_BASE}/${FQDN}  \
                 -d ${FQDN} 2>&1  \
-                | tee -a ${REQUEST_LOG_FILE}
+                | tee -a ${REQUEST_LOG_FILE}"
+            #
             certbot  certonly  ${CERTBOT_OPT}  \
                 -m ${EMAIL}  \
                 --agree-tos  \
