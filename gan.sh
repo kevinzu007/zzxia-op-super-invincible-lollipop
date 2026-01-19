@@ -120,47 +120,47 @@ fi
 case "$1" in
     "--build")
         shift
-        bash ${SH_PATH}/deploy/build.sh  $*
+        bash ${SH_PATH}/deploy/build.sh  "$@"
         exit
         ;;
     "--build-para")
         shift
-        bash ${SH_PATH}/deploy/build-parallel.sh  $*
+        bash ${SH_PATH}/deploy/build-parallel.sh  "$@"
         exit
         ;;
     "--gogogo")
         shift
-        bash ${SH_PATH}/deploy/gogogo.sh  $*
+        bash ${SH_PATH}/deploy/gogogo.sh  "$@"
         exit
         ;;
     "--deploy")
         shift
-        bash ${SH_PATH}/deploy/deploy.sh  $*
+        bash ${SH_PATH}/deploy/deploy.sh  "$@"
         exit
         ;;
     "--deploy-docker")
         shift
-        bash ${SH_PATH}/deploy/docker-cluster-service-deploy.sh  $*
+        bash ${SH_PATH}/deploy/docker-cluster-service-deploy.sh  "$@"
         exit
         ;;
     "--deploy-web")
         shift
-        bash ${SH_PATH}/deploy/web-release.sh  $*
+        bash ${SH_PATH}/deploy/web-release.sh  "$@"
         exit
         ;;
     "--ngx-dns")
         shift
-        bash ${SH_PATH}/init/nginx/nginx-config/nginx-dns.sh  $*
+        bash ${SH_PATH}/init/nginx/nginx-config/nginx-dns.sh  "$@"
         exit
         ;;
     "--ngx-root")
         shift
-        bash ${SH_PATH}/init/nginx/nginx-config/nginx-root.sh  $*
+        bash ${SH_PATH}/init/nginx/nginx-config/nginx-root.sh  "$@"
         exit
         ;;
     "--ngx-conf")
         shift
-        bash ${SH_PATH}/init/nginx/nginx-config/nginx-conf.sh  $*
+        bash ${SH_PATH}/init/nginx/nginx-config/nginx-conf.sh  "$@"
         exit
         ;;
     "--ngx-cert")
@@ -170,7 +170,7 @@ case "$1" in
         ;;
     "--ngx-cert-w")
         shift
-        bash ${SH_PATH}/tools/cert-letsencrypt-wildcart.sh  $*
+        bash ${SH_PATH}/tools/cert-letsencrypt-wildcart.sh  "$@"
         exit
         ;;
     "--pg-b-r")
@@ -180,12 +180,12 @@ case "$1" in
         ;;
     "--aliyun-dns")
         shift
-        bash ${SH_PATH}/tools/aliyun-dns.sh  $*
+        bash ${SH_PATH}/tools/aliyun-dns.sh  "$@"
         exit
         ;;
     "--godaddy-dns")
         shift
-        bash ${SH_PATH}/tools/godaddy-dns.sh  $*
+        bash ${SH_PATH}/tools/godaddy-dns.sh  "$@"
         exit
         ;;
     *)
