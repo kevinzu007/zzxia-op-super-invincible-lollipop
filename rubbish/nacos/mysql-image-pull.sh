@@ -35,8 +35,8 @@ docker tag   ${DOCKER_REPO_NAME}:${DOCKER_IMAGE_TAG}   ${DOCKER_IMAGE_NAME##*/}:
 
 # push
 echo  "push tag: latest AND ${DOCKER_IMAGE_TAG} ......"
-../../deploy/docker-tag-push.sh  --tag ${DOCKER_IMAGE_TAG}  ${DOCKER_IMAGE_NAME##*/}
+../../fuckingdoit/docker-tag-push.sh  --tag ${DOCKER_IMAGE_TAG}  ${DOCKER_IMAGE_NAME##*/}
 echo  "push tag: latest AND 默认（当前时间）......"
-../../deploy/docker-tag-push.sh                             ${DOCKER_IMAGE_NAME##*/}
+../../fuckingdoit/docker-tag-push.sh                             ${DOCKER_IMAGE_NAME##*/}
 
 

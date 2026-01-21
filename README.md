@@ -125,8 +125,8 @@
 
 | 序号 | 脚本                                          | 用途                              | 必要软件环境                             |
 | :--: | --------------------------------------------- | --------------------------------- | ---------------------------------------- |
-|  1   | deploy/docker-image-search.sh                 | 从私有docker仓库搜索docker镜像    | docker；docker仓库                       |
-|  2   | deploy/docker-tag-push.sh                     | 推送docker镜像到私有docker仓库    | docker；docker仓库                       |
+|  1   | fuckingdoit/docker-image-search.sh                 | 从私有docker仓库搜索docker镜像    | docker；docker仓库                       |
+|  2   | fuckingdoit/docker-tag-push.sh                     | 推送docker镜像到私有docker仓库    | docker；docker仓库                       |
 |  3   | op/aliyun-dns.sh                              | 用阿里云dns做解析的域名修改工具   | 阿里云CLI；阿里云dns                     |
 |  4   | tools/godaddy-dns.sh                          | 用Godaddy dns做解析的域名修改工具 | curl；godaddy                            |
 |  5   | tools/cert-letsencrypt-wildcart.sh            | 在Let'sencrypt上申请泛域名证书    | certbot                                  |
@@ -816,17 +816,17 @@ esac
 帮助信息如下：
 
 ```bash
-$ ./deploy/build.sh --help
+$ ./fuckingdoit/build.sh --help
 
     用途：用于项目构建，生成docker镜像并push到仓库
     依赖：
         /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
-        /root/deploy-bmp/deploy/env.sh
-        /root/deploy-bmp/deploy/project.list
-        /root/deploy-bmp/deploy/../tools/send_mail.sh
-        /root/deploy-bmp/deploy/docker-tag-push.sh
-        /root/deploy-bmp/deploy/../tools/format_table.sh
-        /root/deploy-bmp/deploy/../tools/dingding_conver_to_markdown_list-deploy.sh
+        /root/deploy-bmp/fuckingdoit/env.sh
+        /root/deploy-bmp/fuckingdoit/project.list
+        /root/deploy-bmp/fuckingdoit/../tools/send_mail.sh
+        /root/deploy-bmp/fuckingdoit/docker-tag-push.sh
+        /root/deploy-bmp/fuckingdoit/../tools/format_table.sh
+        /root/deploy-bmp/fuckingdoit/../tools/dingding_conver_to_markdown_list-deploy.sh
     注意：
         * 名称正则表达式完全匹配，会自动在正则表达式的头尾加上【^ $】，请规避
         * 输入命令时，参数顺序不分先后
@@ -845,7 +845,7 @@ $ ./deploy/build.sh --help
         -h|--help      此帮助
         -l|--list      列出可构建的项目清单
         -M|--mode      指定构建方式，二选一【normal|function】，默认为normal方式。此参数用于被外部调用
-        -c|--category  指定构建项目语言类别：【dockerfile|java|node|自定义】，参考：/root/deploy-bmp/deploy/project.list
+        -c|--category  指定构建项目语言类别：【dockerfile|java|node|自定义】，参考：/root/deploy-bmp/fuckingdoit/project.list
         -b|--branch    指定代码分支，默认来自env.sh
         -e|--email     发送日志到指定邮件地址，如果与【-U|--user-name】同时存在，则将会被替代
         -s|--skiptest  跳过测试，默认来自env.sh
@@ -905,16 +905,16 @@ $ ./build.sh  -c java         #--- 指定项目类别
 帮助信息如下：
 
 ```bash
-$ ./deploy/build-parallel.sh --help
+$ ./fuckingdoit/build-parallel.sh --help
 
     用途：以并行的方式运行构建脚本，以加快构建速度
     依赖：
         /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
-        /root/deploy-bmp/deploy/env.sh
-        /root/deploy-bmp/deploy/project.list
-        /root/deploy-bmp/deploy/build.sh
-        /root/deploy-bmp/deploy/../tools/format_table.sh
-        /root/deploy-bmp/deploy/../tools/dingding_conver_to_markdown_list-deploy.sh
+        /root/deploy-bmp/fuckingdoit/env.sh
+        /root/deploy-bmp/fuckingdoit/project.list
+        /root/deploy-bmp/fuckingdoit/build.sh
+        /root/deploy-bmp/fuckingdoit/../tools/format_table.sh
+        /root/deploy-bmp/fuckingdoit/../tools/dingding_conver_to_markdown_list-deploy.sh
     注意：
         * 名称正则表达式完全匹配，会自动在正则表达式的头尾加上【^ $】，请规避
         * 输入命令时，参数顺序不分先后
@@ -933,7 +933,7 @@ $ ./deploy/build-parallel.sh --help
         -h|--help      此帮助
         -l|--list      列出可构建的项目清单
         -n|--number    并行构建项目的数量，默认为2个
-        -c|--category  指定构建项目语言类别：【dockerfile|java|node|自定义】，参考：/root/deploy-bmp/deploy/project.list
+        -c|--category  指定构建项目语言类别：【dockerfile|java|node|自定义】，参考：/root/deploy-bmp/fuckingdoit/project.list
         -b|--branch    指定代码分支，默认来自env.sh
         -e|--email     发送日志到指定邮件地址，如果与【-U|--user-name】同时存在，则将会被替代
         -s|--skiptest  跳过测试，默认来自env.sh
@@ -970,19 +970,19 @@ $ ./build-parallel.sh  -n 5  -c java   #--- 指定项目类别java，一次并�
 帮助信息如下：
 
 ```bash
-$ ./deploy/docker-cluster-service-deploy.sh --help
+$ ./fuckingdoit/docker-cluster-service-deploy.sh --help
 
     用途：用于创建、更新、查看、删除......服务
     依赖：
-        /root/deploy-bmp/deploy/docker-cluster-service.list
+        /root/deploy-bmp/fuckingdoit/docker-cluster-service.list
         /root/.my_sec/container-envs-pub.sec
-        /root/deploy-bmp/deploy/docker-arg-pub.list
-        /root/deploy-bmp/deploy/container-hosts-pub.list
-        /root/deploy-bmp/deploy/java-options-pub.list
-        /root/deploy-bmp/deploy/env.sh
-        /root/deploy-bmp/deploy/docker-image-search.sh
-        /root/deploy-bmp/deploy/../tools/format_table.sh
-        /root/deploy-bmp/deploy/../tools/dingding_conver_to_markdown_list-deploy.sh
+        /root/deploy-bmp/fuckingdoit/docker-arg-pub.list
+        /root/deploy-bmp/fuckingdoit/container-hosts-pub.list
+        /root/deploy-bmp/fuckingdoit/java-options-pub.list
+        /root/deploy-bmp/fuckingdoit/env.sh
+        /root/deploy-bmp/fuckingdoit/docker-image-search.sh
+        /root/deploy-bmp/fuckingdoit/../tools/format_table.sh
+        /root/deploy-bmp/fuckingdoit/../tools/dingding_conver_to_markdown_list-deploy.sh
     注意：
         * 名称正则表达式完全匹配，会自动在正则表达式的头尾加上【^ $】，请规避
         * 一般服务名（非灰度服务名）为项目清单中的服务名，灰度服务名为为【项目清单服务名】+【--】+【灰度版本号】
@@ -1116,14 +1116,14 @@ $ ./docker-cluster-service-deploy.sh  -u  -F  service.*                  #--- �
 帮助信息如下：
 
 ```bash
-$ ./deploy/web-release.sh --help
+$ ./fuckingdoit/web-release.sh --help
 
     用途：Web站点发布上线
     依赖：
-        /root/deploy-bmp/deploy/nginx.list
-        /root/deploy-bmp/deploy/../tools/format_table.sh
-        /root/deploy-bmp/deploy/../tools/dingding_conver_to_markdown_list-deploy.sh
-        /root/deploy-bmp/deploy/env.sh
+        /root/deploy-bmp/fuckingdoit/nginx.list
+        /root/deploy-bmp/fuckingdoit/../tools/format_table.sh
+        /root/deploy-bmp/fuckingdoit/../tools/dingding_conver_to_markdown_list-deploy.sh
+        /root/deploy-bmp/fuckingdoit/env.sh
         nginx上：/root/nginx-config/web-release-on-nginx.sh
     注意：运行在nginx节点上
         * 【上线（ship）】流程包含以下四个子流程【构建】、【测试（test）】、【部署（deploy）】、【发布（release）】。原地发布（即部署 == 发布）
@@ -1179,18 +1179,18 @@ $ ./web-release.sh  -b  项目a 项目b          #--- 回滚项目a、项目b
 帮助信息如下：
 
 ```bash
-$ ./deploy/gogogo.sh --help
+$ ./fuckingdoit/gogogo.sh --help
 
     用途：用于项目构建并发布
     依赖脚本：
         /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
-        /root/deploy-bmp/deploy/env.sh
-        /root/deploy-bmp/deploy/project.list
-        /root/deploy-bmp/deploy/build.sh
-        /root/deploy-bmp/deploy/docker-cluster-service.list
-        /root/deploy-bmp/deploy/docker-cluster-service-deploy.sh
-        /root/deploy-bmp/deploy/../tools/format_table.sh
-        /root/deploy-bmp/deploy/../tools/dingding_conver_to_markdown_list-deploy.sh
+        /root/deploy-bmp/fuckingdoit/env.sh
+        /root/deploy-bmp/fuckingdoit/project.list
+        /root/deploy-bmp/fuckingdoit/build.sh
+        /root/deploy-bmp/fuckingdoit/docker-cluster-service.list
+        /root/deploy-bmp/fuckingdoit/docker-cluster-service-deploy.sh
+        /root/deploy-bmp/fuckingdoit/../tools/format_table.sh
+        /root/deploy-bmp/fuckingdoit/../tools/dingding_conver_to_markdown_list-deploy.sh
     注意：
         - 构建完成后的发布：如果目标服务不在运行中，则执行【create】；如果已经存在，则执行【update】。如果是以【create】方式执行，则【-G|--gray】参数有效
     用法:
@@ -1207,7 +1207,7 @@ $ ./deploy/gogogo.sh --help
         #
         -h|--help      此帮助
         -l|--list      列出可构建的项目清单
-        -c|--category  指定构建项目语言类别：【dockerfile|java|node|自定义】，参考：/root/deploy-bmp/deploy/project.list
+        -c|--category  指定构建项目语言类别：【dockerfile|java|node|自定义】，参考：/root/deploy-bmp/fuckingdoit/project.list
         -b|--branch    指定代码分支，默认来自env.sh
         -e|--email     发送日志到指定邮件地址，如果与【-U|--user-name】同时存在，则将会被替代
         -s|--skiptest  跳过测试，默认来自env.sh
@@ -1435,12 +1435,12 @@ $ ./gan.sh -d ngx-dns 项目1   #--- 为项目1添加域名A记录
 #### 5.6.1 私有仓库docker镜像搜索工具
 
 ```bash
-$ ./deploy/docker-image-search.sh --help
+$ ./fuckingdoit/docker-image-search.sh --help
 
     用途：查询docker镜像
     依赖：
-        /root/deploy-bmp/deploy/env.sh
-        /root/deploy-bmp/deploy/docker-cluster-service.list
+        /root/deploy-bmp/fuckingdoit/env.sh
+        /root/deploy-bmp/fuckingdoit/docker-cluster-service.list
     注意：
         * 输入命令时，参数顺序不分先后
     用法:

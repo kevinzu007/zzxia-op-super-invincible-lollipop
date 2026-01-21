@@ -3,8 +3,8 @@
 # 变量用途分类：
 # I  安装配置(一次，在deploy服务器上)    /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
 # R  运行(多次，在所有服务器上)          /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
-# B  构建($ZZXIA_HOME/deploy下的命令)    ${ZZXIA_OP_SUPER_INVINCIBLE_LOLLIPOP_HOME}/env.sh
-# D  部署($ZZXIA_HOME/deploy下的命令)    ${ZZXIA_OP_SUPER_INVINCIBLE_LOLLIPOP_HOME}/env.sh
+# B  构建($ZZXIA_HOME/fuckingdoit/下的命令)    ${ZZXIA_OP_SUPER_INVINCIBLE_LOLLIPOP_HOME}/env.sh
+# D  部署($ZZXIA_HOME/fuckingdoit/下的命令)    ${ZZXIA_OP_SUPER_INVINCIBLE_LOLLIPOP_HOME}/env.sh
 #
 # 变量存放优先级：
 # 1  包含【I、R】的一律优先放到【/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh】中

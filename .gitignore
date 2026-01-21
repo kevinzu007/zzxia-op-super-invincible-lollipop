@@ -23,18 +23,17 @@ _*
 
 
 # env
-init/gan-webhook/gan-api-server/server_root/gan_api_var.py
-deploy/container-hosts-pub.list
-deploy/docker-arg-pub.list
-deploy/docker-cluster-service.list
-deploy/docker-cluster-service.list.append.1
-deploy/docker-cluster-service.list.append.2
-deploy/env.sh
-deploy/java-options-pub.list
-deploy/nginx.list
-deploy/project.list
-deploy/project.list.append.1
-deploy/project.list.retry
+fuckingdoit/container-hosts-pub.list
+fuckingdoit/docker-arg-pub.list
+fuckingdoit/docker-cluster-service.list
+fuckingdoit/docker-cluster-service.list.append.1
+fuckingdoit/docker-cluster-service.list.append.2
+fuckingdoit/env.sh
+fuckingdoit/java-options-pub.list
+fuckingdoit/nginx.list
+fuckingdoit/project.list
+fuckingdoit/project.list.append.1
+fuckingdoit/project.list.retry
 init/2-os-base/mailrc
 init/2-os-base/zzxia-op-super-invincible-lollipop.run-env.sh
 init/host-ip.list

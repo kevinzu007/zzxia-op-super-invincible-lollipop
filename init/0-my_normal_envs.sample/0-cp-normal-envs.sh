@@ -51,18 +51,18 @@ F_CP ()
     cp -f  ./mailrc---${R_ENV}                                           ${DEST_DIR}/init/2-os-base/mailrc
     
     # cp到deploy目录
-    cp -f  ./project.list                                                ${DEST_DIR}/deploy/
-    cp -f  ./project.list.append.1                                       ${DEST_DIR}/deploy/
-    cp -f  ./env.sh---${R_ENV}                                           ${DEST_DIR}/deploy/env.sh
-    cp -f  ./docker-cluster-service.list---${R_ENV}                      ${DEST_DIR}/deploy/docker-cluster-service.list
-    cp -f  ./docker-cluster-service.list.append.1---${R_ENV}             ${DEST_DIR}/deploy/docker-cluster-service.list.append.1
-    cp -f  ./docker-cluster-service.list.append.2---${R_ENV}             ${DEST_DIR}/deploy/docker-cluster-service.list.append.2
-    cp -f  ./docker-arg-pub.list---${R_ENV}                              ${DEST_DIR}/deploy/docker-arg-pub.list
-    cp -f  ./container-hosts-pub.list---${R_ENV}                         ${DEST_DIR}/deploy/container-hosts-pub.list
-    cp -f  ./java-options-pub.list---${R_ENV}                            ${DEST_DIR}/deploy/java-options-pub.list
+    cp -f  ./project.list                                                ${DEST_DIR}/fuckingdoit/
+    cp -f  ./project.list.append.1                                       ${DEST_DIR}/fuckingdoit/
+    cp -f  ./env.sh---${R_ENV}                                           ${DEST_DIR}/fuckingdoit/env.sh
+    cp -f  ./docker-cluster-service.list---${R_ENV}                      ${DEST_DIR}/fuckingdoit/docker-cluster-service.list
+    cp -f  ./docker-cluster-service.list.append.1---${R_ENV}             ${DEST_DIR}/fuckingdoit/docker-cluster-service.list.append.1
+    cp -f  ./docker-cluster-service.list.append.2---${R_ENV}             ${DEST_DIR}/fuckingdoit/docker-cluster-service.list.append.2
+    cp -f  ./docker-arg-pub.list---${R_ENV}                              ${DEST_DIR}/fuckingdoit/docker-arg-pub.list
+    cp -f  ./container-hosts-pub.list---${R_ENV}                         ${DEST_DIR}/fuckingdoit/container-hosts-pub.list
+    cp -f  ./java-options-pub.list---${R_ENV}                            ${DEST_DIR}/fuckingdoit/java-options-pub.list
+    cp -f  ./nginx.list---${R_ENV}                                       ${DEST_DIR}/fuckingdoit/nginx.list
     
     # 其他
-    cp -f  ./nginx.list---${R_ENV}                                       ${DEST_DIR}/deploy/nginx.list
     cp -f  ./nginx.list---${R_ENV}                                       ${DEST_DIR}/init/nginx/nginx-config/nginx.list
     cp -f  ./pg_db.list                                                  ${DEST_DIR}/init/pg/manage/pg_db.list
     cp -f  ./pgbadger.env---${R_ENV}                                     ${DEST_DIR}/init/pgbadger/pgbadger_report/pgbadger.env

@@ -29,7 +29,7 @@ if [[ -z ${USER_INFO_FROM} ]]; then
     USER_INFO_FROM=${HOOK_USER_INFO_FROM:-'local'}     #--【local|hook_hand|hook_gitlab】，默认：local
 fi
 # 引入函数
-.  ${SH_PATH}/deploy/function.sh
+.  ${SH_PATH}/fuckingdoit/function.sh
 
 
 
@@ -120,32 +120,32 @@ fi
 case "$1" in
     "--build")
         shift
-        bash ${SH_PATH}/deploy/build.sh  "$@"
+        bash ${SH_PATH}/fuckingdoit/build.sh  "$@"
         exit
         ;;
     "--build-para")
         shift
-        bash ${SH_PATH}/deploy/build-parallel.sh  "$@"
+        bash ${SH_PATH}/fuckingdoit/build-parallel.sh  "$@"
         exit
         ;;
     "--gogogo")
         shift
-        bash ${SH_PATH}/deploy/gogogo.sh  "$@"
+        bash ${SH_PATH}/fuckingdoit/gogogo.sh  "$@"
         exit
         ;;
     "--deploy")
         shift
-        bash ${SH_PATH}/deploy/deploy.sh  "$@"
+        bash ${SH_PATH}/fuckingdoit/deploy.sh  "$@"
         exit
         ;;
     "--deploy-docker")
         shift
-        bash ${SH_PATH}/deploy/docker-cluster-service-deploy.sh  "$@"
+        bash ${SH_PATH}/fuckingdoit/docker-cluster-service-deploy.sh  "$@"
         exit
         ;;
     "--deploy-web")
         shift
-        bash ${SH_PATH}/deploy/web-release.sh  "$@"
+        bash ${SH_PATH}/fuckingdoit/web-release.sh  "$@"
         exit
         ;;
     "--ngx-dns")

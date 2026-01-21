@@ -13,7 +13,7 @@ cd ${SH_PATH}
 
 
 # 引入env
-. ${SH_PATH}/../deploy/env.sh
+. ${SH_PATH}/../fuckingdoit/env.sh
 #DOCKER_REPO_USER=
 #DOCKER_REPO_PASSWORD=
 #DOCKER_REPO_SERVER=

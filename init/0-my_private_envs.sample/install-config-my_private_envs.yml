@@ -1,5 +1,5 @@
 # 须带环境变量运行：
-# ansible-playbook  install-config-MY_PRIVATE_ENVS_DIR-ENV.yml  -e "RUN_ENV=${RUN_ENV}"  -e "MY_PRIVATE_ENVS_DIR=${MY_PRIVATE_ENVS_DIR}"
+# ansible-playbook  install-config-my_private_envs.yml  -e "RUN_ENV=${RUN_ENV}"  -e "MY_PRIVATE_ENVS_DIR=${MY_PRIVATE_ENVS_DIR}"
 #
 #
 # 拷贝密码文件
