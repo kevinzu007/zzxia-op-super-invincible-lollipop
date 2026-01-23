@@ -5,8 +5,10 @@
 
 ## 文件类型
 
-- 以.sec结尾的文件      ：会被引入到所有项目程序的构建与部署中
-- 其他文件              ：第三方程序专有配置文件
+- container-envs-pub.sec.only    ：这是特殊文件，里面的变量会被引入到所有容器，放在 ${MY_PRIVATE_ENVS_DIR} 目录中
+- 以.sec结尾的文件               ：会被 fuckingdoit/env.sh 引入到所有项目程序的构建与部署中，放在 ${MY_PRIVATE_ENVS_DIR} 目录中
+- 以.env结尾的文件               ：会被特殊程序使用，sec.env 代表包含密码，放在 ${MY_PRIVATE_ENVS_DIR} 、/etc 或其他目录中
+- 其他文件                       ：第三方程序专有配置文件
 
 
 ## 说明
@@ -18,6 +20,5 @@
 ## 安装方法
 
 ansible-playbook  install-config-my_private_envs.yml  -e "RUN_ENV=${RUN_ENV}"  -e "MY_PRIVATE_ENVS_DIR=${MY_PRIVATE_ENVS_DIR}"     #--- ${RUN_ENV}变量在初始化环境时已经放到【/etc/profile.d/】下了，可以不明确指出
-ansible-playbook  install-config-my_private_envs.yml
 
 

@@ -6,13 +6,12 @@ SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd "${SH_PATH}" || { echo -e "\n猪猪侠警告：这个错误是不可能的，这里是为了规避语法警告！\n" ; exit 53 ; }
 
 # 自动从/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh引入以下变量
-#.  /etc/profile        #-- 非终端界面不会自动引入，必须主动引入
-#MY_PRIVATE_ENVS_DIR=
-# 引入"${MY_PRIVATE_ENVS_DIR}/cert.sec.env"
-if [ -f "${MY_PRIVATE_ENVS_DIR}/cert.sec.env" ]; then
-    source "${MY_PRIVATE_ENVS_DIR}/cert.sec.env"
+
+# 引入/etc/cert.sec.env"
+if [ -f "/etc/cert.sec.env" ]; then
+    source "/etc/cert.sec.env"
 else
-    echo "Warning: ${MY_PRIVATE_ENVS_DIR}/cert.sec.env not found!"
+    echo "Warning: /etc/cert.sec.env 没发现，注意：第一次必须存在！"
 fi
 
 # 本地env
@@ -44,8 +43,7 @@ F_HELP()
     用途：用于申请与更新Letsencrypt泛域名证书 (Use acme.sh)
     依赖：
         acme.sh
-        /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
-        ${MY_PRIVATE_ENVS_DIR}/cert.sec.env
+        /etc/cert.sec.env
         ${DINGDING_SEND_DEPLOY_SH}
     注意：
         * 输入命令时，参数顺序不分先后
@@ -61,7 +59,7 @@ F_HELP()
         %    : 代表通配符，非精确值，可以被包含
         #
         -h|--help         此帮助
-        --dns             指定 acme.sh dns api 方式，例如: dns_cf (Cloudflare), dns_ali (阿里云), dns_dp (腾讯云) 等，想获取更多，请从官网查找
+        --dns             指定 acme.sh dns api 方式，例如: dns_cf (Cloudflare), dns_ali (阿里云), dns_dp (腾讯云) 等，想获取更多，请从官网查找(https://github.com/acmesh-official/acme.sh/wiki/dnsapi)
         -r|--request      申请泛域名证书
         -u|--update       renew泛域名证书
         -e|--email        指定证书邮件地址 (用于注册账户)
