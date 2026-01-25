@@ -29,7 +29,10 @@ F_HELP()
     echo "
     用途：将markdown格式的文本通过钉钉机器人发送出去
     依赖：/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
-    注意：
+    
+    注意：推荐使用新的统一通知脚本 send_markdown_msg.sh，支持多平台（钉钉、企业微信、飞书）
+          本脚本将继续维护以保持向后兼容性
+    
     用法:
         $0  [-h|--help]
         $0  <-w|--webhook {Webhook地址}>  [-t|--title {消息标题}  -m|--message {消息内容}]
