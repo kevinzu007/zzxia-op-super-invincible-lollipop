@@ -10,9 +10,14 @@ SH_NAME=${0##*/}
 SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 #cd "${SH_PATH}"
 
-
-# 引入env
-[[ -f /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh ]] && . /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
+# 引入/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
+# 检测 MY_PRIVATE_ENVS_DIR 是否存在，不存在则主动加载环境变量（非终端界面不会自动引入）
+if [ -z "${RUN_ENV}" ]; then
+    if [ -f /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh ]; then
+        . /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
+    fi
+fi
+# 引入使用：
 #DINGDING_WEBHOOK_API=
 dingding_api_url=${DINGDING_WEBHOOK_API_NEW:-"${DINGDING_WEBHOOK_API}"}
 

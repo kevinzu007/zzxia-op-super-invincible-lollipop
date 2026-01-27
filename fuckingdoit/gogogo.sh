@@ -12,13 +12,20 @@ SH_PATH=$( cd "$( dirname "$0" )" && pwd )
 cd ${SH_PATH}
 
 # 引入/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
-#.  /etc/profile         #-- 非终端界面不会自动引入，必须主动引入
+# 检测 MY_PRIVATE_ENVS_DIR 是否存在，不存在则主动加载环境变量（非终端界面不会自动引入）
+if [ -z "${RUN_ENV}" ]; then
+    if [ -f /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh ]; then
+        . /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
+    fi
+fi
+# 引入使用：
 #RUN_ENV=
 #DOMAIN=
 #NGINX_CONFIG_SH_HOME=
 #USER_DB_FILE=
 #USER_DB_FILE_APPEND_1=
 #DINGDING_WEBHOOK_API_deploy=
+#MY_PRIVATE_ENVS_DIR=
 
 # 引入env.sh
 . ${SH_PATH}/env.sh
