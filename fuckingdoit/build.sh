@@ -20,7 +20,7 @@ if [ -z "${RUN_ENV}" ]; then
         echo -e "\n猪猪侠警告：缺少环境变量文件：/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh\n"
         echo "请在 deploy 服务器上安装/配置该文件，并确保所有必要变量可用。"
         echo
-        exit 57
+        exit 52
     fi
 fi
 # 引入使用：
@@ -1255,20 +1255,20 @@ if [[ -z "${USER_DB_FILE}" ]] || [[ -z "${USER_DB_FILE_APPEND_1}" ]]; then
     echo "请检查是否已正确加载：/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh"
     echo "并确认已配置：MY_PRIVATE_ENVS_DIR（或直接配置 USER_DB_FILE / USER_DB_FILE_APPEND_1）。"
     echo
-    exit 57
+    exit 52
 fi
 if [[ ! -f "${USER_DB_FILE}" ]]; then
     echo -e "\n猪猪侠警告：用户数据库文件不存在：${USER_DB_FILE}\n"
     echo "请在 ${MY_PRIVATE_ENVS_DIR:-'<MY_PRIVATE_ENVS_DIR>'} 下创建/拷贝 user.db（基础用户信息）。"
     echo
-    exit 57
+    exit 52
 fi
 if [[ ! -f "${USER_DB_FILE_APPEND_1}" ]]; then
     echo -e "\n猪猪侠警告：用户权限扩展文件不存在：${USER_DB_FILE_APPEND_1}\n"
     echo "参考样例：${SH_PATH}/../init/0-my_private_envs.sample/user.db.append.1"
     echo "请将 user.db.append.1 放到 ${MY_PRIVATE_ENVS_DIR:-'<MY_PRIVATE_ENVS_DIR>'} 并确保格式正确。"
     echo
-    exit 57
+    exit 52
 fi
 
 # 获取用户信息
