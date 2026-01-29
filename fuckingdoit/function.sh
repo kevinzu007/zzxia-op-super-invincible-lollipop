@@ -258,7 +258,7 @@ F_check_user_priv()
             R_1=$(echo $R | awk -F '|' '{print $1}' | awk '{print $1}')
             if [[ ${R_1} != 0 ]]; then
                 # 必须全部匹配
-                echo -e "\n猪猪侠警告：用户【${MY_USER_NAME}】无【${NEED_PRIVILEGES}】权限！\n"
+                echo -e "\n猪猪侠警告：用户【${MY_USER_NAME}】在【${RUN_ENV}】环境无【${NEED_PRIVILEGES_x}】权限！\n"
                 exit 56
             fi
         done
