@@ -135,6 +135,8 @@ F_SEARCH_USER_PRIV()
     # 获取append部分
     while read UA_LINE
     do
+        # 跳过以#开头的行或空行（包含表头/说明）
+        [[ "$UA_LINE" =~ ^# ]] || [[ "$UA_LINE" =~ ^[\ ]*$ ]] && continue
         CURRENT_USER_NAME_A=`echo $UA_LINE | cut -d '|' -f 3`
         CURRENT_USER_NAME_A=`echo ${CURRENT_USER_NAME_A}`
         CURRENT_USER_PRIVILEGES_A=`echo $UA_LINE | cut -d '|' -f 5`
@@ -179,7 +181,7 @@ F_SEARCH_USER_PRIV()
     done < "${USER_DB_FILE_APPEND_1}"
     #
     echo "3 | NOT_PASS"
-    reutrn 3
+    return 3
 }
 
 
@@ -246,7 +248,7 @@ F_check_user_priv()
         NEED_PRIVILEGES=${NEED_PRIVILEGES// /}
         NEED_PRIVILEGES_NUM=$(echo ${NEED_PRIVILEGES} | grep -o '&' | wc -l)
         #
-        for ((j=PRIVILEGES_env_priv_NUM; j>=0; j--))
+        for ((j=NEED_PRIVILEGES_NUM; j>=0; j--))
         do
             #
             FIELD_J=$((j+1))
