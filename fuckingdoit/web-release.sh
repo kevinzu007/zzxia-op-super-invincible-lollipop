@@ -207,6 +207,14 @@ do
 done
 
 
+# 检查WORK参数是否已设置
+if [[ -z "${WORK}" ]]; then
+    echo -e "\n猪猪侠警告：必须指定操作类型【-r|--release】或【-b|--rollback】！\n"
+    echo "请查看帮助：$0 --help"
+    echo
+    exit 51
+fi
+
 
 # 建立base目录
 [ -d "${LOG_HOME}" ] || mkdir -p  ${LOG_HOME}
