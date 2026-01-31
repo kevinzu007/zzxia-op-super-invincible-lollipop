@@ -30,6 +30,8 @@
 # +----+------+---------------+
 
 
+# 禁用通配符展开，防止参数中的 * 变成文件名列表
+set -f
 
 # sh
 SH_NAME=${0##*/}
@@ -89,7 +91,7 @@ function set_title(){
         let column_count++
     done
     title+="|\n"
-    seg=`segmentation`
+    seg=$(segmentation)
     title="${seg}${title}${seg}"
     content=""
 }
@@ -99,11 +101,11 @@ function set_title(){
 function check_line(){
     if [ -n "$line" ]
     then
-        c_c=$(echo $line|tr -cd "${sep}"|wc -c)
-        difference=$((${column_count}-${c_c}))
+        c_c=$(echo "$line" | tr -cd "${sep}" | wc -c)
+        difference=$((column_count - c_c))
         if [ $difference -gt 0 ]
         then
-            line+=$(seq -s " " $difference|sed -r s/[0-9]\+/\|${sep}/g|sed -r  s/${sep}\ /${sep}/g)
+            line+=$(seq -s " " "$difference" | sed -r s/[0-9]\+/\|${sep}/g | sed -r  s/${sep}\ /${sep}/g)
         fi
         content+="${line}|\n"
     fi
@@ -141,7 +143,7 @@ function append_line(){
 function segmentation(){
     local seg=""
     local i
-    for i in $(seq $column_count)
+    for i in $(seq "$column_count")
     do
         seg+="+${sep}"
     done
@@ -153,21 +155,23 @@ function segmentation(){
 
 # 整合输出
 function output_table(){
-    if [ ! -n "${title}" ]
+    if [ -z "${title}" ]
     then
         echo "未设置表头，退出" && return 1
     fi
     append_line
     table="${title}${content}$(segmentation)"
     # ◘ : 空格
-    table=`echo "${table}" | sed 's/◘/ /g'`
+    table=$(echo "${table}" | sed 's/◘/ /g')
     # ✖ : 空
-    table=`echo "${table}" | sed 's/✖//g'`
+    table=$(echo "${table}" | sed 's/✖//g')
+    #
     #echo -e "${table}"
     #echo -e $table|column -s "${sep}" -t|awk '{if($0 ~ /^+/){gsub(" ","-",$0);print $0}else{gsub("\\(\\*\\)","\033[31m(*)\033[0m",$0);print $0}}'
     #echo -e $table|column -s "${sep}" -t|awk '{if($0 ~ /^+/){gsub(" ","-",$0);print $0}else{gsub("\\*","\033[31m*\033[0m",$0);gsub("错误","\033[31m错误\033[0m",$0);gsub("失败","\033[31m失败\033[0m",$0);gsub("成功","\033[32;1m成功\033[0m",$0);print $0}}'
-    echo -e $table|column -s "${sep}" -t|awk '{if($0 ~ /^\+/){gsub(" ","-",$0);print $0}else{gsub("\\*","\033[31m*\033[0m",$0);gsub("错误","\033[31m错误\033[0m",$0);gsub("失败","\033[31m失败\033[0m",$0);gsub("成功","\033[32;1m成功\033[0m",$0);print $0}}'
     #echo -e $table|column -s "${sep}" -t|awk '{if($0 ~ /^+/){gsub(" ","-",$0);print $0}else{gsub("\\*","\033[31m*\033[0m",$0);gsub("错误","\033[31m错误\033[0m",$0);gsub("失败","\033[31m失败\033[0m",$0);gsub("成功","\033[32;1m成功\033[0m",$0);gsub("已发布","\033[32;1m已发布\033[0m",$0);print $0}}'
+    #
+    echo -e "$table" | column -s "${sep}" -t | awk '{if($0 ~ /^\+/){gsub(" ","-",$0);print $0}else{gsub("\\*","\033[31m*\033[0m",$0);gsub("错误","\033[31m错误\033[0m",$0);gsub("失败","\033[31m失败\033[0m",$0);gsub("成功","\033[32;1m成功\033[0m",$0);print $0}}'
 }
 
 
@@ -200,7 +204,7 @@ function output_table(){
 
 
 # 参数检查
-TEMP=`getopt  -o hd:t:r:f:  -l help,delimeter:,title:,row:,file: -- "$@"`
+TEMP=$(getopt -o hd:t:r:f: -l help,delimeter:,title:,row:,file: -- "$@")
 if [ $? != 0 ]; then
     echo -e "\n猪猪侠警告：参数不合法，请查看帮助【$0 --help】\n"
     exit 1
@@ -209,14 +213,22 @@ fi
 eval set -- "${TEMP}"
 
 
+## 获取次要命令参数
+#SH_ARGS_NUM=$#
+#SH_ARGS[0]="占位"
+#for ((i=1;i<=SH_ARGS_NUM;i++)); do
+#    #eval K=\${${i}}
+#    K="${!i}"
+#    #SH_ARGS[${i}]=${K}
+#    SH_ARGS[i]="${K}"
+#    #echo SH_ARGS数组${i}列的值是: ${SH_ARGS[${i}]}
+#done
+#
 # 获取次要命令参数
-SH_ARGS_NUM=$#
-SH_ARGS[0]="占位"
-for ((i=1;i<=SH_ARGS_NUM;i++)); do
-    eval K=\${${i}}
-    SH_ARGS[${i}]=${K}
-    #echo SH_ARGS数组${i}列的值是: ${SH_ARGS[${i}]}
-done
+declare -a SH_ARGS
+# 这一行直接把所有参数从 $1 开始放入数组，且索引从 0 开始。
+# 如果你非要让数组从 1 开始，且 0 位放“占位”：
+SH_ARGS=("占位" "$@")
 #
 SH_ARGS_ARR_NUM=${#SH_ARGS[@]}
 for ((i=1;i<SH_ARGS_ARR_NUM;i++))
@@ -255,26 +267,32 @@ F_LINE()
 {
     LINE="$1"
     FILED_OK=''
-    FILED_SUM=`echo "${LINE}" | grep -o "${T_DELIMETER}" | wc -l`
+    # 使用引号包裹变量，防止解析异常
+    FILED_SUM=$(echo "${LINE}" | grep -o "${T_DELIMETER}" | wc -l)
     for ((i=0;i<=FILED_SUM;i++))
     do
         let k=$i+1
-        FILED=`echo "${LINE}" | cut -d "${T_DELIMETER}" -f $k`
-        FILED=`echo ${FILED}`
-        # 空格
-        FILED=`echo "${FILED}" | sed 's/ /◘/g'`
-        # 空
+        # 1. 获取字段值
+        FILED=$(echo "${LINE}" | cut -d "${T_DELIMETER}" -f $k)
+        
+        # 2. 这里的引用最关键！必须加双引号，否则 **** 会被当做文件名展开
+        FILED=$(echo "${FILED}")
+        
+        # 3. 处理空格占位符
+        FILED=$(echo "${FILED}" | sed 's/ /◘/g')
+        
+        # 4. 空值处理
         [ "x${FILED}" = "x" ] && FILED='✖'
-        # 组合
+        
+        # 5. 组合字段
         FILED_OK="${FILED_OK}  ${FILED}"
     done
-    echo  "${FILED_OK}"
+    echo "${FILED_OK}"
 }
-
 
 # title
 if [ -n "${T_TITLE}" ]; then
-    set_title '序号'  `F_LINE "${T_TITLE}"`
+    set_title '序号' $(F_LINE "${T_TITLE}")    #-- 别信语法检查，这里不能加双引号，，因为设计要求，加了表格格式会有错
 fi
 
 
@@ -298,22 +316,22 @@ do
                 exit 1
             fi
             T_ROW="$2"
-            append_line  "$i"  `F_LINE "${T_ROW}"`
+            append_line "$i" "$(F_LINE "${T_ROW}")"
             let i++
             shift 2
             ;;
         -f|--file)
             T_FILE=$2
-            while read LINE
+            while read -r LINE
             do
                 if [ -n "${T_TITLE}" ]; then
-                    append_line  "$i"  `F_LINE "${LINE}"`
+                    append_line "$i" "$(F_LINE "${LINE}")"
                     let i++
                 else
-                    set_title  '序号'  `F_LINE "${LINE}"`
+                    set_title '序号' $(F_LINE "${LINE}")    #-- 别信语法检查，这里不能加双引号，，因为设计要求，加了表格格式会有错
                     T_TITLE="现在有了"
                 fi
-            done < ${T_FILE}
+            done < "${T_FILE}"
             shift 2
             ;;
         --)
@@ -330,8 +348,4 @@ done
 
 # 输出
 output_table
-
-
-
-
 

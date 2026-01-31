@@ -59,8 +59,8 @@ F_HELP()
         echo -e "AB\\na\\tb" | bash $0       #--- 将echo内容输出为表格，所有皆为默认
         # 分隔符
         $0        < 文件1                #--- 使用默认分隔符
-        $0  -t :  < 文件1                #--- 使用默认分隔符【:】
-        $0  -t |  < 文件1                #--- 使用默认分隔符【|】
+        $0  -d :  < 文件1                #--- 使用默认分隔符【:】
+        $0  -d |  < 文件1                #--- 使用默认分隔符【|】
         # 样式
         $0  -s s15                  < 文件1       #--- 使用表格样式【s15】
         $0  -s '%123456789 abcABC'  < 文件1       #--- 使用自定义表格样式【%123456789 abcABC】
@@ -70,10 +70,10 @@ F_HELP()
         $0  -c 3                              < 文件1       #--- 同上
         $0  -c \\033[31m,\\033[34m,\\033[29m     < 文件1       #--- 同上
         #
-        $0  -t :  -s s15                        < 文件1     #--- 使用【:】作为分隔符，【s15】为表格样式
-        $0  -t :          -c @2,@5,@8           < 文件1     #--- 使用【:】作为分隔符，【红,蓝,外】为表格颜色
+        $0  -d :  -s s15                        < 文件1     #--- 使用【:】作为分隔符，【s15】为表格样式
+        $0  -d :          -c @2,@5,@8           < 文件1     #--- 使用【:】作为分隔符，【红,蓝,外】为表格颜色
         $0        -s s15  -c @red,@blue,@white  < 文件1     #--- 使用【s15】为表格样式，【红,蓝,外】为表格颜色
-        $0  -t :  -s s15  -c @red,@blue,@white  < 文件1     #--- 使用【:】作为分隔符，【s15】为表格样式，【红,蓝,外】为表格颜色
+        $0  -d :  -s s15  -c @red,@blue,@white  < 文件1     #--- 使用【:】作为分隔符，【s15】为表格样式，【红,蓝,外】为表格颜色
 "
 }
 
@@ -226,6 +226,8 @@ gawk -F "${TAB_DELIMETER}" \
         # 计算单列行的最大长度
         if (NF == 1) {
             max_single_col_length = max_single_col_length < super_length($1) ? super_length($1) : max_single_col_length
+            # ZZXia : Also update cols_len[1] for single column width calculation
+            cols_len[1] = cols_len[1] < super_length($1) ? super_length($1) : cols_len[1]
             rows[NR][1] = $1
         } else { # 非单列行更新每一列的最大长度
             for(i=1; i<=NF; i++){
@@ -293,7 +295,9 @@ gawk -F "${TAB_DELIMETER}" \
 
         # 如果单列最大总长度大于多列的行最大总长度时, 需要把超出的部分平均分给每列, 保证图表美观
         diff_length = max_single_col_length + 2 - max_line_len
-        if (diff_length > 0) {
+        # 新增判断：只有在确实存在多列（length > 0）且需要扩充时才进入循环
+        #if (diff_length > 0) {
+        if (diff_length > 0 && length(cols_len) > 0) {
             for(j=1; j<=diff_length; j++){
                 i = (j - 1) % length(cols_len) + 1
                 cols_len[i] = cols_len[i] + 1
@@ -383,7 +387,7 @@ gawk -F "${TAB_DELIMETER}" \
     # eg: 内置函数length("中文")返回2, super_length("中文")返回4
     function super_length(txt){
         leng_base = length(txt);
-        leng_plus = gsub(/[^\x00-\xff]/, "x", txt) # 返回Ascii码大于255的字符匹配个数
+        leng_plus = gsub(/[^\x00-\x7f]/, "x", txt) # 返回Ascii码大于255的字符匹配个数
         return leng_base + leng_plus
     }
 
