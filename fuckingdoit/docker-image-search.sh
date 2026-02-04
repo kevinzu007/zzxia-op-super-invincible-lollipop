@@ -77,17 +77,21 @@ F_HELP()
     注意：
         * 输入命令时，参数顺序不分先后
     用法:
-        $0 [-h|--help]
-        $0 [-l|--list]
-        $0  <-I|--image-pre-name {镜像前置名称}>  <-t|--tag {%镜像版本%}>  <-e|--exclude {%镜像版本%}>  <-A|--time-ago {时间}>  <-n|--newest {第几新版本}>  <-o|--output {路径/文件}>  <{服务1} ... {服务2} ...>
+        $0 -h|--help
+        $0 -l|--list
+        $0  [{-I|--image-pre-name <镜像前置名称>}]  [{-t|--tag <%镜像版本%>}]  [{-e|--exclude <%镜像版本%>}]  [{-A|--time-ago <时间>}]  [{-n|--newest <第几新版本>}]  [{-o|--output <路径/文件>}]  [<服务1> ... <服务2> ...]
+    参数规范：
+        无包围符号 ：-a                : 必选【选项】
+                   ：val               : 必选【参数值】
+                   ：val1 val2 -a -b   : 必选【选项或参数值】，且不分先后顺序
+        []         ：[-a]              : 可选【选项】
+                   ：[val]             : 可选【参数值】
+        <>         ：<val>             : 需替换的具体值（用户必须提供）
+        %%         ：%val%             : 通配符（包含匹配，如%error%匹配error_code）
+        |          ：val1|val2|<valn>  : 多选一
+        {}         ：{-a <val>}        : 必须成组出现【选项+参数值】
+                   ：{val1 val2}       : 必须成组的【参数值组合】，且必须按顺序提供
     参数说明：
-        \$0   : 代表脚本本身
-        []   : 代表是必选项
-        <>   : 代表是可选项
-        |    : 代表左右选其一
-        {}   : 代表参数值，请替换为具体参数值
-        %    : 代表通配符，非精确值，可以被包含
-        #
         -h|--help       此帮助
         -l|--list       清单
         -I|--image-pre-name  指定镜像前置名称【DOCKER_IMAGE_PRE_NAME】，默认来自env.sh。注：镜像完整名称：\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${DOCKER_IMAGE_NAME}:\${DOCKER_IMAGE_TAG}

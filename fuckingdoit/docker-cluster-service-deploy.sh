@@ -136,34 +136,38 @@ F_HELP()
         * 一般服务名（非灰度服务名）为项目清单中的服务名，灰度服务名为为【项目清单服务名】+【--】+【灰度版本号】
         * 输入命令时，参数顺序不分先后
     用法:
-        $0 [-h|--help]
-        $0 [-l|--list]                            #--- 列出配置文件中的服务清单
-        $0 [-L|--list-run swarm|k8s|compose]      #--- 列出指定集群类型中运行的所有服务
+        $0 -h|--help
+        $0 -l|--list
+        $0 {-L|--list-run swarm|k8s|compose}
         # 创建、修改
-        $0 <-M|--mode [normal|function]>  [-c|--create|-m|--modify]  <-D|--debug-port>  <-I|--image-pre-name {镜像前置名称}>  <<-T|--TAG {精确镜像tag版本}> | <<-t|--tag {模糊镜像tag版本}> <-A|--time-ago {时间}>>>  <-n|--number {副本数}>  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
+        $0 [{-M|--mode normal|function}]  -c|--create|-m|--modify  [-D|--debug-port]  [{-I|--image-pre-name <镜像前置名称>}]  [{-T|--TAG <精确镜像tag版本>}|[{-t|--tag <模糊镜像tag版本>}] [{-A|--time-ago <时间>}]]  [{-n|--number <副本数>}]  [{-V|--release-version <版本号>}]  [-G|--gray]  [<服务名1> <服务名2> ... <服务名正则表达式完全匹配>]  [-F|--fuck]  [-P|--by-step]
         # 更新
-        $0 <-M|--mode [normal|function]>  [-u|--update]  <-I|--image-pre-name {镜像前置名称}>  <<-T|--TAG {精确镜像tag版本}> | <<-t|--tag {模糊镜像tag版本}> <-A|--time-ago {时间}>>>  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
+        $0 [{-M|--mode normal|function}]  -u|--update  [{-I|--image-pre-name <镜像前置名称>}]  [{-T|--TAG <精确镜像tag版本>}|[{-t|--tag <模糊镜像tag版本>}] [{-A|--time-ago <时间>}]]  [{-V|--release-version <版本号>}]  [-G|--gray]  [<服务名1> <服务名2> ... <服务名正则表达式完全匹配>]  [-F|--fuck]  [-P|--by-step]
         # 回滚
-        $0 <-M|--mode [normal|function]>  [--b|rollback]  <-I|--image-pre-name {镜像前置名称}>  <<-T|--TAG {精确镜像tag版本}> | <<-t|--tag {模糊镜像tag版本}> <-A|--time-ago {时间}>>>  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
+        $0 [{-M|--mode normal|function}]  -b|--rollback  [{-I|--image-pre-name <镜像前置名称>}]  [{-T|--TAG <精确镜像tag版本>}|[{-t|--tag <模糊镜像tag版本>}] [{-A|--time-ago <时间>}]]  [{-V|--release-version <版本号>}]  [-G|--gray]  [<服务名1> <服务名2> ... <服务名正则表达式完全匹配>]  [-F|--fuck]  [-P|--by-step]
         #
         # 扩缩容
-        $0 <-M|--mode [normal|function]>  [-S|--scale]  [-n|--number {副本数}]  <-V|--release-version {版本号}>  <-G|--gray>  <{服务名或灰度服务名1} {服务名或灰度服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
+        $0 [{-M|--mode normal|function}]  -S|--scale  {-n|--number <副本数>}  [{-V|--release-version <版本号>}]  [-G|--gray]  [<服务名或灰度服务名1> <服务名或灰度服务名2> ... <服务名正则表达式完全匹配>]  [-F|--fuck]  [-P|--by-step]
         # 删除
-        $0 <-M|--mode [normal|function]>  [-r|--rm]  <-V|--release-version {版本号}>  <-G|--gray>  <-a|--all-release>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
+        $0 [{-M|--mode normal|function}]  -r|--rm  [{-V|--release-version <版本号>}]  [-G|--gray]  [-a|--all-release]  [<服务名1> <服务名2> ... <服务名正则表达式完全匹配>]  [-F|--fuck]  [-P|--by-step]
         # 状态
-        $0 [-s|--status]  <-V|--release-version {版本号}>  <-G|--gray>  <-a|--all-release>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
+        $0 -s|--status  [{-V|--release-version <版本号>}]  [-G|--gray]  [-a|--all-release]  [<服务名1> <服务名2> ... <服务名正则表达式完全匹配>]  [-F|--fuck]  [-P|--by-step]
         # 详情
-        $0 [-d|--detail]  <-V|--release-version {版本号}>  <-G|--gray>  <-a|--all-release>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
+        $0 -d|--detail  [{-V|--release-version <版本号>}]  [-G|--gray]  [-a|--all-release]  [<服务名1> <服务名2> ... <服务名正则表达式完全匹配>]  [-F|--fuck]  [-P|--by-step]
         # 日志
-        $0 [-o|--logs]    <-V|--release-version {版本号}>  <-G|--gray>  <-a|--all-release>  <{服务名1} {服务名2} ... {服务名正则表达式完全匹配}>  <-F|--fuck>  <-P|--by-step>
+        $0 -o|--logs    [{-V|--release-version <版本号>}]  [-G|--gray]  [-a|--all-release]  [<服务名1> <服务名2> ... <服务名正则表达式完全匹配>]  [-F|--fuck]  [-P|--by-step]
+    参数规范：
+        无包围符号 ：-a                : 必选【选项】
+                   ：val               : 必选【参数值】
+                   ：val1 val2 -a -b   : 必选【选项或参数值】，且不分先后顺序
+        []         ：[-a]              : 可选【选项】
+                   ：[val]             : 可选【参数值】
+        <>         ：<val>             : 需替换的具体值（用户必须提供）
+        %%         ：%val%             : 通配符（包含匹配，如%error%匹配error_code）
+        |          ：val1|val2|<valn>  : 多选一
+        {}         ：{-a <val>}        : 必须成组出现【选项+参数值】
+                   ：{val1 val2}       : 必须成组的【参数值组合】，且必须按顺序提供
     参数说明：
-        \$0   : 代表脚本本身
-        []   : 代表是必选项
-        <>   : 代表是可选项
-        |    : 代表左右选其一
-        {}   : 代表参数值，请替换为具体参数值
-        %    : 代表通配符，非精确值，可以被包含
-        #
         -h|--help      ：帮助
         -l|--list      ：列出配置文件中的服务清单
         -L|--list-run  ：列出指定集群类型中运行的所有服务

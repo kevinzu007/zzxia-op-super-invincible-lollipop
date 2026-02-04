@@ -48,16 +48,21 @@ F_HELP()
     注意：
         * 输入命令时，参数顺序不分先后
     用法:
-        $0  [-h|--help]
-        $0  [--dns {dns_provider}]  [-r|--request|-u|--update {域名}]  [-e|--email {邮箱}]  <-t|--test>   #--- 申请或renew泛域名证书
+        $0  -h|--help
+        $0  {--dns <dns_provider>}  {-r|--request <域名>}  [{-e|--email <邮箱>}]  [-t|--test]
+        $0  {--dns <dns_provider>}  {-u|--update <域名>}  [-t|--test]
+    参数规范：
+        无包围符号 ：-a                : 必选【选项】
+                   ：val               : 必选【参数值】
+                   ：val1 val2 -a -b   : 必选【选项或参数值】，且不分先后顺序
+        []         ：[-a]              : 可选【选项】
+                   ：[val]             : 可选【参数值】
+        <>         ：<val>             : 需替换的具体值（用户必须提供）
+        %%         ：%val%             : 通配符（包含匹配，如%error%匹配error_code）
+        |          ：val1|val2|<valn>  : 多选一
+        {}         ：{-a <val>}        : 必须成组出现【选项+参数值】
+                   ：{val1 val2}       : 必须成组的【参数值组合】，且必须按顺序提供
     参数说明：
-        \$0   : 代表脚本本身
-        []   : 代表是必选项
-        <>   : 代表是可选项
-        |    : 代表左右选其一
-        {}   : 代表参数值，请替换为具体参数值
-        %    : 代表通配符，非精确值，可以被包含
-        #
         -h|--help         此帮助
         --dns             指定 acme.sh dns api 方式，例如: dns_cf (Cloudflare), dns_ali (阿里云), dns_dp (腾讯云) 等，想获取更多，请从官网查找(https://github.com/acmesh-official/acme.sh/wiki/dnsapi)
         -r|--request      申请泛域名证书

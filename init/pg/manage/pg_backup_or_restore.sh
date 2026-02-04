@@ -37,15 +37,21 @@ F_HELP()
         ${PG_BACKUP_OR_RESTORE_BY_USER_POSTGRES_SH}
     注意：需在root账户下运行，会自动设置访问限制、删库、创建、导入、取消限制。
     用法:
-        $0  [-h|--help]
-        $0  [-b|--backup]   {PATH/TO/FILENAME}  {数据库名}     #--- 备份，文件格式为gzip，备份时会自动在指定的名字后面自动加上.gz
-        $0  [-r|--resotore] {PATH/TO/FILENAME}  {数据库名}     #--- 恢复，文件须为gzip格式
+        $0  -h|--help
+        $0  -b|--backup   <PATH/TO/FILENAME>  <数据库名>     #--- 备份，文件格式为gzip，备份时会自动在指定的名字后面自动加上.gz
+        $0  -r|--resotore <PATH/TO/FILENAME>  <数据库名>     #--- 恢复，文件须为gzip格式
+    参数规范：
+        无包围符号 ：-a                : 必选【选项】
+                   ：val               : 必选【参数值】
+                   ：val1 val2 -a -b   : 必选【选项或参数值】，且不分先后顺序
+        []         ：[-a]              : 可选【选项】
+                   ：[val]             : 可选【参数值】
+        <>         ：<val>             : 需替换的具体值（用户必须提供）
+        %%         ：%val%             : 通配符（包含匹配，如%error%匹配error_code）
+        |          ：val1|val2|<valn>  : 多选一
+        {}         ：{-a <val>}        : 必须成组出现【选项+参数值】
+                   ：{val1 val2}       : 必须成组的【参数值组合】，且必须按顺序提供
     参数说明：
-        \$0   : 代表脚本本身
-        []   : 代表是必选项
-        <>   : 代表是可选项
-        |    : 代表左右选其一
-        {}   : 代表参数值，请替换为具体参数值
         #
         -b|--backup      备份
         -r|--resotore    还原

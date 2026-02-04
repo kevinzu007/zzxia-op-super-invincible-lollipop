@@ -48,14 +48,20 @@ F_HELP()
         - 企业微信的markdown支持有限（仅支持标题、加粗、链接、代码块）
         - 飞书使用富文本格式，会自动转换基础markdown语法
     用法:
-        $0  [-h|--help]
-        $0  [-p|--platform {dingding|weixin|feishu}]  <-w|--webhook {Webhook地址}>  [-t|--title {消息标题}  -m|--message {消息内容}]
+        $0 -h|--help
+        $0 [{-p|--platform dingding|weixin|feishu}] [{-w|--webhook <Webhook地址>}] {-t|--title <消息标题>} {-m|--message <消息内容>}
+    参数规范：
+        无包围符号 ：-a                : 必选【选项】
+                   ：val               : 必选【参数值】
+                   ：val1 val2 -a -b   : 必选【选项或参数值】，且不分先后顺序
+        []         ：[-a]              : 可选【选项】
+                   ：[val]             : 可选【参数值】
+        <>         ：<val>             : 需替换的具体值（用户必须提供）
+        %%         ：%val%             : 通配符（包含匹配，如%error%匹配error_code）
+        |          ：val1|val2|<valn>  : 多选一
+        {}         ：{-a <val>}        : 必须成组出现【选项+参数值】
+                   ：{val1 val2}       : 必须成组的【参数值组合】，且必须按顺序提供
     参数说明：
-        \$0   : 代表脚本本身
-        []   : 代表是必选项
-        <>   : 代表是可选项
-        |    : 代表左右选其一
-        {}   : 代表参数值，请替换为具体参数值
         #
         -h|--help        此帮助
         -p|--platform    指定平台：dingding(钉钉)、weixin(企业微信)、feishu(飞书)
@@ -74,19 +80,14 @@ F_HELP()
     示例:
         # 使用钉钉发送
         $0  -p dingding  -t 'Test Title'  -m '### 测试消息'
-        
         # 使用企业微信发送
         $0  -p weixin  -t 'Test Title'  -m '### 测试消息'
-        
         # 使用飞书发送
         $0  -p feishu  -t 'Test Title'  -m '### 测试消息'
-        
         # 自动检测平台（从webhook URL）
         $0  -w 'https://oapi.dingtalk.com/robot/send?access_token=xxx'  -t 'Title'  -m 'Content'
-        
         # 从文件读取内容
         $0  -p dingding  -t 'Report'  -m \"\$(cat report.md)\"
-        
         # 使用环境变量
         export DINGDING_WEBHOOK_API='https://oapi.dingtalk.com/robot/send?access_token=xxx'
         $0  -p dingding  -t 'Title'  -m 'Content'

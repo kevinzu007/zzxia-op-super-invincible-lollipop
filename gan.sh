@@ -49,18 +49,23 @@ F_HELP()
 {
     echo "
     用途：用于远程安装部署。模块说明如下：
+    依赖：
     注意：在deploy节点上运行，需要一堆关联脚本
     用法:
-        $0 [-h|--help]    #--- 帮助
-        $0 [--build|--build-para|--gogogo|--deploy|--deploy-docker|--deploy-web|--ngx-dns|--ngx-root|--ngx-conf|--ngx-cert|--ngx-cert-w|--pg-b-r|--aliyun-dns|--godaddy-dns]  <参数1> ... <参数n>     #--- 参数1...n 是 \$1 模块的参数
+        $0 -h|--help
+        $0 --build|--build-para|--gogogo|--deploy|--deploy-docker|--deploy-web|--ngx-dns|--ngx-root|--ngx-conf|--ngx-cert|--ngx-cert-w|--pg-b-r|--aliyun-dns|--godaddy-dns  [<参数1> ... <参数n>]
+    参数规范：
+        无包围符号 ：-a                : 必选【选项】
+                   ：val               : 必选【参数值】
+                   ：val1 val2 -a -b   : 必选【选项或参数值】，且不分先后顺序
+        []         ：[-a]              : 可选【选项】
+                   ：[val]             : 可选【参数值】
+        <>         ：<val>             : 需替换的具体值（用户必须提供）
+        %%         ：%val%             : 通配符（包含匹配，如%error%匹配error_code）
+        |          ：val1|val2|<valn>  : 多选一
+        {}         ：{-a <val>}        : 必须成组出现【选项+参数值】
+                   ：{val1 val2}       : 必须成组的【参数值组合】，且必须按顺序提供
     参数说明：
-        \$0   : 代表脚本本身
-        []   : 代表是必选项
-        <>   : 代表是可选项
-        |    : 代表左右选其一
-        {}   : 代表参数值，请替换为具体参数值
-        %    : 代表通配符，非精确值，可以被包含
-        #
         -h|--help      此帮助
         --build        【build.sh】：项目打包
         --build-para   【build-parallel.sh】：并行项目打包

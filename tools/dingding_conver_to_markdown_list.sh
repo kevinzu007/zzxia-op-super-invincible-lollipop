@@ -36,16 +36,20 @@ F_HELP()
     依赖：/etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
     注意：
     用法:
-        $0  [-h|--help]
-        $0  <-w|--webhook {Webhook地址}>  ["{消息标题}"]  ["{消息文本第1行}"]  <"{消息文本第2行}">  <"{消息文本第N行}">
+        $0  -h|--help
+        $0  [{-w|--webhook <Webhook地址>}]  <消息标题>  <消息文本第1行>  [<消息文本第2行>]  [<消息文本第N行>]
+    参数规范：
+        无包围符号 ：-a                : 必选【选项】
+                   ：val               : 必选【参数值】
+                   ：val1 val2 -a -b   : 必选【选项或参数值】，且不分先后顺序
+        []         ：[-a]              : 可选【选项】
+                   ：[val]             : 可选【参数值】
+        <>         ：<val>             : 需替换的具体值（用户必须提供）
+        %%         ：%val%             : 通配符（包含匹配，如%error%匹配error_code）
+        |          ：val1|val2|<valn>  : 多选一
+        {}         ：{-a <val>}        : 必须成组出现【选项+参数值】
+                   ：{val1 val2}       : 必须成组的【参数值组合】，且必须按顺序提供
     参数说明：
-        \$0   : 代表脚本本身
-        []   : 代表是必选项
-        <>   : 代表是可选项
-        |    : 代表左右选其一
-        {}   : 代表参数值，请替换为具体参数值
-        %    : 代表通配符，非精确值，可以被包含
-        #
         -h|--help        此帮助
         -w|--webhook     钉钉webhook地址，默认从从环境变量中继承（DINGDING_WEBHOOK_API、DINGDING_WEBHOOK_API_export，DINGDING_WEBHOOK_API_{1,2,3}，数字越大优先级越高）
     示例:

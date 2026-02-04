@@ -118,17 +118,21 @@ F_HELP()
         * 名称正则表达式完全匹配，会自动在正则表达式的头尾加上【^ $】，请规避
         * 输入命令时，参数顺序不分先后
     用法:
-        $0  [-h|--help]
-        $0  [-l|--list]
-        $0  <-n|--number>  <-c [dockerfile|java|node|自定义]>  <-b {代码分支}>  <-I|--image-pre-name {镜像前置名称}>  <-e|--email {邮件地址}>  <-s|--skiptest>  <-f|--force>  <{项目1}  {项目2} ... {项目n}> ... {项目名称正则表达式完全匹配}>
+        $0  -h|--help
+        $0  -l|--list
+        $0  [{-n|--number <并行数量>}]  [{-c|--category dockerfile|java|node|<自定义>}]  [{-b|--branch <代码分支>}]  [{-I|--image-pre-name <镜像前置名称>}]  [{-e|--email <邮件地址>}]  [-s|--skiptest]  [-f|--force]  [<项目1>  <项目2> ... <项目n> ... <项目名称正则表达式完全匹配>]
+    参数规范：
+        无包围符号 ：-a                : 必选【选项】
+                   ：val               : 必选【参数值】
+                   ：val1 val2 -a -b   : 必选【选项或参数值】，且不分先后顺序
+        []         ：[-a]              : 可选【选项】
+                   ：[val]             : 可选【参数值】
+        <>         ：<val>             : 需替换的具体值（用户必须提供）
+        %%         ：%val%             : 通配符（包含匹配，如%error%匹配error_code）
+        |          ：val1|val2|<valn>  : 多选一
+        {}         ：{-a <val>}        : 必须成组出现【选项+参数值】
+                   ：{val1 val2}       : 必须成组的【参数值组合】，且必须按顺序提供
     参数说明：
-        \$0   : 代表脚本本身
-        []   : 代表是必选项
-        <>   : 代表是可选项
-        |    : 代表左右选其一
-        {}   : 代表参数值，请替换为具体参数值
-        %    : 代表通配符，非精确值，可以被包含
-        #
         -h|--help      此帮助
         -l|--list      列出可构建的项目清单
         -n|--number    并行构建项目的数量，默认为2个
@@ -150,7 +154,7 @@ F_HELP()
         $0  --email xm@xxx.com  项目1 项目2    #--- 构建【项目1、项目2】，用默认分支，同时构建默认个，将错误日志发送到邮箱【xm@xxx.com】
         $0  -s -f  项目1 项目2                 #--- 构建【项目1、项目2】，用默认分支，同时构建默认个，跳过测试，强制重新构建（无论是否有更新）
         $0  sss                       #--- 构建项目名称正则匹配【^sss$】的项目，用默认分支，同时构建默认个
-        $0  -I aaa/bbb  项目1  项目2  #--- 构建项目【项目1、项目2】，用默认分支，同时构建默认个，生成的镜像前置名称为【DOCKER_IMAGE_PRE_NAME='aaa/bbb'】，默认来自env.sh。注：镜像完整名称："\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${DOCKER_IMAGE_NAME}:\${DOCKER_IMAGE_TAG}"
+        $0  -I aaa/bbb  项目1  项目2  #--- 构建项目【项目1、项目2】，用默认分支，同时构建默认个，生成的镜像前置名称为【DOCKER_IMAGE_PRE_NAME='aaa/bbb'】，默认来自env.sh。注：镜像完整名称：\"\${DOCKER_REPO_SERVER}/\${DOCKER_IMAGE_PRE_NAME}/\${DOCKER_IMAGE_NAME}:\${DOCKER_IMAGE_TAG}\"
         # 更多示例请参考【build.sh】
     "
 }
