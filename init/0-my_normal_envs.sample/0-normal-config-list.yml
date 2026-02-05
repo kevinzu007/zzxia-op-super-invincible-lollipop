@@ -1,0 +1,41 @@
+# 配置文件清单 (YAML格式)
+#
+# 结构说明:
+# <host_group>:
+#   files:
+#     - { src: "文件名(不带后缀)", dest: "目标路径" }
+#
+# 注意:
+# Playbook 会自动优先查找 "src--${RUN_ENV}", 如果找不到则使用 "src"
+
+deploy:
+  files:
+    # --- 系统配置 ---
+    - { src: "zzxia-op-super-invincible-lollipop.run-env.sh", dest: "/etc/profile.d/" }
+    - { src: "zzxia-op-super-invincible-lollipop.run-env.sh", dest: "{{ DEST_DIR }}/init/2-os-base/" }
+    - { src: "mailrc",                                        dest: "{{ DEST_DIR }}/init/2-os-base/" }
+    - { src: "host-ip.list",                                  dest: "{{ DEST_DIR }}/init/" }
+    
+    # --- Fuckingdoit (项目主目录) ---
+    - { src: "env.sh",                                        dest: "{{ DEST_DIR }}/fuckingdoit/" }
+    - { src: "project.list",                                  dest: "{{ DEST_DIR }}/fuckingdoit/" }
+    - { src: "project.list.append.1",                         dest: "{{ DEST_DIR }}/fuckingdoit/" }
+    - { src: "docker-cluster-service.list",                   dest: "{{ DEST_DIR }}/fuckingdoit/" }
+    - { src: "docker-cluster-service.list.append.1",          dest: "{{ DEST_DIR }}/fuckingdoit/" }
+    - { src: "docker-cluster-service.list.append.2",          dest: "{{ DEST_DIR }}/fuckingdoit/" }
+    - { src: "docker-arg-pub.list",                           dest: "{{ DEST_DIR }}/fuckingdoit/" }
+    - { src: "container-hosts-pub.list",                      dest: "{{ DEST_DIR }}/fuckingdoit/" }
+    - { src: "java-options-pub.list",                         dest: "{{ DEST_DIR }}/fuckingdoit/" }
+    - { src: "nginx.list",                                    dest: "{{ DEST_DIR }}/fuckingdoit/" }
+    
+    # --- 其他服务配置 ---
+    - { src: "nginx.list",                                    dest: "{{ DEST_DIR }}/init/nginx/nginx-config/" }
+    - { src: "pg_db.list",                                    dest: "{{ DEST_DIR }}/init/pg/manage/" }
+    - { src: "pgbadger.env",                                  dest: "{{ DEST_DIR }}/init/pgbadger/pgbadger_report/" }
+
+localhost:
+  files:
+    # --- Ansible 本地配置 ---
+    # 拷贝到用户主目录下的 .ansible/ansible.cfg (或者其他指定位置)
+    - { src: "ansible.cfg",                                   dest: "~/.ansible/ansible.cfg" }
+    - { src: "ansible-inventory",                             dest: "/etc/ansible/inventories/" }
