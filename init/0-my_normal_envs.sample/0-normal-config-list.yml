@@ -36,6 +36,7 @@ deploy:
 localhost:
   files:
     # --- Ansible 本地配置 ---
-    # 拷贝到用户主目录下的 .ansible/ansible.cfg (或者其他指定位置)
-    - { src: "ansible.cfg",                                   dest: "~/.ansible/ansible.cfg" }
-    - { src: "ansible-inventory",                             dest: "/etc/ansible/inventories/" }
+    # 拷贝到用户主目录下的 .ansible.cfg
+    - { src: "ansible.cfg",                                   dest: "~/.ansible.cfg" }
+    # 库存文件放 ~/.ansible/hosts
+    - { src: "ansible-inventory",                             dest: "~/.ansible/hosts" }
