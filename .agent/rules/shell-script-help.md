@@ -1,3 +1,8 @@
+---
+trigger: glob
+globs: *.sh
+---
+
 # Shell Script Help Format Guidelines
 
 Every Shell script in this project must follow the standard help section format defined below.
