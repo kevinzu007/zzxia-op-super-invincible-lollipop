@@ -92,7 +92,8 @@ function set_title(){
     for i in "$@"
     do
         title+="|${i}${sep}"
-        let column_count++
+        #let column_count++
+        (( column_count++ ))
     done
     title+="|\n"
     seg=$(segmentation)
@@ -217,7 +218,8 @@ fi
 eval set -- "${TEMP}"
 
 
-## 获取次要命令参数
+# 获取次要命令参数
+#
 #SH_ARGS_NUM=$#
 #SH_ARGS[0]="占位"
 #for ((i=1;i<=SH_ARGS_NUM;i++)); do
@@ -228,11 +230,10 @@ eval set -- "${TEMP}"
 #    #echo SH_ARGS数组${i}列的值是: ${SH_ARGS[${i}]}
 #done
 #
-# 获取次要命令参数
-declare -a SH_ARGS
-# 这一行直接把所有参数从 $1 开始放入数组，且索引从 0 开始。
-# 如果你非要让数组从 1 开始，且 0 位放“占位”：
-SH_ARGS=("占位" "$@")
+# 改成这样：
+declare -a SH_ARGS    #-- 定义数组
+SH_ARGS=("占位" "$@")    #-- 从 $1 开始将参数放入数组，且索引从 0 开始，0 位放“占位”，后面放命令参数
+
 #
 SH_ARGS_ARR_NUM=${#SH_ARGS[@]}
 for ((i=1;i<SH_ARGS_ARR_NUM;i++))
@@ -243,6 +244,7 @@ do
             exit
             ;;
         -d|--delimeter)
+            # (( )) vs $(( )) 怎么选？简单来说：如果你只想执行运算，选 (( ))；如果你需要拿到运算结果，选 $(( ))
             j=$((i+1))
             J=${SH_ARGS[$j]}
             T_DELIMETER=$J
@@ -271,34 +273,28 @@ F_LINE()
 {
     LINE="$1"
     FILED_OK=''
-    # 使用引号包裹变量，防止解析异常
     FILED_SUM=$(echo "${LINE}" | grep -o "${T_DELIMETER}" | wc -l)
     for ((i=0;i<=FILED_SUM;i++))
     do
-        let k=$i+1
-        # 1. 获取字段值
+        #let k=$i+1
+        (( k=i+1 ))    #-- (( )) vs $(( )) 怎么选？简单来说：如果你只想执行运算，选 (( ))；如果你需要拿到运算结果，选 $(( ))
         FILED=$(echo "${LINE}" | cut -d "${T_DELIMETER}" -f $k)
-        
-        # 2. 这里的引用最关键！必须加双引号，否则 **** 会被当做文件名展开
-        FILED=$(echo "${FILED}")
-        
-        # 3. 处理空格占位符
+        FILED=$(echo ${FILED})     #-- ${FILED}不能加引号，正规表格会异常，但是如果不加，遇到表格内容为'*'，则会被展开，为避免，所以'set -f'阻止展开
+        # 空格
         FILED=$(echo "${FILED}" | sed 's/ /◘/g')
-        
-        # 4. 空值处理
-        [ "x${FILED}" = "x" ] && FILED='✖'
-        
-        # 5. 组合字段
+        # 空
+        [ -z "${FILED}" ] && FILED='✖'
+        # 组合
         FILED_OK="${FILED_OK}  ${FILED}"
     done
     echo "${FILED_OK}"
 }
 
+
 # title
 if [ -n "${T_TITLE}" ]; then
-    set_title '序号' $(F_LINE "${T_TITLE}")    #-- 别信语法检查，这里不能加双引号，，因为设计要求，加了表格格式会有错
+    set_title '序号' $(F_LINE "${T_TITLE}")    #-- $()不能加引号，别信语法检查，因为设计要求，加了表格格式会有错
 fi
-
 
 
 #
@@ -320,8 +316,9 @@ do
                 exit 1
             fi
             T_ROW="$2"
-            append_line "$i" "$(F_LINE "${T_ROW}")"
-            let i++
+            append_line "$i" $(F_LINE "${T_ROW}")    #-- $()不能加引号，别信语法检查
+            #let i++
+            (( i++ ))
             shift 2
             ;;
         -f|--file)
@@ -329,10 +326,11 @@ do
             while read -r LINE
             do
                 if [ -n "${T_TITLE}" ]; then
-                    append_line "$i" "$(F_LINE "${LINE}")"
-                    let i++
+                    append_line "$i" $(F_LINE "${LINE}")    #-- $()不能加引号，别信语法检查，这里不能加双引号，因为设计要求，加了表格格式会有错
+                    #let i++
+                    (( i++ ))
                 else
-                    set_title '序号' $(F_LINE "${LINE}")    #-- 别信语法检查，这里不能加双引号，，因为设计要求，加了表格格式会有错
+                    set_title '序号' $(F_LINE "${LINE}")    #-- $()不能加引号，别信语法检查
                     T_TITLE="现在有了"
                 fi
             done < "${T_FILE}"
