@@ -1,50 +1,41 @@
 # 须带环境变量运行：
 # ansible-playbook  install-config-my_private_envs.yml  -e "RUN_ENV=${RUN_ENV}"  -e "MY_PRIVATE_ENVS_DIR=${MY_PRIVATE_ENVS_DIR}"
-#
-#
-# 拷贝密码文件
-#
-# 请根据自己的需要修改此文件（主机与运行环境）
-#
-#
+
 - hosts: deploy
   become: yes
   vars:
     - RUN_ENV: "{{ lookup('env','RUN_ENV') }}"
     - MY_PRIVATE_ENVS_DIR: "{{ lookup('env','MY_PRIVATE_ENVS_DIR') }}"
+    - conf: "{{ lookup('file', 'private-conf-vars.yml') | from_yaml }}"
   tasks:
-    - name: 拷贝 - {{ MY_PRIVATE_ENVS_DIR }}
-      copy: src=./{{ RUN_ENV }}/my_sec/   dest={{ MY_PRIVATE_ENVS_DIR }}/ owner=root group=root mode=0600  backup=no
-    - name: 拷贝 - 用户密码工具
+    - name: 分发文件 (Deploy)
       copy:
-          src: '{{ item.srcc }}'
-          dest: '{{ item.destt }}'
-          owner: root
-          group: root
-          mode: 0700
-          backup: yes
-      with_items:
-        - { srcc: './user-secret-update.sh', destt: '{{ MY_PRIVATE_ENVS_DIR }}/' }
-        - { srcc: './user-manage.sh', destt: '{{ MY_PRIVATE_ENVS_DIR }}/' }
-        - { srcc: './user.db', destt: '{{ MY_PRIVATE_ENVS_DIR }}/' }
-        - { srcc: './user.db.append.1', destt: '{{ MY_PRIVATE_ENVS_DIR }}/' }
-    - name: 拷贝 - maven-settings.xml
-      copy: src=./{{ RUN_ENV }}/maven-settings.xml dest=~/.m2/settings.xml owner=root group=root mode=0644  backup=no
-    - name: 拷贝 - godaddy.sec.env
-      copy: src=./{{ RUN_ENV }}/godaddy.sec.env dest=/etc/godaddy.sec.env  owner=root group=root mode=0600  backup=no
-      when: RUN_ENV == "prod"
-    - name: 拷贝 - aliyun-config.json
-      copy: src=./{{ RUN_ENV }}/aliyun-config.json dest=~/.aliyun/config.json owner=root group=root mode=0600  backup=no
-      when: RUN_ENV == "stag"
-
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        owner: "{{ item.owner | default('root') }}"
+        group: "{{ item.group | default('root') }}"
+        mode: "{{ item.mode | default('0600') }}"
+        backup: "{{ item.backup | default('no') }}"
+      # 合并 common 和 当前环境 specific
+      loop: "{{ (conf.deploy.common | default([])) + (conf.deploy.envs[RUN_ENV] | default([])) }}"
 
 - hosts: all
   become: yes
   vars:
     - RUN_ENV: "{{ lookup('env','RUN_ENV') }}"
+    - conf: "{{ lookup('file', 'private-conf-vars.yml') | from_yaml }}"
   tasks:
-    - name: 拷贝 - zzxia-ca.crt.pem
-      copy: src=./{{ RUN_ENV }}/zzxia-ca.crt.pem   dest=/etc/pki/ca-trust/source/anchors/zzxia-ca.crt.pem  owner=root group=root mode=0600  backup=no
+    - name: 分发文件 (All)
+      copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        owner: "{{ item.owner | default('root') }}"
+        group: "{{ item.group | default('root') }}"
+        mode: "{{ item.mode | default('0600') }}"
+        backup: "{{ item.backup | default('no') }}"
+      loop: "{{ (conf.all.common | default([])) + (conf.all.envs[RUN_ENV] | default([])) }}"
+    
+    # 特殊任务保留
     - name: 更新os证书
       shell: update-ca-trust
 
@@ -52,18 +43,30 @@
   become: yes
   vars:
     - RUN_ENV: "{{ lookup('env','RUN_ENV') }}"
+    - conf: "{{ lookup('file', 'private-conf-vars.yml') | from_yaml }}"
   tasks:
-    - name: 拷贝 - 证书
-      copy: src=./{{ RUN_ENV }}/zjlh.lan/   dest=/srv/cert/zjlh.lan/  owner=root group=root mode=0644  backup=no
-      when: RUN_ENV == "dev"
+    - name: 分发文件 (Nginx)
+      copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        owner: "{{ item.owner | default('root') }}"
+        group: "{{ item.group | default('root') }}"
+        mode: "{{ item.mode | default('0600') }}"
+        backup: "{{ item.backup | default('no') }}"
+      loop: "{{ (conf.nginx.common | default([])) + (conf.nginx.envs[RUN_ENV] | default([])) }}"
 
 - hosts: pg_m,gitlab
   become: yes
   vars:
     - RUN_ENV: "{{ lookup('env','RUN_ENV') }}"
+    - conf: "{{ lookup('file', 'private-conf-vars.yml') | from_yaml }}"
   tasks:
-    - name: 拷贝 - passwd-ossfs
-      copy: src=./{{ RUN_ENV }}/passwd-ossfs   dest=/etc/passwd-ossfs  owner=root group=root mode=0640  backup=no
-      when: RUN_ENV == "stag" or RUN_ENV == "prod"
-
-
+    - name: 分发文件 (PG/Gitlab)
+      copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        owner: "{{ item.owner | default('root') }}"
+        group: "{{ item.group | default('root') }}"
+        mode: "{{ item.mode | default('0600') }}"
+        backup: "{{ item.backup | default('no') }}"
+      loop: "{{ (conf.pg_m_gitlab.common | default([])) + (conf.pg_m_gitlab.envs[RUN_ENV] | default([])) }}"

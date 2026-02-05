@@ -1,0 +1,43 @@
+# 配置文件清单 (YAML格式)
+#
+# 结构说明:
+# <host_group>:
+#   common: 所有环境都会拷贝的文件
+#   envs:
+#     <env_name>: 特定环境的配置
+#       - src: ...
+#         dest: ...
+
+# --- Host Group: deploy ---
+deploy:
+  common:
+    - { src: "./{{ RUN_ENV }}/my_sec/", dest: "{{ MY_PRIVATE_ENVS_DIR }}/", mode: "0600" }
+    - { src: "user-secret-update.sh", dest: "{{ MY_PRIVATE_ENVS_DIR }}/", mode: "0700" }
+    - { src: "user-manage.sh",        dest: "{{ MY_PRIVATE_ENVS_DIR }}/", mode: "0700" }
+    - { src: "user.db",               dest: "{{ MY_PRIVATE_ENVS_DIR }}/", mode: "0600" }
+    - { src: "user.db.append.1",      dest: "{{ MY_PRIVATE_ENVS_DIR }}/", mode: "0600" }
+    - { src: "./{{ RUN_ENV }}/maven-settings.xml", dest: "~/.m2/settings.xml", mode: "0644" }
+  envs:
+    stag:
+      - { src: "./stag/aliyun-config.json", dest: "~/.aliyun/config.json", mode: "0600" }
+    prod:
+      - { src: "./prod/godaddy.sec.env", dest: "/etc/godaddy.sec.env", mode: "0600" }
+
+# --- Host Group: all ---
+all:
+  common:
+    - { src: "./{{ RUN_ENV }}/zzxia-ca.crt.pem", dest: "/etc/pki/ca-trust/source/anchors/zzxia-ca.crt.pem", mode: "0600" }
+
+# --- Host Group: nginx ---
+nginx:
+  envs:
+    dev:
+      - { src: "./dev/mydomain.com/", dest: "/srv/cert/mydomain.com/", mode: "0644" }
+
+# --- Host Group: pg_m,gitlab ---
+pg_m_gitlab:
+  envs:
+    stag:
+      - { src: "./stag/passwd-ossfs", dest: "/etc/passwd-ossfs", mode: "0640", group: "root" }
+    prod:
+      - { src: "./prod/passwd-ossfs", dest: "/etc/passwd-ossfs", mode: "0640", group: "root" }
