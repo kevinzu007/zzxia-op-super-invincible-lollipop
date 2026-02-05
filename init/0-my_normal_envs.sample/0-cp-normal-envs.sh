@@ -39,33 +39,55 @@ F_CP ()
 {
     #set -e
     mkdir -p  /etc/ansible/inventories
+    touch     /etc/ansible/ansible.cfg
     sed -i -E -e '/^\[defaults\]/b' -e '$a\[defaults]'                   /etc/ansible/ansible.cfg
     sed -i -E '/^inventory[[:space:]]*=.*/d'                             /etc/ansible/ansible.cfg
     sed -i -E  '/\[defaults\]/a\inventory = /etc/ansible/inventories/'   /etc/ansible/ansible.cfg
-    cp -f  ./ansible-inventory---${R_ENV}                                /etc/ansible/inventories/ansible-inventory
     
-    # cp到init/2-os-base/目录
-    cp -f  ./zzxia-op-super-invincible-lollipop.run-env.sh---${R_ENV}    /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
-    cp -f  ./zzxia-op-super-invincible-lollipop.run-env.sh---${R_ENV}    ${DEST_DIR}/init/2-os-base/zzxia-op-super-invincible-lollipop.run-env.sh
-    cp -f  ./host-ip.list---${R_ENV}                                     ${DEST_DIR}/init/host-ip.list
-    cp -f  ./mailrc---${R_ENV}                                           ${DEST_DIR}/init/2-os-base/mailrc
+    # 配置文件清单路径
+    MANIFEST_FILE="${SH_PATH}/0-cp-list.conf"
     
-    # cp到deploy目录
-    cp -f  ./project.list                                                ${DEST_DIR}/fuckingdoit/
-    cp -f  ./project.list.append.1                                       ${DEST_DIR}/fuckingdoit/
-    cp -f  ./env.sh---${R_ENV}                                           ${DEST_DIR}/fuckingdoit/env.sh
-    cp -f  ./docker-cluster-service.list---${R_ENV}                      ${DEST_DIR}/fuckingdoit/docker-cluster-service.list
-    cp -f  ./docker-cluster-service.list.append.1---${R_ENV}             ${DEST_DIR}/fuckingdoit/docker-cluster-service.list.append.1
-    cp -f  ./docker-cluster-service.list.append.2---${R_ENV}             ${DEST_DIR}/fuckingdoit/docker-cluster-service.list.append.2
-    cp -f  ./docker-arg-pub.list---${R_ENV}                              ${DEST_DIR}/fuckingdoit/docker-arg-pub.list
-    cp -f  ./container-hosts-pub.list---${R_ENV}                         ${DEST_DIR}/fuckingdoit/container-hosts-pub.list
-    cp -f  ./java-options-pub.list---${R_ENV}                            ${DEST_DIR}/fuckingdoit/java-options-pub.list
-    cp -f  ./nginx.list---${R_ENV}                                       ${DEST_DIR}/fuckingdoit/nginx.list
+    if [[ ! -f "${MANIFEST_FILE}" ]]; then
+        echo -e "\n猪猪侠警告：配置文件清单【${MANIFEST_FILE}】不存在！\n"
+        exit 1
+    fi
+
+    echo -e "正在根据清单【${MANIFEST_FILE}】分发配置..."
     
-    # 其他
-    cp -f  ./nginx.list---${R_ENV}                                       ${DEST_DIR}/init/nginx/nginx-config/nginx.list
-    cp -f  ./pg_db.list                                                  ${DEST_DIR}/init/pg/manage/pg_db.list
-    cp -f  ./pgbadger.env---${R_ENV}                                     ${DEST_DIR}/init/pgbadger/pgbadger_report/pgbadger.env
+    # 读取清单文件，忽略空行和注释
+    grep -vE '^\s*#|^\s*$' "${MANIFEST_FILE}" | while read -r src_base dest_path_template; do
+        # 1. 解析目标路径 (支持环境变量 ${DEST_DIR})
+        eval dest_path="${dest_path_template}"
+        
+        # 2. 确定源文件 (优先找带后缀的，没有则找通用的)
+        # 更新：后缀改为 --
+        src_env="${src_base}--${R_ENV}"
+        src_common="${src_base}"
+        
+        real_src=""
+        if [[ -f "./${src_env}" ]]; then
+            real_src="./${src_env}"
+        elif [[ -f "./${src_common}" ]]; then
+            real_src="./${src_common}"
+        else
+            echo "  [跳过] 找不到源文件: ${src_base} (检查了 ${src_env} 和 ${src_common})"
+            continue
+        fi
+        
+        # 3. 执行拷贝
+        # 如果目标是以 / 结尾，则说明是目录，不用改名
+        # 如果目标是文件路径，则覆盖
+        if [[ "${dest_path}" == */ ]]; then
+             mkdir -p "${dest_path}"
+             cp -f "${real_src}" "${dest_path}"
+             echo "  [拷贝] ${real_src} -> ${dest_path}"
+        else
+             # 确保目标文件的父目录存在
+             mkdir -p "$(dirname "${dest_path}")"
+             cp -f "${real_src}" "${dest_path}"
+             echo "  [拷贝] ${real_src} -> ${dest_path}"
+        fi
+    done
 }
 
 
