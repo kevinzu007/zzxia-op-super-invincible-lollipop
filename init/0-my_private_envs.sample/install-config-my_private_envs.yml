@@ -6,7 +6,7 @@
   vars:
     - RUN_ENV: "{{ lookup('env','RUN_ENV') }}"
     - MY_PRIVATE_ENVS_DIR: "{{ lookup('env','MY_PRIVATE_ENVS_DIR') }}"
-    - conf: "{{ lookup('file', 'private-conf-vars.yml') | from_yaml }}"
+    - conf: "{{ lookup('file', '0-private-config-list.yml') | from_yaml }}"
   tasks:
     - name: 分发文件 (Deploy)
       copy:
@@ -23,7 +23,7 @@
   become: yes
   vars:
     - RUN_ENV: "{{ lookup('env','RUN_ENV') }}"
-    - conf: "{{ lookup('file', 'private-conf-vars.yml') | from_yaml }}"
+    - conf: "{{ lookup('file', '0-private-config-list.yml') | from_yaml }}"
   tasks:
     - name: 分发文件 (All)
       copy:
@@ -43,7 +43,7 @@
   become: yes
   vars:
     - RUN_ENV: "{{ lookup('env','RUN_ENV') }}"
-    - conf: "{{ lookup('file', 'private-conf-vars.yml') | from_yaml }}"
+    - conf: "{{ lookup('file', '0-private-config-list.yml') | from_yaml }}"
   tasks:
     - name: 分发文件 (Nginx)
       copy:
