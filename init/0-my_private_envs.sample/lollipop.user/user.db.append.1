@@ -10,16 +10,16 @@
 ###    用户名关联对应的Gitlab用户名
 ### 
 ###  5 【用户权限：USER_PRIVILEGES】= [ 运行环境1:权限1, 运行环境2:权限1 & 权限2 & ......, 运行环境n:...... ]
-###    用于定义用户在指定运行环境下的权限，多个运行环境之间用逗号分隔，多个权限之间用&分隔
+###    定义用户在指定运行环境下的权限，多个运行环境之间用逗号分隔，多个权限之间用&分隔
 ###    参数解释：
 ###      * 运行环境   1 ALL         : 代表所有运行环境
 ###                   2 自定义名称  : 代表指定名称的运行环境，比如：dev、prod等
-###      * 权限       1 ALL         : 代表所有权限，权限包括：build、deploy、gan，以后也许会增加
+###      * 权限       1 ADMIN|ALL   : 代表所有权限，权限包括不限于：ADMIN、build、deploy、gan、......
 ###                   2 build       : 构建权限，即fuckingdoit目录下匹配 ^build*.sh 的shell脚本
 ###                   3 deploy      : 部署发布权限，即fuckingdoit目录下不匹配 ^build*.sh 的shell脚本
 ###                   4 gan         : 运行gan.sh权限
 ###    示例：
-###      【ALL:ALL】                : 代表在所有运行环境具有全部权限
+###      【ALL:ADMIN】              : 代表在所有运行环境具有全部权限
 ###      【ALL:build】              : 代表在所有运行环境具有build权限
 ###      【dev:ALL, prod:build】    : 代表在dev运行环境具有全部权限，在prod运行环境具有build权限
 ###      【dev:build&deploy】       : 代表在dev运行环境具有build及deploy权限
