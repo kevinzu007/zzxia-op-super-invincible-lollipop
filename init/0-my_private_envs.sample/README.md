@@ -13,7 +13,8 @@
 
 ## 说明
 
-- dev、stag、prod： 分别对应不同运行环境，可以自定义
+- lollipop.user    ：这是lollipop用户管理
+- dev、stag、prod  ：分别对应不同运行环境，可以自定义
 - 请根据自己的需要添加删除相关文件，文件名称随意，文件扩展名请根据【## 1 文件类型】定义。添加文件后，根据部署环境与目标服务器修改【install-config-my_private_envs.yml】
 
 

@@ -6,8 +6,13 @@
   vars:
     - RUN_ENV: "{{ lookup('env','RUN_ENV') }}"
     - MY_PRIVATE_ENVS_DIR: "{{ lookup('env','MY_PRIVATE_ENVS_DIR') }}"
-    - conf: "{{ lookup('file', '0-private-config-list.yml') | from_yaml }}"
+    - conf: "{{ lookup('file', 'my_private_envs-list.yml') | from_yaml }}"
   tasks:
+    - name: 检查必要环境变量
+      fail:
+        msg: "必须指定 RUN_ENV 和 MY_PRIVATE_ENVS_DIR 环境变量！"
+      when: RUN_ENV == "" or MY_PRIVATE_ENVS_DIR == ""
+
     - name: 分发文件 (Deploy)
       copy:
         src: "{{ item.src }}"
@@ -23,8 +28,13 @@
   become: yes
   vars:
     - RUN_ENV: "{{ lookup('env','RUN_ENV') }}"
-    - conf: "{{ lookup('file', '0-private-config-list.yml') | from_yaml }}"
+    - conf: "{{ lookup('file', 'my_private_envs-list.yml') | from_yaml }}"
   tasks:
+    - name: 检查必要环境变量
+      fail:
+        msg: "必须指定 RUN_ENV 和 MY_PRIVATE_ENVS_DIR 环境变量！"
+      when: RUN_ENV == "" or MY_PRIVATE_ENVS_DIR == ""
+
     - name: 分发文件 (All)
       copy:
         src: "{{ item.src }}"
@@ -34,8 +44,9 @@
         mode: "{{ item.mode | default('0600') }}"
         backup: "{{ item.backup | default('no') }}"
       loop: "{{ (conf.all.common | default([])) + (conf.all.envs[RUN_ENV] | default([])) }}"
-    
-    # 特殊任务保留
+      notify: 更新os证书
+
+  handlers:
     - name: 更新os证书
       shell: update-ca-trust
 
@@ -43,8 +54,13 @@
   become: yes
   vars:
     - RUN_ENV: "{{ lookup('env','RUN_ENV') }}"
-    - conf: "{{ lookup('file', '0-private-config-list.yml') | from_yaml }}"
+    - conf: "{{ lookup('file', 'my_private_envs-list.yml') | from_yaml }}"
   tasks:
+    - name: 检查必要环境变量
+      fail:
+        msg: "必须指定 RUN_ENV 和 MY_PRIVATE_ENVS_DIR 环境变量！"
+      when: RUN_ENV == "" or MY_PRIVATE_ENVS_DIR == ""
+
     - name: 分发文件 (Nginx)
       copy:
         src: "{{ item.src }}"
@@ -59,8 +75,13 @@
   become: yes
   vars:
     - RUN_ENV: "{{ lookup('env','RUN_ENV') }}"
-    - conf: "{{ lookup('file', 'private-conf-vars.yml') | from_yaml }}"
+    - conf: "{{ lookup('file', 'my_private_envs-list.yml') | from_yaml }}"
   tasks:
+    - name: 检查必要环境变量
+      fail:
+        msg: "必须指定 RUN_ENV 和 MY_PRIVATE_ENVS_DIR 环境变量！"
+      when: RUN_ENV == "" or MY_PRIVATE_ENVS_DIR == ""
+
     - name: 分发文件 (PG/Gitlab)
       copy:
         src: "{{ item.src }}"

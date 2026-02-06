@@ -1,0 +1,32 @@
+# 配置文件清单
+# 格式: 源文件基础名(不带环境后缀)  目标路径
+# 目标路径支持环境变量 ${DEST_DIR}，这里=项目路径：${ZZXIA_OP_SUPER_INVINCIBLE_LOLLIPOP_HOME}
+# 注意：
+#     程序会自动优先查找 "源文件名---${R_ENV}", 如果找不到则使用 "源文件名"
+
+# --- Ansible 相关 ---
+config_files/ansible-inventory                                  ~/.ansible/lollipop
+
+# --- 系统配置 ---
+config_files/zzxia-op-super-invincible-lollipop.run-env.sh      /etc/profile.d/zzxia-op-super-invincible-lollipop.run-env.sh
+config_files/zzxia-op-super-invincible-lollipop.run-env.sh      ${DEST_DIR}/init/2-os-base/zzxia-op-super-invincible-lollipop.run-env.sh
+config_files/mailrc                                             ${DEST_DIR}/init/2-os-base/mailrc
+config_files/host-ip.list                                       ${DEST_DIR}/init/host-ip.list
+
+# --- Fuckingdoit (项目主目录) ---
+config_files/env.sh                                             ${DEST_DIR}/fuckingdoit/env.sh
+config_files/project.list                                       ${DEST_DIR}/fuckingdoit/project.list
+config_files/project.list.append.1                              ${DEST_DIR}/fuckingdoit/project.list.append.1
+config_files/docker-cluster-service.list                        ${DEST_DIR}/fuckingdoit/docker-cluster-service.list
+config_files/docker-cluster-service.list.append.1               ${DEST_DIR}/fuckingdoit/docker-cluster-service.list.append.1
+config_files/docker-cluster-service.list.append.2               ${DEST_DIR}/fuckingdoit/docker-cluster-service.list.append.2
+config_files/docker-arg-pub.list                                ${DEST_DIR}/fuckingdoit/docker-arg-pub.list
+config_files/container-hosts-pub.list                           ${DEST_DIR}/fuckingdoit/container-hosts-pub.list
+config_files/java-options-pub.list                              ${DEST_DIR}/fuckingdoit/java-options-pub.list
+config_files/nginx.list                                         ${DEST_DIR}/fuckingdoit/nginx.list
+
+# --- 其他服务配置 ---
+config_files/nginx.list                                         ${DEST_DIR}/init/nginx/nginx-config/nginx.list
+config_files/pg_db.list                                         ${DEST_DIR}/init/pg/manage/pg_db.list
+config_files/pgbadger.env                                       ${DEST_DIR}/init/pgbadger/pgbadger_report/pgbadger.env
+
