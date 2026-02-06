@@ -21,6 +21,7 @@
         group: "{{ item.group | default('root') }}"
         mode: "{{ item.mode | default('0600') }}"
         backup: "{{ item.backup | default('no') }}"
+        force: "{{ item.force | default('yes') }}"
       # 合并 common 和 当前环境 specific
       loop: "{{ (conf.deploy.common | default([])) + (conf.deploy.envs[RUN_ENV] | default([])) }}"
 
@@ -43,6 +44,7 @@
         group: "{{ item.group | default('root') }}"
         mode: "{{ item.mode | default('0600') }}"
         backup: "{{ item.backup | default('no') }}"
+        force: "{{ item.force | default('yes') }}"
       loop: "{{ (conf.all.common | default([])) + (conf.all.envs[RUN_ENV] | default([])) }}"
       notify: 更新os证书
 
@@ -69,6 +71,7 @@
         group: "{{ item.group | default('root') }}"
         mode: "{{ item.mode | default('0600') }}"
         backup: "{{ item.backup | default('no') }}"
+        force: "{{ item.force | default('yes') }}"
       loop: "{{ (conf.nginx.common | default([])) + (conf.nginx.envs[RUN_ENV] | default([])) }}"
 
 - hosts: pg_m,gitlab
@@ -90,4 +93,5 @@
         group: "{{ item.group | default('root') }}"
         mode: "{{ item.mode | default('0600') }}"
         backup: "{{ item.backup | default('no') }}"
+        force: "{{ item.force | default('yes') }}"
       loop: "{{ (conf.pg_m_gitlab.common | default([])) + (conf.pg_m_gitlab.envs[RUN_ENV] | default([])) }}"
