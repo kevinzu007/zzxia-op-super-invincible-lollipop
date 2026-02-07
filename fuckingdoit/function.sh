@@ -81,7 +81,7 @@ F_SEARCH_GITLAB_USER()
 
 
 # 搜索用户，返回用户信息
-# F_SEARCH_USER  [用户名|用户ID]
+# F_SEARCH_USER  [用户名]
 F_SEARCH_USER()
 {
     F_USER_NAME=$1
@@ -90,15 +90,19 @@ F_SEARCH_USER()
         # 跳过以#开头的行或空行
         [[ "$U_LINE" =~ ^# ]] || [[ "$U_LINE" =~ ^[\ ]*$ ]] && continue
         #
-        CURRENT_USER_ID=`echo $U_LINE | cut -d '|' -f 2`
-        CURRENT_USER_ID=`echo ${CURRENT_USER_ID}`
+        CURRENT_USER_STATUS=`echo $U_LINE | cut -d '|' -f 2`
+        CURRENT_USER_STATUS=`echo ${CURRENT_USER_STATUS}`
         CURRENT_USER_NAME=`echo $U_LINE | cut -d '|' -f 3`
         CURRENT_USER_NAME=`echo ${CURRENT_USER_NAME}`
         CURRENT_USER_XINGMING=`echo $U_LINE | cut -d '|' -f 4`
         CURRENT_USER_XINGMING=`echo ${CURRENT_USER_XINGMING}`
         CURRENT_USER_EMAIL=`echo $U_LINE | cut -d '|' -f 5`
         CURRENT_USER_EMAIL=`echo ${CURRENT_USER_EMAIL}`
-        if [ "${F_USER_NAME}" = "${CURRENT_USER_ID}"  -o  "${F_USER_NAME}" = "${CURRENT_USER_NAME}" ]; then
+        if [ "${F_USER_NAME}" = "${CURRENT_USER_NAME}" ]; then
+            if [[ "${CURRENT_USER_STATUS}" != "on" ]]; then
+                echo "57 | ${F_USER_NAME}"
+                return 57
+            fi
             # 获取append部分
             while read UA_LINE
             do
@@ -159,7 +163,7 @@ F_SEARCH_USER_PRIV()
                 CURRENT_USER_PRIVILEGES_A_SET_priv_SET=`echo ${CURRENT_USER_PRIVILEGES_A_SET} | cut -d ':' -f 2`
                 if [[ ${CURRENT_USER_PRIVILEGES_A_SET_env} == ${RUN_ENV} ]] || [[ ${CURRENT_USER_PRIVILEGES_A_SET_env} == ALL ]]; then
                     # 获取具体权限
-                    PRIVILEGES_env_priv_NUM=$(echo ${CURRENT_USER_PRIVILEGES_A_SET_priv_SET} | grep -o '&' | wc -l)
+                    PRIVILEGES_env_priv_NUM=$(echo ${CURRENT_USER_PRIVILEGES_A_SET_priv_SET} | grep -o '+' | wc -l)
                     for ((j=PRIVILEGES_env_priv_NUM; j>=0; j--))
                     do
                         # 为空
@@ -168,8 +172,8 @@ F_SEARCH_USER_PRIV()
                         fi
                         #
                         FIELD_J=$((j+1))
-                        CURRENT_USER_PRIVILEGES_A_SET_priv=`echo ${CURRENT_USER_PRIVILEGES_A_SET_priv_SET} | cut -d '&' -f ${FIELD_J}`
-                        if [[ ${CURRENT_USER_PRIVILEGES_A_SET_priv} == ${F_USER_PRIV} ]] || [[ ${CURRENT_USER_PRIVILEGES_A_SET_priv} == ALL ]]; then
+                        CURRENT_USER_PRIVILEGES_A_SET_priv=`echo ${CURRENT_USER_PRIVILEGES_A_SET_priv_SET} | cut -d '+' -f ${FIELD_J}`
+                        if [[ ${CURRENT_USER_PRIVILEGES_A_SET_priv} == ${F_USER_PRIV} ]] || [[ ${CURRENT_USER_PRIVILEGES_A_SET_priv} =~ ^(ALL|ADMIN)$ ]]; then
                             # 匹配，输出
                             echo "0 | PASS"
                             return 0
@@ -203,6 +207,9 @@ F_get_user_info()
                 R_4=$(echo $R | awk -F '|' '{print $4}' | awk '{print $1}')
                 export MY_USER_XINGMING=${R_3}
                 export MY_USER_EMAIL=${MY_USER_EMAIL:-"${R_4}"}
+            elif [[ ${R_1} == 57 ]]; then
+                echo -e "\n猪猪侠警告：用户【${MY_USER_NAME}】已被禁用！\n"
+                exit 57
             else
                 if [[ ${MY_USER_NAME} == 'root' ]]; then
                     export MY_USER_XINGMING="r-Man"
@@ -246,13 +253,13 @@ F_check_user_priv()
     if [[ ! ${MY_USER_NAME} == 'root' ]]; then
         #
         NEED_PRIVILEGES=${NEED_PRIVILEGES// /}
-        NEED_PRIVILEGES_NUM=$(echo ${NEED_PRIVILEGES} | grep -o '&' | wc -l)
+        NEED_PRIVILEGES_NUM=$(echo ${NEED_PRIVILEGES} | grep -o '+' | wc -l)
         #
         for ((j=NEED_PRIVILEGES_NUM; j>=0; j--))
         do
             #
             FIELD_J=$((j+1))
-            NEED_PRIVILEGES_x=`echo ${NEED_PRIVILEGES} | cut -d '&' -f ${FIELD_J}`
+            NEED_PRIVILEGES_x=`echo ${NEED_PRIVILEGES} | cut -d '+' -f ${FIELD_J}`
             #
             R=$(F_SEARCH_USER_PRIV  ${MY_USER_NAME}  ${NEED_PRIVILEGES_x})
             R_1=$(echo $R | awk -F '|' '{print $1}' | awk '{print $1}')
